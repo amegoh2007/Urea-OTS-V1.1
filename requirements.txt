@@ -1,0 +1,10 @@
+# Urea Plant OTS V1.1 — runtime dependencies.
+#
+# Deliberately short. The property correlations are scalar Python by design (see
+# project.md §5.4): vectorising them would change floating-point results and break the
+# V1-equivalence tests.
+
+PyQt6>=6.6          # operator console
+pyqtgraph>=0.13     # the console's trend window plot (Qt only; nothing headless imports it)
+numpy>=1.26         # flowsheet solver only
+pytest>=8.0         # test harness, including V1-equivalence regressions

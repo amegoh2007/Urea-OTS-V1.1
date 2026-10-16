@@ -1,0 +1,310 @@
+"""V1 <-> V1.1 for the synthesis loop's decided departures, each run both ways.
+
+`test_synthesis_loop_equivalence.py` proves the port ``==`` V1's transcribed glue with every switch
+on. Here each runs with V1's lines (the transcription with that switch off) beside the port, and
+what each side does is measured. A-16 (decision 32, a node relieving through its certified safety
+valves) and A-17 (decision 29, a line discharging against its receiver's live pressure) are classes
+decided on other units and applied to the loop under §5 rule 7. B-75, B-76 and B-78 items 1 to 3
+are the process engineer's decisions of 2026-10-03 on the loop's flagged sinks; B-88 is the decision
+of 2026-10-09 that trip 22.2 trips the CO2 boundary; B-77 (b), PT-329201 on the loop's vapour
+inventory, and A-12, trips 21.2, 21.8 and 21.10 as AC4 executes them, are the decisions of
+2026-10-09; B-91 (a), the loop's condensation capped by its liquor's bubble pressure, of
+2026-10-10, and B-92, the reactor's liquor at its bubble point, of 2026-10-14. Every other switch is
+on on both sides, so each pin carries the others' physics.
+"""
+
+from __future__ import annotations
+
+import pytest
+
+from tests.equivalence import test_synthesis_loop_equivalence as h
+from ureasim.core.stream import MW_COMP
+from ureasim.data.unit_322_loop import SYN_LOOP_RESID_DES_KGH
+from ureasim.data.unit_322e003 import HOLDUP_MAX_KG, HOLDUP_NLL_KG, LEVEL_NLL_PCT, OVERFLOW_DES_KMOLH
+from ureasim.units.consequence.crystallisation import mushy_flow_factor
+from ureasim.units.synthesis.scrubber_sump import ScrubberSump
+from tests.equivalence.v1_loader import v1_available
+
+pytestmark = pytest.mark.skipif(not v1_available(), reason="V1 source tree not present")
+
+v1 = h.v1
+
+
+def test_sv32251_and_sv32252_relieve_the_loop_decided_divergence(v1):
+    """A-16. The loop put at 160.5 bar a (trip 22.2 latches and cuts the feeds from the next tick on
+    both sides). V1's assumed SV-32201, set at 161.01 bar a, never lifts: the loop falls on its
+    boundary to 159.31 bar a in a minute. The port's SV32251 / SV32252, set at 160.01 bar a on
+    Sempell's certified K orifices, lift at once and relieve 209 t/h of the reactor top's vapour,
+    106 t/h of it ammonia: 157.69 bar a in a minute, V1's 159.31 (with B-91 (a) and B-92, decided 2026-10-10 and 2026-10-14: 157.6948 and
+    159.3140 before them; with B-81's lines and B-77 (b) and AC4's trips, decided 2026-10-09: 156.4679 and 158.7766 before them; 156.4672 before FFIC-321404A
+    / B, B-85). B-75 and B-78 run on both sides. (On session 46's decisions — 320K002 a boundary
+    feed, LIC-322501 and the SICs on the DCS's table, the stopped SICs forced to MAN at their table
+    tunings; 159.24 and 156.92 bar a before.)"""
+    def act(k, plant, s):
+        if k == 0:
+            plant.units["PT-329201"].p_syn_bara = s.p_syn = 160.5
+    hist, _, _ = h.run_both(v1, 601, act, decided=h.ALL - {"A-16"}, check=False)
+    out, res, p_v1 = hist[600]
+    pt = res["PT-329201"]
+    assert out.m_psv == 0.0 and p_v1 == pytest.approx(159.3135, abs=1e-4)
+    assert pt.relief_lifted and pt.p_syn_bara == pytest.approx(157.6908, abs=1e-4)
+    assert (pt.m_relief_kgh, pt.m_relief_nh3_kgh) == (pytest.approx(209261.0, abs=0.1),
+                                                     pytest.approx(106131.3, abs=0.1))
+
+
+def test_hv_322604_discharges_against_322c001_decided_divergence(v1):
+    """A-17. 322C001 at SV32253's 6.013 bar a: the purge stays choked, 1708.32 kg/h both sides
+    (1708.2642 with 322E003 on its own liquor and its sump,
+    decided 2026-10-14; 1708.3214 with B-91 (a) and B-92, decided 2026-10-10 and 2026-10-14; 1708.3203 before them);
+    let down to 4.0 bar a (V1) it arrives at 94.8 C, to the absorber's live 6.013 at 95.2 C."""
+    def act(k, plant, s):
+        plant.units["322C001"].p_bara = 6.013
+    hist, _, _ = h.run_both(v1, 2, act, decided=h.ALL - {"A-17"}, check=False)
+    out, res, _ = hist[1]
+    pv = res["HV-322604"].valve
+    assert out.hv604.mass_kgh == pv.mass_kgh == pytest.approx(1708.2642, abs=1e-4)
+    assert (out.hv604.t_out_c, out.hv604.p_out_bara) == (94.8, 4.0)
+    assert (pv.t_out_c, pv.p_out_bara) == (95.2, 6.013)
+
+
+def test_the_residual_credit_scales_with_the_load_decided_divergence(v1):
+    """B-75. The CO2 demand cut to 80 %: the reactor's load ratio settles at 0.79 and the recycle
+    tear it deletes falls with it. V1 still credits the design residual, 2024.9 kg/h, and its loop
+    runs down; the port credits the residual at the same ratio (1521.6 kg/h after two minutes).
+    After two minutes V1's PT-329201 reads 141.4895 bar a, the port's 141.5025 (load ratio 0.7915,
+    on session 53's code, 2026-10-15; 141.4957, 141.5088, 0.7916 and 1523.2 with PV-329202 and
+    PV-329208 on their vendor trims, 2026-10-15; 141.4928 and 141.5058 before them;
+    with 322E003 on its own liquor and its sump, decided 2026-10-14; 141.6382 and 141.6505 with B-91 (a) and B-92, decided 2026-10-10 and 2026-10-14,
+    the reactor's residence on the liquid passing: the load ratio 0.7867; 1640.8, 140.3239 and
+    140.3293 before them, at 0.8103; with B-81's lines
+    and B-77 (b) and AC4's trips, decided 2026-10-09, the load ratio 0.8103: 1610.4, 141.0024 and
+    141.0106 before them, at 0.7953; with FFIC-321404A / B, decided 2026-10-09, B-85: 1610.5,
+    140.9960 and 141.0042 before; and with 320K002 a boundary feed and SIC-321951 and LIC-322501 on
+    the DCS's table, decided 2026-10-08: the ammonia follows the CO2 cut on SIC-321951's 50 s;
+    140.7011 and 140.7094 before the tunings, 140.6997 and 140.7079 on 320K002's vendor curves,
+    140.6989 and 140.7072 on V1's fitted map)."""
+    def act(k, plant, s):
+        if k == 0:
+            plant.operator["320K002-CO2"] *= 0.8
+            s.co2_raw_th *= 0.8
+    hist, _, s = h.run_both(v1, 1200, act, decided=h.ALL - {"B-75"}, check=False)
+    _, res, p_v1 = hist[-1]
+    pt, ratio = res["PT-329201"], res["322R001"].reaction.co2_scale
+    assert ratio == pytest.approx(0.7915, abs=1e-4)
+    assert pt.resid_credit_kgh == pt.loop_mass_frac * ratio * SYN_LOOP_RESID_DES_KGH
+    assert pt.resid_credit_kgh == pytest.approx(1521.6, abs=0.1)
+    assert (p_v1, pt.p_syn_bara) == (pytest.approx(141.4895, abs=1e-4),
+                                     pytest.approx(141.5025, abs=1e-4))
+
+
+def test_the_recondensed_backlog_returns_to_the_sump_decided_divergence(v1):
+    """B-76. 329P006A stopped for a minute: the backlog builds while 322E003 cannot condense and
+    recondenses after. V1 deletes what recondenses; the port returns it to 322E003's sump on the
+    next tick, 141.71 kg in three minutes. V1's sump ends at 3650.55 kg, the port's at 3766.50
+    (session 54's code, B-31 decided 2026-10-16; 3650.56 and 3766.51 on session 53's; 141.63, 3650.40 and 3766.41 before; with B-91 (a) and B-92, decided 2026-10-10 and 2026-10-14: 141.49, 3634.17 and 3745.06 before them; with
+    B-81's lines and B-77 (b) and AC4's trips, decided 2026-10-09: 138.79, 3636.88 and 3746.40
+    before them; both sides with FFIC-321404A / B, B-85 decided 2026-10-09 — 138.64, 3639.66 and
+    3749.20 before; on the session-44 decisions: TT-322002 on 165 C, the standard atmosphere,
+    FIC-329409 and TIC-329005 on the table's rows — 137.46, 3634.21 and 3742.25 before them — and on
+    session 46's: 320K002 a boundary feed, LIC-322501 and the SICs on the table's rows — 137.84,
+    3633.18 and 3741.60 before the tunings, 3632.99 and 3741.41 on 320K002's vendor curves, 3633.03
+    and 3741.44 on V1's fitted map)."""
+    def act(k, plant, s):
+        if k == 5:
+            plant.loops["322E003"][0].p329p006a = s.P329P006A = False
+        if k == 605:
+            plant.loops["322E003"][0].p329p006a = s.P329P006A = True
+    hist, sched, s = h.run_both(v1, 1800, act, decided=h.ALL - {"B-76"}, check=False)
+    rec_kg = sum(r["PT-329201"].m_recond_kgh for _, r, _ in hist[:-1]) * h.DT / 3600.0
+    sump = sched.plant.units["322E003"]
+    assert rec_kg == pytest.approx(141.71, abs=0.01)
+    assert (s.scrub_holdup_kg, sump.holdup_kg) == (pytest.approx(3650.55, abs=0.01),
+                                                   pytest.approx(3766.50, abs=0.01))
+
+
+def test_a_full_sump_holds_its_excess_in_the_scrubber_decided_divergence(v1):
+    """B-78 item 1. 322E003's sump 50 kg short of full and XV-322903 shut for 30 s: the ejector
+    entrains nothing. V1 holds the sump at its maximum and deletes the rest; the port holds 275.9 kg
+    back in the scrubber (the wash and the carryover; at a full sump it condenses no more than drains,
+    B-91, decided 2026-10-14), which runs down once XV-322903 reopens (nothing held after a minute).
+    After 90 s V1's sump holds 7511.9 kg, the port's 7618.9 (7619.0 before session 53's code;
+    406.7, 209.0, 7486.8 and a full
+    7674.8 before the full-sump cap; with B-91 (a) and B-92, decided 2026-10-10 and 2026-10-14:
+    413.3, 197.5 and 7466.3 before them; with B-81's lines and
+    B-77 (b) and AC4's trips, decided 2026-10-09: 415.1, 192.8 and 7452.5 before them; with
+    FFIC-321404A / B, B-85 decided 2026-10-09: 415.2, 189.9 and 7449.6 before; with 320K002 a
+    boundary feed and LIC-322501 and the SICs on the DCS's table, decided 2026-10-08; 226.3 and
+    7486.2 before the tunings, 226.2 and 7486.1 on 320K002's vendor curves)."""
+    def act(k, plant, s):
+        if k == 0:
+            m = HOLDUP_MAX_KG - 50.0
+            unit = plant.units["322E003"]
+            unit.holdup_kg = s.scrub_holdup_kg = m
+            unit.level_pct = s.scrub_level_pct = m / HOLDUP_NLL_KG * LEVEL_NLL_PCT
+            plant.operator["XV-322903"] = s.XV_322903 = False
+        if k == 300:
+            plant.operator["XV-322903"] = s.XV_322903 = True
+    hist, sched, s = h.run_both(v1, 900, act, decided=h.ALL - {"B-78"}, check=False)
+    assert hist[299][1]["322E003"].sump.held_kg == pytest.approx(275.94, abs=0.01)
+    sump = sched.plant.units["322E003"]
+    assert sump.held_kg == pytest.approx(0.00, abs=0.01)
+    assert (s.scrub_holdup_kg, sump.holdup_kg) == (pytest.approx(7511.94, abs=0.01),
+                                                   pytest.approx(7618.89, abs=0.01))
+
+
+def test_the_forward_pulse_is_drawn_from_the_sump_decided_divergence(v1):
+    """B-78 item 2. HV-322602 from 74 to 60 %: the forward-carbamate pulse puts 674.7 kg into the
+    reactor in two minutes (674.6 before session 53's code; 677.9 kg before B-91 (a) and B-92, decided 2026-10-10 and 2026-10-14,
+    with B-81's lines and B-77 (b) and AC4's trips, decided
+    2026-10-09; 675.8 kg with FFIC-321404A / B, B-85 decided 2026-10-09; 675.3 kg on session 46's
+    tunings). V1 draws it from nowhere; the port draws it from 322E003's sump, which ends 2727.7 kg
+    against V1's 3228.5 (2727.4 and 3228.2 before session 53's code; 2727.3 and 3228.1 before the chests' vendor trims; 2786.6 and 3307.6 and a 683.7 kg pulse before 322E003's own liquor, decided
+    2026-10-14; 2737.3 and 3211.9 before B-91 and B-92; 2738.7 and 3213.8 before B-81,
+    B-77 and A-12; 2740.8 and 3216.3 before
+    B-85; on the session-44 decisions, 320K002 a boundary feed and LIC-322501 and the SICs on the
+    DCS's table, decided 2026-10-08; 678.9, 2735.9 and 3215.0 before the tunings, 2735.9 and 3214.9
+    on 320K002's vendor curves, 679.0, 2736.2 and 3215.3 before)."""
+    def act(k, plant, s):
+        if k == 5:
+            plant.operator["HIC-322602"] = s.HIC_322602 = 60.0
+    hist, sched, s = h.run_both(v1, 1200, act, decided=h.ALL - {"B-78"}, check=False)
+    pulse_kg = sum(r["322R001"].m_fwd_kgh for _, r, _ in hist) * h.DT / 3600.0
+    assert pulse_kg == pytest.approx(674.68, abs=0.01)
+    assert (s.scrub_holdup_kg, sched.plant.units["322E003"].holdup_kg) == (
+        pytest.approx(3228.51, abs=0.01), pytest.approx(2727.72, abs=0.01))
+
+
+def test_the_mushy_zone_holds_back_into_the_sump_decided_divergence():
+    """B-78 item 3. An overflow at 62 C, 2 K into carbamate's 5 K mushy band, for one tick with the
+    ejector stopped: V1 lets 40 % of it into the sump and deletes the rest (``step_sim`` 8113-8160,
+    as the transcription writes it); the port takes it all in and throttles the line to 322F001 by
+    the same 0.4 on the next tick. Not reached on the plant in any scenario measured."""
+    m_ovf = sum(v * MW_COMP[k] for k, v in OVERFLOW_DES_KMOLH.items())
+    f = mushy_flow_factor(62.0, 60.0)
+    v1_holdup = min(max(HOLDUP_NLL_KG + (f * m_ovf - 0.0) * (h.DT / 3600.0), 0.0), HOLDUP_MAX_KG)
+    sump = ScrubberSump()
+    r = sump.step(dict(OVERFLOW_DES_KMOLH), 62.0, 0.0, 1.0, 0.1, h.DT)
+    assert f == pytest.approx(0.4, rel=1e-12) and sump.mushy_factor == f
+    assert v1_holdup == pytest.approx(HOLDUP_NLL_KG + 0.4 * m_ovf * h.DT / 3600.0, rel=1e-12)
+    assert r.holdup_kg == pytest.approx(HOLDUP_NLL_KG + m_ovf * h.DT / 3600.0, rel=1e-12)
+
+
+def test_trip_22_2_trips_the_co2_boundary_decided_divergence(v1):
+    """B-88 (decided 2026-10-09, option c). The loop put at 155.5 bar a: trip 22.2 latches on its
+    first tick and both sides shut XV-322902 from the next. V1 leaves 320K002 delivering the
+    instructor's 54.618 t/h into the blocked line, which packs until SV32064 lifts on tick 316
+    (31.7 s) and still holds 159.70 bar a after a minute. The port trips the machine with the
+    valve: the boundary's demand is zero from the same tick, the line holds 144.25 bar a and
+    SV32064 never lifts."""
+    seen = []
+
+    def act(k, plant, s):
+        if k == 0:
+            plant.units["PT-329201"].p_syn_bara = s.p_syn = 155.5
+        seen.append(s.line.sv_32064.valve.lifted)
+    hist, sched, s = h.run_both(v1, 601, act, decided=h.ALL - {"B-88"}, check=False)
+    assert seen.index(True) == 317 and s.co2_raw_th == pytest.approx(54.618, abs=1e-9)
+    assert s.line.pressure_bara == pytest.approx(159.6998, abs=1e-4)
+    assert sched.plant.operator["320K002-CO2"] == 0.0
+    assert not any(r["320K002"].relief_lifted for _, r, _ in hist)
+    assert sched.plant.units["320K002"].pressure_bara == pytest.approx(144.2532, abs=1e-4)
+
+
+def test_the_vapour_inventory_node_decided_divergence(v1):
+    """B-77 (b), decided 2026-10-09: HV-322605 from 60 to 45 %, two minutes. The reactor gains
+    1492 kg. V1's lumped node counts it as pressure, PT-329201 141.3408 bar a; the port's vapour
+    inventory carries it as liquid, 140.6794 — the vapour's 75.3 kg/bar and the reactor liquor's
+    2110.9 kg/bar buffering (141.3412, 140.6792 and 75.4 before session 53's code), the liquid's gain 34.5 t/h on the last tick (with B-91 (a) and B-92, decided 2026-10-10 and 2026-10-14:
+    141.2423 and 140.6904 bar a, 73.9 and 2110.4 kg/bar before them)."""
+    def act(k, plant, s):
+        if k == 5:
+            plant.operator["HIC-322605"] = s.HIC_322605 = 45.0
+    hist, sched, s = h.run_both(v1, 1200, act, decided=h.ALL - {"B-77"}, check=False)
+    _, res, p_v1 = hist[-1]
+    pt = res["PT-329201"]
+    assert (p_v1, pt.p_syn_bara) == (pytest.approx(141.3408, abs=1e-4),
+                                     pytest.approx(140.6794, abs=1e-4))
+    assert sched.plant.units["322R001"].m_liq_kg == pytest.approx(137393.41, abs=0.01)
+    assert (pt.c_vap_kg_per_bar, pt.c_buf_kg_per_bar) == (pytest.approx(75.27, abs=0.01),
+                                                         pytest.approx(2110.90, abs=0.01))
+
+
+@pytest.mark.parametrize("case", ["fault", "co2"])
+def test_the_trips_as_ac4_executes_them_decided_divergence(v1, case):
+    """A-12, decided 2026-10-09. 321P002B's fault (the standby A stopped): V1 latches 21.10 and
+    stops B, the valves open; on AC4 B stops on its own protection, no HP ammonia pump runs, and
+    21.2's flag is lost, both pumps' flags with it, XV-321901, XV-322901, XV-322903 and — through
+    the Safeguard SG1 — XV-322902 shut (PC21.5.1 .12-.15; XV-322902 and XV-322903 decided
+    2026-10-16). The CO2 demand cut to zero: V1 latches 21.4 and stops the machines, the valves
+    open; on AC4 FY-322403 below its L2 loses 21.2, the machines stop on their flags and the valves
+    shut. After a minute V1's loop stands at 139.2729 / 139.5415 bar a, AC4's, blocked in with the
+    CO2 and the carbamate recycle isolated, at 141.1460 / 140.8889 (before 2026-10-16, when 21.2
+    left XV-322902 and XV-322903 open, both at 139.4947 / 139.5184; V1's side moves too, through
+    the steam network it shares with the port)."""
+    def act(k, plant, s):
+        if k == 5 and case == "fault":
+            plant.units["321"].pump_b.fault = s.station.pump_b.fault = True
+        if k == 5 and case == "co2":
+            plant.operator["320K002-CO2"] = s.co2_raw_th = 0.0
+    ends = {}
+    for dec in (h.ALL - {"A-12"}, h.ALL):
+        _, sched, s = h.run_both(v1, 600, act, decided=dec, check=False)
+        st = s.station
+        ends["A-12" in dec] = (dict(s.latched), st.pump_a.running, st.pump_b.running,
+                               st.xv_321901_open, st.xv_322901_open, round(s.p_syn, 4),
+                               s.line.xv_322902_open, s.XV_322903,
+                               sched.plant.units["320K002"].xv_322902_open,
+                               sched.plant.operator["XV-322903"])
+    v1_trip = {"fault": "21_10", "co2": "21_4"}[case]
+    assert ends[False][0] == {**dict.fromkeys(("21_2", "21_4", "21_8", "21_10", "22_2"), False),
+                              v1_trip: True}
+    assert ends[False][1:5] == (False, False, True, True)
+    assert ends[True][0] == {"21_2": True, "21_4": False, "21_8": True, "21_10": True,
+                             "22_2": False}
+    assert ends[True][1:5] == (False, False, False, False)
+    assert ends[False][6:8] == (True, True)
+    assert ends[True][6:] == (False, False, False, False)
+    assert (ends[False][5], ends[True][5]) == {"fault": (139.2729, 141.146),
+                                               "co2": (139.5415, 140.8889)}[case]
+
+
+def _the_loop_at_130_7(k, plant, s):
+    """The loop started 10 bar below its design, 130.7 bar a."""
+    if k == 0:
+        plant.units["PT-329201"].p_syn_bara = s.p_syn = 130.7
+
+
+def test_the_loop_condenses_no_more_than_its_bubble_point_decided_divergence(v1):
+    """B-91 (a), decided 2026-10-10. The loop started at 130.7 bar a, two minutes. On the first tick
+    322E002's liquor, at its design bubble pressure, stands 10.0 bar above the loop's 3.5 bar design
+    head: the port's saturation fraction is 0.8464, so 322E002's melt and 322E003 condense, and the
+    reactor liquor buffers, 85 % of what V1's do. The melt's bubble pressure falls to 122.7 bar a,
+    the fraction returns to 1 and the loop ends at 130.4826 bar a where V1's ends at 130.4012
+    (122.9 and 130.4837 before session 53's code, 2026-10-15)."""
+    hist, _, _ = h.run_both(v1, 1200, _the_loop_at_130_7, decided=h.ALL - {"B-91"}, check=False)
+    _, res, p_v1 = hist[-1]
+    first, last = hist[0][1]["322E002"].holdup, res["322E002"].holdup
+    assert first.sat_frac == pytest.approx(0.8464, abs=1e-4) and last.sat_frac == 1.0
+    assert last.condenser.p_bub_bara == pytest.approx(122.672, abs=1e-3)
+    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(130.4012, abs=1e-4),
+                                                   pytest.approx(130.4826, abs=1e-4))
+
+
+def test_the_reactor_liquor_stands_at_its_bubble_point_decided_divergence(v1):
+    """B-92, decided 2026-10-14. The same start, 130.7 bar a: the liquor's bubble point falls to
+    177.55 C under nodes at their design temperatures. V1's nodes have no ceiling: after two minutes
+    the top node stands at 181.75 C, 4 K above the bubble point. The port flashes the excess heat
+    as the overflow's volatiles, 127.5 t/h on the first tick, and its nodes end at or below the
+    bubble point, the top at 176.78 C; its loop at 130.4826 bar a against V1's 130.5110 (181.76,
+    130.4837 and 130.5120 before session 53's code, 2026-10-15)."""
+    hist, _, s = h.run_both(v1, 1200, _the_loop_at_130_7, decided=h.ALL - {"B-92"}, check=False)
+    _, res, p_v1 = hist[-1]
+    first, last = hist[0][1]["322R001"], res["322R001"]
+    assert first.t_bub_c == pytest.approx(177.545, abs=1e-3)
+    assert first.boil_kgh == pytest.approx(127451.8, abs=0.1)
+    assert s.react_T_node[3] == pytest.approx(181.752, abs=1e-3)
+    assert s.react_T_node[3] > last.t_bub_c
+    assert max(last.t_nodes_c) <= last.t_bub_c + 1e-9
+    assert last.t_nodes_c[3] == pytest.approx(176.778, abs=1e-3)
+    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(130.5110, abs=1e-4),
+                                                   pytest.approx(130.4826, abs=1e-4))
