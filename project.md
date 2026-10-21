@@ -11,7 +11,7 @@ short of the start-up band (session 50); B-94 closed on PFD 734's departure form
 as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `D:\Work\Urea Simulation` (V1 — reference only, never edited from here)
-**Last updated:** 2026-10-16 (session 57)
+**Last updated:** 2026-10-21 (session 61)
 
 ---
 
@@ -158,6 +158,7 @@ Urea Simulator V1.1/
 ├─ README.md                                  install + run
 ├─ requirements.txt
 ├─ run.py                                     application entry point
+├─ launch.bat                                 Windows launcher: checks Python, starts run.py
 ├─ ureasim/
 │  ├─ thermo/      property + VLE packages
 │  ├─ core/        stream / node / flowsheet primitives
@@ -182,14 +183,15 @@ centre of each deleted shape. That approach is preserved verbatim.
   screens. It is mechanically converted to `ureasim/data/screen_layout.py` by
   `tools/convert_overlays.py` — no coordinate is retyped by hand. The console renders 393: V1's
   387 and the six the process engineer added through the converter's `DECIDED_ADDITIONS`
-  (decision 98: trip 21.2's five hand switches and AI-329701).
-* Element types ported 1:1:
+  (decision 98: trip 21.2's five hand switches and AI-329701). Since decision 129 (2026-10-16) the
+  47 modulating valves are readouts of their opening in per cent, not icons: only the XVs carry a
+  valve symbol over the drawing's own.
+* Element types:
 
   | type | count | PyQt widget |
   |---|---|---|
-  | `ind` | 200 | `IndicatorWidget` — black box, live value + unit |
+  | `ind` | 247 | `IndicatorWidget` — black box, live value + unit (a valve's opening among them) |
   | `nav` | 67 | `NavHotspotWidget` — transparent screen jump |
-  | `avalve` | 47 | `ActuatedValveWidget` — stem position |
   | `pump` | 26 | `PumpWidget` — green running / grey stopped |
   | `bar` | 22 | `BargraphWidget` — vertical level fill |
   | `strm` | 12 | `StreamHotspotWidget` — stream inspector popup |
@@ -734,7 +736,33 @@ steam system (`steam/`).
       closed; trip 22.2 confirmed absent from AC4 and SG1; LT-329505's upper tap found
 - [x] Trip 21.2 shuts XV-322902 (through the Safeguard SG1) and XV-322903 as AC4 PC21.5.1 draws
       them, 320K002's demand to zero while the flag is lost (session 57, decision 127, §LXXIII.7)
-- [x] Full `pytest` suite green (session 57, 7415 collected, every part green on its first run)
+- [x] The console revised from the UI-page slides: hover fixed, valve icons replaced by readouts,
+      51 page buttons' blocks restored, readouts off the drawing and each other (session 58,
+      decision 129, §LXXIV.1)
+- [x] The research PDF of 2026-10-16 worked through: the liquid-rated safety valves' gas coefficient
+      read and its gap closed (decision 130); five Metso sheets catalogued, not wired; LT-329505's
+      upper tap traced (session 58, §LXXIV.2-5)
+- [x] HV-323605, PV-323203 and TV-328002 on their Metso sheets, V1's laws on the harness switches,
+      each both ways (session 59, decision 131, §LXXV.1)
+- [x] The process-deviation notes of `References/scenarios` put to the plant: 78 deviations, 147 of
+      191 claimed responses as claimed, the rest classified; A-21, A-22, B-98 and B-99 raised
+      (session 59, §LXXV.2-4)
+- [x] A-22 (a): a full 323F004 overflows into 323E011, V1's uncapped drum on the harness switch,
+      both ways (session 60, decision 132, §LXXVI.1)
+- [x] B-98 (b): the backward species step at a heel, V1's explicit step on the harness switches,
+      both ways (session 60, decision 133, §LXXVI.2)
+- [x] A-21 (b) traced and its remedy prototyped; B-99 (b) measured both ways on two prototypes
+      (session 60, §LXXVI.3-4); no crystallisation restriction on the evaporators (decision 134)
+- [x] A-21 (b): 322E002's saturation fraction solved with its own melt's bubble pressure on the
+      tick, the tear on the synthesis harness's switch, both ways (session 61, decision 135, §LXXVII.1)
+- [x] B-99 (b1): 322E003's capacity on its shell's effectiveness, its duty capped at it, V1's flow
+      law on the switch, both ways (session 61, decision 136, §LXXVII.2)
+- [x] B-101 (b): the vapour draw in the heel's backward species step (session 61, decision 137,
+      §LXXVII.3)
+- [x] B-100 (b): 323F004 on its geometry and LT-323505 between its taps, measured stable first,
+      V1's drum on the switch, both ways (session 61, decision 138, §LXXVII.4); Sections A, B and C
+      of `handoff.md` empty again
+- [x] Full `pytest` suite green (session 61, 7535 collected; two synthesis pins re-pinned, their file green)
 
 ---
 
@@ -4309,7 +4337,143 @@ shut and refusing the CO2 demand; the AC4 trips test, the tear count and the har
 A-12 branch updated), thirteen parallel parts, every part green on its first run. pyflakes
 clean; the headless grep prints nothing.
 
+**The Windows launcher** (`launch.bat`, at the user's request): finds Python, checks 3.11 and the
+packages of `requirements.txt`, starts `run.py` from its own folder with any arguments passed
+through, and waits on a failure. Measured: `launch.bat --help` exits 0; started offscreen from
+another folder, the engine listened on its port and the console connected.
+
 Next: the open data gaps, when the archive or the plant yields them.
+
+### Session 58 — the console revised from its slides; the research PDF worked through
+
+The process engineer asked for four console changes and for the open data gaps to be closed from a
+research report (`D:/Work/Urea Simulation Docs/Data/Urea Simulation Missing Data Research.pdf`).
+Built and measured (As-Built Part LXXIV):
+
+* **Hover** (decision 129): a hovered page button painted opaque black over its label — the theme's
+  CSS ``rgba()`` tokens are invalid to ``QColor``. `theme.rgba` converts them; the button now tints.
+* **Valve icons**: the 47 modulating valves' bowties, drawn over the slide's labels beside the drawn
+  valves, are readouts of the opening in per cent (`DECIDED_RETYPES`); `ActuatedValveWidget` deleted.
+* **The slides**: exported through PowerPoint (`tools/export_slides.ps1`) and compared with the
+  backgrounds; V1's migration had stripped 51 destination blocks from seven pages, so their page
+  buttons stood on nothing. `tools/restore_nav_blocks.py` restored them from the slides. HS-322915 is
+  the slide's square, green, red while turned; the 322-1 CO2-compressor widget the slide asks for is
+  not built (decision 73).
+* **Overlaps**: at design with a digit to spare, 14 readouts moved by 1-24 px off the drawing's
+  symbols and blocks and off their neighbours (`NUDGE`); a test now holds it.
+* **Data** (decision 130): the liquid-rated SV32353 / SV32357 / SV32253 on Sempell's printed gas
+  coefficient for their orifices, 0.922 (0.917 assumed), the gap closed. Metso's sheets for HV-323605,
+  PV-323203, TV-328002 and PV-323202A / B (= TV-323013A / B) found and catalogued, not wired.
+  LT-329505's upper tap traced to its transmitter. The report's other claims checked: its trip 22.2
+  reading is not what SG1 draws; its ABB defaults and its 324F002 nozzle are not plant data.
+
+`python -m pytest` — **7 419 collected** (4 new: no valve icon, no readout over the drawing or
+another at design, every page button's block drawn, a hovered hotspot tinted), thirteen parallel
+parts, every part green on its first run. Updated: the geometry floors (247 indicators, no
+``avalve``), the vendor-valve count (42), the gas coefficient's tests (0.922; SV32357's shut-vent
+cycle 25.1-25.3 s and 36.6 kg), two faceplate tests' sample element types. pyflakes clean; the
+headless grep prints nothing.
+
+Next: whether to wire the five Metso valves (HV-323605 at 64.2 %, PV-323203 at 21.6 % at design).
+
+### Session 59 — three Metso valves wired; the process-deviation scenarios put to the plant
+
+The process engineer decided session 58's question (decision 131) and asked for the scenarios in
+`D:/Work/Urea Simulation/References/scenarios` to be covered with the right response. Built and
+measured (As-Built Part LXXV):
+
+* **The valves** (decision 131): HV-323605 on its Neldisc from 64.08 % on xT 0.38 (the 64.2 % quoted
+  was PFD 790's printed 12 040 kg/h; the valve passes V1's 12 013), PV-323203 from 21.64 %,
+  TV-328002 from 55.04 % on PFD 1028's 408 t/h; HIC-323605, PIC-323203 and TIC-328002 seeded there;
+  V1's laws on each harness's switch, ``==`` V1 tick by tick, and one both-ways test each. A pinched
+  or opened valve in the unit tests restated as the same fraction of its design capacity. The
+  Neldisc chokes HV-323605 below 0.298 bar a in 324E002; PV-323203 is large for its duty, 1.85 times
+  V1's gain at design. PV-323202A / B stay catalogued.
+* **The scenarios**: the four notes are generic Stamicarbon material (one an analysis of V1's own
+  files), not plant data. `tests/phase7/deviations.py` puts every section on Helwan's plant on the
+  console's own levers — 78 deviations, 191 claimed responses, each read off the packet against an
+  unperturbed control run (`run_deviations.py`, 45 minutes on 16 workers). 147 come out as claimed;
+  of the 44 that do not, 7 are a controller in AUTO holding what the note describes open-loop, 3 a
+  lever with no authority (PIC-324203), 8 a mechanism the model does not carry, 3 below the display,
+  12 the note against the model's physics (Scenarios2 and Scenarios4 contradict each other on the HP
+  ejector), and 11 four defects, raised: **A-21** a wide-open HV-322605 collapses the loop and trips
+  it in 37 s where V1 holds 140.7 bar a (B-77's and B-91's decided lines together); **A-22** a full
+  323F004 has no ceiling; **B-98** the explicit species step at a heel (found restating HV-323605's
+  tests); **B-99** 322E003's condensation does not answer its tempered water.
+
+`python -m pytest` — **7 507 collected** (88 new: 82 in `tests/phase7/test_deviations.py`, three vendor-trim tests and three both-ways tests for the valves), thirteen parallel parts, every part green on its first run. Re-pinned to the vendor trims: 27 unit tests of 323F010, 323E011 / 323D011, the gas node and 328D001 (restated where they held a valve at V1's stroke), the equivalence harnesses put on V1's laws through their switches, and three synthesis-loop tests whose V1 side shares the port's steam network (1-3e-4 bar). pyflakes clean; the headless grep prints nothing.
+
+Next: A-21, A-22, B-98 and B-99 — the process engineer's decisions.
+
+### Session 60 — A-22 and B-98 built; A-21 traced and B-99 measured
+
+The process engineer decided session 59's four items and the evaporators' crystallisation. Built and
+measured (As-Built Part LXXVI):
+
+* **A-22 (a), decision 132:** above LI-323505's 100 % (8458 kg) a full 323F004's excess overflows at
+  its composition and temperature into 323E011's shell the same tick, liquid not gas load, as a full
+  328D001's; ``FlashTank(ceiling=False)`` on the harnesses. The deviation S1-2.1 now 3 of 3 (149 of
+  session 59's 191). Building it found **B-100**: V1's 323F004 holdup (180 s, 5075 kg) is ten times
+  the drum's 518 kg of operating fluid and above its 3.45 m3 flooded volume.
+* **B-98 (b), decision 133:** `liquor_stage.advance_species` takes the drained composition at the
+  step's end where the drain passes more than the stage holds, V1's explicit step to the bit
+  elsewhere and on the harness switches (``backward=False``; ``backward_species`` on 324F003 and
+  323D002, whose both-ways tests reach a heel). 323F010's heel keeps a liquor (72.96 % urea where
+  V1 reads 0.000 %), but the vapour draw stays explicit and rings tick to tick at the heel, 74.53 /
+  75.88 % against the throughflow's 80.07 % — session 59's "74.5 %" was an even-tick sample;
+  raised as **B-101**, the vapour draw backward too measured settling at 79.8-80.0 %.
+* **A-21 (b), traced:** B-91's saturation fraction, read a tick late on a melt whose bubble pressure
+  moves with its own condensation, rings with a period of two ticks and from 4 s locks 322E002's
+  condensation off; B-77 turns the 410 t/h of gas into pressure, the CO2 line cannot follow, the
+  reactor's N/C rises and V1's slip lifts the stripper's overhead to 78-88 % with 108-129 MW asked of
+  its 39.4 MW shell. The fraction solved on the tick (prototype): no trip, PT-329201 at most 143.3
+  bar a, 142.0 at 15 minutes.
+* **B-99 (b), measured:** colder or more water moves only the temperatures — at design nothing is
+  left to condense; warmer or less water already cuts the condensation as built (90 C: NH3 in the
+  purge 91 -> 1335 kg/h, +0.07 bar). The capacity on the shell's own effectiveness (p1) changes the
+  flow side only (250 m3/h: 703 kg/h uncondensed where V1's linear term leaves 3370); no case
+  oscillates.
+* **Decision 134:** no crystallisation restriction on 324F001 / 324F003, as V1.
+
+`python -m pytest` — **7 515 collected** (8 new: two 323F004 overflow tests, one in 323E011, the full drum both ways, the 323F010 heel both ways and the heel step both ways at three stages), thirteen parallel parts. The first run parted three both-ways tests at a heel (324F003's drain above its heel and its feed loss with the drain wide open, 323D002's compartment I run dry) a tick before their decided divergences; with ``backward_species=False`` on their harnesses every part is green, and `tests/docs` green again after the documents. No unit test re-pinned. pyflakes clean; the headless grep prints nothing.
+
+Next: A-21's and B-99's final decisions; B-100 and B-101.
+
+### Session 61 — A-21, B-99, B-100 and B-101 built and closed
+
+The process engineer decided the four open items (decisions 135-138). Built and measured (As-Built
+Part LXXVII):
+
+* **A-21 (b), decision 135:** `condenser_holdup.CondenserHoldup` solves 322E002's saturation
+  fraction with the bubble pressure of the melt it lets condense, on the tick, wherever the tick-
+  before fraction would move (`core.numeric.bracketed_root`, Illinois). A wide-open HV-322605 no
+  longer trips the loop: PT-329201 peaks at 143.3 bar a and holds 142.0 at 15 minutes, the CO2 feed
+  never below 51.6 t/h. Option (c), the stripper's overhead bounded by its shell, not built: the
+  stripper still asks for up to 77.9 MW in the first two minutes. The seed's own drift dips the
+  tear's fraction to 0.99998 in its first ticks; solved, it stays at 1.
+* **B-99 (b1), decision 136:** 322E003's condensation capacity on its shell's conductance eps . C at
+  the live circulation (UA-limited, NTU 0.19: half the water still 0.912 of the capacity, V1's 0.5),
+  its published duty and TT-329125 capped at it where it binds.
+* **B-101 (b), decision 137:** the heel's backward species step takes the vapour draw too, where the
+  drain and the vapour pass more than the stage holds: 323F010's heel at 79.77 / 80.03 % urea on
+  alternate ticks (the throughflow's 80.07 %), where the drain alone rang 74.53 / 75.88 %. What
+  still alternates is the vapour's composition, evaluated on the liquor at the start of the tick.
+* **B-100 (b), decision 138:** the archive read — Reuther's as-built drawing and parts list (two DIN
+  28013 heads Da 1400 x 8), the datasheet (LT-323505 on N7, the top head; the high liquid level
+  80 mm above the bottom tangent) and loop summary L 323505 (a DP cell, its taps 2900 mm apart) —
+  showed session 60's residence estimate rested on the right numbers for V1's 60 % set point:
+  measured on the drum's geometry, LIC-323505 does not ring (a 25 % feed cut: -5.2 %, inside 0.5 %
+  in 318 s, V1's drum -4.5 % and 540 s), so it is built: 1837 kg at the 60 % set point, 65 s of
+  PFD 319, full at 3761.5 kg on 3.402 m3, an empty drum reading 17.8 %. 323E011's 1.083 m3 of
+  323F004 vapour space (B-51) is left as decided. `core.vessel_geometry` is new.
+* **Scenarios re-run** (S1-1.2, S2-3.1a, S2-1.4a / b, S1-2.1): 7 of their 18 claims as claimed
+  (6 in session 59); the survey at 148 of 191. A wide-open HV-322605 now runs: the reactor drains
+  43.5 points, PT-329201 ends 1.5 bar up, and the conversion ends 11.4 points above the control's
+  (session 59's "falls" agreed only through the trip) — measured, not explained, recorded.
+
+`python -m pytest` — **7 535 collected** (20 new: 14 in `tests/core/test_vessel_geometry.py`, 3 in `tests/core/test_numeric.py`, the A-21, B-99 and B-100 both-ways tests), thirteen parallel parts. Twelve parts green on their first run; the thirteenth parted on two synthesis pins whose V1 side shares the port's plant — B-76's sump, 3650.52 / 3766.49 -> 3650.65 / 3766.57 kg, and A-21's tear side, 227 109.3 -> 227 106.6 kg/h — moved by the geometric 323F004 through 323E003's 308; re-pinned, `test_synthesis_loop_decided_equivalence.py` green. `tests/docs` green after the documents. pyflakes clean; the headless grep prints nothing.
+
+Next: the open data gaps (the final V1.1 ledger); Sections A, B and C are empty.
 
 ## 5. Design decisions on record
 
@@ -4855,3 +5019,54 @@ Next: the open data gaps, when the archive or the plant yields them.
      isometrics, loop summaries and AC4 / SG1 diagrams are searched; the 19 rows left in
      `handoff.md` need vendor curves (Körting, Metso, Flowserve) or the plant DCS's database, and
      each keeps its stand-in, assumption or V1 value as built.
+129. **The console revised from its slides** (2026-10-16, the process engineer's request): no valve
+     icon but the XVs' — each modulating valve a readout of its opening in per cent; no readout over
+     another or over the drawing at design with a digit to spare (the converter's `NUDGE` rows); the
+     destination blocks V1's migration stripped from seven backgrounds restored from the slides; a
+     hovered page button tinted, not blacked out; HS-322915's square green, red while turned, as its
+     slide's comment asks.
+130. **The liquid-rated safety valves relieve gas on Sempell's coefficient for their orifices**
+     (2026-10-16, decision 34's assumption replaced): 0.922, what Sempell prints for orifices F, K and
+     M in gas service at full lift in the same file (UD-RL-G00-DZ-0001-001); 0.917 was assumed. The
+     open data gap closed.
+131. **HV-323605, PV-323203 and TV-328002 on their Metso sheets** (2026-10-17, decision 23's and
+     108's class): each on its printed Neldisc capacities from the stroke where its normal case
+     passes the design flow — HV-323605 64.08 % on xT 0.38 (the overhead V1's balance gives,
+     12 013 kg/h), PV-323203 21.64 % (PFD 702), TV-328002 55.04 % (PFD 1028, 408 t/h) — HIC-323605,
+     PIC-323203 and TIC-328002 seeded there, V1's linear laws on the equivalence harness's switches.
+     PV-323202A / B (TV-323013A / B) stay catalogued: TIC-323013 models the tempered water's supply
+     temperature directly (decision 13).
+132. **A full 323F004 overflows into 323E011** (2026-10-17, handoff A-22 (a), decision 11's class):
+     above the holdup LI-323505 reads as 100 % the excess leaves at the drum's composition and
+     temperature, up its vapour line into 323E011's shell the same tick, liquid not gas load, as a
+     full 328D001's (A-15); ``FlashTank(ceiling=False)``, V1's uncapped holdup, on the equivalence
+     harness's switch.
+133. **The backward species step at a liquor stage's heel** (2026-10-17, handoff B-98 (b), decision
+     78's class): where the drain passes more on the tick than the stage holds, m_liq dt / 3600 >
+     M_new, `liquor_stage.advance_species` takes the drained composition at the end of the step;
+     V1's explicit step to the bit everywhere else, and on the harness switch (``backward=False``,
+     the units' ``backward_species``) where an equivalence test reaches a heel.
+134. **No crystallisation restriction on 324F001 / 324F003** (2026-10-17, the process engineer): as
+     V1, whose ``mushy_flow_factor`` acts on 322E001's bottoms and 322E003's overflow alone; one on
+     the evaporators would interfere with the cold start's drainage. A melt the model cools below
+     its crystallisation point there (S4-chest-close, 58 C) is recorded, not restricted.
+135. **322E002's saturation fraction solved on the tick** (2026-10-17, handoff A-21 (b); decision
+     78's class on decision 97): wherever the melt the tick-before fraction lets condense would move
+     the fraction, f = f(P_bub(f), PT-329201) is solved within the tick, its root bracketed on [0, 1];
+     at its fixed point the tick is the tear's to the bit. The stripper's split is not bounded by its
+     shell (option (c) not taken). ``CondenserHoldup(implicit_saturation=False)``, the tear, on the
+     synthesis harness's switch.
+136. **322E003's capacity on its shell's effectiveness** (2026-10-17, handoff B-99 (b1); decision 36's
+     class): the condensation capacity's flow term is the shell's conductance eps . C over its
+     design's, where V1 takes the flow ratio, and where the capacity falls below the demand the
+     published duty and TT-329125 follow it; TT-322002 stays on the demand.
+     ``ScrubberSump(effectiveness_capacity=False)`` on the harness's switch.
+137. **The vapour draw in the heel's backward species step** (2026-10-17, handoff B-101 (b);
+     decision 133 extended): where the drain and the vapour together pass more on the tick than the
+     stage holds, both leave at the step's end composition, each species boiling off at its live
+     y / w.
+138. **323F004 on its geometry** (2026-10-17, handoff B-100 (b), measured first; decision 33's
+     class): the drum's shell and two DIN 28013 heads (3.402 m3), LT-323505 read between its taps,
+     2900 mm apart from the outlet line to N7 on the top head, V1's 60 % set point holding 1837 kg;
+     the A-22 ceiling at the full drum; LV-323505's seal at the reading of an empty bottom head.
+     ``V1_DRUM`` on the harness's switch; 323E011's 323F004 vapour space (B-51) unchanged.

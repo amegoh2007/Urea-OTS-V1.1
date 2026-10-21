@@ -14,8 +14,9 @@ V1 used at a given call site can be reproduced without guessing which of the two
 from __future__ import annotations
 
 import math
+from typing import Callable
 
-__all__ = ["clamp", "clamp_preserving_nan", "is_finite_positive",
+__all__ = ["clamp", "clamp_preserving_nan", "is_finite_positive", "bracketed_root",
            "SECONDS_PER_HOUR"]
 
 #: One hour in seconds. Every flow in this engine is kg/h or kmol/h while every integration
@@ -66,3 +67,42 @@ def is_finite_positive(x: float) -> bool:
     and not an error path.
     """
     return math.isfinite(x) and x > 0.0
+
+
+def bracketed_root(fn: Callable[[float], float], lo: float, hi: float, f_lo: float, f_hi: float,
+                   tol: float = 1e-12, max_iter: int = 80) -> float:
+    """A root of ``fn`` inside ``[lo, hi]``, where ``f_lo`` and ``f_hi`` bracket it in sign.
+
+    Process utility
+    ---------------
+    Solves an algebraic loop a unit closes within its own tick — a fraction that sets a state
+    which in turn sets the fraction — where taking it across the tick would ring. The bracket
+    keeps the answer inside its physical range; the Illinois variant of regula falsi converges
+    in a handful of evaluations, each of which can be a whole unit model.
+
+    Method
+    ------
+    False position on the bracket, the retained end's value halved whenever the same end is
+    kept twice (Illinois), until the bracket is narrower than ``tol`` or ``fn`` is zero to it.
+    """
+    side = 0
+    for _ in range(max_iter):
+        if hi - lo <= tol:
+            break
+        x = hi - f_hi * (hi - lo) / (f_hi - f_lo) if f_hi != f_lo else 0.5 * (lo + hi)
+        if not lo < x < hi:
+            x = 0.5 * (lo + hi)
+        f_x = fn(x)
+        if abs(f_x) <= tol:
+            return x
+        if (f_x > 0.0) == (f_hi > 0.0):
+            hi, f_hi = x, f_x
+            if side == -1:          # the low end kept twice running
+                f_lo *= 0.5
+            side = -1
+        else:
+            lo, f_lo = x, f_x
+            if side == 1:           # the high end kept twice running
+                f_hi *= 0.5
+            side = 1
+    return 0.5 * (lo + hi)

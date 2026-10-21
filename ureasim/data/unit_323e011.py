@@ -26,6 +26,8 @@ Sources
 * ``References/Master_PID_Tuning_Constants.md`` — PIC-323203, LIC-323503 and FIC-323418.
 * Uhde loop summaries for unit 323, UD-MR-323-EC-0001 rev 1 (the vendor archive) — PT-323203's
   and FT-323418's calibrated ranges.
+* Metso's sizing sheet for PV-323203 (`ureasim.data.control_valves`, item 22) — its Neldisc trim
+  and design stroke.
 * V1 ``backend/main.py``, the "323E011 + 323D011" constant block (1466-1569), the controller
   seeds in ``State.__init__`` (6831-6835, 6893-6898, 6916-6937, 6981-6990), and
   ``backend/c003_pressure_coupling.py`` for the condensation capacity. Each value carries its
@@ -36,9 +38,9 @@ from __future__ import annotations
 
 import math
 
-from ureasim.data.control_valves import FV_323418, LV_323503, design_stroke_pct
+from ureasim.data.control_valves import FV_323418, LV_323503, PV_323203, design_stroke_pct
 from ureasim.data.relief_devices import (
-    GAS_KD_ASSUMED,
+    GAS_KD_FULL_LIFT,
     RELIEF_DEVICES,
     RELIEF_SIZING,
     gas_reseat_bara,
@@ -189,8 +191,16 @@ E011_MW_VAP = 17.395
 # PV-323203 and the floors of the node
 # ======================================================================================
 
-#: PV-323203 stroke at design [%]. Source: V1 `main.py` R3232_E011_PV_OP_DES.
+#: PV-323203 stroke at design as V1 runs it [%], linear on the stroke; the equivalence harness
+#: keeps it. Source: V1 `main.py` R3232_E011_PV_OP_DES.
 E011_PV_OP_DES_PCT = 25.0
+
+#: PV-323203 on its vendor's trim (decision 23's class, decided 2026-10-17): Metso's DN 200 x 150
+#: Neldisc, FpCv 634.57 (`data.control_valves.PV_323203`, item 22), its printed capacities as its
+#: curve, its design stroke where it passes PFD 702's 440 kg/h on its normal case, 21.64 %.
+#: PIC-323203 is seeded there.
+PV_323203_OP_DES_PCT = design_stroke_pct(PV_323203, E011_MV_DES_KGH)
+PV_323203_CHAR = PV_323203.characteristic
 
 #: The smallest differential the vent law takes [bar]: V1's ``max(P - 1.0, 0.001)``. Below
 #: 1.001 bar a the vent still passes the flow of this differential. The equivalence harness keeps it.
@@ -341,9 +351,10 @@ SV32357_SET_BARA = RELIEF_DEVICES["SV32357"].set_bara
 SV32357_RESEAT_BARA = gas_reseat_bara(RELIEF_DEVICES["SV32357"])
 
 #: Its orifice F, 240.53 mm2 [m2] (Sempell UD-RL-G00-DZ-0001-001 page 91, rated on liquid at
-#: alpha_w 0.644), and the gas coefficient taken for it, 0.917 — an assumption (A-16, option b).
+#: alpha_w 0.644), and its orifice's gas coefficient, 0.922, Sempell's for it in gas service
+#: (decision 130; 0.917 assumed until 2026-10-16, A-16 option b).
 SV32357_AREA_M2 = RELIEF_SIZING["SV32357"].area_mm2 * 1.0e-6
-SV32357_KD = GAS_KD_ASSUMED
+SV32357_KD = GAS_KD_FULL_LIFT
 
 __all__ = [
     "E011_M701_DES_KGH", "E011_M786_DES_KGH", "E011_M321_DES_KGH", "E011_M402_DES_KGH",
@@ -355,7 +366,7 @@ __all__ = [
     "E011_SHELL_ID_M", "E011_TUBE_L_M", "E011_N_TUBES", "E011_TUBE_OD_M", "D011_ID_M",
     "D011_SHELL_M", "E011_VOL_M3", "F004_ID_M", "F004_SHELL_M", "F004_VAPOUR_M3",
     "E011_RHO_L_KGM3", "E011_FULL_KG", "E011_MW_VAP",
-    "E011_PV_OP_DES_PCT", "VENT_DP_FLOOR_BAR", "VENT_DP_MIN_BAR", "E011_P_FLOOR_BARA",
+    "E011_PV_OP_DES_PCT", "PV_323203_OP_DES_PCT", "PV_323203_CHAR", "VENT_DP_FLOOR_BAR", "VENT_DP_MIN_BAR", "E011_P_FLOOR_BARA",
     "D011_M_TAU_S", "D011_M_DES_KG", "D011_LVL_SP_PCT", "D011_M_FLOOR_KG", "LT_323503_L2_PCT", "LT_323503_L2_HYST_PCT",
     "LV503_OP_DES_PCT", "FIC418_OP_DES_PCT", "LV503_CHAR", "FV418_CHAR", "RHO_718_KGM3", "FT_323418_TAU_S",
     "M718A_TAU_S", "M718A_LINE_KG", "M718A_TAU_MAX_S",

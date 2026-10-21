@@ -33,6 +33,11 @@ carries the same switch, ``line_decided`` (default True): a property packet on a
 through V1's own FIFO, and the live flow delivered; ``line_decided=False`` is V1 verbatim. A
 settled line is the same float either way.
 
+HV-323605 (decided 2026-10-17, decision 23's class). The port runs it on Metso's Neldisc from its
+64.08 % design stroke on the normal case's xT 0.38. Every scenario here runs the port on V1's
+linear trim from 50 % (`pe.V1_VENT`) and V1's 50 % opening; both sides are asserted in
+`test_hv_323605_on_its_vendor_trim_decided_divergence`.
+
 The chest and its cascade (decided 2026-09-30, As-Built §XL.1-2). The port anchors 323E010's
 chest on PFD 926's and its datasheet's 2.5 bar a, where V1 anchors on 1.76; runs PIC-329208 on
 the DCS table's gain per cent of PT-329208's span, without V1's chest-gain scale; and runs
@@ -373,7 +378,7 @@ NO_BLOW = (0.0, 0.0, None)
 
 def _design(**over):
     base = {"m319": R323_M319_DES, "t319": d.F004_T_SP_C, "w319": W319, "blow": NO_BLOW,
-            "hic": d.HIC_323605_DES_PCT, "p_lp": P_LP_BARA, "p_e002": d.P_324E002_DES_BARA}
+            "hic": d.HIC_323605_DES_PCT_V1, "p_lp": P_LP_BARA, "p_e002": d.P_324E002_DES_BARA}
     base.update(over)
     return base
 
@@ -381,7 +386,7 @@ def _design(**over):
 def _run(v1, script, ticks: int, dt: float = DT, before=None):
     """Drive stage 3 alone through `script(k)`, comparing everything every tick."""
     s = _v1_state(v1)
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False)
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     if before:
         before(s, sep, tic, pic)
@@ -413,7 +418,7 @@ def _run(v1, script, ticks: int, dt: float = DT, before=None):
     ("RHO_F010_ANCHOR", "R323_D002_RHO"), ("E010_PCHEST_DES_BARA", "R323_E010_PCHEST_DES"),
     ("E010_OP_DES_PCT", "R323_E010_OP_DES"), ("E010_Q_DES_KW", "R323_E010_Q_DES_KW"),
     ("E010_UA_KW", "R323_E010_UA_KW"), ("QEVAP_DES_KW", "R323_QEVAP_DES_KW"),
-    ("HIC_323605_DES_PCT", "R323_HIC605_DES_PCT"), ("HV605_CHAR", "R323_HV605_CHAR"),
+    ("HIC_323605_DES_PCT_V1", "R323_HIC605_DES_PCT"), ("HV605_CHAR_V1", "R323_HV605_CHAR"),
     ("P_324E002_DES_BARA", "R324_F001_P_BARA"),
 ])
 def test_design_basis(v1, ours, theirs):
@@ -468,7 +473,9 @@ def test_the_barometric_leg(v1, m_kg, p_bara):
     (50.0, 0.30, 0.33, 99.0), (0.0, 0.46, 0.33, 99.0), (100.0, 0.90, 0.10, 95.0),
 ])
 def test_hv323605(v1, stroke, p1, p2, t_c):
-    assert pe.vapour_outlet_kgh(stroke, p1, p2, t_c, pe.MW_VAP_DES) == \
+    """V1's law on V1's trim, linear from 50 % (`pe.V1_VENT`); the Neldisc departs (decided
+    2026-10-17) and is asserted both ways below."""
+    assert pe.vapour_outlet_kgh(stroke, p1, p2, t_c, pe.MW_VAP_DES, pe.V1_VENT) == \
         v1["hv323605_flow_kgh"](stroke, p1, p2, t_c, v1["R323_F010_MW_VAP_DES"])
 
 
@@ -538,7 +545,7 @@ def test_the_barometric_leg_at_the_heel_decided_divergence(v1):
     the evaporation, and nothing is made. (Without B-24 the cap first bound in the 16th second
     and V1 made 452 kg.)"""
     s = _v1_state(v1)
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False)
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     s.r323_f010_M = sep.m_kg = 300.0
     x = _design(m319=0.0)
@@ -574,7 +581,7 @@ def test_the_barometric_leg_at_the_heel_decided_divergence(v1):
 def _boil_both(v1, before, n):
     """V1 verbatim on the held liquor (no B-24) against the port, design boundaries."""
     s = _v1_state(v1)
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False)
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     before(s, tic, pic)
     x = _design()
@@ -627,6 +634,40 @@ def test_more_steam_concentrates_instead_of_superheating_decided_divergence(v1):
                                                  pytest.approx(0.809497, abs=1e-6))
 
 
+def test_hv_323605_on_its_vendor_trim_decided_divergence(v1):
+    """Decision 23's class, decided 2026-10-17: HV-323605 on Metso's DN 400 Neldisc, its printed
+    capacities as its curve, from its 64.08 % design stroke on the normal case's xT 0.38, where V1
+    runs it linear from 50 % on the globe valve's xT. The seed's own relaxation (B-94) moves both
+    separators by 3e-8 bar in the first second, the two trims answering it apart from the first
+    tick. Then 324E002's shell falls to 0.25 bar a: V1's valve pulls 13 638 kg/h at once and the
+    separator down to 0.4319 bar a and 97.76 C after five minutes; the Neldisc, choked below
+    0.298 bar a, pulls 12 196 kg/h and holds the separator at 0.4562 bar a and 98.83 C."""
+    s = _v1_state(v1)
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False)
+    tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
+    parted, pulls = None, None
+    for k in range(3001):
+        x = _design(p_e002=(0.25 if k >= 10 else d.P_324E002_DES_BARA))
+        s.HIC_323605 = x["hic"]
+        s.steam.P_LP = x["p_lp"]
+        s.r324_f001_P = x["p_e002"]
+        a = _v1_stage3(v1, s, x["m319"], x["t319"], x["w319"], x["blow"], DT)
+        b = sep.step(tic, pic, x["m319"], x["t319"], x["w319"], *x["blow"],
+                     d.HIC_323605_DES_PCT, x["p_lp"], x["p_e002"], DT)
+        if parted is None and (s.r323_f010_P, s.r323_f010_T) != (sep.p_bara, sep.t_c):
+            parted = k
+        if k == 9:
+            assert abs(s.r323_f010_P - sep.p_bara) < 1e-7
+        if k == 10:
+            pulls = (a["pull"], b.pull_kgh)
+    assert parted == 1
+    assert pulls == (pytest.approx(13638.0, abs=0.1), pytest.approx(12195.7, abs=0.1))
+    assert (s.r323_f010_P, sep.p_bara) == (pytest.approx(0.4319, abs=1e-4),
+                                           pytest.approx(0.4562, abs=1e-4))
+    assert (s.r323_f010_T, sep.t_c) == (pytest.approx(97.764, abs=1e-3),
+                                        pytest.approx(98.835, abs=1e-3))
+
+
 # --------------------------------------------------------------------------------------
 # Stages 2 and 3 coupled, and all three: the drain interface, end to end
 # --------------------------------------------------------------------------------------
@@ -635,8 +676,8 @@ def _run_coupled(v1, script, ticks: int, dt: float = DT, before=None):
     """V1's stage 2 feeds V1's stage 3; the ported 323F004 feeds the ported 323F010. The drum
     reads the separator pressure as it stood at the top of the tick, as V1 does."""
     s = _v1_state(v1)
-    tank, lic = ft.FlashTank(), ft.lic_323505()
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False)
+    tank, lic = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     if before:
         before(s, tank, lic, sep, tic, pic)
@@ -657,7 +698,7 @@ def _run_coupled(v1, script, ticks: int, dt: float = DT, before=None):
 
 def test_stages_two_and_three_coupled_through_a_feed_cut(v1):
     _run_coupled(v1, lambda k: {"m314": R323_M314_DES * (0.8 if k >= 20 else 1.0),
-                                "hic": d.HIC_323605_DES_PCT}, 600)
+                                "hic": d.HIC_323605_DES_PCT_V1}, 600)
 
 
 def test_a_pinched_hic_323605_reaches_the_drum_only_unchoked(v1):
@@ -695,8 +736,8 @@ def test_all_three_stages_coupled_through_a_stripper_feed_cut(v1):
     s = _v1_state(v1)
     col = rc.RectifyingColumn(chest=rc.V1_CHEST)
     loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
-    tank, lic = ft.FlashTank(), ft.lic_323505()
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False)
+    tank, lic = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     for k in range(500):
         drain = FEED_DES * (0.85 if k >= 20 else 1.0)
@@ -708,7 +749,7 @@ def test_all_three_stages_coupled_through_a_stripper_feed_cut(v1):
         b2 = tank.step(lic, b1.m_314_kgh, b1.drain_t_c, b1.drain_w, d.F004_P_BARA, sep.p_bara,
                        DT)
         b3 = sep.step(tic, pic, b2.m_319_kgh, b2.drain_t_c, b2.drain_w, b2.blowthrough_kgh,
-                      b2.blowthrough_kmolh, b2.blowthrough_y, d.HIC_323605_DES_PCT, P_LP_BARA,
+                      b2.blowthrough_kmolh, b2.blowthrough_y, d.HIC_323605_DES_PCT_V1, P_LP_BARA,
                       d.P_324E002_DES_BARA, DT)
         stage1._assert_tick(a1, b1, s, col, loops1, f"stage 1, tick {k}")
         stage2._assert_tick(a2, b2, s, tank, lic, f"stage 2, tick {k}")
@@ -726,7 +767,7 @@ def test_a_set_point_step_on_the_decided_chest_and_gains(v1):
     same on both anchors; after 20 minutes V1's separator is 1.27 K down and the port's 0.91 K,
     both heading for 97 C (without B-24: 1.23 and 0.78 K)."""
     s = _v1_state(v1, chest_decided=False)
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False)
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     s.TIC_323012["sp"] = tic.sp = 97.0
     x = _design()

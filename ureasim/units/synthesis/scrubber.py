@@ -22,6 +22,13 @@ The equations, in the order the unit evaluates them
 plus two correlations for the published thermowells and a cooling-limited condensation
 gate that moves mass back from the liquid to the vapour when the shell cannot keep up.
 
+The shell's capacity on its own effectiveness (decided 2026-10-17, handoff B-99 (b1); decision
+36's class). V1 scales the capacity linearly with the water's flow. The shell is UA-limited — NTU
+0.19 at design — so what it can take follows its conductance eps . C, which the same module already
+uses for its temperatures, not the flow: ``condensation_capacity(..., effectiveness=True)``. Where
+the capacity falls below the demand the published duty and TT-329125 follow it. V1's linear law
+(``effectiveness=False``, no ``capacity_frac``) is the equivalence harness's.
+
 Two decided limits on that gate (handoff B-91, decided 2026-10-14):
 
   * **its own liquor's saturation.** The sump's carbamate condenses no more gas than its bubble
@@ -261,8 +268,30 @@ def condensing_temperature_c(p_bara: float) -> float:
     return OVERFLOW_T_DES_C + (1.0 / inv - 1.0 / _COND_INV_DES)
 
 
+def shell_conductance_kwk(m_ccw_kgh: float) -> float:
+    """The tempered water's effective conductance eps . C [kW/K] at a circulation [kg/h].
+
+    Process utility
+    ---------------
+    What the shell can carry per kelvin of driving force: the effectiveness-NTU bridge on the
+    datasheet's UA, as the duty's temperatures use it. At a UA-limited shell more water adds little
+    and less takes little away.
+
+    Equation
+    --------
+        C = max(m . cp / 3600, C_floor),   eps = 1 - exp(-UA / C),   G = max(eps . C, G_floor)
+    """
+    c_kwk = max(m_ccw_kgh * CCW_CP_KJKGK / 3600.0, C_CCW_FLOOR_KWK)
+    return max((1.0 - math.exp(-UA_KWK / c_kwk)) * c_kwk, UA_EFF_FLOOR_KWK)
+
+
+#: The conductance at the design circulation [kW/K], the effectiveness ratio's denominator.
+_CONDUCTANCE_DES_KWK = shell_conductance_kwk(CCW_KGH_DES)
+
+
 def condensation_capacity(m_ccw_kgh: float, ccw_pump_frac: float, t_ccw_in_c: float,
-                          p_loop_bara: float, co2_scale: float) -> float:
+                          p_loop_bara: float, co2_scale: float,
+                          effectiveness: bool = True) -> float:
     """Condensation capacity as a fraction of the demand on it [-].
 
     Process utility
@@ -277,7 +306,10 @@ def condensation_capacity(m_ccw_kgh: float, ccw_pump_frac: float, t_ccw_in_c: fl
     Equation
     --------
         f_th = (T_cond(P) - T_ccw,in) / (T_cond,des - T_ccw,in,des)    thermal driving force
-        rho  = (m_ccw / m_ccw,des) . pump_frac . max(f_th, 0) / s      capacity over demand
+        rho  = (G(m_ccw) / G(m_ccw,des)) . pump_frac . max(f_th, 0) / s capacity over demand
+
+    G the shell's conductance (`shell_conductance_kwk`, decided 2026-10-17, B-99 (b1)); V1 takes
+    the flow ratio m_ccw / m_ccw,des in its place (``effectiveness=False``).
 
     Three independent ways to lose it, which is what makes the scenario teachable: throttle
     the water (the flow term), lose the temper (the driving-force term), or stop the pumps
@@ -294,8 +326,9 @@ def condensation_capacity(m_ccw_kgh: float, ccw_pump_frac: float, t_ccw_in_c: fl
     """
     t_cond = condensing_temperature_c(p_loop_bara)
     f_th = (t_cond - t_ccw_in_c) / max(OVERFLOW_T_DES_C - CCW_T_IN_DES_C, 1e-6)
-    return ((m_ccw_kgh / CCW_KGH_DES) * ccw_pump_frac
-            * max(f_th, 0.0) / max(co2_scale, 1e-6))
+    flow = (shell_conductance_kwk(m_ccw_kgh) / _CONDUCTANCE_DES_KWK if effectiveness
+            else m_ccw_kgh / CCW_KGH_DES)
+    return flow * ccw_pump_frac * max(f_th, 0.0) / max(co2_scale, 1e-6)
 
 
 def sump_level_pct(holdup_kg: float) -> float:
@@ -361,7 +394,8 @@ def scrubber_322e003(offgas_feed_kmolh: dict, co2_scale: float, t_ccw_in_c: floa
                      liq_carry_kmolh: dict = None, t_carry_c: float = None,
                      choke_level_pct: float = None, spindle_phi: float = 1.0,
                      cool_frac: float = 1.0, wash_ratio: float = None,
-                     sump_room_kgh: float = None) -> ScrubberResult:
+                     sump_room_kgh: float = None,
+                     capacity_frac: float = None) -> ScrubberResult:
     """Solve 322E003 for one tick.
 
     Parameters
@@ -396,6 +430,10 @@ def scrubber_322e003(offgas_feed_kmolh: dict, co2_scale: float, t_ccw_in_c: floa
     sump_room_kgh
         What the sump can take this tick [kg/h]: its drains, less the backlog it recondenses, and
         the room up to full over the tick. None, V1's, is no limit.
+    capacity_frac
+        The shell's capacity over its demand [-] (`condensation_capacity`). Below 1 the duty the
+        water takes, and TT-329125 with it, is that fraction of the demand (decided 2026-10-17,
+        B-99 (b1)). None, V1's, publishes the demand whatever the water can take.
 
     Every optional argument is at its design value when omitted, and every term it drives is
     written as a deviation that is exactly zero there — so the design call reproduces the
@@ -546,7 +584,13 @@ def scrubber_322e003(offgas_feed_kmolh: dict, co2_scale: float, t_ccw_in_c: floa
                  else HIC604_DES_PCT) / HIC604_DES_PCT - 1.0
 
     t_overflow_cond = min(t_ccw_in_c + q_ccw_kw / ua_eff_kwk, T_PROC_C)
-    t_ccw_out_c = t_ccw_in_c + (t_overflow_cond - t_ccw_in_c) * eps_ht
+    # The duty the water takes: the demand, or the shell's capacity where that is less (B-99 (b1)).
+    # TT-322002 stays on the demand, the condensate at its ceiling; TT-329125 follows the water.
+    t_shell_c = t_overflow_cond
+    if capacity_frac is not None and capacity_frac < 1.0:
+        q_ccw_kw *= max(capacity_frac, 0.0)
+        t_shell_c = min(t_ccw_in_c + q_ccw_kw / ua_eff_kwk, T_PROC_C)
+    t_ccw_out_c = t_ccw_in_c + (t_shell_c - t_ccw_in_c) * eps_ht
 
     # TT-322002. Opening the purge relieves the vessel and cools the bottom carbamate;
     # closing it pressurises and heats it toward the condensation ceiling. Bounded below by

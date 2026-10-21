@@ -18,9 +18,15 @@ Python 3.11 or newer.
 ## Run
 
 The simulator is **one plant with several consoles**: an engine process serving an
-instructor station and one or more trainee stations. Until the port is complete the supported
-deployment is a **single machine** (decided 2026-10-07): the engine plus one local console, the
-superuser, which may issue every command.
+instructor station and one or more trainee stations. The default deployment is a **single
+machine** (decided 2026-10-07): the engine plus one local console, the superuser, which may issue
+every command. The classroom deployment is supported since handoffs A-2 and A-8 closed
+(2026-10-16).
+
+On Windows, double-click **`launch.bat`** in this folder. It finds Python (the `py` launcher, or
+`python` on the PATH), checks for 3.11 or newer and for the packages in `requirements.txt`, and
+starts the engine with the local console; if anything is missing it says what and waits. Any
+arguments are passed to `run.py`, so `launch.bat server --host 0.0.0.0` works too.
 
 Single machine — engine plus the local console:
 
@@ -28,21 +34,21 @@ Single machine — engine plus the local console:
 python run.py
 ```
 
-Classroom (kept, not the supported deployment until the port is complete) — on the instructor
-machine:
+Classroom — on the instructor machine, with an optional station token (`--token`, or the
+`UREASIM_TOKEN` environment variable) that every station must present:
 
 ```bash
-python run.py server --host 0.0.0.0
+python run.py server --host 0.0.0.0 --token T
 ```
 
 ```bash
-python run.py station --role instructor
+python run.py station --role instructor --token T
 ```
 
 On each trainee machine:
 
 ```bash
-python run.py station --host 10.0.0.5 --role operator
+python run.py station --host 10.0.0.5 --role operator --token T
 ```
 
 The console opens on screen 321-1. Navigate with the tab bar, with a nav hotspot on the

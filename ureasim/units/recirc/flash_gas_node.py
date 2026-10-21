@@ -5,12 +5,13 @@ What this models
 The four relations `flash_condenser` integrates the node's pressure on (As-Built §XXXIII): the gas
 323E011 cannot condense on V1's constant capacity, the condenser's dew point at the node pressure
 and its capacity on that dew point against the cooling water (handoff B-30, decided 2026-10-15),
-and PV-323203's square-root vent to 323C005, its differential floored at zero (B-30):
+and PV-323203's square-root vent to 323C005, its differential floored at zero (B-30), on Metso's
+Neldisc from 21.64 % (decided 2026-10-17; V1 linear from 25 %):
 
     gen   = max(G - 5589, 0)                                          [V1's]
     T_dew = 45 + Tsat(P) - Tsat(1.13)
     C(P)  = 5589 max(T_dew - 35, 0) / (45 - 35)
-    m_702 = 440 (h / 25) sqrt( max(P - 1.0, floor) / (1.13 - 1.0) )
+    m_702 = 440 (phi(h) / phi(21.64)) sqrt( max(P - 1.0, floor) / (1.13 - 1.0) )
 
 Split from `flash_condenser` (2026-10-16) to hold that module under the house's 600 lines; the
 unit re-exports all four under their own names, so every caller and test reads them as before.
@@ -26,6 +27,7 @@ from __future__ import annotations
 
 import math
 
+from ureasim.control.valve import cv_fraction
 from ureasim.data.unit_323e011 import (
     C005_P_BARA,
     E011_CONDENSATION_CAPACITY_DES_KGH,
@@ -34,11 +36,17 @@ from ureasim.data.unit_323e011 import (
     E011_P_BARA,
     E011_PV_OP_DES_PCT,
     E011_T_C,
+    PV_323203_CHAR,
+    PV_323203_OP_DES_PCT,
     TSAT_E011_DES_C,
     VENT_DP_MIN_BAR,
 )
 from ureasim.thermo import iapws
 
+#: PV-323203 as the port runs it, on its vendor's trim: the design stroke [%] and Metso's printed
+#: Neldisc curve (decided 2026-10-17, decision 23's class). None is V1's linear law from 25 %,
+#: which the equivalence harness keeps.
+PV_323203_TRIM = (PV_323203_OP_DES_PCT, PV_323203_CHAR)
 
 
 def vent_generation_kgh(gas_inlet_kgh: float) -> float:
@@ -110,7 +118,8 @@ def condensation_capacity_kgh(p_node_bara: float) -> float:
 
 
 def vent_valve_kgh(stroke_pct: float, p_node_bara: float,
-                   dp_floor_bar: float = VENT_DP_MIN_BAR) -> float:
+                   dp_floor_bar: float = VENT_DP_MIN_BAR,
+                   trim: tuple | None = PV_323203_TRIM) -> float:
     """What PV-323203 passes from the node to 323C005 [kg/h], PFD 702.
 
     Process utility
@@ -121,11 +130,14 @@ def vent_valve_kgh(stroke_pct: float, p_node_bara: float,
 
     Equation
     --------
-    A design-anchored square-root law against an atmospheric 323C005:
+    A design-anchored square-root law against an atmospheric 323C005, on the trim's capacity at
+    the stroke against its capacity at the design stroke:
 
-        m_702 = 440 . (h / 25) . sqrt( max(P - 1.0, 0) / (1.13 - 1.0) )
+        m_702 = 440 . (phi(h) / phi(h_des)) . sqrt( max(P - 1.0, 0) / (1.13 - 1.0) )
 
-    Exactly PFD 702 at the design stroke and pressure. V1 floors the differential at 0.001 bar
+    with phi Metso's printed Neldisc curve and h_des 21.64 %, where PV-323203's sheet passes PFD 702
+    on its normal case (decided 2026-10-17, decision 23's class); ``trim`` None is V1's linear
+    stroke ratio, h / 25. Exactly PFD 702 at the design stroke and pressure on either. V1 floors the differential at 0.001 bar
     (``dp_floor_bar``, `data.unit_323e011.VENT_DP_FLOOR_BAR`), so its vent still passes the flow of
     that differential at or below 1.0 bar a — a reverse differential, which walks the node to its
     0.1 bar a floor when nothing is generated. The port floors it at zero (decided 2026-10-15,
@@ -134,8 +146,14 @@ def vent_valve_kgh(stroke_pct: float, p_node_bara: float,
     Source: V1 `main.py` step_sim, ``m_v011``.
     """
     dp = max(p_node_bara - C005_P_BARA, dp_floor_bar)
-    return (E011_MV_DES_KGH * (stroke_pct / E011_PV_OP_DES_PCT)
-            * math.sqrt(dp / (E011_P_BARA - C005_P_BARA)))
+    if trim is None:
+        stroke = stroke_pct / E011_PV_OP_DES_PCT
+    else:
+        op_des, characteristic = trim
+        stroke = (cv_fraction(stroke_pct / 100.0, characteristic)
+                  / cv_fraction(op_des / 100.0, characteristic))
+    return E011_MV_DES_KGH * stroke * math.sqrt(dp / (E011_P_BARA - C005_P_BARA))
 
 
-__all__ = ["vent_generation_kgh", "dew_point_c", "condensation_capacity_kgh", "vent_valve_kgh"]
+__all__ = ["PV_323203_TRIM", "vent_generation_kgh", "dew_point_c", "condensation_capacity_kgh",
+           "vent_valve_kgh"]

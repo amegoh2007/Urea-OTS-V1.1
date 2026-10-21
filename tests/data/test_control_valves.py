@@ -27,7 +27,7 @@ def test_the_catalogue():
     and two motive valves added in session 33, unit 329's four in session 37). Every normal case
     prints its stroke but LV-329503's, LV-329504's and LV-329505's, whose capacities are printed on
     the maximum case only."""
-    assert len(cvd.VENDOR_VALVES) == 37
+    assert len(cvd.VENDOR_VALVES) == 42      # 37 + Metso's items 19-23 (read 2026-10-16)
     assert (len(MODIFIED), len(LINEAR)) == (24, 3)
     assert sum(len(v.cases) for v in MODIFIED) == 67
     assert cvd.VENDOR_VALVES["PV-322203"].characteristic == "equal_pct"

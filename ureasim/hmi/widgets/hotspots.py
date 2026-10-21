@@ -66,12 +66,13 @@ class _HoverHotspot(OverlayWidget):
         p = QPainter(self)
         rect = self.rect().adjusted(0, 0, -1, -1)
         if self._hovered:
-            p.fillRect(rect, QColor(self.HOVER_BG))
-            p.setPen(QColor(self.HOVER_BORDER))
+            # A translucent tint and a frame: the drawn label beneath stays readable.
+            p.fillRect(rect, QColor(*theme.rgba(self.HOVER_BG)))
+            p.setPen(QColor(*theme.rgba(self.HOVER_BORDER)))
             p.setBrush(Qt.BrushStyle.NoBrush)
             p.drawRect(rect)
         elif self.editing:
-            p.setPen(QColor(self.EDIT_BORDER))
+            p.setPen(QColor(*theme.rgba(self.EDIT_BORDER)))
             p.setBrush(Qt.BrushStyle.NoBrush)
             p.drawRect(rect)
 
@@ -93,7 +94,7 @@ class StreamHotspotWidget(_HoverHotspot):
     """
 
     HOVER_BORDER = theme.HOTSPOT_HOVER_BORDER
-    EDIT_BORDER = "rgba(255, 160, 60, 178)"
+    EDIT_BORDER = theme.EDIT_STREAM_OUTLINE
 
     def __init__(self, element: Mapping[str, Any], parent: QWidget | None = None):
         super().__init__(element, (60, 18), parent)
@@ -179,6 +180,7 @@ class OverrideButtonWidget(OverlayWidget):
         super().__init__(element, parent)
         self._armed = False
         self._valve_open = False
+        self._key_turned = False
         self._font = QFont()
         self._font.setFamilies(theme.VALUE_FONT_FAMILIES)
         self._font.setPixelSize(10)
@@ -191,6 +193,8 @@ class OverrideButtonWidget(OverlayWidget):
         path = self.element.get("xv") or "XV_322901"
         self._armed = bool(get_path(snapshot, f"trip_latched.{latch}"))
         self._valve_open = bool(get_path(snapshot, path))
+        if self.element.get("key"):
+            self._key_turned = bool(get_path(snapshot, self.element["key"]))
         # The green lamp is the valve's state, or, on a trip 21.2 keyswitch, the key's own.
         state = (("KEY TURNED" if self._valve_open else "KEY RELEASED")
                  if path.startswith("HAND_SWITCHES.")
@@ -204,6 +208,14 @@ class OverrideButtonWidget(OverlayWidget):
     def paintEvent(self, event) -> None:
         p = QPainter(self)
         rect = self.rect().adjusted(0, 0, -1, -1)
+        if self.element.get("key"):
+            # The slide's square (HS-322915): green, red while the override is on, its frame
+            # amber while the interlock it overrides is active.
+            p.fillRect(rect, QColor(theme.PI_ALARM if self._key_turned else theme.BTN_GREEN))
+            p.setPen(QColor(theme.OVRD_ARMED if self._armed else theme.OVRD_BORDER))
+            p.setBrush(Qt.BrushStyle.NoBrush)
+            p.drawRect(rect)
+            return
         bg = theme.OVRD_ARMED_BG if self._armed else theme.OVRD_BG
         border = theme.OVRD_ARMED if self._armed else theme.OVRD_BORDER
         text = theme.OVRD_ARMED if self._armed else theme.OVRD_TEXT

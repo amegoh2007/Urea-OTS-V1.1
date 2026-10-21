@@ -1,4 +1,4 @@
-"""Icon overlays: pumps, block valves and modulating valves.
+"""Icon overlays: pumps and block valves.
 
 These three share one problem — they are **rotated symbols on an anisotropically stretched
 stage**, so they all go through `icon_geometry` to land back on the shape the slide
@@ -7,9 +7,9 @@ deleted. See that module for why the transform order matters.
     PumpWidget         26 elements. Green when running, grey when stopped.
     BlockValveWidget    6 elements. Bowtie: green open, red closed. Clickable where the
                         engine models the valve.
-    ActuatedValveWidget 47 elements. A modulating valve — the symbol plus its stem
-                        position as a percentage, because a control valve's *opening* is
-                        what the operator is actually watching.
+
+A modulating valve has no icon of its own (decided 2026-10-16, project.md decision 129): the
+drawing carries its symbol, and its opening is an indicator's readout in per cent.
 
 Commandability
 --------------
@@ -24,12 +24,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping
 
-from PyQt6.QtCore import QPointF, QRectF, Qt
-from PyQt6.QtGui import QColor, QFont, QPainter, QPixmap
+from PyQt6.QtCore import QRectF, Qt
+from PyQt6.QtGui import QColor, QPainter, QPixmap
 from PyQt6.QtWidgets import QWidget
 
 from ureasim.hmi import theme
-from ureasim.hmi.state_access import format_value, get_path
+from ureasim.hmi.state_access import get_path
 from ureasim.hmi.widgets.base import OverlayWidget
 from ureasim.hmi.widgets.icon_geometry import icon_geometry
 
@@ -153,84 +153,4 @@ class BlockValveWidget(_IconOverlay):
         self._paint_edit_outline(p)
 
 
-class ActuatedValveWidget(OverlayWidget):
-    """Modulating control valve — the symbol with its stem position beneath it.
-
-    Process utility
-    ---------------
-    A control valve's *opening* is the operator's window into the controller: a loop
-    sitting at 5 % or 95 % is saturated and has no authority left, whichever way its PV
-    reads. That is why the opening is drawn as a number under the symbol rather than only
-    as a stem position.
-    """
-
-    #: Box for the symbol plus the readout beneath it.
-    BODY_H = 20
-    READOUT_H = 14
-
-    def __init__(self, element: Mapping[str, Any], parent: QWidget | None = None):
-        super().__init__(element, parent)
-        self._opening: float | None = None
-        w = int(element.get("w") or VALVE_DEFAULT[0])
-        self.resize_to(max(34, w), self.BODY_H + self.READOUT_H)
-        self._font = QFont()
-        self._font.setFamilies(theme.VALUE_FONT_FAMILIES)
-        self._font.setPixelSize(theme.UNIT_FONT_PX)
-
-    def update_from(self, snapshot: Mapping[str, Any] | None) -> None:
-        raw = get_path(snapshot, self.element.get("bind"))
-        opening = None
-        if isinstance(raw, (int, float)) and not isinstance(raw, bool):
-            opening = float(raw)
-        elif isinstance(raw, Mapping):
-            # A valve bound to its controller object reads the controller output.
-            op = raw.get("op")
-            if isinstance(op, (int, float)):
-                opening = float(op)
-        if opening != self._opening:
-            self._opening = opening
-            self.update()
-        self.setToolTip(
-            f"{self.element.get('tag', '')} — "
-            + (format_value(opening, 1) + " % open" if opening is not None else "no data")
-        )
-
-    def paintEvent(self, event) -> None:
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-        w = self.width()
-        body = QRectF(0, 0, w, self.BODY_H)
-
-        # Bowtie body: two triangles meeting at the stem. Filled proportionally to the
-        # opening, so the symbol itself shows how far the valve is off its seat.
-        frac = 0.0 if self._opening is None else max(0.0, min(1.0, self._opening / 100.0))
-        seat = QColor(theme.BTN_GREEN)
-        seat.setAlphaF(0.25 + 0.75 * frac)
-
-        p.setPen(QColor(theme.PI_BORDER))
-        p.setBrush(seat)
-        mid_x, mid_y = body.center().x(), body.center().y()
-        p.drawPolygon(QPointF(body.left(), body.top()),
-                      QPointF(body.left(), body.bottom()),
-                      QPointF(mid_x, mid_y))
-        p.drawPolygon(QPointF(body.right(), body.top()),
-                      QPointF(body.right(), body.bottom()),
-                      QPointF(mid_x, mid_y))
-
-        # Opening readout: black field, white frame, like every other DCS number.
-        read = QRectF(0, self.BODY_H, w, self.READOUT_H)
-        p.setPen(QColor(theme.PI_BORDER))
-        p.setBrush(QColor(theme.PI_BG))
-        p.drawRect(read)
-        p.setFont(self._font)
-        p.setPen(QColor(theme.PI_TEXT))
-        p.drawText(read, Qt.AlignmentFlag.AlignCenter,
-                   format_value(self._opening, 1) if self._opening is not None else "--")
-
-        if self.editing:
-            p.setPen(QColor(theme.EDIT_OUTLINE))
-            p.setBrush(Qt.BrushStyle.NoBrush)
-            p.drawRect(self.rect().adjusted(0, 0, -1, -1))
-
-
-__all__ = ["PumpWidget", "BlockValveWidget", "ActuatedValveWidget", "ICON_DIR"]
+__all__ = ["PumpWidget", "BlockValveWidget", "ICON_DIR"]

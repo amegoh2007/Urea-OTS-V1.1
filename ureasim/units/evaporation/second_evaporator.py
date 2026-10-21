@@ -403,6 +403,9 @@ class SecondEvaporator:
     chest: ChestValve = PV_329212_CHEST
     #: The 9-bar header's lag.
     lag_state: dict = field(default_factory=dict)
+    #: The backward species step at a heel (decided 2026-10-17, handoff B-98); False is V1's
+    #: explicit step, which the equivalence harnesses keep.
+    backward_species: bool = True
 
     def step(self, loops: SecondEvaporatorLoops, feed_kgh: float, feed_t_c: float,
              feed_w: dict, p_mp_bara: float, p_motive_bara: float, p_discharge_bara: float,
@@ -542,7 +545,8 @@ class SecondEvaporator:
         # ----- the species (V1 F-8 / TD-009): the feed's and the holdup's vapour alike ----
         xi = liquor_stage.biuret_extent(E003_LIQUOR, m_pre, w_pre, self.t_c)
         self.w = liquor_stage.advance_species(w_pre, m_pre, self.m_kg, feed_kgh, feed_w,
-                                              m_vap + m_boil, y_vap, m_402, xi, dt)
+                                              m_vap + m_boil, y_vap, m_402, xi, dt,
+                                              backward=self.backward_species)
 
         return SecondEvaporatorResult(
             feed_kgh=feed_kgh, feed_t_c=feed_t_c, feed_urea_kgh=urea_in, feed_cp=cp_feed,

@@ -36,6 +36,14 @@ Sources
   vendor archive) — the two chest pressures.
 * Flowserve's calculation sheets for LV-323501, LV-323505 and FV-324401
   (`ureasim.data.control_valves`) — their trims, design strokes and pressure-recovery factors.
+* Metso's sizing sheet for HV-323605 (`ureasim.data.control_valves`, item 19) — its Neldisc trim,
+  design stroke and xT.
+* 323F004's datasheet (`References/Datasheets/323F004 Datasheet.pdf`, UD-AU-323-EC-0011: ID 1384,
+  1800 mm between tangents, LT-323505 on N7 on the top head 500 mm off the axis, the high liquid
+  level 80 mm above the bottom tangent), Reuther's as-built assembly drawing and parts list
+  (UD-AU-323-DZ-0011-003 rev 02, -002 rev 01: two DIN 28013 ellipsoidal heads Da 1400 x 8) and
+  Uhde's loop summary L 323505 (UD-MR-323-EC-0001 rev 1 page 71: a DP cell, its nozzles 2900 mm
+  apart, the lower PN 10, the upper PN 40) — the drum's geometry and LT-323505's taps.
 * The split fractions and the design flow chain live in `ureasim.data.design_point`, which
   the product-line routes were anchored on first; they are imported here, not repeated.
 """
@@ -45,8 +53,10 @@ from __future__ import annotations
 import math
 
 from ureasim.core.packet import normalise_solution_mass_fraction as _w_norm
+from ureasim.core.vessel_geometry import VerticalVessel
 from ureasim.data.control_valves import (
     FV_324401,
+    HV_323605,
     LV_323501,
     LV_323505,
     PV_329202,
@@ -310,8 +320,8 @@ F004_M_TAU_S = 180.0
 #: Flash vapour to 323E011 at design [kg/h], PFD 701's share of the column bottoms.
 M701_DES_KGH = R323_PHI_V701 * R323_M314_DES
 
-#: Design liquid holdup [kg].
-F004_M_DES_KG = R323_M319_DES / 3600.0 * F004_M_TAU_S
+#: V1's design liquid holdup [kg], 5074.6: 180 s of PFD 319.
+F004_M_DES_KG_V1 = R323_M319_DES / 3600.0 * F004_M_TAU_S
 
 #: PFD 319 reconciled to atom consistency against its own feed, so the 323F004 back-solve
 #: closes without clipping negative vapour (V1 report G3), its urea closed against the drain as
@@ -332,8 +342,29 @@ LV505_OP_DES_PCT = design_stroke_pct(LV_323505, R323_M319_DES)
 LV505_CHAR = LV_323505.characteristic
 LV505_FL = LV_323505.normal_case.fl
 
-#: Holdup at 100 % level [kg], from the design holdup at the level set point.
-F004_M_FULL_KG = F004_M_DES_KG / (F004_LVL_SP_PCT / 100.0)
+#: V1's holdup at 100 % level [kg], 8457.7: its design holdup over the level set point.
+F004_M_FULL_KG_V1 = F004_M_DES_KG_V1 / (F004_LVL_SP_PCT / 100.0)
+
+#: 323F004's shell: its inside diameter, its tangent-to-tangent length and its two DIN 28013 heads
+#: on Da 1400 x 8 — inside crown radius 0.8 Da, knuckle 0.154 Da (the parts list, Pos. 1 and 2;
+#: the standard's proportions as 322C001's) [m]. DECIDED 2026-10-17 (handoff B-100 (b), decision
+#: 33's class): V1 sizes the holdup on a 180 s residence, ten times the drum's 518 kg of operating
+#: fluid (the datasheet's weights) and above its volume.
+F004_DA_M = 1.400
+F004_VESSEL = VerticalVessel(d_in_m=1.384, tt_m=1.800, crown_m=0.8 * F004_DA_M,
+                             knuckle_m=0.154 * F004_DA_M)
+
+#: The drum's volume with its heads [m3], 3.402 — the hydro-test's 3450 kg of water (4685 kg full,
+#: 1235 kg empty) less its nozzles' stubs.
+F004_VOL_M3 = F004_VESSEL.volume_m3
+
+#: LT-323505, a DP cell (loop summary L 323505): its upper tap N7 on the top head 500 mm off the
+#: axis, 233 mm above the top tangent on the head's inside surface; its lower tap 2900 mm below
+#: (the loop summary's nozzle distance), on the outlet line 516 mm below the bottom head [m, above
+#: the bottom tangent line]. LI-323505 reads the liquid between the taps.
+LT_323505_SPAN_M = 2.900
+LT_323505_TAP_HI_M = F004_VESSEL.tt_m + F004_VESSEL.head_surface_m(0.500)
+LT_323505_TAP_LO_M = LT_323505_TAP_HI_M - LT_323505_SPAN_M
 
 #: Floor on the drum holdup [kg], so the temperature integration never divides by zero.
 #: Source: V1 `main.py` step_sim, ``max(..., 1.0)``.
@@ -346,6 +377,43 @@ RHO_S319 = 1130.0
 #: ratios are exactly 1.0 at the seed.
 CP_F004_DES = urea_soln_cp(W_S319["Urea"], F004_T_SP_C)
 RHO_F004_DES = urea_soln_rho(W_S319["Urea"], F004_T_SP_C, RHO_S319)
+
+
+def lt_323505_pct(m_kg: float) -> float:
+    """What LT-323505 reads for a holdup in 323F004 [%], between its taps (B-100).
+
+    Process utility
+    ---------------
+    The level LIC-323505 holds: the drum's liquid put at its height through the bottom head, the
+    cylinder and the top head (`core.vessel_geometry`), read on the 2900 mm between the taps. With
+    the lower tap on the outlet line below the head, an empty drum on a full line reads 17.8 %.
+
+    Equation
+    --------
+        L = clamp( (z(M / rho) - z_lo) / span . 100, 0, 100 )
+    """
+    z = F004_VESSEL.height_m(m_kg / RHO_F004_DES)
+    return min(max((z - LT_323505_TAP_LO_M) / LT_323505_SPAN_M * 100.0, 0.0), 100.0)
+
+
+def f004_holdup_at_kg(level_pct: float) -> float:
+    """The holdup at which LT-323505 reads ``level_pct`` [kg] — the inverse of `lt_323505_pct`."""
+    z = LT_323505_TAP_LO_M + level_pct / 100.0 * LT_323505_SPAN_M
+    return F004_VESSEL.volume_below_m3(z) * RHO_F004_DES
+
+
+#: The design holdup [kg], 1836.6: the liquid at which LT-323505 reads LIC-323505's 60 % set point
+#: (V1's), 874 mm above the bottom tangent — 65 s of PFD 319. (The drawing's high liquid level, 80 mm
+#: above the bottom tangent, reads 32.6 %.)
+F004_M_DES_KG = f004_holdup_at_kg(F004_LVL_SP_PCT)
+
+#: The drum full [kg], 3761.5: its volume with its heads at the design density. Above it the excess
+#: overflows to 323E011 (A-22).
+F004_M_FULL_KG = F004_VOL_M3 * RHO_F004_DES
+
+#: LT-323505's reading with the bottom head just drained [%], 17.8: LV-323505's nozzle, N3, at the
+#: head's lowest point — where the drum's seal on it breaks.
+LT_323505_NOZZLE_PCT = lt_323505_pct(0.0)
 
 # --- The drum's energy balance at design ------------------------------------------------
 
@@ -484,14 +552,22 @@ QEVAP_DES_KW = (R323_M319_DES / 3600.0 * R323_CP_SOLN * (F004_T_SP_C - F010_T_SP
 
 # --- HV-323605, the separator's vapour outlet ----------------------------------------------
 
-#: HIC-323605 design opening [%]. Source: V1 `main.py` R323_HIC605_DES_PCT.
-HIC_323605_DES_PCT = 50.0
-
-#: HV-323605 trim. No datasheet exists in `References/` or in the vendor archive, whose TOC
-#: indexes only package-unit valves, so this is a stated choice: LINEAR keeps the per-cent-of-
-#: stroke gain the retired ``pull . HIC/50`` law gave the operator. Source: V1 `main.py`
+#: HIC-323605's design opening as V1 runs it [%], and V1's trim: LINEAR, a stated choice V1 made
+#: for want of a sheet, keeping the per-cent-of-stroke gain its retired ``pull . HIC/50`` law gave
+#: the operator. The equivalence harness keeps both. Source: V1 `main.py` R323_HIC605_DES_PCT and
 #: R323_HV605_CHAR.
-HV605_CHAR = "linear"
+HIC_323605_DES_PCT_V1 = 50.0
+HV605_CHAR_V1 = "linear"
+
+#: HV-323605 on its vendor's trim (decision 23's class, decided 2026-10-17): Metso's DN 400
+#: Neldisc, maximum Cv 13 700 (`data.control_valves.HV_323605`, item 19), its printed capacities
+#: as its curve, its design stroke where it passes the separator's design overhead on its normal
+#: case, 64.08 %, and the normal case's xT, 0.38. HIC-323605 is seeded there. The 64.2 % quoted
+#: when the sheet was read is the stroke for PFD 790's printed 12 040 kg/h; the valve passes the
+#: overhead V1's balance gives, 12 013.3 (`MEVAP_DES_KGH`).
+HV605_CHAR = HV_323605.characteristic
+HIC_323605_DES_PCT = design_stroke_pct(HV_323605, MEVAP_DES_KGH)
+HV605_XT = HV_323605.normal_case.xt
 
 #: The 324E002 condenser shell at design [bar a] — the pressure HV-323605 discharges into.
 #: V1 takes the 324F001 separator vacuum, R324_F001_P_BARA, which the 324E002 shell shares;
@@ -630,7 +706,7 @@ C003_LIQUOR = liquor_stage(W_S208, W_S314, R323_FEED_DES_KGH, M305_DES_KGH, R323
 
 #: 323F004: PFD 314 in, PFD 701 up, PFD 319 down.
 F004_LIQUOR = liquor_stage(W_S314, W_S319, R323_M314_DES, M701_DES_KGH, R323_M319_DES,
-                           F004_M_DES_KG, F004_T_SP_C, F004_P_BARA)
+                           F004_M_DES_KG_V1, F004_T_SP_C, F004_P_BARA)
 
 #: 323F010: PFD 319 and 331 in, PFD 790 up, PFD 317 down. Stream 790 lists 0.14 mol % urea —
 #: 54 kg/h in 12 t/h — which cannot evaporate at 99 C, so it is closed as entrained liquor:
@@ -670,6 +746,8 @@ __all__ = [
     "PIC_329202_KC_TABLE", "PIC_329202_KC", "PIC_329202_TI_S", "LIC_323501_KC", "LIC_323501_TI_S",
     "F004_P_BARA", "F004_T_SP_C", "F004_M_TAU_S", "M701_DES_KGH", "F004_M_DES_KG",
     "F004_LVL_SP_PCT", "LV505_OP_DES_PCT", "LV505_CHAR", "LV505_FL", "F004_M_FULL_KG", "F004_M_FLOOR_KG", "RHO_S319",
+    "F004_M_DES_KG_V1", "F004_M_FULL_KG_V1", "F004_DA_M", "F004_VESSEL", "F004_VOL_M3", "LT_323505_SPAN_M",
+    "LT_323505_TAP_HI_M", "LT_323505_TAP_LO_M", "LT_323505_NOZZLE_PCT", "lt_323505_pct", "f004_holdup_at_kg",
     "CP_F004_DES", "RHO_F004_DES", "Q701_DES_KW", "LAMBDA_701_KJKG",
     "LIC_323505_KC", "LIC_323505_TI_S",
     "F010_P_BARA", "F010_T_SP_C", "F010_M_TAU_S", "M331_DES_KGH", "M331_T_C",
@@ -677,7 +755,8 @@ __all__ = [
     "F010_ID_M", "F010_SHELL_M", "F010_VOL_M3", "F010_AREA_M2",
     "F010_P_MIN_BARA", "F010_P_MAX_BARA", "EVAP_LAMBDA_KJKG", "CP_F010_DES", "CP_S331_DES",
     "RHO_F010_ANCHOR", "E010_PCHEST_DES_BARA", "E010_OP_DES_PCT", "PV_329208_OP_DES_PCT", "PV_329208_XT", "E010_Q_DES_KW",
-    "E010_UA_KW", "QEVAP_DES_KW", "HIC_323605_DES_PCT", "HV605_CHAR", "P_324E002_DES_BARA",
+    "E010_UA_KW", "QEVAP_DES_KW", "HIC_323605_DES_PCT_V1", "HV605_CHAR_V1", "HIC_323605_DES_PCT",
+    "HV605_CHAR", "HV605_XT", "P_324E002_DES_BARA",
     "TT_323012_SPAN_C", "PT_329208_SPAN_BAR", "TIC_323012_KC_TABLE",
     "TIC_323012_KC", "TIC_323012_TI_S", "TIC_323012_SP_LO_C", "TIC_323012_SP_HI_C",
     "PIC_329208_KC_TABLE", "PIC_329208_KC", "PIC_329208_TI_S",

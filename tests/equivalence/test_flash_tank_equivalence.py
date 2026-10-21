@@ -40,6 +40,10 @@ the last section of this file.
 LV-323505 flashes (handoff B-46, decided 2026-09-30): the state's ``flash_decided`` (default True)
 hands its choke the drum liquor's live bubble pressure and its design value, 1.13 bar a, written
 on V1's own thermo service and design anchor; ``flash_decided=False`` is V1 verbatim.
+
+A full drum overflows into 323E011 (handoff A-22, decided 2026-10-17). V1 has no ceiling; the
+harness runs the port as ``FlashTank(ceiling=False)``, which is V1's, and
+`test_a_full_drum_decided_divergence` asserts both sides.
 """
 
 from __future__ import annotations
@@ -261,7 +265,7 @@ def _assert_tick(a: dict, b: ft.FlashTankResult, s, tank, lic, label):
 def _run(v1, script, ticks: int, dt: float = DT, before=None):
     """Drive stage 2 alone through `script(k)`, comparing everything every tick."""
     s = _v1_state(v1)
-    tank = ft.FlashTank()
+    tank = ft.FlashTank(**ft.V1_DRUM)
     lic = ft.lic_323505()
     if before:
         before(s, tank, lic)
@@ -297,8 +301,8 @@ def _design(**over):
 @pytest.mark.parametrize("ours, theirs", [
     ("F004_P_BARA", "R323_F004_P_BARA"), ("F004_T_SP_C", "R323_F004_T_SP_C"),
     ("F004_M_TAU_S", "R323_F004_M_TAU_S"), ("M701_DES_KGH", "R323_M701_DES"),
-    ("F004_M_DES_KG", "R323_F004_M_DES"), ("F004_LVL_SP_PCT", "R323_F004_LVL_SP"),
-    ("F004_M_FULL_KG", "R323_F004_M_FULL"),
+    ("F004_M_DES_KG_V1", "R323_F004_M_DES"), ("F004_LVL_SP_PCT", "R323_F004_LVL_SP"),
+    ("F004_M_FULL_KG_V1", "R323_F004_M_FULL"),
     ("RHO_S319", "R323_RHO_S319"), ("CP_F004_DES", "R323_CP_F004_DES"),
     ("RHO_F004_DES", "R323_RHO_F004_DES"), ("Q701_DES_KW", "R323_Q701_DES_KW"),
     ("LAMBDA_701_KJKG", "R323_LAMBDA_701"), ("F010_P_BARA", "R323_F010_P_BARA"),
@@ -364,7 +368,7 @@ def test_a_stopped_column_drain_decided_divergence(v1):
     cap and the FIFO holds the last arrived packet — so its drum flashes liquor that was never
     sent; the port's receives nothing from the stop. Bit-exact until the stop; two minutes on,
     V1 has taken in 3.5 t the column never sent."""
-    s, tank, lic = _v1_state(v1), ft.FlashTank(), ft.lic_323505()
+    s, tank, lic = _v1_state(v1), ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
     v1_in = port_in = 0.0
     for k in range(1210):
         x = _design(m314=(0.0 if k >= 10 else R323_M314_DES))
@@ -391,6 +395,62 @@ def test_lv323505_forced_open_until_the_seal_breaks(v1):
     assert b.blowthrough_y is not None and b.blowthrough_kmolh > 0.0
 
 
+def test_a_full_drum_decided_divergence(v1):
+    """Handoff A-22, decided 2026-10-17, both sides. LIC-323505 in MAN at 30 % on design
+    boundaries: the drum reaches LI-323505's 100 % at 176.8 s. Until then the port is V1's
+    transcription to the bit; from then V1's holdup keeps growing — 10 816 kg at five minutes —
+    while the port's stays at 8458 kg and overflows the excess, 68.9 t/h, to 323E011: the capped
+    drum plus what overflowed is V1's holdup. (On V1's holdup and level law, so the ceiling alone
+    parts the two: the drum on its geometry, B-100, has its own test.)"""
+    s, tank, lic = (_v1_state(v1), ft.FlashTank(geometric=False, m_kg=d.F004_M_DES_KG_V1),
+                    ft.lic_323505())
+    s.LIC_323505.update(mode="MAN", op=30.0)
+    lic.set_mode("MAN")
+    lic.op = 30.0
+    spilt, full = 0.0, None
+    for k in range(3000):
+        x = _design()
+        s.r3232_e011_P, s.r323_f010_P = x["p_e011"], x["p_f010"]
+        a = _v1_stage2(v1, s, x["m314"], x["t314"], x["w314"], DT)
+        b = tank.step(lic, x["m314"], x["t314"], x["w314"], x["p_e011"], x["p_f010"], DT)
+        spilt += b.m_overflow_kgh * DT / 3600.0
+        if full is None and b.m_overflow_kgh > 0.0:
+            full = k + 1
+        if full is None:
+            _assert_tick(a, b, s, tank, lic, f"tick {k}")
+    assert full == 1768 and a["lvl"] == b.level_pct == 100.0
+    assert s.r323_f004_M == pytest.approx(10816.37, abs=0.01)
+    assert tank.m_kg == d.F004_M_FULL_KG_V1
+    assert b.m_overflow_kgh == pytest.approx(68901.07, abs=0.01)
+    assert tank.m_kg + spilt == pytest.approx(s.r323_f004_M, rel=1e-12)
+
+
+def test_the_drum_on_its_geometry_decided_divergence(v1):
+    """Handoff B-100, decided 2026-10-17, both sides. V1's drum holds 5074.6 kg at LIC-323505's
+    60 %, 180 s of PFD 319 over 0.6; the port's holds 1836.6 kg, the liquid that puts LT-323505's
+    reading at 60 % between its taps on the drum's own shell. On design boundaries the two pass the
+    same flows; the column's drain cut 25 % at 2 s, LI-323505 falls to 55.06 % at 138.5 s on V1's
+    drum and to 54.29 % at 99.2 s on the port's, whose level moves 1.75 times as far per kilogram."""
+    s, tank, lic = _v1_state(v1), ft.FlashTank(), ft.lic_323505()
+    assert (s.r323_f004_M, tank.m_kg) == (d.F004_M_DES_KG_V1, d.F004_M_DES_KG)
+    assert (d.F004_M_DES_KG_V1, d.F004_M_DES_KG) == (pytest.approx(5074.61, abs=0.01),
+                                                    pytest.approx(1836.59, abs=0.01))
+    lo_v1 = lo_port = (0.0, 100.0)
+    for k in range(3000):
+        t = round((k + 1) * DT, 1)
+        x = _design(m314=R323_M314_DES * (0.75 if t > 2.0 else 1.0))
+        s.r3232_e011_P, s.r323_f010_P = x["p_e011"], x["p_f010"]
+        a = _v1_stage2(v1, s, x["m314"], x["t314"], x["w314"], DT)
+        b = tank.step(lic, x["m314"], x["t314"], x["w314"], x["p_e011"], x["p_f010"], DT)
+        if t <= 2.0:
+            assert (b.level_pct, b.m_701_kgh, b.m_319_kgh, b.t_c) == pytest.approx(
+                (a["lvl"], a["m701"], a["m319"], s.r323_f004_T), rel=1e-12), t
+        lo_v1 = min(lo_v1, (a["lvl"], t)[::-1], key=lambda y: y[1])
+        lo_port = min(lo_port, (b.level_pct, t)[::-1], key=lambda y: y[1])
+    assert lo_v1 == (138.5, pytest.approx(55.061, abs=1e-3))
+    assert lo_port == (99.2, pytest.approx(54.293, abs=1e-3))
+
+
 # --------------------------------------------------------------------------------------
 # Stages 1 and 2 coupled: the drain interface, end to end
 # --------------------------------------------------------------------------------------
@@ -401,7 +461,7 @@ def _run_coupled(v1, script, ticks: int, dt: float = DT, before=None):
     s = _v1_state(v1)
     col = rc.RectifyingColumn(chest=rc.V1_CHEST)
     loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
-    tank = ft.FlashTank()
+    tank = ft.FlashTank(**ft.V1_DRUM)
     lic = ft.lic_323505()
     if before:
         before(s, col, loops, tank, lic)
@@ -440,7 +500,7 @@ def test_the_vendor_valve_decided_divergence(v1):
     both drain PFD 319; stroked, V1's linear trim from 50 % passes 1.70 times it, the vendor's
     modified equal percentage from 67.73 % 1.68 times."""
     s = _v1_state(v1, valves_decided=False)
-    tank, lic = ft.FlashTank(), ft.lic_323505()
+    tank, lic = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
     assert (s.LIC_323505["op"], lic.op) == (50.0, DECIDED_LV505_OP)
     s.LIC_323505.update(mode="MAN", op=85.0)
     lic.set_mode("MAN")

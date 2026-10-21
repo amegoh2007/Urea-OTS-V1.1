@@ -131,7 +131,7 @@ LIQUOR_NAMES = ["design", "quarter back to the feed", "half back to the feed",
     ("M305_DES_KGH", "R323_M305_DES"), ("M701_DES_KGH", "R323_M701_DES"),
     ("MEVAP_DES_KGH", "R323_MEVAP_DES"), ("M331_DES_KGH", "R323_M331_DES"),
     ("M331_T_C", "R323_M331_T_C"),
-    ("C003_M_DES_KG", "R323_C003_M_DES"), ("F004_M_DES_KG", "R323_F004_M_DES"),
+    ("C003_M_DES_KG", "R323_C003_M_DES"), ("F004_M_DES_KG_V1", "R323_F004_M_DES"),
     ("F010_M_DES_KG", "R323_F010_M_DES"),
     ("C003_T_SP_C", "R323_C003_T_SP_C"), ("F004_T_SP_C", "R323_F004_T_SP_C"),
     ("F010_T_SP_C", "R323_F010_T_SP_C"),
@@ -353,6 +353,36 @@ def test_species_advance(v1, key, case):
                     st.anchor.xi, dt)
             assert ls.advance_species(*args, **ours_second) == \
                 v1["sol_advance"](*args, **v1_second), (dt, m_new)
+
+
+@pytest.mark.parametrize("key", list(STAGES))
+def test_species_advance_at_a_heel_decided_divergence(v1, key):
+    """Handoffs B-98 and B-101, decided 2026-10-17, both sides. A 1 kg heel draining what arrives,
+    its design feed, on a 1 s tick, its vapour drawn: V1's explicit step drains each species at the
+    old holdup's fraction, overdraws every one, floors them at zero and keeps the old composition
+    whatever arrives, and ``backward=False`` is V1's to the bit; the port takes the backward step —
+    each species' sources over 1 + (m_liq + m_vap y / w) dt / (3600 M_new) — so the heel takes the
+    composition of what passes it."""
+    st = STAGES[key]
+    w_in = {"C003": d.W_S208, "F004": d.W_S314, "F010": d.W_S319}[key]
+    m_in = {"C003": R323_FEED_DES_KGH, "F004": R323_M314_DES, "F010": R323_M319_DES}[key]
+    m_liq = m_in
+    m_vap = {"C003": d.M305_DES_KGH, "F004": d.M701_DES_KGH, "F010": d.MEVAP_DES_KGH}[key]
+    args = (st.w_des, 1.0, 1.0, m_in, w_in, m_vap, st.anchor.y, m_liq, st.anchor.xi, 1.0)
+    theirs = v1["sol_advance"](*args)
+    assert ls.advance_species(*args, backward=False) == theirs
+    ours = ls.advance_species(*args)
+    src = {}
+    for k in ours:
+        w_k, y_k = st.w_des.get(k, 0.0), st.anchor.y.get(k, 0.0)
+        s_k = w_k + (m_in * w_in.get(k, 0.0) + ls._NU_KG.get(k, 0.0) * st.anchor.xi) / 3600.0
+        rate = m_liq + (m_vap * y_k / w_k if w_k > 0.0 else 0.0)
+        if w_k <= 0.0:
+            s_k -= m_vap * y_k / 3600.0
+        src[k] = max(s_k / (1.0 + rate / 3600.0), 0.0)
+    tot = sum(src.values())
+    assert ours == pytest.approx({k: v / tot for k, v in src.items()}, rel=1e-12, abs=1e-15)
+    assert theirs == st.w_des and ours != theirs
 
 
 def test_323c003s_urea_on_the_drain_decided_divergence():

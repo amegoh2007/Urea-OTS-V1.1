@@ -715,6 +715,12 @@ def run_both(v1, ticks, act=None, decided=ALL, check=True):
     sch, plant = build_plant()
     # V1's linear FV-329409 from 60 %: its Metso trim has its own tests (decided 2026-10-15).
     plant.loops["322E003"] = (CcwLoop(**V1_FV_329409),)
+    # B-91's fraction read a tick late, as the transcription reads it: its solution on the tick
+    # (A-21, decided 2026-10-17) has its own tests.
+    plant.units["322E002"].implicit_saturation = False
+    # V1's linear flow law for 322E003's capacity: its effectiveness (B-99, decided 2026-10-17)
+    # has its own tests.
+    plant.units["322E003"].effectiveness_capacity = False
     sched = Scheduler(sch, plant)
     s = _v1_state(v1)
     hist = []

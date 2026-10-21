@@ -89,6 +89,10 @@ Design basis: `References/Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md
 - Part LXXI — B-97 decided; UF85 (unit 335) dosing live; B-1, B-4 and B-12 signed off (Phases 4 and 7)
 - Part LXXII — A-8 signed off; A-2 closed on the station token; the checklist complete (Phase 6)
 - Part LXXIII — 323P003's protection, trip 21.2's hand switches and TRIP_84_8 read; decision 95 signed off; the overflows traced; 21.2 shuts XV-322902 and XV-322903 (Phase 7)
+- Part LXXIV — The console revised from its slides; the research PDF worked through (Phases 6 and 7)
+- Part LXXV — Three Metso valves wired; the process-deviation scenarios put to the plant (Phase 7)
+- Part LXXVI — A full 323F004 overflows, the species step at a heel; A-21 and B-99 measured (Phase 7)
+- Part LXXVII — A-21, B-99, B-100 and B-101 decided and built (Phase 7)
 
 ---
 
@@ -1496,7 +1500,7 @@ same fixed step.
 | 139 | Relief on a node: the lift, the blowdown and the vent (handoff B-47) | none: V1 connects its API 520 law to no node | `core/relief.py` `SafetyValve`, `GasReliefValve`, `reseat_vent_kgh`, `liquid_relief_kgh`; `data/relief_devices.py` `RELIEF_SIZING` | **`[PORTED]` with a decided divergence, 2026-09-30:** pop action at set, reseat at the vendor's blowdown (10 % gas, 20 % liquid), API 520 on an orifice back-solved from Sempell's certified capacity, at most the moles above reseat in a tick; on 328C003 and 328C002, asserted both ways on V1's own capacity law (§XLIV.3) |
 | 140 | The recycle tears (handoff A-10) | `s.tlag.get(key, default)`, `main.py` 8835-8845 and 9666-9676 | `engine/state.py` `TearState`, `PlantState`, `PlantClock` | **`[PORTED]`** the ten seeds `==` V1's; 748 and 750 through `PlantState` `==` V1's `s.tlag` for 3000 coupled ticks (§XLV.1) |
 | 141 | The fixed step and its pacing (handoff A-14) | `main.py` `sim_task`: min(elapsed, 0.5) x SIM_SPEED in sub-steps up to 0.25 s | `engine/simulator.py` `Simulator`, `data/engine.py` | **`[BUILT]`** whole 0.1 s steps out of an integer wall-clock account; SLOW and FAST replay bit for bit (§XLV.2). V1's variable step is not reproduced by decision (A-14) |
-| 142 | A liquid-rated safety valve on a vapour node (handoff A-16, option b) | none: V1 relieves nothing | `core/relief.py` `GasReliefValve.kd`; `data/relief_devices.py` `GAS_KD_ASSUMED`, `GAS_BLOWDOWN`, `gas_reseat_bara`; `flash_condenser.py` `sv_32357`, `reflux_drum.py` `sv_32353` | **`[DECIDED DIVERGENCE]`** 2026-10-01: the orifice's own area at the series' full-lift gas coefficient 0.917 (an assumption, Phase 7), reseating on the gas blowdown; SV32357 on 323D011 and SV32353 on 328D001, both ways on V1's own capacity law (§XLVI.1) |
+| 142 | A liquid-rated safety valve on a vapour node (handoff A-16, option b) | none: V1 relieves nothing | `core/relief.py` `GasReliefValve.kd`; `data/relief_devices.py` `GAS_KD_ASSUMED`, `GAS_BLOWDOWN`, `gas_reseat_bara`; `flash_condenser.py` `sv_32357`, `reflux_drum.py` `sv_32353` | **`[DECIDED DIVERGENCE]`** 2026-10-01: the orifice's own area at the full-lift gas coefficient — 0.917 assumed until 2026-10-16, Sempell's printed 0.922 for orifices F, K and M since (decision 130, §LXXIV.3; `GAS_KD_FULL_LIFT`) — reseating on the gas blowdown; SV32357 on 323D011 and SV32353 on 328D001, both ways on V1's own capacity law (§XLVI.1) |
 | 143 | The back-pressure over ammonia water and the packed-bed transport properties | `packed_absorber.py` back-pressure block, `heat_of_absorption_j_mol`, `water_mu_pas`, `water_sigma_nm`, `gas_mu_pas`, `diffusivity_m2s` | `thermo/ammonia_backpressure.py`, `thermo/transport_properties.py` | **`[PORTED]`** bit-exact over six liquors, nine temperatures and the van 't Hoff extension (§XLVI.2) |
 | 144 | 322C001's packed beds | `packed_absorber.py` `wetted_fraction`, `onda_ntu`, `liquid_residence_s`, `colburn`, `solve`, `calibrate` | `units/absorption/packed_beds.py` | **`[PORTED]`** bit-exact over 100 bed cases and the calibration on the design gas (§XLVI.3) |
 | 145 | 322C001, the LP absorber | `main.py` `step_sim` 8834, 9405-9511; `c001_offgas_heat_kw`; the boot pin 12333-12353; the seeds 6869-6875, 7129-7148 | `units/absorption/lp_absorber.py` `LpAbsorber`, `LpAbsorberLoops`, `design_pin` | **`[PORTED]`** bit-exact TICK BY TICK over thirteen scenarios against the switched transcription; the stage TRANSCRIBED, everything it calls EXECUTED; the design pin `==` V1's boot pin. **Six departures**, each inert at design and asserted both ways: SV32253 decided (row 142's class, set 6.013 bar a where V1 sets 31.013); under §5 rule 7 decisions 33, 11 (twice), 23 and 10 (§XLVI.5). Findings logged: B-54 (755 at a fixed 40 C, no 322E006), B-55 (XV-322915's flood), B-19 measured on the absorber (§XLVI.4) |
@@ -1653,6 +1657,20 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 295 | The reactor liquor's buffering in PT-329201 (decision 95) signed off (decision 126) | — | `units/synthesis/loop_pressure.py`, `liquor_saturation.py` | **signed off** 2026-10-16 as the V1.1 baseline: 2 159.6 kg/bar at design (71.6 vapour, 2 088.0 buffering), 322E002's and 322E001's liquors not added; the data gap closed (§LXXIII.3) |
 | 296 | Trip 21.2 shuts XV-322902 and XV-322903 (decision 127) | V1's 21.2 shut neither | `engine/plant/synthesis` ``_320k002`` (``trip_21_2``), ``_321``; `engine/command` ``_xv_toggle``, ``_co2_set`` | **`[DECIDED DIVERGENCE]`** 2026-10-16: AC4 PC21.5.1 .14 / .15 as drawn (decision 96's class), XV-322902 through SG1 PC20.1.1 .32; 320K002's demand to zero while the flag is lost (decision 83's class: SV32064 relieved 59 t/h without it); opens and demands refused while it is lost; confirmed as built 2026-10-16 (§LXXIII.7) |
 | 297 | 328D003's and 323D002's overflows traced | — | `units/desorption/ammonia_water_tank`, `units/recirc/solution_tank` (comments) | **read** 2026-10-16: 328D003 N12, DN200, EL +5352, compartment III, to drain system 30 and pit 329F001; 323D002 N12 to 335D004 (§LXXIII.8) |
+| 298 | The console revised from its slides (decision 129) | V1's overlays and backgrounds | `hmi/theme.py` ``rgba``; `hmi/widgets/hotspots.py`; `tools/convert_overlays.py` ``DECIDED_RETYPES``, ``NUDGE``; `tools/export_slides.ps1`, `tools/restore_nav_blocks.py`; `hmi/assets/screens/` | **decided** 2026-10-16: hovered page buttons no longer paint black (QColor does not parse CSS rgba()); the 47 valve icons readouts in per cent, the XVs' kept; 51 stripped destination blocks restored from the slides; 14 readouts moved off the drawing and their neighbours; HS-322915 the slide's green / red square (§LXXIV.1) |
+| 299 | The liquid-rated safety valves' gas coefficient (decision 130) | — (V1 relieves nothing) | `data/relief_devices.py` ``GAS_KD_FULL_LIFT`` | **read** 2026-10-16: Sempell's 0.922 for orifices F, K and M in gas service (UD-RL-G00-DZ-0001-001 pages 130, 62, 10) where 0.917 was assumed; the open data gap closed (§LXXIV.3) |
+| 300 | HV-323605, PV-323203, TV-328002, PV-323202A / B on Metso's sheets | V1's laws | `data/control_valves.py` | **catalogued** 2026-10-16 (§LXXIV.4); HV-323605, PV-323203 and TV-328002 wired 2026-10-17 (row 301), PV-323202A / B catalogued only |
+| 301 | HV-323605, PV-323203 and TV-328002 on their Neldisc trims (decision 131) | V1's linear laws from 50 / 25 / 50 % | `units/recirc/pre_evaporator` ``HV_323605_VENT``, ``vapour_outlet_kgh(valve=)``; `units/recirc/flash_gas_node` ``PV_323203_TRIM``, ``vent_valve_kgh(trim=)``; `units/desorption/reflux_drum` ``TV_328002_TRIM``; `data/unit_323`, `unit_323e011`, `unit_328d001` | **`[DECIDED DIVERGENCE]`** 2026-10-17 (decision 23's class): from 64.08 % on xT 0.38, 21.64 % and 55.04 %, V1's laws on the harness switches (``V1_VENT``, ``V1_CONDENSER``, ``tv_328002=None``) ``==`` V1 tick by tick; each both ways (§LXXV.1) |
+| 302 | The process-deviation notes of `References/scenarios` put to the plant | — | `tests/phase7/deviations.py`, `run_deviations.py` | **measured** 2026-10-17: 78 deviations, 147 of 191 claimed responses as claimed; the rest classified (a controller holding, no lever, an unmodelled mechanism, the display, the note against the model's physics) and four defects raised, A-21, A-22, B-98, B-99 (§LXXV.2-4) |
+| 303 | A full 323F004 overflows into 323E011 (decision 132) | V1 clamps LI-323505 at 100 % and not the holdup | `units/recirc/flash_tank` ``FlashTank.ceiling``, ``m_overflow_kgh``; `units/recirc/flash_condenser` ``step(m_f004_over_kgh=)``; `engine/plant/recirc` | **`[DECIDED DIVERGENCE]`** 2026-10-17 (handoff A-22 (a), decision 11's class): above LI-323505's 100 %, 8457.7 kg, the excess leaves at the drum's composition and temperature into 323E011's shell the same tick, liquid not gas load; ``ceiling=False`` on every harness; both ways (§LXXVI.1) |
+| 304 | The backward species step at a heel (decision 133) | V1's explicit ``sol_advance`` at every state | `units/liquor_stage` ``advance_species(backward=)``; ``backward_species`` on `units/evaporation/second_evaporator`, `units/recirc/solution_tank` | **`[DECIDED DIVERGENCE]`** 2026-10-17 (handoff B-98 (b), decision 78's class): the drained composition at the step's end where m_liq dt / 3600 > M_new, V1's to the bit elsewhere; ``backward=False`` / ``backward_species=False`` on the harnesses that reach a heel; both ways (§LXXVI.2); the vapour draw at a heel raised as B-101 |
+| 305 | 323F004's holdup against its drum | V1's 180 s of PFD 319, 5075 kg | `data/unit_323` ``F004_M_DES_KG``, ``F004_M_FULL_KG`` | **raised** 2026-10-17 (handoff B-100), **closed** 2026-10-21 (row 311): ten times the drum's 518 kg operating fluid and above its 3.45 m3 flooded volume (§LXXVI.1) |
+| 306 | A-21 traced; B-99 measured | — | scratch prototypes only | **measured** 2026-10-17: A-21's collapse is B-91's fraction ringing with a period of two ticks and locking 322E002's condensation off, B-77 making the gas pressure and V1's slip lifting the CO2-starved stripper's overhead; the fraction solved on the tick holds the loop (§LXXVI.3); B-99 §LXXVI.4 |
+| 307 | No crystallisation restriction on 324F001 / 324F003 (decision 134) | V1's (``mushy_flow_factor`` on 322E001's bottoms and 322E003's overflow alone) | — | **as V1, decided** 2026-10-17: a restriction would interfere with the cold start's drainage (§LXXVI.5) |
+| 308 | 322E002's saturation fraction solved on the tick (decision 135) | B-91's fraction read a tick late (V1 none) | `units/synthesis/condenser_holdup` ``CondenserHoldup.implicit_saturation``, ``_solved_fraction``; `core/numeric` ``bracketed_root`` | **`[DECIDED DIVERGENCE]`** 2026-10-17 (handoff A-21 (b); decision 78's class on decision 97): f = f(P_bub(f), PT-329201) within the tick where the tick-before fraction would move; ``implicit_saturation = False`` in `run_both`; both ways (§LXXVII.1) |
+| 309 | 322E003's capacity on its shell's effectiveness (decision 136) | V1's flow ratio m / m_des, its duty the demand | `units/synthesis/scrubber` ``shell_conductance_kwk``, ``condensation_capacity(effectiveness=)``, ``scrubber_322e003(capacity_frac=)``; `units/synthesis/scrubber_sump` ``effectiveness_capacity``; `engine/plant/synthesis_loop` | **`[DECIDED DIVERGENCE]`** 2026-10-17 (handoff B-99 (b1); decision 36's class): the capacity's flow term eps . C over its design's, the duty and TT-329125 capped at it below 1; V1's law on the switch; both ways (§LXXVII.2) |
+| 310 | The vapour draw in the heel's backward species step (decision 137) | V1's explicit ``sol_advance`` | `units/liquor_stage` ``advance_species`` | **`[DECIDED DIVERGENCE]`** 2026-10-17 (handoff B-101 (b); decision 133 extended): drain and vapour at the step's end composition where both together pass more than the stage holds; 323F010's heel 79.77 / 80.03 % (§LXXVII.3) |
+| 311 | 323F004 on its geometry, LT-323505 between its taps (decision 138) | V1's 5075 kg holdup on 180 s, LI-323505 = M / 8458 kg | `core/vessel_geometry` ``VerticalVessel``; `data/unit_323` ``F004_VESSEL``, ``lt_323505_pct``, ``LT_323505_*``; `units/recirc/flash_tank` ``FlashTank.geometric``, ``V1_DRUM`` | **`[DECIDED DIVERGENCE]`** 2026-10-17 (handoff B-100 (b), measured stable first; decision 33's class): 1836.6 kg at the 60 % set point, full at 3761.5 kg, the seal at an empty head's 17.8 %; ``V1_DRUM`` on every harness; both ways; row 305 closed (§LXXVII.4) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -14366,3 +14384,915 @@ The process engineer confirmed decision 127 as built, 320K002's demand cut and i
 flag is lost included, and accepted the 19 open data gaps as the final V1.1 ledger (`project.md`
 decision 128): each needs a vendor curve (Körting, Metso, Flowserve) or the plant DCS's database, and
 keeps its stand-in, assumption or V1 value as built. No code changed.
+
+# Part LXXIV — The console revised from its slides; the research PDF worked through (Phases 6 and 7)
+
+Session 58, 2026-10-16. The process engineer asked for four console changes — no valve icon but the
+block valves', no readout over another, page buttons that stay visible when hovered, the pages
+revised from their slides (`D:\Work\Urea Simulation Docs\Equipment Drawing\UI Pages`) — and for the
+open data gaps to be closed from a research report, `Urea Simulation Missing Data Research.pdf`
+(25 pages, an external tool's). Decisions 129 and 130 (`project.md`).
+
+## LXXIV.1 The console (decision 129)
+
+* **The page buttons vanished on hover.** `_HoverHotspot` painted its hover tint and frame from the
+  theme's CSS tokens, ``"rgba(80, 160, 220, 41)"``, through ``QColor``, which does not parse the CSS
+  form: it gave an invalid colour that painted opaque black over the drawn label. `theme.rgba` turns a
+  token into the four integers ``QColor`` takes; the stream hotspots' edit outline moved into the theme
+  with it. Measured: a hovered hotspot over white stays light at its centre (it read 49 of 255).
+* **No valve icon but the XVs'.** Each of the 47 modulating valves carried a second valve symbol, a
+  green bowtie over the slide's tag label below the drawn valve. The converter's `DECIDED_RETYPES`
+  turns every ``avalve`` element into an ``ind``, a plain readout of the opening in per cent, keeping
+  its binding, its click and its faceplate route (LV-324501A / B's route switch is now routed by its
+  ``route`` field). `ActuatedValveWidget` is deleted. The six XVs keep their icons.
+* **The pages revised from their slides.** The ten decks, exported through PowerPoint
+  (`tools/export_slides.ps1`, 2x and downsampled, as V1's migration rendered them), were compared with
+  the backgrounds. Every difference but the overlays' holes was a destination block: on the seven pages
+  V1 migrated in September (323-1, 323-2, 324-1, 324-1b, 328-1, 328-2, 329-1) its strip list had taken
+  out the blocks along with their labels, so 51 page buttons stood on nothing — 83-92 % of each button's
+  rectangle differed from the slide where a present block differs by 2-14 %. `tools/restore_nav_blocks.py`
+  copies the slide's pixels of each such rectangle, with a 4-px margin for the frame, into the
+  background; nothing else in a background changes, and a second run changes nothing. The slides'
+  comments were read for instructions: HS-322915's square on 328-2 ("the green background turns red"
+  when the override is activated) is now that square, 24 x 18 px, green, red while the key is turned,
+  framed amber while I 22.1's limit is active (`OverrideButtonWidget`, its ``key`` field); LOAD's
+  14-px bold value was already built; 322-1's "place CO2 COMPRESSOR SPEED CONTROLLER WIDGET here" is
+  not built — 320K002 is a boundary with no speed and no faceplate (decision 73).
+* **No readout over another or over the drawing.** At the design state, each live readout widened by
+  one more digit, against every other element and against the drawing's labels, symbols and blocks
+  (a blue panel's fill and the thin leader and signal lines a readout stands on excepted): eleven
+  readouts covered a symbol or a block and two touched a neighbour. Each moved the least distance,
+  with a 2-px clearance, that clears both (`NUDGE` rows): PIC-322203 up 9 px off the CO2 Compressor
+  block; PT-323201 right 11 off LV-322501's opening; TDY-329125 left 10; LV-323503's opening left 7
+  off its valve; FIC-323418, FIC-323401, FIC-329402, FIC-328406 and FIC-328402 off their valves'
+  actuators; PT-324204 and PY-324701 off 324F003's shell; TIC-324002 off 324E003's; HIC-323605 1 px off
+  its actuator; TT-328006 right 5 off AI-328701. Fourteen readouts stand on the dashed corners or line
+  stubs of their own leaders; each was looked at and is listed in the test (`COVERS_BY_DESIGN`).
+
+## LXXIV.2 The research PDF
+
+The report lists the 19 open data gaps and, for each, where it believes the datum lies. Its numbers
+were checked against the archive, never taken from it (the report cites third-party scans and
+manuals that are not in the archive, and handoff.md and project.md themselves):
+
+| row | the report | what the archive shows |
+|---|---|---|
+| gas coefficients of SV32353 / SV32357 / SV32253 | read the remaining pages of Sempell's file for gas valves on orifices F, K, M | **found** (§LXXIV.3): 0.922 on each |
+| control valves without a set | read Metso's pages 1-24 and 34+ | **found**: HV-323605, PV-323203, TV-328002 (§LXXIV.4); LV-328503 / 504, the PV-323202 gas vent, PV-329207C, HV-329601, HV-329602 not there |
+| LV-324501A / B | an IEC 60534-2-1 Kv with a "standard Kvs" picked | a calculated Kv is no vendor trim, and choosing a Kvs series is inventing one (CLAUDE.md §4): not built |
+| 322C001's head volume | a "Rubbing and Volume Calculation sheet" in UD-AU-322-DZ-0007-003..-006 | -003 is the statics (65 pages, OCR-searched): a 4.00 m3 nominal volume, a statics input, no head volume; -004 to -006 are not in the archive |
+| LT-324501, LT-329505 taps | the piping isometrics | LT-329505's upper tap traced (§LXXIV.5); the lower legs are instrument tubing; 324F003's trim isometric has no LT tap |
+| 324F002's nozzle | 19.33 mm from the other ejectors' choked flux | the port's own construction already (`ejector_map`); not a vendor datum |
+| trip 22.2 | a proxy for a high-high CO2 discharge pressure in SG1's trip 20.1 | SG1 PC20.1.1 has no CO2 discharge pressure (§LXXIII.7): the reading is not supported |
+| hysteresis, SR, TON (TT-322015, LT-323503, AC4 PC21) | ABB defaults, 1 % of span, reset-dominant | third-party manuals: consistent with the stand-ins, not the plant's database |
+| Henry constants | literature methods, a PFD back-solve | the back-solve is B-1's anchored departure, already built |
+| Metso above the last travel | Neles bulletins' relative-Cv tables | not in the archive; replacing decision 108's linear run is a new mechanism, not built |
+| 322E006 water, 324F003 trend, AI-329701, tuning rows | a plant walkdown, the historian, the DCS database | outside the archive |
+
+The OCR used here is Windows' own engine (`Windows.Media.Ocr`, through PowerShell), on 200-dpi
+renders; every value taken from it was read again from the page image.
+
+## LXXIV.3 The liquid-rated valves' gas coefficient (decision 130)
+
+SV32353 (328D001, orifice K), SV32357 (323D011, F) and SV32253 (322C001, M) are sized by Sempell on
+liquid alone; the model relieves vapour through them (decision 34), on a gas coefficient the archive
+was thought not to give — 0.917, SV32351/52's orifice T in the later file UD-RL-G00-DZ-0002-001, was
+assumed. Sempell's orifice selections UD-RL-G00-DZ-0001-001 (163 sheets, AD 2000-A2, VdTÜV type test,
+the same file as SV32353's and SV32357's) print, for every valve in gas or steam service at full lift,
+"57 coeff. of discharge" 0.830 and "60 using coeff. of discharge" 0.922, whatever the orifice — J, L, M,
+P, Q, R, T alike; a lift-limited valve prints less (0.353-0.705), and so do the smallest orifices
+(E 0.723 / 0.804). On the three orifices wanted:
+
+| orifice | valve, service | page | 57 / 60 |
+|---|---|---|---|
+| F | SV38107, gas (k 1.320, Z 0.81) | 130 | 0.830 / 0.922 |
+| K | SV30909, gas (k 1.320, Z 0.41) | 62 | 0.830 / 0.922 |
+| M | SV30203, gas (M 28.9, k 1.410) | 10 | 0.830 / 0.922 |
+
+"60" is the coefficient Sempell's own "actual capacity" uses (the "calculated capacity" uses "57"), so
+it is the one the API 520 law in `core/relief.py` takes: `data.relief_devices.GAS_KD_FULL_LIFT = 0.922`,
+on SV32353, SV32357 and SV32253; SV32351/52 keep their own certified 0.917. Each valve relieves 0.5 %
+more at a given state (SV32357 at 6.61 bar a: 886.4 kg/h where it was 881.6); on its shut-vent test
+SV32357 now lifts every 25.1-25.3 s where it lifted every 25.4, and vents 36.6 kg in 400 s where it
+vented 36.4. The open data gap is closed.
+
+## LXXIV.4 Five Metso sheets catalogued
+
+Metso's sizing sheets UD-MR-G00-DZ-0031-009 hold 63 items on 64 pages; sessions 51-53 read pages
+25-33. Indexed in full (each sheet's tag field), pages 20-24 are five valves of this plant, read from
+the images and catalogued in `data/control_valves.py` (`HV_323605`, `PV_323203`, `PV_323202A`,
+`PV_323202B`, `TV_328002`), each a Neldisc on its printed points (decision 108's class):
+
+| tag | sheet | cases | rated | what the sheet prints |
+|---|---|---|---|---|
+| HV-323605 | item 19, p. 20 | 14 734 / 21 870 Nm3/h at 65.1 / 78.1 % | Cv 13 700, DN 400 | vapours, SG 0.641, 0.5 to 0.47 bar a, 99 C |
+| PV-323203 | item 22, p. 23 | 540 / 1600 Nm3/h at 20.4 / 44.6 % | FpCv 634.57 (Cv 840), DN 200 x 150 | carbamate gas, 1.1 to 1.0 bar a, 45 C, 0.69 kg/m3 |
+| PV-323202A | item 20, p. 21 | 305.8 / 917.8 / 1233.4 m3/h at 13.2 / 37.8 / 65.9 % | Cv 7300, DN 300 | circulating water, 65 C |
+| PV-323202B | item 21, p. 22 | the same flows at 16.5 / 42.4 / 60.3 % | Cv 4870, DN 250 | circulating water, 65 C |
+| TV-328002 | item 23, p. 24 | 150 / 410 / 530 m3/h at 21.2 / 55 / 90.5 % | Cv 3050, DN 200 | circulating water, 38 C |
+
+Densities the sheets do not print: 0.641 times air's normal density for HV-323605 (its case 1 is then
+12 205 kg/h against PFD 790's 12 040), the inlet density taken to normal conditions on the ideal gas
+law for PV-323203 (case 1 400 kg/h against PFD 702's 440), IAPWS-IF97's saturated liquid for the water
+valves (decision 116's class). PV-323202A / B are the tempered-water valves at cooler 329E002 that the
+loop summary tags TV-323013A / B — the second column of B-36's table (§XXXIII.5), confirmed. None is
+wired: on its vendor trim HV-323605 would stand at 64.2 % at design where V1's linear law stands at 50,
+and PV-323203 at 21.6 % where V1's at 25 — a decision for the process engineer (decision 23's class).
+
+## LXXIV.5 LT-329505's upper tap
+
+324E001's shell trim isometric UD-RL-100-MB-0182 (four sheets): sheet B3 runs nozzle N5, EL +15129,
+down a DN 25 line (8.3 m) to item 13, "15 PRESS. INST. LT 329505", the transmitter at EL +7308 — a wet
+reference leg from the steam space; its other leg is "conn. to Ermeto piping", instrument tubing that
+no piping isometric carries. Sheets B1, B2 and B4 are vent and drain blinds (N4 at EL +16649, N6 at
+EL +11461). The lower tap stays untraced.
+
+## LXXIV.6 Tests
+
+`python -m pytest` — **7 419 collected** (4 new: no valve icon, no readout over the drawing or
+another at design, every page button's block drawn, a hovered hotspot tinted), thirteen parallel
+parts, every part green on its first run. Updated: the geometry floors (247 indicators, no
+``avalve``), the vendor-valve count (42), the gas coefficient's tests (0.922; SV32357's shut-vent
+cycle 25.1-25.3 s and 36.6 kg), two faceplate tests' sample element types. pyflakes clean; the
+headless grep prints nothing.
+
+## LXXIV.7 Not done
+
+The five Metso valves are catalogued, not wired: the process engineer's decision (§LXXIV.4). LV-324501A /
+B's Kvs, the remaining taps, the database values and the field data remain open; the open data gaps
+are 18 (`handoff.md`).
+
+# Part LXXV — Three Metso valves wired; the process-deviation scenarios put to the plant (Phase 7)
+
+Session 59, 2026-10-17. The process engineer decided the question session 58 left: HV-323605,
+PV-323203 and TV-328002 on their Metso Neldisc sheets (decision 23's class, decision 131), PV-323202A
+/ B left catalogued (TIC-323013 models the tempered water's supply temperature directly, decision
+13); and asked for the process-deviation scenarios of `D:\Work\Urea Simulation\References\scenarios`
+to be covered with the right response.
+
+## LXXV.1 The three valves on their trims (decision 131)
+
+Each runs Metso's printed capacities as its curve (`control.valve.cv_fraction`'s printed form,
+decision 108's class), its design stroke where its normal case passes the design flow
+(`data.control_valves.design_stroke_pct`), and V1's law on a switch the equivalence harness keeps:
+
+| valve | unit, law | design flow | design stroke | V1 | switch |
+|---|---|---|---|---|---|
+| HV-323605 | 323F010's vapour to 324E002, IEC 60534 compressible, anchored (`pre_evaporator.vapour_outlet_kgh`) | 12 013.3 kg/h, the overhead V1's balance gives (PFD 790 prints 12 040) | 64.08 %, xT 0.38 (normal case) | linear from 50 %, the globe valve's xT | `PreEvaporator(vent=V1_VENT)` |
+| PV-323203 | the LP flash gas node's vent to 323C005, square root on the differential (`flash_gas_node.vent_valve_kgh`) | PFD 702, 440 kg/h | 21.64 % | linear from 25 % | `FlashCondenser(pv_323203=None)`, in ``V1_CONDENSER`` |
+| TV-328002 | 328E004's cooling water on TIC-328002, the duty and TT-329007 on the water passed (`reflux_drum`) | PFD 1028, 408 t/h | 55.04 % | linear from 50 % | `RefluxDrum(tv_328002=None)` |
+
+The laws:
+
+    HV-323605:  w   = w_des . Phi(h, P1, P2, T1, M) / Phi(h_des, ...)        on phi(h), xT 0.38
+    PV-323203:  m   = 440 . (phi(h) / phi(h_des)) . sqrt( max(P - 1.0, 0) / 0.13 )
+    TV-328002:  Q   = min(Q_des . phi(h) / phi(h_des),  the decision-28 cap)
+                TT-329007 = 30 + 8 . phi(h_des) / phi(max(h, 1 %))
+
+each V1's own form with the trim's capacity ratio in place of h / h_des; the hand and controller
+seeds — HIC-323605, PIC-323203, TIC-328002 — at the design strokes. The quoted 64.2 % for HV-323605
+(§LXXIV.4) was the stroke for PFD 790's printed 12 040 kg/h; the valve passes the 12 013.3 V1's
+balance gives, at 64.08 %.
+
+What each does, measured:
+
+* **HV-323605.** Its design xT, 0.38, chokes the valve once the 324E002 shell falls below 0.298 bar
+  a at the design separator: there it passes at most 1.016 times the design overhead, where V1's
+  globe xT passed 1.149 at 0.25 bar a. Both ways (`test_hv_323605_on_its_vendor_trim_decided_
+  divergence`): the seed's own relaxation (B-94) parts the two on the first tick by 3e-8 bar; the
+  324E002 shell to 0.25 bar a, V1's valve pulls 13 638 kg/h at once and its separator to 0.4319 bar
+  a and 97.76 C after five minutes, the Neldisc pulls 12 196 kg/h and holds it at 0.4562 bar a and
+  98.83 C. The unit's own tests restate a pinched or opened valve as the same fraction of its design
+  capacity V1's strokes were of its 50 %: at half (32.04 %) the separator holds 0.538 bar a after two
+  hours (V1's trim 0.530); opened to 1.6 times (79.09 %) it boils 3288 kg/h of its own at 0.404 bar
+  a (2936 at 0.410); at a fifth (12.82 %) the choked valve passes 5.30 t/h at the 1.0 bar a clamp
+  (6.31 on V1's), the separator stays above its design vacuum and the leg drains it to its heel at
+  about 5000 s, where V1's settles at 6.5 % — and there the explicit species step is not stable
+  (handoff B-98, §LXXV.4).
+* **PV-323203.** The valve is large for its duty: the design sits low on its curve and its gain per
+  per cent of stroke there is 1.85 times V1's; wide open it passes 10.3 times PFD 702 against V1's
+  4.0. Held at its design stroke the node does exactly what it did at V1's 25 %. Both ways
+  (`test_pv_323203_on_its_vendor_trim_decided_divergence`, PIC-323203 on V1's 0.60 %/bar on both
+  sides): PFD 701 up 10 %, bit-exact until PIC-323203 first moves the stroke at tick 11; an hour on
+  V1 at 1.3380 bar a on 31.11 %, the Neldisc at 1.2784 on 26.66 %. On the decided gain, the unit's
+  cut trims to 13.2 % in ten minutes where V1's trim reached 16 %, and a 10 % cut in the column
+  bottoms settles the node at 1.122 bar a on 6.6 % (V1's trim 1.121 on 8.6 %).
+* **TV-328002.** At its sheet's 21.2 % it passes 24.3 % of its design water (V1's law 42.4 %), at
+  90.5 % 3.08 times (1.81). Both ways (`test_tv_328002_on_its_vendor_trim_decided_divergence`): the
+  strokes differ at the seed and the duties do not, so the two part on TIC-328002's first output and
+  nothing else; 737 cut a fifth, V1 closes 10.5 points to 39.50 % and its drum stands at 59.050 C,
+  the Neldisc closes 9.3 points to 45.73 % and stands at 59.303 C.
+
+The plant-level re-pins: the synthesis loop's decided harness shares the port's steam network, so
+V1's side of three tests moved by 1-3e-4 bar or 0.03 kg (B-75 141.4894, B-76 3650.52 kg, A-12's CO2
+case 139.5413 bar a).
+
+## LXXV.2 The process-deviation scenarios: what is put to the plant
+
+`D:\Work\Urea Simulation\References\scenarios` holds four notes: `Scenarios.md` (the reactor and the
+concentration train), `Scenarios2.md` (the synthesis loop, the LP and the waste-water sections),
+`Scenarios3.md` (the LP condensers, the tanks, the desorbers) and `Scenarios4.md` (valve steps and
+lag times). They are generic — "a Stamicarbon plant", an atmospheric flash tank, a 99.7 % melt, a
+steam-driven HP ejector — and the fourth is an analysis of V1's own source files (its works cited are
+`reactor.py`, `main.py`, `main_backup.py`). So they are not plant data (CLAUDE.md §4): nothing is
+calibrated on them. Each claim is an expectation, measured on the port.
+
+`tests/phase7/deviations.py` puts every section of the four notes on Helwan's plant: 78 deviations
+carrying 191 claimed responses, each on the console's own lever (`engine.command`: a faceplate's set
+point or output, a hand valve, a steam valve), applied after a settling minute on the design seed,
+run 10 to 30 minutes, and each claim read off the published packet as the deviation's departure from
+an unperturbed control run at the same plant time — at the end, or at its extreme on the way. The
+control absorbs the seed's own drift (B-94). A departure inside 1e-4 of the indicator's value reads
+as none, and so does one below the indicator's display resolution: the comparison is what the
+console shows. Where Helwan's plant differs from the note the deviation is put on the equipment the
+section describes (323F004 at 1.13 bar a for the "atmospheric flash tank", 322J001's liquid-ammonia
+spindle HIC-322602 for the "HP ejector", 323P001 for the "lean carbamate pump" that feeds the HP
+scrubber), and a claim no indicator publishes — a crystallised line, corrosion, cavitation, biuret
+per stage, carry-over to a vent — is listed with the deviation as unmodelled, not invented.
+
+`python -m tests.phase7.run_deviations OUT_DIR --workers 16` runs the 79 plants (45 minutes on this
+machine; a wide-open HV-322605 or a starved stripper costs the solver several times a design tick).
+
+## LXXV.3 The results
+
+**147 of the 191 claimed responses come out as claimed.** Every section has its main response as
+claimed: the levels, the pressures, the concentrations and the slips move the way the notes say for
+the levels raised and lowered (S1-5.4, S2-2.2, S2-4.2, S3-1.2, S3-2.2, S3-3.2, S3-4.3), the steam
+moved (S1-3.1, S1-4.1, S1-5.1, S2-2.1, S2-5.2, S2-5.3), the drum pressures moved (S1-3.2, S1-4.2,
+S3-1.3, S3-2.3), the valves stepped (S2-2.3, S2-4.3, S4's steam supply, letdown, off-gas, ejector and
+chest), the condensers' water moved (S3-1.4, S3-1.5), and the losses of seal blow through (S1-2.2,
+S2-2.2b, S2-4.2b). The 44 that differ:
+
+| class | claims | what the model does, and why |
+|---|---|---|
+| **defect, raised** | 11 | **A-21**: HV-322605 wide open (S1-1.2, S2-3.1a) — the stripper sends 76 % of its doubled feed overhead, its bottoms vanish and read 100 % NH3, the CO2 cannot enter, PT-329201 reaches 155 bar a and every trip latches at 37 s; V1 verbatim holds 140.7 bar a (3 claims). **A-22**: a full 323F004 has no ceiling — LI-323505 reads 100 % while its holdup grows, nothing reaches 323E011 (S1-2.1, 2 claims). **B-99**: 322E003's condensation does not answer its tempered water — TIC-329005 to 75 C or FIC-329409 to 360 m3/h leaves its duty at 5327 kW, PT-329201, LT-329501 and the overflow unmoved (S2-1.4a / b, 6 claims) |
+| **a controller holds it** | 7 | TIC-324001 holds 130 C, so a lost vacuum takes less steam, not more (S1-4.2a); TIC-323007 holds 135 C on a column pressure moved either way (S3-6.1); PIC-322201 holds 322C001 (S1-1.1); FFIC-329401's ratio raises 328C004's steam with its feed, so NH3 slips less (S2-5.1); TIC-328002 and PIC-328202 hold 328D001 (S3-2.4, S3-5.1b). The notes describe the open loop or an operator's compensation |
+| **no lever moves it** | 3 | PIC-324203 moves PT-324203 by 0.001 bar either way (its bleed valve's authority, B-61's finding): S1-5.2a / b's vacuum loss and deepening are not reached on that lever; a motive-steam loss is what breaks it (the Phase 7 vacuum break) |
+| **unmodelled mechanism** | 8 | an empty 324F003 leg admits no air (S1-5.4b); 328D001's uncondensed vapour is V1's law on 737 and 328E004's duty, not on the absorbent 718A (S3-2.4); 323E011 condenses on its dew point (B-30), not on its wash 791 (S3-3.1b, 2); TT-328008 publishes 328C002's own top, the reflux's effect is on TIC-328008's inferential, which moves as claimed (S3-5.1, 2); the starved stripper's film does not dry out (S2-3.1b); inerts do not suppress the reactor's conversion (S4-offgas-close) |
+| **below the display** | 3 | PT-329201's 0.1 bar resolution hides a transient under it (S2-2.1a, S2-3.1b peaks); TT-329125 falls 0.09 K where a slow rise is claimed (S2-1.2) |
+| **the note against the model's physics** | 12 | S1-1.1: the reactor spills its 183 C melt into the off-gas line when full, which warms 322E003's gas (TT-322002 +1.7 K) where the note has it cooled, and the loop pressure falls 0.9 bar rather than spiking; S2-1.1: TT-322012 rises 3.1 K as claimed, then falls below the control as the scrubber drains; S2-1.3: more recycle carbamate brings more NH3 and CO2 than its water absorbs — PT-329201 +0.2 bar, TT-322012 +4 K; S2-1.4b: more tempered water cools 322E003 (the note's tempering-cooler bottleneck is not on the model; B-99); S2-2.1: 322E002 raises 0.7 % LESS LP steam when the stripper strips more, and 0.1 % more when it strips less — measured, not explained, for the process engineer; S2-2.2a: a filling stripper holds its drain back, so 323C003 boils less until the level settles; S2-4.1a: 323C003's boil-up is capped at its design split (V1), so more steam raises its temperature, not its vapour; S4-offgas-open: the note's Joule-Thomson cooling below 20 C is V1's artefact — the port's HV-322604 letdown condenses its gas onto the liquor (decision 38) and its outlet warms 9 K; S4-offgas-close: the conversion rises 0.2 points with the loop pressure; S4-ejector-close: closing the spindle drives the suction (V1's law, and Scenarios2 §1.1's own physics), which drains 322E003 — Scenarios4 claims the opposite of Scenarios2 |
+
+Two runs that agree hide a defect: S2-3.1a (HV-322605 to 100 %) is A-21's collapse, and its claims
+agree only because the reactor drains as the plant trips. S4-chest-close's melt cools to 58 C as the
+vacuum deepens over a 324F001 that no longer boils — below where an 80 % urea solution crystallises,
+which the model does not represent (no flag is raised, unlike the stripper's and the scrubber's).
+
+The note's lag times (Scenarios4: the steam header 1-3 s dead time and 30-90 s time constant, the
+ejector's vacuum under 1 s and 10-45 s, the stripper's level 5-10 s and 60-120 s, the reactor's
+thermal profile 30-60 s and 8-360 minutes) are its own deductions from first principles, not plant
+measurements; they are not pinned, and the port's are not identified here (the cold start's FOPTD on
+PT-329201 is Phase 7's measured one, §LXII.4).
+
+## LXXV.4 The species step at a heel (handoff B-98)
+
+Restating LXXV.1's nearly shut HV-323605 exposed it: on the Neldisc at a fifth of its design capacity
+the choked valve holds 323F010 above its design vacuum and the barometric leg drains it to its 1 kg
+heel at about 5000 s. There some 80 t/h passes a 1 kg holdup, a residence of 0.045 s against the 1 s
+tick, and the explicit species step (`liquor_stage.advance_species`, V1's ``sol_advance``) takes the
+drained composition at the old holdup's: water and urea floor at zero and the liquor reads 0.000 %
+urea and a 372 C bubble point until the level recovers (73.0 % again by 10 800 s). V1's linear trim
+never reaches the heel in that case (it settles at 6.5 %). The backward step on the drained
+composition,
+
+    (M w)_new = [M_pre w + (m_in w_in - m_vap y + nu xi) dt / 3600] / (1 + m_liq dt / (3600 M_new))
+
+measured in scratch, holds the heel at 74.5 % urea and is the explicit step's to 0.001 % away from
+it; taken only where the explicit step would overshoot (m_liq dt / 3600 > M_new), decision 78's
+class, it would leave every other state V1's to the bit. Raised, not built. (Corrected in §LXXVI.2:
+the 74.5 % was the even-tick phase of a ring the explicit vapour draw leaves at the heel.)
+
+## LXXV.5 Tests
+
+`tests/phase7/test_deviations.py` (new): every deviation well formed, every path resolving in the
+port's packet, the engine accepting every command at the seed (78), the verdict on a constructed
+record, and one deviation end to end (LV-322501 to 90 %, two minutes: the stripper's level falls).
+The three valves: each unit's tests restated or re-pinned to the vendor trims (§LXXV.1) and a new
+test each (`test_pv_323203_on_its_vendor_trim`, `test_hv_323605_on_its_vendor_trim`,
+`test_tv_328002_on_its_vendor_trim`); each equivalence harness on V1's law through its switch,
+``==`` V1 tick by tick, and one both-ways test each.
+
+`python -m pytest` — **7 507 collected** (88 new: 82 in `tests/phase7/test_deviations.py`, three vendor-trim tests and three both-ways tests for the valves), thirteen parallel parts, every part green on its first run. Re-pinned to the vendor trims: 27 unit tests of 323F010, 323E011 / 323D011, the gas node and 328D001 (restated where they held a valve at V1's stroke), the equivalence harnesses put on V1's laws through their switches, and three synthesis-loop tests whose V1 side shares the port's steam network (1-3e-4 bar). pyflakes clean; the headless grep prints nothing.
+
+## LXXV.6 Not done
+
+A-21, A-22, B-98 and B-99 raised with options, not built: A-21 and B-99 move decided or V1 physics,
+A-22's destination is a routing choice, B-98 a new numerical mechanism. The notes' claims the model
+answers differently on its own physics (§LXXV.3) are recorded for the process engineer; none is
+built on, the notes not being plant data. PV-323202A / B stay catalogued (decision 131).
+
+## LXXV.7 The verdict table
+
+Every claimed response as `python -m tests.phase7.run_deviations` measured it on 2026-10-17 (the
+code of this session): the indicator and where it is read, the direction the note claims, the one
+measured against the control, the departure in the indicator's own unit, and whether it is the
+claim's. The classes of §LXXV.3 say why each "NO" is what it is. (S1-1.2, S2-3.1a, S2-1.4a / b and
+S1-2.1 were re-run on session 61's code, after A-21, A-22, B-99 and B-100 were built: §LXXVII.5.)
+
+| key | deviation | indicator | claimed | measured | departure | agrees |
+|---|---|---|---|---|---|---|
+| S1-1.1 | Reactor high level (overfilling) | REACT_322R001.LT_322504 (end) | rises | rises | +20 | yes |
+|  |  | SCRUB_322E003.TT_322002 (end) | falls | rises | +1.7 | NO |
+|  |  | ABSORB_328.C001.P_bara (end) | rises | no change | +0 | NO |
+|  |  | SCRUB_322E003.P_overflow (peak) | rises | no change | +0 | NO |
+|  |  | STRIP_322E001.LV_322501 (peak) | rises | rises | +0.1 | yes |
+| S1-1.2 | Reactor low level (loss of holdup) | REACT_322R001.LT_322504 (end) | falls | falls | -47.6 | yes |
+|  |  | SCRUB_322E003.P_overflow (end) | falls | rises | +14.4 | NO |
+|  |  | REACT_322R001.X_conv (end) | falls | falls | -54.18 | yes |
+|  |  | STRIP_322E001.bot_mass_pct.NH3 (end) | rises | falls | -7.921 | NO |
+|  |  | RECIRC_323.C003.v305_th (end) | rises | falls | -24.56 | NO |
+| S1-2.1 | Flash tank high level (overfilling) | RECIRC_323.F004.LI_323505 (end) | rises | rises | +40 | yes |
+|  |  | LPCC_3232.E011.LI_323D011 (end) | rises | falls | -0.1 | NO |
+|  |  | LPCC_3232.E011.P_bara (peak) | rises | no change | +0 | NO |
+| S1-2.2 | Flash tank low level (loss of liquid seal) | RECIRC_323.F004.LI_323505 (end) | falls | falls | -58.8 | yes |
+|  |  | RECIRC_323.F004.blow505_th (peak) | rises | rises | +2.49 | yes |
+|  |  | RECIRC_323.F010.P_bara (peak) | rises | rises | +0.079 | yes |
+|  |  | RECIRC_323.F010.TT_323010 (peak) | rises | rises | +1.7 | yes |
+| S1-3.1a | Pre-evaporator steam increased | RECIRC_323.D002.urea_pct (end) | rises | rises | +0.1 | yes |
+|  |  | RECIRC_323.F010.TT_323010 (end) | rises | rises | +0.8 | yes |
+|  |  | EVAP_324.VAC.324E002.Q_kW (end) | rises | rises | +140.1 | yes |
+| S1-3.1b | Pre-evaporator steam decreased | RECIRC_323.D002.urea_pct (end) | falls | falls | -0.09 | yes |
+|  |  | EVAP_324.E001.Q_kW (end) | rises | rises | +73 | yes |
+|  |  | EVAP_324.E001.PIC_329203.op (end) | rises | rises | +0.2 | yes |
+| S1-3.2a | Pre-evaporator drum pressure increased | RECIRC_323.F010.P_bara (end) | rises | rises | +0.106 | yes |
+|  |  | RECIRC_323.F010.evap_th (end) | falls | falls | -4.49 | yes |
+|  |  | RECIRC_323.F010.TT_323010 (peak) | rises | rises | +6.8 | yes |
+| S1-3.2b | Pre-evaporator drum pressure decreased | RECIRC_323.F010.P_bara (end) | falls | falls | -0.063 | yes |
+|  |  | RECIRC_323.F010.TT_323010 (peak) | falls | falls | -4 | yes |
+| S1-4.1a | First vacuum evaporator steam increased | EVAP_324.E001.urea_pct (end) | rises | rises | +0.3 | yes |
+|  |  | EVAP_324.E001.PT_324201 (peak) | rises | rises | +0.001 | yes |
+| S1-4.1b | First vacuum evaporator steam decreased | EVAP_324.E001.urea_pct (end) | falls | falls | -0.3 | yes |
+|  |  | EVAP_324.E003.Q_kW (end) | rises | rises | +135 | yes |
+| S1-4.2a | First vacuum evaporator pressure increased | EVAP_324.E001.PT_324201 (end) | rises | rises | +0.057 | yes |
+|  |  | EVAP_324.E001.urea_pct (end) | falls | falls | -1 | yes |
+|  |  | EVAP_324.E001.PIC_329203.op (end) | rises | falls | -1.5 | NO |
+| S1-4.2b | First vacuum evaporator pressure decreased | EVAP_324.E001.PT_324201 (end) | falls | falls | -0.029 | yes |
+|  |  | EVAP_324.E001.urea_pct (end) | rises | rises | +0.5 | yes |
+| S1-5.1a | Second vacuum evaporator steam increased | EVAP_324.E003.urea_pct (end) | rises | rises | +0.1 | yes |
+|  |  | EVAP_324.E003.PT_324203 (peak) | rises | rises | +0.003 | yes |
+| S1-5.1b | Second vacuum evaporator steam decreased | EVAP_324.E003.urea_pct (end) | falls | falls | -0.1 | yes |
+| S1-5.2a | Second vacuum evaporator vacuum lost | EVAP_324.E003.PT_324203 (end) | rises | rises | +0.001 | yes |
+|  |  | EVAP_324.E003.urea_pct (end) | falls | no change | +0 | NO |
+|  |  | EVAP_324.E003.PIC_329212.op (end) | rises | falls | -0.1 | NO |
+| S1-5.2b | Second vacuum evaporator vacuum deepened | EVAP_324.E003.PT_324203 (end) | falls | falls | -0.001 | yes |
+|  |  | EVAP_324.E003.urea_pct (end) | rises | no change | +0 | NO |
+| S1-5.4a | Second evaporator discharge level high | EVAP_324.E003.LI_324F003 (end) | rises | rises | +31.1 | yes |
+|  |  | EVAP_324.E003.product_th (peak) | falls | falls | -15.71 | yes |
+| S1-5.4b | Second evaporator discharge level low | EVAP_324.E003.LI_324F003 (end) | falls | falls | -54.3 | yes |
+|  |  | EVAP_324.E003.PT_324203 (peak) | rises | no change | +0 | NO |
+| S2-1.1 | HP ejector opening decreased | SCRUB_322E003.LT_329501 (end) | falls | falls | -15.8 | yes |
+|  |  | SCRUB_322E003.TT_322011 (end) | falls | falls | -3.2 | yes |
+|  |  | EJ_322F001.TT_322012 (end) | rises | falls | -2.8 | NO |
+|  |  | SCRUB_322E003.ccw.TT_329125 (end) | rises | rises | +1.44 | yes |
+| S2-1.2 | HP scrubber vent valve opened | SCRUB_322E003.P_overflow (end) | falls | falls | -0.2 | yes |
+|  |  | SCRUB_322E003.TT_322011_lp (end) | rises | rises | +5.6 | yes |
+|  |  | SCRUB_322E003.ccw.TT_329125 (end) | rises | falls | -0.09 | NO |
+|  |  | SCRUB_322E003.LT_329501 (end) | rises | rises | +0.5 | yes |
+|  |  | SCRUB_322E003.TT_322011 (end) | rises | rises | +5.4 | yes |
+| S2-1.3 | Recycle carbamate to the HP scrubber increased | SCRUB_322E003.P_overflow (end) | falls | rises | +0.2 | NO |
+|  |  | SCRUB_322E003.LT_329501 (end) | rises | rises | +8.3 | yes |
+|  |  | SCRUB_322E003.TT_322002 (end) | falls | falls | -8.7 | yes |
+|  |  | SCRUB_322E003.TT_322011 (end) | falls | falls | -23.8 | yes |
+|  |  | SCRUB_322E003.ccw.TT_329125 (end) | falls | falls | -1.71 | yes |
+|  |  | EJ_322F001.TT_322012 (end) | falls | rises | +4 | NO |
+| S2-1.4a | HP scrubber tempered-water inlet colder | SCRUB_322E003.P_overflow (end) | falls | no change | +0 | NO |
+|  |  | SCRUB_322E003.LT_329501 (end) | rises | no change | +0 | NO |
+|  |  | SCRUB_322E003.TT_322002 (end) | falls | falls | -1.8 | yes |
+|  |  | SCRUB_322E003.TT_322011 (end) | falls | no change | +0 | NO |
+|  |  | EJ_322F001.TT_322012 (end) | falls | no change | +0 | NO |
+| S2-1.4b | HP scrubber tempered water flow increased | SCRUB_322E003.P_overflow (end) | rises | no change | +0 | NO |
+|  |  | SCRUB_322E003.LT_329501 (end) | falls | no change | +0 | NO |
+|  |  | SCRUB_322E003.TT_322002 (end) | rises | falls | -1 | NO |
+| S2-2.1a | HP stripper steam increased | STRIP_322E001.TT_322004 (end) | rises | rises | +1.4 | yes |
+|  |  | STRIP_322E001.bot_mass_pct.NH3 (end) | falls | falls | -0.542 | yes |
+|  |  | SCRUB_322E003.P_overflow (peak) | rises | no change | +0 | NO |
+|  |  | HPCC_322E002.steam.kgh (end) | rises | falls | -732 | NO |
+|  |  | STRIP_322E001.bot_mass_pct.Biuret (end) | rises | rises | +0.02 | yes |
+| S2-2.1b | HP stripper steam decreased | STRIP_322E001.bot_mass_pct.NH3 (end) | rises | rises | +0.57 | yes |
+|  |  | HPCC_322E002.steam.kgh (end) | falls | rises | +102 | NO |
+|  |  | RECIRC_323.C003.v305_th (end) | rises | rises | +0.26 | yes |
+| S2-2.2a | HP stripper high level (flooding) | STRIP_322E001.LI_322501 (end) | rises | rises | +45.7 | yes |
+|  |  | STRIP_322E001.bot_mass_pct.NH3 (end) | rises | rises | +0.293 | yes |
+|  |  | RECIRC_323.C003.v305_th (end) | rises | falls | -0.73 | NO |
+| S2-2.2b | HP stripper low level (loss of seal) | STRIP_322E001.LI_322501 (end) | falls | falls | -47.5 | yes |
+|  |  | STRIP_322E001.blowthrough_th (peak) | rises | rises | +4.85 | yes |
+|  |  | RECIRC_323.C003.P_bara (peak) | rises | rises | +0.43 | yes |
+| S2-2.3a | Stripper level valve: big step opening | STRIP_322E001.LI_322501 (end) | falls | falls | -48.6 | yes |
+|  |  | STRIP_322E001.blowthrough_th (peak) | rises | rises | +24.6 | yes |
+|  |  | RECIRC_323.C003.P_bara (peak) | rises | rises | +1.91 | yes |
+| S2-2.3b | Stripper level valve: big step closing | STRIP_322E001.LI_322501 (end) | rises | rises | +50 | yes |
+|  |  | RECIRC_323.D002.product324_th (peak) | falls | falls | -79.98 | yes |
+| S2-3.1a | Reactor downcomer valve: big step opening | STRIP_322E001.LI_322501 (peak) | rises | rises | +0.7 | yes |
+|  |  | REACT_322R001.LT_322504 (end) | falls | falls | -46.3 | yes |
+| S2-3.1b | Reactor downcomer valve: big step closing | REACT_322R001.LT_322504 (end) | rises | rises | +20 | yes |
+|  |  | STRIP_322E001.TT_322004 (peak) | rises | no change | +0 | NO |
+|  |  | SCRUB_322E003.P_overflow (peak) | rises | no change | +0 | NO |
+| S2-4.1a | Rectifying column steam increased | RECIRC_323.C003.v305_th (end) | rises | falls | -0.01 | NO |
+|  |  | LPCC_3232.E003.P_bara (peak) | rises | rises | +0.04 | yes |
+| S2-4.1b | Rectifying column steam decreased | RECIRC_323.C003.v305_th (end) | falls | falls | -1.38 | yes |
+|  |  | RECIRC_323.F010.P_bara (peak) | rises | rises | +0.006 | yes |
+|  |  | RECIRC_323.D002.urea_pct (end) | falls | falls | -0.23 | yes |
+| S2-4.2a | Rectifying column high level | RECIRC_323.C003.LI_323501 (end) | rises | rises | +29.8 | yes |
+| S2-4.2b | Rectifying column low level (loss of seal) | RECIRC_323.C003.LI_323501 (end) | falls | falls | -57.8 | yes |
+|  |  | RECIRC_323.C003.blow501_th (peak) | rises | rises | +1.38 | yes |
+|  |  | RECIRC_323.F004.P_bara (peak) | rises | rises | +0.11 | yes |
+| S2-4.3a | Rectifying level valve: big step opening | RECIRC_323.C003.drain314_th (peak) | rises | rises | +71.76 | yes |
+|  |  | RECIRC_323.F010.TT_323010 (peak) | falls | falls | -0.8 | yes |
+| S2-4.3b | Rectifying level valve: big step closing | RECIRC_323.C003.LI_323501 (end) | rises | rises | +40 | yes |
+|  |  | RECIRC_323.D002.product324_th (peak) | falls | falls | -59.56 | yes |
+| S2-5.1 | Feed to the desorption and hydrolysis unit increased | DESORB_328.C002.TT_328007 (peak) | falls | falls | -0.1 | yes |
+|  |  | DESORB_328.C004.FIC_329401.op (end) | rises | rises | +2.3 | yes |
+|  |  | DESORB_328.C004.nh3_740_ppm (end) | rises | falls | -0.54 | NO |
+|  |  | DESORB_328.C004.urea_740_ppm (end) | rises | rises | +0.717 | yes |
+| S2-5.2a | Steam to the second desorber increased | DESORB_328.C004.nh3_740_ppm (end) | falls | falls | -0.876 | yes |
+|  |  | DESORB_328.C004.P_bara (end) | rises | rises | +0.08 | yes |
+|  |  | DESORB_328.C004.ovhd750_th (end) | rises | rises | +1.03 | yes |
+| S2-5.2b | Steam to the second desorber decreased | DESORB_328.C004.nh3_740_ppm (end) | rises | rises | +16.64 | yes |
+|  |  | DESORB_328.C004.urea_740_ppm (end) | rises | rises | +0.054 | yes |
+| S2-5.3a | Steam to the hydrolyser increased | DESORB_328.C003.urea_slip_ppm (end) | falls | falls | -0.211 | yes |
+|  |  | DESORB_328.C003.ovhd748_th (end) | rises | rises | +0.09 | yes |
+| S2-5.3b | Steam to the hydrolyser decreased | DESORB_328.C003.urea_slip_ppm (end) | rises | rises | +0.33 | yes |
+|  |  | DESORB_328.C004.urea_740_ppm (end) | rises | rises | +0.047 | yes |
+| S3-1.1a | Ammonia water to the LPCC increased | LPCC_3232.E003.carbamate308_th (end) | rises | rises | +0.48 | yes |
+| S3-1.1b | Ammonia water to the LPCC decreased | LPCC_3232.E003.vent321_th (end) | rises | rises | +0.03 | yes |
+| S3-1.2a | LPCC drum level increased | LPCC_3232.E003.LI_323502 (end) | rises | rises | +27.9 | yes |
+| S3-1.2b | LPCC drum level decreased | LPCC_3232.E003.LI_323502 (end) | falls | falls | -41.3 | yes |
+| S3-1.3a | LPCC drum pressure increased | LPCC_3232.E003.P_bara (end) | rises | rises | +0.05 | yes |
+|  |  | RECIRC_323.C003.P_bara (end) | rises | rises | +0.02 | yes |
+|  |  | LPCC_3232.E003.vent321_th (end) | falls | falls | -1.33 | yes |
+| S3-1.3b | LPCC drum pressure decreased | LPCC_3232.E003.P_bara (end) | falls | falls | -0.15 | yes |
+|  |  | LPCC_3232.E003.vent321_th (end) | rises | rises | +2.64 | yes |
+| S3-1.4a | LPCC tempered water warmer | LPCC_3232.E003.TT_323006 (end) | rises | rises | +2.2 | yes |
+|  |  | LPCC_3232.E003.PIC_323202.op (end) | rises | rises | +30.6 | yes |
+|  |  | LPCC_3232.E003.vent321_th (end) | rises | rises | +1.73 | yes |
+| S3-1.4b | LPCC tempered water colder | LPCC_3232.E003.TT_323006 (end) | falls | falls | -2.8 | yes |
+|  |  | LPCC_3232.E003.vent321_th (end) | falls | falls | -1.33 | yes |
+| S3-1.5 | LPCC tempered water flow decreased | LPCC_3232.E003.TT_323006 (end) | rises | rises | +1.9 | yes |
+|  |  | LPCC_3232.E003.vent321_th (end) | rises | rises | +2.46 | yes |
+| S3-1.6 | Solution from the reflux pump to the LPCC increased | DESORB_328.D001.draw776_th (end) | rises | rises | +2.98 | yes |
+|  |  | LPCC_3232.E003.carbamate308_th (end) | rises | rises | +3.09 | yes |
+| S3-1.7a | Lean carbamate pump flow increased | LPCC_3232.E003.LI_323502 (end) | falls | falls | -16 | yes |
+|  |  | LPCC_3232.E003.carbamate308_th (end) | rises | rises | +6.18 | yes |
+| S3-1.7b | Lean carbamate pump flow decreased | LPCC_3232.E003.LI_323502 (end) | rises | rises | +11.3 | yes |
+|  |  | LPCC_3232.E003.carbamate308_th (end) | falls | falls | -6.11 | yes |
+| S3-2.1 | Ammonia water to the reflux condenser increased | DESORB_328.D001.draw776_th (end) | rises | rises | +1.93 | yes |
+| S3-2.2a | Reflux accumulator level increased | DESORB_328.D001.LI_328501 (end) | rises | rises | +32.5 | yes |
+| S3-2.2b | Reflux accumulator level decreased | DESORB_328.D001.LI_328501 (end) | falls | falls | -50.5 | yes |
+| S3-2.3a | Reflux condenser pressure increased | DESORB_328.C002.P_bara (end) | rises | rises | +0.38 | yes |
+|  |  | DESORB_328.C002.ovhd737_th (peak) | falls | falls | -0.31 | yes |
+|  |  | DESORB_328.D001.vent786_th (peak) | falls | falls | -0.02 | yes |
+| S3-2.3b | Reflux condenser pressure decreased | DESORB_328.C002.P_bara (end) | falls | falls | -0.33 | yes |
+|  |  | DESORB_328.D001.vent786_th (peak) | rises | rises | +0.01 | yes |
+| S3-2.4 | Lean carbamate to the reflux condenser decreased | LPCC_3232.E011.carb718A_th (end) | falls | falls | -0.87 | yes |
+|  |  | DESORB_328.D001.TT_328D001 (peak) | rises | no change | +0 | NO |
+|  |  | DESORB_328.D001.vent786_th (peak) | rises | no change | +0 | NO |
+| S3-3.1a | Ammonia water to the flash tank condenser increased | LPCC_3232.E011.P_bara (peak) | falls | falls | -0.01 | yes |
+|  |  | LPCC_3232.E011.TT_323011 (end) | falls | falls | -0.1 | yes |
+| S3-3.1b | Ammonia water to the flash tank condenser decreased | LPCC_3232.E011.P_bara (peak) | rises | no change | +0 | NO |
+|  |  | RECIRC_323.F004.P_bara (peak) | rises | no change | +0 | NO |
+|  |  | LPCC_3232.E011.vap011_th (peak) | rises | rises | +0.02 | yes |
+| S3-3.2a | Flash tank condenser level tank high | LPCC_3232.E011.LI_323D011 (end) | rises | rises | +8.8 | yes |
+| S3-3.2b | Flash tank condenser level tank low | LPCC_3232.E011.LI_323D011 (end) | falls | falls | -43.4 | yes |
+| S3-4.3a | Urea solution tank level high | RECIRC_323.D002.LI_323507 (end) | rises | rises | +0.7 | yes |
+|  |  | RECIRC_323.D002.product324_th (peak) | falls | falls | -5.56 | yes |
+| S3-4.3b | Urea solution tank level low | RECIRC_323.D002.LI_323507 (end) | falls | falls | -0.2 | yes |
+| S3-4.4 | Urea solution tank temperature increased | RECIRC_323.D002.TI_323008 (end) | rises | rises | +0.5 | yes |
+| S3-5.1a | Reflux to the first desorber increased | DESORB_328.C002.TT_328008 (end) | falls | no change | +0 | NO |
+|  |  | DESORB_328.D001.TIC_328008.pv (end) | falls | falls | -5.3 | yes |
+| S3-5.1b | Reflux to the first desorber decreased | DESORB_328.C002.TT_328008 (end) | rises | no change | +0 | NO |
+|  |  | DESORB_328.D001.TIC_328008.pv (end) | rises | rises | +6.5 | yes |
+|  |  | DESORB_328.D001.P_bara (peak) | rises | no change | +0 | NO |
+| S3-6.1a | Rectifying column pressure increased | RECIRC_323.C003.P_bara (end) | rises | rises | +0.02 | yes |
+|  |  | RECIRC_323.C003.PIC_329202.op (end) | rises | falls | -1.2 | NO |
+|  |  | LPCC_3232.E003.vent321_th (end) | falls | falls | -1.33 | yes |
+| S3-6.1b | Rectifying column pressure decreased | RECIRC_323.C003.P_bara (end) | falls | falls | -0.09 | yes |
+|  |  | RECIRC_323.C003.PIC_329202.op (end) | falls | rises | +0.1 | NO |
+|  |  | LPCC_3232.E003.vent321_th (end) | rises | rises | +2.64 | yes |
+| S4-steam-open | MP supply valve: huge opening | STEAM_SYSTEM.MP.P_bara (end) | rises | rises | +4.6 | yes |
+|  |  | STRIP_322E001.steam.duty_kW (end) | rises | rises | +2907 | yes |
+| S4-steam-close | MP supply valve: huge closing | STEAM_SYSTEM.MP.P_bara (end) | falls | falls | -17.83 | yes |
+|  |  | STRIP_322E001.steam.duty_kW (end) | falls | falls | -3.501e+04 | yes |
+|  |  | STRIP_322E001.bot_mass_pct.NH3 (end) | rises | rises | +18.07 | yes |
+| S4-letdown-open | 9-bar letdown: huge opening | STEAM_SYSTEM.DRUM_9BAR.P_bara (end) | falls | falls | -5.74 | yes |
+| S4-offgas-open | Scrubber off-gas valve: huge opening | SCRUB_322E003.P_overflow (end) | falls | falls | -0.4 | yes |
+|  |  | SCRUB_322E003.TT_322011_lp (end) | falls | rises | +9.1 | NO |
+| S4-offgas-close | Scrubber off-gas valve: huge closing | SCRUB_322E003.P_overflow (end) | rises | rises | +0.4 | yes |
+|  |  | REACT_322R001.X_conv (end) | falls | rises | +0.2 | NO |
+| S4-ejector-close | HP ejector: huge closing | SCRUB_322E003.LT_329501 (end) | rises | falls | -30 | NO |
+|  |  | EJ_322F001.suction_kgh (end) | falls | falls | -7759 | yes |
+| S4-chest-close | Evaporator chest: huge closing | EVAP_324.E001.Q_kW (end) | falls | falls | -1.05e+04 | yes |
+|  |  | EVAP_324.E001.TT_324001 (end) | falls | falls | -71.5 | yes |
+
+# Part LXXVI — A full 323F004 overflows, the species step at a heel; A-21 and B-99 measured (Phase 7)
+
+Session 60, 2026-10-17. The process engineer decided four of session 59's items and the
+evaporators' crystallisation: A-22 (a) and B-98 (b) built (decisions 132, 133), A-21 (b) and B-99
+(b) investigated and measured for the final decision, and no crystallisation restriction on
+324F001 / 324F003 (decision 134, V1's).
+
+## LXXVI.1 A full 323F004 overflows into 323E011 (handoff A-22, decision 132)
+
+V1 clamps LI-323505's reading at 100 % and not the holdup (`flash_tank.FlashTank.step`), so a drum
+whose drain is pinched fills with nothing leaving. Decision 11's class, the destination the process
+engineer's (option (a)): above the holdup LI-323505 reads as 100 %, ``F004_M_FULL_KG`` = 8457.7 kg,
+
+    M_new = max(M_pre + (m_314 - m_701 - m_319) dt / 3600, M_floor)
+    m_overflow = (M_new - M_full) . 3600 / dt,   M_new = M_full                [M_new > M_full]
+
+the excess leaving at the drum's composition (it joins the drain in the species step) and
+temperature. It is routed up the drum's vapour line into 323E011's shell — the one gas space the
+drum shares with the shell and 323D011 (B-51) — on the same tick (323F004 steps in V1's section 9,
+323E011 in 24), as a full 328D001's overflow is (A-15): liquid, not gas load, added to the feed,
+excluded from the condensing gas and from the latent heat, its sensible heat at TT-323005 of the
+tick,
+
+    m_in  += m_overflow,   gas = m_in - m_791 - m_786,over - m_overflow
+    sens  += m_overflow . cp . (T_323F004 - T_323E011)
+
+and through 323E011's own ceiling (A-15) on to 323C005 (A-20) once LIC-323503's draw cannot carry
+it. 323D011 carries no composition, so the urea liquor is booked as liquid mass, as the drum
+overflow's ammonia water is. Inert below a full drum: an hour on design boundaries is the uncapped
+drum's to the bit. ``FlashTank(ceiling=False)`` is V1's; every equivalence harness that runs
+323F004 uses it.
+
+Measured (LIC-323505 in MAN at 30 %, design boundaries): LV-323505 passes 32.6 t/h of PFD 319's
+101.5; the drum reaches LI-323505's 100 % at 176.8 s and overflows 68.9 t/h (what arrives less the
+flash and the drain); V1's holdup is 10 816 kg at five minutes, the capped drum's 8458 kg plus what
+overflowed to 1e-12. In 323E011, 30 t/h of 106 C liquor raises the feed by exactly that, leaves the
+condensation and the vent unmoved and warms the tank 0.042 K on the tick.
+
+**A data conflict found (handoff B-100).** V1's design holdup, 180 s of PFD 319, is 5075 kg —
+4.59 m3 at the drum's 1106 kg/m3 — and its 100 % holdup 8458 kg, 7.65 m3. 323F004 is a 1384 mm by
+1800 mm shell (`References/323F004 323E010 323F010.md` §3.1): 2.71 m3 of cylinder, and the
+reference's weights put its operating fluid at 518 kg (1753 kg operating less 1235 kg empty) and
+its flooded volume at about 3.45 m3 (4685 kg hydro-test). The holdup the model carries is ten
+times the drum's operating holdup and above its flooded volume. The ceiling is therefore built on
+LI-323505's 100 % as the model reads it, not on the drum's geometry, which would bind below the
+design holdup; decision 33's class (a vessel's volume with its heads, a level between its taps)
+was never applied to 323F004 and is raised, not applied.
+
+## LXXVI.2 The species step at a heel (handoff B-98, decision 133)
+
+`liquor_stage.advance_species` takes the backward step on the drained composition where the
+explicit one would overshoot — the drain passing more on the tick than the stage holds:
+
+    k_out = m_liq . dt / 3600
+    implicit where  k_out > M_new  and  M_new > MASS_FLOOR:
+        (M w_i)_new = [ M_pre w_i + (m_in w_in,i + m_in2 w_in2,i - m_vap y_i + nu_i xi) dt / 3600 ]
+                      / (1 + k_out / M_new)
+    else V1's explicit step, its expression untouched:
+        (M w_i)_new = M_pre w_i + (m_in w_in,i + m_in2 w_in2,i - m_vap y_i - m_liq w_i + nu_i xi) dt / 3600
+
+each floored at zero and renormalised (C6). Decision 78's class: the backward step on the tick
+where the explicit one is unstable, V1's to the bit on every other. ``advance_species(...,
+backward=False)`` is V1's explicit step at every state; the units whose equivalence harnesses reach
+a heel — 324F003 (`SecondEvaporator`) and 323D002 (`SolutionTank`) — carry ``backward_species``
+(default True), which the harnesses set False.
+
+Measured on HV-323605 at a fifth of its design capacity (LXXV.4's case, 1 s ticks): the leg drains
+323F010 to its 1 kg heel at 5290 s, 99 t/h passing it, 27.5 kg a tick. The backward step first
+binds at 5282 s, eight ticks before the heel, and the run is V1's to the bit until then. At the
+heel V1's explicit step reads 0.000 % urea and a 372.5 C bubble point; the port's reads 72.96 % at
+5400 s. At the function level (every stage, a 1 kg heel draining its design feed on a 1 s tick)
+V1's step overdraws every species, floors them and keeps the old composition whatever arrives;
+the port's takes the composition of what passes.
+
+**What the decided step leaves (handoff B-101).** Session 59's measurement of the remedy (74.5 %
+urea at the heel, LXXV.4) sampled even ticks only. The vapour draw is still explicit, and at a
+1 kg heel the evaporation (3.3 kg a tick at 12 t/h) takes more of the volatiles than the
+throughflow brings: ammonia floors on one tick and CO2 on the next, the vapour alternating between
+49 % NH3 and 63 % CO2, and the urea rings tick to tick — 74.53 and 75.88 % at two hours, against
+the 80.07 % the throughflow's own balance gives (74 268 kg/h of urea in 92 749 kg/h of drain). The
+vapour draw taken backward as well, each species at its live y / w, brings the heel to 78.6 % ten
+minutes on and 79.8 to 80.0 % half an hour on, a 0.26-point ring left (measured in scratch, not
+built; B-101).
+
+## LXXVI.3 A wide-open HV-322605: the collapse traced (handoff A-21, option (b))
+
+HIC-322605 60 -> 100 % after a settling minute on the design seed, traced tick by tick through the
+synthesis harness (`test_synthesis_loop_equivalence.run_both`, the transcription beside the port)
+with every decided line, without B-91's (decision 97), without B-77's (decision 95), and with none,
+and through the port's own scheduler.
+
+**What happens, in order.**
+
+1. The reactor dumps: 322E001's feed steps from 280.8 to 426.6 t/h on the first tick. The stripper
+   answers correctly — its feed-load choke and flooding knock-down cut the split (g_T 0.949,
+   g_flood 0.972), the overhead fraction falls from 53.5 to 47.1 %, the bottoms rise from 130.5 to
+   225.8 t/h — but its top gas rises from 150 to 201 t/h, hotter (TT-322013 187 -> 192.5 C).
+2. 322E002's melt answers on the same tick: TT-322010 170 -> 183.8 C, N/C 3.08 -> 3.34, its
+   bubble pressure PI-322E002 144.2 -> 182.7 bar a against a 140.7 bar a loop. On V1's split — the
+   transcription without B-91 — the melt then stands at 211 to 241 bar a for as long as the valve is
+   open, 70 to 100 bar above its bubble point at the loop's pressure, and is held liquid regardless:
+   PI-322E002's "220 to 285 bar a".
+3. B-91's saturation fraction reads that bubble pressure a tick late: f = 1 - b_207 . d with
+   d = 182.7 - 140.7 - 3.5 = 38.5 bar gives 0.409. The fraction and the melt's bubble pressure form
+   an algebraic loop through the condensation's own heat — condensing more heats the melt and raises
+   its bubble pressure — and taken explicitly across the tick it rings with a period of two ticks:
+   f = 1, all condenses, TT-322010 188-192 C, PI-322E002 218-237 bar a; next tick f = 0, nothing
+   condenses (20 kg/h of liquid), TT-322010 152 C, PI-322E002 130-170 bar a; and back. The mean
+   liquid halves within a second, and from 4 s the lower phase locks: PI-322E002 155-170 bar a
+   stays above the loop's, f = 0 on every tick, and 410 t/h of gas passes 322E002 to the reactor.
+4. B-77's vapour inventory turns that gas into pressure — its buffering is b_207 . M . f, zero at
+   f = 0, so the 241.7 m3 of vapour space alone takes it: PT-329201 climbs 0.37-0.5 bar/s. Without
+   B-77 the transcription's V1 capacitance (1500 kg/bar, the boundary flows alone) does not see
+   322E002's condensation at all and holds 140.7-141.0 bar a with the same ring in 322E002; without
+   B-91 nothing rings and the loop holds 140.7 bar a.
+5. The CO2 line cannot follow a loop rising that fast: its 21.6 m3 node has to climb with it, so
+   the tie-in's differential falls from 3.24 to 0.42 bar and its sqrt law passes 17 t/h of the 54.6
+   the machine delivers (10 s). The reactor's feed N/C rises (3.07 -> 4.0 by 10 s; 322E002's melt
+   at its 6.15 ceiling), the stripper's composition penalty floors (g_NC 0.5 from 8 s) and its slip
+   lifts NH3 and CO2 to FRAC_TOP_MAX: **78-88 % of the stripper's feed overhead, 317-346 t/h, and
+   all of it at 37 s, its bottoms 130 -> 46 -> 0.4 t/h.** The split asks the MP header for what that overhead costs, 108-129 MW of
+   raw duty against the design's 37.8 (the shell's 39.4 MW): nothing in the stripper bounds its
+   overhead by its shell.
+6. PT-329201 reaches 155 bar a and trips 21.2, 21.8, 21.10 and 22.2 latch at 37 s.
+
+So the 76 % is not the stripper's thermal split, which closes on a doubled feed as it should: it is
+V1's slip law answering a CO2-starved reactor, and the CO2 starves because B-91's fraction, taken a
+tick late on a melt whose bubble pressure moves with its own condensation, rings and locks
+322E002's condensation off while B-77 makes the uncondensed gas pressure.
+
+**Option (b) prototyped: the fraction solved on the tick.** 322E002's saturation fraction taken
+with its own melt's bubble pressure in the same tick — f = f(P_bub(f), P_loop), the fixed point by
+bisection on [0, 1] wherever the explicit fraction would move (decision 78's class on decision 97;
+scratch only, `CondenserHoldup.step` patched). Measured over 900 s of the same upset: **no trip.**
+f settles on 0.49-0.54 for the first two minutes (322E002 condensing 128-136 t/h, its melt at
+PI-322E002 174-180 bar a), then 0.92-1.0 once the reactor's level has fallen from 80 to 77.4 % and
+its overflow with it (322E001's feed 425 -> 292 t/h); PT-329201 peaks at 143.3 bar a at 2 min and
+holds 142.0 at 15 min; the CO2 feed never below 51.6 t/h; the stripper's overhead 55-57 %, its
+bottoms 130.8-189.7 t/h and LV-322501's drain 113.6-169.6 t/h; the conversion 0.418 at 10 s, 0.607
+at 15 min. (V1 verbatim, session 59: 140.7 bar a, 205 t/h of bottoms.) The stripper still asks the
+MP header for 74-78 MW for the first two minutes, 1.9-2.0 times its shell's 39.4, and 43-46 MW
+after. The fixed point costs about 27 condenser evaluations a tick while it binds, one at design.
+
+**Options for A-21.** (a) Accept as built: a wide-open HV-322605 trips the plant in 37 s, on a
+two-tick numerical ring; (b) the saturation fraction solved with its own melt's bubble pressure on
+the tick, as prototyped; (c) with (b), the stripper's overhead bounded by what its shell can
+transfer on the live MP steam, the rest left in the bottoms (a new mechanism on V1's split, to be
+measured if chosen). **Recommended: (b), and (c) measured next.**
+
+## LXXVI.4 322E003 on its tempered water, measured (handoff B-99, option (b))
+
+The scrubber as built (`scrubber.scrubber_322e003`, V1's): its tempered-water duty is the demand on
+it, Q = Q_des . s . nu . chi_spindle . chi_choke, 5329.5 kW at design, whatever the water; the water
+sets the temperatures through the effectiveness-NTU bridge (TT-322002 = T_in + Q / (eps C), TT-329125
+on eps) and the condensation capacity,
+
+    rho = (m_ccw / m_ccw,des) . pump . (T_cond(P) - T_in) / (T_cond,des - T_in,des) / s,
+
+which cuts the condensation only below 1, beside the sump liquor's saturation (B-91, 322E003 on its
+own liquor's bubble pressure at TT-322002).
+
+Two prototypes, scratch only: **p1**, the capacity on the shell's own effectiveness at the live
+flow, anchored on the design,
+
+    rho = [eps(m) C(m) (T_cond(P) - T_in)] / [eps C (T_cond - T_in)]_des . pump / s,
+    eps(m) = 1 - exp(-UA / C(m)),  UA the module's 69 kW/K (NTU 0.19 at design),
+
+its surplus above 1 recondensing PT-329201's backlog faster; **p2**, p1 plus the vent's condensables
+on the water's departure, the K ratio taken at TT-322011,des + (T_in - T_in,des). Each case run 20
+minutes after a settling minute on the design seed, TIC-329005 on its table row (its PV moves about
+0.26 K a minute), against a control run:
+
+| case (at 20 min) | T_in [C] | flow [t/h] | rho / f | uncondensed [kg/h] | NH3 in the purge [kg/h] | PT-329201 [bar] | TT-322002 [K] |
+|---|---|---|---|---|---|---|---|
+| design | 80.0 | 306 | 1.00 / 1.00 | 0 | 91.2 | 0 | 164.95 |
+| TIC-329005 to 70 C, as built and p1 | 74.8 | 306 | 1.06 / 1.00 | 0 | 91.1 | 0.000 | -5.19 |
+| the same, p2 | 74.8 | 306 | 1.06 / 1.00 | 0 | 80.1 | +0.0004 | -5.21 |
+| TIC-329005 to 85 C, as built, p1, p2 | 82.6 | 306 | 0.970 / 0.944 | 1159 | 718-723 | +0.035 | +2.66 |
+| TIC-329005 to 90 C, as built, p1, p2 | 85.2 | 306 | 0.939 / 0.888 | 2316-2321 | 1335-1346 | +0.069 | +5.28 |
+| FIC-329409 to 360 m3/h, all three | 80.0 | 357 | 1.17 (p1 1.014) / 1.00 | 0 | 91.1 | 0.000 | -1.14 |
+| FIC-329409 to 250 m3/h, as built | 80.0 | 256 | 0.836 / 1.00 | 3370 | 1884 | +0.106 | +1.70 |
+| the same, p1 and p2 | 80.0 | 256 | 0.982 / 0.966 | 703 | 472 | +0.023 | +1.64 |
+
+(TIC-329005 to 75 C: T_in 77.4 C, the same pattern at half the size. TIC-329005 in MAN at 50 % for
+the flow cases.) No case in any mode oscillates: the cold and high-flow cases stay in the control
+run's own 0.0014 bar band, the warm and low-flow cases rise monotonically and are still rising at
+20 minutes, 0.0017-0.0032 bar a minute. The published duty stays at the demand throughout, 5325-5333 kW, the shortfall included.
+
+What it says: **colder or more water cannot pull the loop down** on this model, built or
+prototyped: at design 322E003 condenses everything but the vent's saturation, so there is nothing
+more for the colder water to condense; on p2 the vent's NH3 falls 11 kg/h at 74.8 C and the loop
+does not move. **Warmer or less water already cuts the condensation as built** — session 59's
+reading that the scrubber's heat removal is fixed at design held only on the cold side. The one
+place the prototypes move the answer is the flow: the shell is UA-limited (NTU 0.19), so its
+capacity barely follows the water's flow — at 256 t/h p1 condenses all but 703 kg/h where V1's
+linear term leaves 3370, and the purge loses 472 kg/h of ammonia, not 1884.
+
+**Options for B-99.** (a) Keep as built; (b1) the capacity on the shell's effectiveness at the live
+flow (p1), the module's own ε-NTU, its published duty capped at that capacity where it binds; (b2)
+b1 and the vent's condensables on the water's departure (p2). **Recommended: (b1)** — the capacity
+consistent with the temperatures the same module computes; b2's 11 kg/h is not worth a temperature
+in the vent's K ratio, which measured badly before (`scrubber`, "Why the saturation rides the
+PRESSURE").
+
+## LXXVI.5 No crystallisation restriction on the evaporators (decision 134)
+
+The process engineer kept V1: ``mushy_flow_factor`` acts on 322E001's bottoms and 322E003's
+overflow alone (`consequence.crystallisation`, the stripper's and the scrubber's sumps); a
+restriction on 324F001 / 324F003 would interfere with the cold start's drainage. A melt the model
+cools below its crystallisation point there — S4-chest-close's 58 C — is recorded (§LXXV.3), not
+restricted.
+
+## LXXVI.6 Tests
+
+New: `test_flash_tank.py` — a full drum overflows its excess (first at 176.8 s, 68.9 t/h, the capped
+drum plus what overflowed V1's 10 816 kg) and the ceiling is inert below a full drum (an hour, to
+the bit); `test_flash_condenser.py` — 323F004's overflow lands in the tank as liquid, not gas load;
+`test_flash_tank_equivalence.py` — the full drum both ways (V1's transcription ``==`` the port to
+tick 1768, then V1's holdup against the capped drum and its overflow); `test_pre_evaporator.py` —
+the 323F010 heel both ways (V1's explicit step 0.000 % urea and 372.48 C, the port's 72.956 % at
+5400 s and the ring's 75.885 / 74.529 % at 7199 / 7200 s, the two the same to the bit at 5281 s);
+`test_liquor_stage_equivalence.py` — the heel step both ways at every stage (``backward=False``
+``==`` V1's ``sol_advance``, the port's on the backward formula to 1e-12). The harness switches:
+``FlashTank(ceiling=False)`` in five equivalence files and the scheduler's; ``backward_species=False``
+on 324F003 and 323D002 in seven and the scheduler's — the first run of the suite parted three
+both-ways tests at the heel (324F003's drain above its heel, its feed loss with the drain wide open,
+323D002's pump running compartment I dry) a tick before their decided divergences, which the
+switches restore. The deviation S1-2.1 re-run: 3 of 3 claimed responses as claimed (LI-323D011
++127 %, the node +0.01 bar), so 149 of §LXXV's 191.
+
+`python -m pytest` — **7 515 collected** (8 new: two 323F004 overflow tests, one in 323E011, the full drum both ways, the 323F010 heel both ways and the heel step both ways at three stages), thirteen parallel parts. The first run parted three both-ways tests at a heel (324F003's drain above its heel and its feed loss with the drain wide open, 323D002's compartment I run dry) a tick before their decided divergences; with ``backward_species=False`` on their harnesses every part is green, and `tests/docs` green again after the documents. No unit test re-pinned. pyflakes clean; the headless grep prints nothing.
+
+## LXXVI.7 Not done
+
+A-21 and B-99 measured, not built: the process engineer's final decision. B-100 (323F004's
+holdup against its drum) and B-101 (the vapour draw at a heel) raised with options. The A-21
+prototype's option (c), the stripper's overhead bounded by its shell, not prototyped.
+
+# Part LXXVII — A-21, B-99, B-100 and B-101 decided and built (Phase 7)
+
+Sessions 60-61, 2026-10-17 to 2026-10-21. The process engineer decided the four items session 60
+measured or raised: A-21 (b), B-99 (b1), B-101 (b), and B-100 (b) once measured stable (decisions
+135-138). All four are built, each with V1's behaviour on its harness's switch and a both-ways test;
+Sections A, B and C of `handoff.md` are empty again.
+
+## LXXVII.1 322E002's saturation fraction solved on the tick (handoff A-21 (b), decision 135)
+
+§LXXVI.3 traced the wide-open HV-322605's collapse to B-91's saturation fraction read a tick late on
+a melt whose bubble pressure moves with its own condensation. `units/synthesis/condenser_holdup`
+now solves the two together within the tick. With the tick-before fraction f_0 = f(PI-322E002 of
+the tick before, PT-329201), the condenser is evaluated at f_0; wherever the melt it makes would move
+the fraction, |f(P_bub(f_0)) - f_0| > 1e-10, the fraction is the root of
+
+    h(f) = f( P_bub(f), PT-329201 ) - f = 0,   f in [0, 1],
+
+h monotonically falling (more condensation, a hotter melt, a higher bubble pressure, a smaller
+fraction): f = 1 where h(1) >= 0, 0 where h(0) <= 0, else `core.numeric.bracketed_root`, the
+Illinois variant of false position, to 1e-10, each evaluation a whole call of
+`carbamate_condenser_322e002` on the tick's feeds (memoised). At its fixed point the tick is the
+tear's to the bit. The stripper's split is untouched: option (c), its overhead bounded by its
+shell, was not taken. ``CondenserHoldup(implicit_saturation=False)`` is the tear;
+`test_synthesis_loop_equivalence.run_both` sets it, so every synthesis equivalence test stays
+``==`` the transcription.
+
+Measured, HIC-322605 60 -> 100 % after a settling minute, 900 s: no trip; f 0.49-0.54 for two
+minutes, 322E002 condensing 128-136 t/h, its melt at 174-180 bar a, then 0.92-1.0 as the reactor's
+level settles from 80 to 77.4 % and the stripper's feed falls to 292 t/h; PT-329201 peaks at 143.31
+bar a at 2 min and holds 142.04 at 15 min; the CO2 feed never below 51.6 t/h; the stripper's
+bottoms 130.8-194.8 t/h; its shell asked for at most 77.9 MW (39.4 MW rated) in the first two
+minutes, 43-46 MW after. 900 simulated seconds took 313 s of wall time on this machine (the
+prototype's bisection, 490 s).
+
+The seed: the tear's fraction dips to 0.99998 in the first ticks on the seed's own drift (B-94);
+solved, it stays at 1, so the port parts from the transcription on the first tick by about 1e-5 of
+322E002's make.
+
+## LXXVII.2 322E003's capacity on its shell's effectiveness (handoff B-99 (b1), decision 136)
+
+`units/synthesis/scrubber`: `shell_conductance_kwk(m)` = max(eps . C, floor), eps = 1 -
+exp(-UA / C) on the module's UA (69.0 kW/K) — the conductance the same module's temperatures use —
+and the capacity's flow term is its ratio to the design's:
+
+    rho = [G(m_ccw) / G(m_ccw,des)] . pump . max(f_th, 0) / s          (V1: m_ccw / m_ccw,des)
+
+exactly 1.0 at design. `scrubber_322e003(capacity_frac=rho)`: where rho < 1 the duty the water takes
+is that fraction of the demand, and TT-329125 follows it; TT-322002 stays on the demand, the
+condensate at its ceiling. The shell is UA-limited (NTU 0.19): half the water leaves 0.912 of the
+capacity where V1's law leaves 0.5. ``ScrubberSump(effectiveness_capacity=False)`` and
+``condensation_capacity(..., effectiveness=False)`` are V1's, on the harness and in
+`test_scrubber_equivalence`.
+
+Both ways (`test_322e003s_capacity_on_its_shells_effectiveness_decided_divergence`): FIC-329409 306
+-> 250 t/h, two minutes on with FT-329409 at 296.7 t/h — V1's capacity 0.9695, 631.0 kg/h of the
+loop's gas uncondensed, 140.7047 bar a; the port's 0.9971, 115.3 kg/h, 140.7007 bar a, its duty
+5313.7 kW of the 5329.5 demanded, TT-329125 95.428 C.
+
+## LXXVII.3 The vapour draw in the heel's backward species step (handoff B-101 (b), decision 137)
+
+`units/liquor_stage.advance_species`: where the drain and the vapour together pass more on the tick
+than the stage holds, (m_liq + m_vap) dt / 3600 > M_new, both leave at the step's end composition,
+each species boiling off at its live partition r_i = y_i / w_i,
+
+    (M w_i)_new = [ M_pre w_i + (m_in w_in,i + m_in2 w_in2,i + nu_i xi) dt / 3600 ]
+                  / ( 1 + (m_liq + m_vap r_i) dt / (3600 M_new) )
+
+a species the vapour carries but the liquor holds none of drawn on its sources. HV-323605 at a fifth
+of its design capacity: the step first binds at 5281 s (V1's to the bit until then), the heel at
+5290 s; 73.31 % urea at 5400 s; at two hours 79.77 and 80.03 % on alternate ticks, the throughflow's
+own balance 80.07 % (B-98's drain-only step rang 74.53 / 75.88 %). What still alternates, 0.26
+points, is the vapour's composition — 3.0 and 10.0 % CO2 — which 323F010 evaluates on the liquor
+at the start of the tick; the decision took this result.
+
+## LXXVII.4 323F004 on its geometry (handoff B-100 (b), decision 138)
+
+**Read.** Reuther's as-built assembly drawing and parts list for 323F004 (UD-AU-323-DZ-0011-003
+rev 02, -002 rev 01): a 1400 x 8 shell, 1800 mm between tangents, two DIN 28013 ellipsoidal heads Da
+1400 x 8. The datasheet (`References/Datasheets/323F004 Datasheet.pdf`, UD-AU-323-EC-0011): ID 1384;
+N7, "LT 323505", DN 80 PN 40 on the top head 500 mm off the axis; N8 PT-323203; the high liquid
+level 80 mm above the bottom tangent; the weights 1235 kg empty, 1753 operating, 4685 full of water.
+Uhde's loop summary L 323505 (UD-MR-323-EC-0001 rev 1, page 71, read from the scan): a DP cell,
+lower nozzle DN 80 PN 10, upper DN 80 PN 40, "nozzle distance 2900 mm", range 0-100 %, 1130 kg/m3.
+
+**Built.** `core/vessel_geometry.VerticalVessel`: a cylinder between two torispherical heads, its
+liquid against its height in closed form (crown sphere and knuckle torus, DIN 28013's 0.8 Da and
+0.154 Da on the inside diameter) and the inverse — linear in the cylinder, bisected in a head.
+`data/unit_323`: ``F004_VESSEL`` (3.402 m3; the hydro-test's 3450 kg less the nozzles' stubs),
+LT-323505's upper tap on N7 at the head's inside surface, 2.033 m above the bottom tangent, its lower
+tap 2900 mm below it on the outlet line, -0.867 m (calculated, not printed), and
+
+    LI-323505 = clamp( (z(M / rho) - z_lo) / 2.900 . 100, 0, 100 )
+
+so V1's 60 % set point holds 1836.6 kg, 874 mm above the bottom tangent — 65 s of PFD 319, where V1
+holds 5074.6 kg (180 s); the drum is full at 3761.5 kg (A-22's ceiling); an empty bottom head on a
+full line reads 17.8 %, where LV-323505's seal is placed (V1's 3 % band); the drawing's high liquid
+level reads 32.6 %, below V1's set point (V1's kept, as 328D001's). 323E011's 1.083 m3 of 323F004
+vapour space (B-51, decided on the shell above 60 % of its cylinder) is unchanged; on the geometry
+the drum's free volume at the set point would be 1.741 m3. ``FlashTank(**V1_DRUM)`` — V1's holdup,
+its level law, no ceiling — runs on every harness.
+
+**Measured first** (323F004 into 323E011 / 323D011 at 0.1 s, design inlets; V1's drum against the
+geometric one): a 25 % cut in the column's drain — LI-323505 at least 54.85 % at 101 s and inside
+0.5 % of its set point from 318 s, later swings 0.1-0.46 % (V1's drum 55.49 % at 140 s, 540 s);
++20 % — at most 64.32 % at 228 s, inside 0.5 % from 412 s (V1's 63.22 % at 296 s, 487 s); the node
+pressure the same on both drums. LV-323505 pinched to 30 %: full within two minutes (100.6 s on
+design boundaries), overflowing 68.9 t/h,
+323D011 full and overflowing 46.8 t/h to 323C005 by 480 s, the node 0.004 bar up. No ringing, so it
+was built.
+
+Both ways (`test_the_drum_on_its_geometry_decided_divergence`): the same flows on design boundaries;
+the column's drain cut 25 % at 2 s, LI-323505 at least 55.06 % at 138.5 s on V1's drum and 54.29 %
+at 99.2 s on the geometric one.
+
+## LXXVII.5 The scenarios re-run
+
+`python -m tests.phase7.run_deviations OUT S1-1.2 S2-3.1a S2-1.4a S2-1.4b S1-2.1` on session 61's
+code, each against its own control run as in §LXXV.2: **7 of the 18 claims as claimed** (session 59:
+6). The survey stands at **148 of 191** (session 59's 147, S1-2.1's two in session 60, S1-1.2's
+conversion one fewer here).
+
+| key | deviation | indicator | claimed | measured | departure | agrees |
+|---|---|---|---|---|---|---|
+| S1-1.2 | Reactor low level (loss of holdup) | REACT_322R001.LT_322504 (end) | falls | falls | -43.5 | yes |
+|  |  | SCRUB_322E003.P_overflow (end) | falls | rises | +1.5 | NO |
+|  |  | REACT_322R001.X_conv (end) | falls | rises | +11.36 | NO |
+|  |  | STRIP_322E001.bot_mass_pct.NH3 (end) | rises | falls | -2.216 | NO |
+|  |  | RECIRC_323.C003.v305_th (end) | rises | falls | -11.47 | NO |
+| S1-2.1 | Flash tank high level (overfilling) | RECIRC_323.F004.LI_323505 (end) | rises | rises | +40 | yes |
+|  |  | LPCC_3232.E011.LI_323D011 (end) | rises | rises | +127.1 | yes |
+|  |  | LPCC_3232.E011.P_bara (peak) | rises | rises | +0.01 | yes |
+| S2-1.4a | HP scrubber tempered-water inlet colder | SCRUB_322E003.P_overflow (end) | falls | no change | +0 | NO |
+|  |  | SCRUB_322E003.LT_329501 (end) | rises | no change | +0 | NO |
+|  |  | SCRUB_322E003.TT_322002 (end) | falls | falls | -1.8 | yes |
+|  |  | SCRUB_322E003.TT_322011 (end) | falls | no change | +0 | NO |
+|  |  | EJ_322F001.TT_322012 (end) | falls | no change | +0 | NO |
+| S2-1.4b | HP scrubber tempered water flow increased | SCRUB_322E003.P_overflow (end) | rises | no change | +0 | NO |
+|  |  | SCRUB_322E003.LT_329501 (end) | falls | no change | +0 | NO |
+|  |  | SCRUB_322E003.TT_322002 (end) | rises | falls | -1 | NO |
+| S2-3.1a | Reactor downcomer valve: big step opening | STRIP_322E001.LI_322501 (peak) | rises | rises | +28.5 | yes |
+|  |  | REACT_322R001.LT_322504 (end) | falls | falls | -43.4 | yes |
+
+What moved. **A wide-open HV-322605 (S1-1.2, S2-3.1a) no longer trips the loop** (A-21): the reactor
+drains 43.5 points over half an hour, the stripper's level wave peaks 28.5 points up, PT-329201
+ends 1.5 bar up rather than at the trip's 155 bar a, and the stripper's bottoms carry 2.2 points
+less ammonia, not 100 %. Session 59's "conversion falls" agreed only because the plant tripped and
+the reactor drained; on the running plant the conversion ends 11.4 points above the control's —
+measured, not explained, recorded for the process engineer with the other S1-1.2 claims the model
+answers the other way (the loop pressure, the stripper's slip, 323C003's overhead). **A full 323F004
+floods 323E011 (S1-2.1)**, as session 60 found (A-22). **The colder or larger tempered water
+(S2-1.4a / b) moves only the temperatures**, as §LXXVI.4 measured; B-99's effectiveness changes the
+low-flow side, which these deviations do not reach.
+
+## LXXVII.6 Tests
+
+New: `tests/core/test_vessel_geometry.py` (the head against 322C001's closed form, the inverse in
+every region, continuity, N7's tap), `tests/core/test_numeric.py` (the clamps and the bracketed
+root), the four both-ways tests above (`test_the_saturation_fraction_solved_on_the_tick_decided_
+divergence` and the B-99 test in `test_synthesis_loop_decided_equivalence.py`, the B-100 test in
+`test_flash_tank_equivalence.py`, the heel test both ways in `test_pre_evaporator.py` and
+`test_liquor_stage_equivalence.py`, re-pinned). Re-pinned: `test_scrubber.py`'s capacity gate (half
+flow 0.912, V1's 0.5 alongside); five 323F004 pins (the hotter drain, the colder drain, the back
+pressure at 1.0 and 1.3 bar a, the choke's settled drain), A-22's full drum (full at 100.6 s,
+3761.5 kg) and the coupled 10 % cut (1.12246 bar a, 4005.7 kg/h) on the geometric drum; the
+envelope-alone ring kept on V1's drum, as B-51 was decided on it. The harness switches:
+``implicit_saturation = False`` and ``effectiveness_capacity = False`` in `run_both`;
+``FlashTank(**V1_DRUM)`` in five equivalence files and the scheduler's.
+
+`python -m pytest` — **7 535 collected** (20 new: 14 in `tests/core/test_vessel_geometry.py`, 3 in `tests/core/test_numeric.py`, the A-21, B-99 and B-100 both-ways tests), thirteen parallel parts. Twelve parts green on their first run; the thirteenth parted on two synthesis pins whose V1 side shares the port's plant — B-76's sump, 3650.52 / 3766.49 -> 3650.65 / 3766.57 kg, and A-21's tear side, 227 109.3 -> 227 106.6 kg/h — moved by the geometric 323F004 through 323E003's 308; re-pinned, `test_synthesis_loop_decided_equivalence.py` green. `tests/docs` green after the documents. pyflakes clean; the headless grep prints nothing.
+
+## LXXVII.7 Not done
+
+Nothing of the four decisions. Recorded, not raised: the stripper's split is not bounded by its
+shell (A-21's option (c), not taken); the heel's 0.26-point alternation from the vapour's composition
+(decision 137's measured result); LIC-323505's 60 % set point is V1's, above the drawing's high
+liquid level (32.6 %); 323E011's 323F004 vapour space is B-51's constant.

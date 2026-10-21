@@ -19,7 +19,7 @@ Nine, each a switch in the transcription: ``decided`` names the ones whose port 
 V1's. Four were decided by the process engineer on 2026-10-01:
 
   * "relief" — SV32253 vents the column's gas between its 6.013 bar a certified set pressure and
-    its 5.513 reseat, on its orifice M at the assumed gas coefficient 0.917 (handoffs B-47,
+    its 5.513 reseat, on its orifice M at Sempell's gas coefficient for the orifice, 0.922 (handoffs B-47,
     A-16), the law written out in `decided_relief`; V1 sets it at 31.013 bar a and ramps it
     linearly to 60 t/h over 10 % accumulation.
   * "B-54" — 755 arrives at 322E006's outlet temperature, an argument; V1 holds 40 C.
@@ -84,8 +84,8 @@ V1_VERBATIM = frozenset()
 
 #: SV32253 as decided (A-16), written from its sheets: set 5.0 bar g on 1.013 bar a (Uhde
 #: UD-RL-322-EC-0003), reseating 10 % of set below on gas; orifice M, 2827.43 mm2 (Sempell
-#: UD-RL-G00-DZ-0002-001 page 2), at the series' gas coefficient 0.917 (page 3).
-SV32253 = dr.Valve.orifice(5.0 + 1.013, 5.0 + 1.013 - 0.1 * 5.0, 2827.43 * 1.0e-6, 0.917)
+#: UD-RL-G00-DZ-0002-001 page 2), at Sempell's gas coefficient for the orifice, 0.922 (decision 130).
+SV32253 = dr.Valve.orifice(5.0 + 1.013, 5.0 + 1.013 - 0.1 * 5.0, 2827.43 * 1.0e-6, 0.922)
 
 #: The two valves as decided, re-derived from the vendor catalogue: design strokes [%].
 DECIDED_PV201_OP = dv.design_stroke_pct(cvd.PV_322201, c.C001_VENT_DES_KGH)

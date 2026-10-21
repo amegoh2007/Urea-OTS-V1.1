@@ -22,18 +22,13 @@ from ureasim.hmi.widgets.hotspots import (
     PushButtonWidget,
     StreamHotspotWidget,
 )
-from ureasim.hmi.widgets.icons import (
-    ActuatedValveWidget,
-    BlockValveWidget,
-    PumpWidget,
-)
+from ureasim.hmi.widgets.icons import BlockValveWidget, PumpWidget
 from ureasim.hmi.widgets.indicator import IndicatorWidget
 
 #: Layout type code -> widget class. Mirrors ``screen_layout.ELEMENT_TYPES``.
 WIDGET_REGISTRY: dict[str, type[OverlayWidget]] = {
     "ind": IndicatorWidget,
     "nav": NavHotspotWidget,
-    "avalve": ActuatedValveWidget,
     "pump": PumpWidget,
     "bar": BargraphWidget,
     "strm": StreamHotspotWidget,
@@ -70,6 +65,6 @@ def build_widget(element: Mapping[str, Any],
 __all__ = [
     "WIDGET_REGISTRY", "build_widget", "OverlayWidget",
     "IndicatorWidget", "BargraphWidget", "PumpWidget", "BlockValveWidget",
-    "ActuatedValveWidget", "NavHotspotWidget", "StreamHotspotWidget",
+    "NavHotspotWidget", "StreamHotspotWidget",
     "AnalyserWidget", "HandSwitchWidget", "OverrideButtonWidget", "PushButtonWidget",
 ]

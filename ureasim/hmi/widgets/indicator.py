@@ -1,4 +1,4 @@
-"""Indicator box — the live value readout, and 199 of the 387 elements on these screens.
+"""Indicator box — the live value readout, and 247 of the 393 elements on these screens.
 
 What an operator reads from it
 ------------------------------
@@ -18,6 +18,9 @@ from a working instrument and is how a trainee learns something false.
 An empty slot picks up a live value the moment any screen binds the same tag, through
 `ureasim.hmi.state_access.BindMap`.
 
+A modulating valve's opening is an indicator too, in per cent, since decision 129 (2026-10-16):
+the drawing carries the valve's symbol, and no second valve icon is drawn over it.
+
 Why this is painted rather than built from labels
 -------------------------------------------------
 Three reasons, all of which showed up in practice:
@@ -30,7 +33,7 @@ Three reasons, all of which showed up in practice:
 2. **Stylesheet scope.** A Qt stylesheet rule with no selector also matches a widget's
    children, so ``border: 1px solid`` on the box drew a frame around the value, the unit
    and the mode badge as well.
-3. **Cost.** 199 indicators refreshing at the UI rate would be 600 child widgets laying
+3. **Cost.** 247 indicators refreshing at the UI rate would be 600 child widgets laying
    themselves out on every tick.
 """
 

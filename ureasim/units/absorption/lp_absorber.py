@@ -56,7 +56,8 @@ Decided by the process engineer on 2026-10-01:
   * **The column relieves through SV32253** (handoffs B-47, A-16; decision 32's law,
     `core.relief`), certified at 5.0 bar g, 6.013 bar a, where V1 sets it at the vessel's
     30 bar g design pressure and ramps it linearly to 60 t/h. Rated on liquid, it relieves the gas on its orifice M at the series' gas
-    coefficient 0.917, taken as an assumption, and reseats on the gas blowdown at 5.513.
+    coefficient 0.922, Sempell's for the orifice in gas service (decision 130), and reseats on
+    the gas blowdown at 5.513.
 
 Classes decided on other units, applied here under §5 rule 7:
 
@@ -308,7 +309,7 @@ def lic_322502() -> ProcessLoop:
 
 def sv_32253() -> GasReliefValve:
     """SV32253, the column's safety valve, shut: set 6.013 bar a, reseating at 5.513 on the gas
-    blowdown; orifice M, 2827.43 mm2, at the assumed gas coefficient 0.917 and the law's
+    blowdown; orifice M, 2827.43 mm2, at its orifice's gas coefficient 0.922 and the law's
     exponent 1.30 (decided 2026-10-01, handoffs B-47, A-16)."""
     return GasReliefValve(valve=SafetyValve("SV32253", SV32253_SET_BARA, SV32253_RESEAT_BARA),
                           area_m2=SV32253_AREA_M2, kd=SV32253_KD)

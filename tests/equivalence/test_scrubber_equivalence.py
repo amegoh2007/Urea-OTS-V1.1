@@ -304,7 +304,7 @@ def test_condensation_capacity(v1, m_ccw, pump, t_in, p, s):
     t_cond = v1["scrub_cond_t_c"](p)
     f_th = (t_cond - t_in) / max(v1["SCRUB_OVERFLOW_T_C"] - v1["SCRUB_CCW_T_IN_DES"], 1e-6)
     theirs = ((m_ccw / v1["SCRUB_CCW_KGH_DES"]) * pump * max(f_th, 0.0) / max(s, 1e-6))
-    assert condensation_capacity(m_ccw, pump, t_in, p, s) == theirs
+    assert condensation_capacity(m_ccw, pump, t_in, p, s, effectiveness=False) == theirs
 
 
 def test_capacity_is_exactly_one_at_design(v1):

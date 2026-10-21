@@ -14,6 +14,9 @@ console packet on V1's key paths, so one path reads the same quantity on both si
     drivers     one side through a procedure, sampled, every tick watched for ringing (B-51)
     compare     the two sides' records side by side, the ringing and the cold start's FOPTD
     run         the command line: ``python -m tests.phase7.run <scenario> [--side ...]``
+    deviations  the process-deviation notes of `References/scenarios`, each claim put on the
+                port's plant on the console's own lever (As-Built Part LXXV)
+    run_deviations  the command line for them: ``python -m tests.phase7.run_deviations OUT_DIR``
 
 Nothing here is the product: it is the validation harness, like `tests/equivalence`, and it reads
 V1's source tree, which it never writes (V1 restores its design pin from its own cache; the driver

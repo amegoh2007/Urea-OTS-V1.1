@@ -18,12 +18,12 @@ The drum is one node: liquid holdup, pressure and temperature. It carries no spe
 leave on their PFD compositions.
 
 **The condenser.** TIC-328002 holds the drum at 61 C on TV-328002, the cooling-water return, and
-328E004's duty is stroke-proportional (V1), held to what brings the drum to its 30 C cooling water
-on the tick (decision 28):
+328E004's duty is proportional to the water the valve passes (V1's form, on the vendor's trim since
+2026-10-17), held to what brings the drum to its 30 C cooling water on the tick (decision 28):
 
-    Q = min(Q_des . op / 50,  max(q_sens + q_737 + (T - 30) C / dt, 0))
+    Q = min(Q_des . phi(op) / phi(55.04),  max(q_sens + q_737 + (T - 30) C / dt, 0))
 
-with C the temperature step's capacity. The less it condenses, the more of 737 reaches the drum
+with C the temperature step's capacity and phi TV-328002's Neldisc curve; V1 has op / 50. The less it condenses, the more of 737 reaches the drum
 as vapour:
 
     gen = m_786,des . (m_737 / m_737,des) / max(Q / Q_des, 0.1)
@@ -76,7 +76,7 @@ Decided on 2026-10-01 (handoffs B-47, A-16):
 
   * **The drum relieves through SV32353** (decision 32's law, `core.relief`). V1 relieves
     nothing. The valve is rated on liquid alone, so it relieves the head space's vapour on its
-    orifice's own area and the series' gas coefficient, 0.917, taken as an assumption; it lifts at
+    orifice's own area and its orifice's gas coefficient, 0.922 (Sempell's); it lifts at
     6.01 bar a and reseats on the gas blowdown at 5.51. The liquid already paid for the vapour
     (decision 24), so the relief comes out of the head space alone.
 
@@ -88,9 +88,14 @@ Classes decided on other units, applied here under §5 rule 7:
   * **328P002 cannot drain an empty drum, and a full drum overflows** (decision 11): 775 and 776
     share what the drum can give, FT-328404 reads the 775 delivered, and above the full cylinder
     the excess leaves as a published stream.
-  * **The three valves on their vendor trims** (decision 23): LV-328501 linear, Kvs 16, from 29.4 %
+  * **The four valves on their vendor trims** (decision 23): LV-328501 linear, Kvs 16, from 29.4 %
     (V1 50 %); FV-328404 modified equal percentage, Kvs 10, from 56.7 % (V1 linear from 30.2 %);
-    PV-328202 modified equal percentage, Kvs 25, from 60.4 %, xT 0.7743 (V1 linear from 50 %).
+    PV-328202 modified equal percentage, Kvs 25, from 60.4 %, xT 0.7743 (V1 linear from 50 %);
+    TV-328002 on Metso's DN 200 Neldisc, its printed capacities as its curve, from 55.04 %, where
+    its sheet passes PFD 1028's 408 t/h (decided 2026-10-17; V1 linear from 50 %): 328E004's duty
+    and TT-329007 read the trim's water against its design stroke's in place of op / 50.
+    ``RefluxDrum(tv_328002=None)`` with TIC-328002 seeded at 50 % is V1's, which the
+    equivalence harness keeps.
   * **PIC-328202 and TIC-328002 on the table's gains per cent of span** (decision 10): 25 %/bar on
     PT-328202's 0-10 bar g and 1.875 %/K on TT-328002's 0-160 C, where V1 applies 2.5 and 3.0.
 
@@ -119,7 +124,7 @@ import math
 from dataclasses import dataclass, field
 
 from ureasim.control.process_loop import FlowLoop, ProcessLoop
-from ureasim.control.valve import valve_gas_anchored
+from ureasim.control.valve import cv_fraction, valve_gas_anchored
 from ureasim.core.node import vapour_volume_m3, vessel_dpdt
 from ureasim.core.relief import GasReliefValve, SafetyValve
 from ureasim.core.signal import first_order_lag
@@ -190,6 +195,8 @@ from ureasim.data.unit_328d001 import (
     TIC_328008_SP_HI,
     TIC_328008_SP_LO,
     TIC_328008_TI_S,
+    TV_328002_CHAR,
+    TV_328002_OP_DES_PCT,
 )
 from ureasim.thermo import iapws
 from ureasim.thermo.empirical import aqueous_cp
@@ -208,6 +215,10 @@ TV_FLOOR_PCT = 1.0
 
 #: The key the column top's reflux lag is kept under (V1's ``R328_775_TOP``).
 TOP_LAG_KEY = "R328_775_TOP"
+
+#: TV-328002 as the port runs it, on its vendor's trim: the design stroke [%] and Metso's printed
+#: Neldisc curve (decided 2026-10-17, decision 23's class). None is V1's linear law from 50 %.
+TV_328002_TRIM = (TV_328002_OP_DES_PCT, TV_328002_CHAR)
 
 
 # ======================================================================================
@@ -274,13 +285,14 @@ def pic_328202() -> ProcessLoop:
         sp_lo=PIC_328202_SP_LO_BARA, sp_hi=PIC_328202_SP_HI_BARA)
 
 
-def tic_328002() -> ProcessLoop:
+def tic_328002(op_des_pct: float = TV_328002_OP_DES_PCT) -> ProcessLoop:
     """TIC-328002, the drum's temperature on TV-328002, 328E004's cooling water. DIRECT acting:
-    a warmer drum opens the water. On the table's gain per cent of span (decision 10)."""
+    a warmer drum opens the water. On the table's gain per cent of span (decision 10), seeded at
+    TV-328002's vendor design stroke (V1's 50 % is ``E004_TV_OP_DES_PCT``)."""
     t = D001_T_C
     return ProcessLoop(
         tag="TIC-328002", Kc=TIC_328002_KC, Ti=TIC_328002_TI_S, Td=0.0, act=-1.0,
-        op=E004_TV_OP_DES_PCT, sp=t, pv=t, pv1=t, pv2=t, op_lo=0.0, op_hi=100.0,
+        op=op_des_pct, sp=t, pv=t, pv1=t, pv2=t, op_lo=0.0, op_hi=100.0,
         sp_lo=TIC_328002_SP_LO_C, sp_hi=TIC_328002_SP_HI_C)
 
 
@@ -318,7 +330,7 @@ def lic_328501() -> ProcessLoop:
 
 def sv_32353() -> GasReliefValve:
     """SV32353, the drum's safety valve, shut: set 6.01 bar a, reseating at 5.51 on the gas
-    blowdown; orifice K, 1462.20 mm2, at the assumed gas coefficient 0.917 and the law's exponent
+    blowdown; orifice K, 1462.20 mm2, at its orifice's gas coefficient 0.922 and the law's exponent
     1.30 (decided 2026-10-01, handoff A-16)."""
     return GasReliefValve(valve=SafetyValve("SV32353", SV32353_SET_BARA, SV32353_RESEAT_BARA),
                           area_m2=SV32353_AREA_M2, kd=SV32353_KD)
@@ -401,6 +413,8 @@ class RefluxDrum:
     lag_state: dict = field(default_factory=dict)
     #: SV32353 and its lift (A-16).
     sv_32353: GasReliefValve = field(default_factory=sv_32353)
+    #: TV-328002's trim (decided 2026-10-17); None is V1's linear law from 50 %.
+    tv_328002: tuple | None = TV_328002_TRIM
 
     def step(self, loops: RefluxDrumLoops, m_737_kgh: float, t_c002_c: float,
              p_c002_bara: float, m_c002_kg: float, in_c002_kgh: float, m_c002_over_kgh: float,
@@ -443,9 +457,14 @@ class RefluxDrum:
             D001_T_C + ABSOLUTE_ZERO_C, MW786_DES, characteristic=PV202_CHAR, xt=PV202_XT,
             mw_des=MW786_DES)
 
-        # ----- TIC-328002 -> TV-328002: 328E004's duty on the stroke --------------------------
+        # ----- TIC-328002 -> TV-328002: 328E004's duty on the water the trim passes -----------
         tic_op = loops.tic_328002.step(t_pre, dt)
-        q_e004 = E004_Q_DES_KW * (tic_op / E004_TV_OP_DES_PCT)
+        if self.tv_328002 is None:
+            q_e004 = E004_Q_DES_KW * (tic_op / E004_TV_OP_DES_PCT)
+        else:
+            op_des, trim = self.tv_328002
+            phi_des = cv_fraction(op_des / 100.0, trim)
+            q_e004 = E004_Q_DES_KW * (cv_fraction(tic_op / 100.0, trim) / phi_des)
 
         # ----- TIC-328008: the column top answers the reflux over 328C002's residence --------
         tau_c002 = m_c002_kg / max(in_c002_kgh, IN_FLOOR_KGH) * 3600.0
@@ -525,9 +544,13 @@ class RefluxDrum:
         self.m_kg = m_new
         self.m_775_prev_kgh = m_775
 
-        # ----- TT-329007, the cooling-water return: inverse in TV-328002's stroke (V1) ---------
-        t_cw = min(E004_CW_T_IN_C + (E004_CW_T_OUT_DES_C - E004_CW_T_IN_C)
-                   * (E004_TV_OP_DES_PCT / max(tic_op, TV_FLOOR_PCT)), E004_CW_T_MAX_C)
+        # ----- TT-329007, the cooling-water return: inverse in TV-328002's water (V1's form) ---
+        if self.tv_328002 is None:
+            rise = E004_TV_OP_DES_PCT / max(tic_op, TV_FLOOR_PCT)
+        else:
+            rise = phi_des / cv_fraction(max(tic_op, TV_FLOOR_PCT) / 100.0, trim)
+        t_cw = min(E004_CW_T_IN_C + (E004_CW_T_OUT_DES_C - E004_CW_T_IN_C) * rise,
+                   E004_CW_T_MAX_C)
 
         return RefluxDrumResult(
             in_kgh=m_in, pic_op_pct=pic_op, m_786_kgh=m_786, tic_op_pct=tic_op,
@@ -542,7 +565,7 @@ class RefluxDrum:
 
 __all__ = [
     "D001_P_FLOOR_BARA", "C002_P_FLOOR_BARA", "IN_FLOOR_KGH", "DT_FLOOR_S", "CAPACITY_FLOOR_KJK",
-    "TV_FLOOR_PCT", "TOP_LAG_KEY", "lt_328501_pct", "D001_M_SEED_KG", "pic_328202", "tic_328002",
+    "TV_FLOOR_PCT", "TOP_LAG_KEY", "TV_328002_TRIM", "lt_328501_pct", "D001_M_SEED_KG", "pic_328202", "tic_328002",
     "tic_328008", "fic_328404", "lic_328501", "sv_32353", "RefluxDrumLoops", "RefluxDrumResult",
     "RefluxDrum",
 ]

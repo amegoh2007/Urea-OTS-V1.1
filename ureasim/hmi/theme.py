@@ -105,6 +105,24 @@ HOTSPOT_HOVER_BG = "rgba(80, 160, 220, 41)"
 #: Edit-layout mode outlines.
 EDIT_OUTLINE = "#ffd000"
 EDIT_NAV_OUTLINE = "rgba(255, 208, 0, 153)"
+EDIT_STREAM_OUTLINE = "rgba(255, 160, 60, 178)"
+
+
+def rgba(spec: str) -> tuple[int, int, int, int]:
+    """A CSS ``rgba(r, g, b, a)`` token as the four integers a ``QColor`` takes.
+
+    ``QColor`` does not parse the CSS form: handed ``"rgba(80, 160, 220, 41)"`` it is invalid
+    and paints opaque black, which is what blacked out a hovered nav button over the label it
+    sits on (fixed 2026-10-16). A painter takes these tokens through this function; a Qt
+    stylesheet, which does parse the CSS form, takes them as they are.
+    """
+    body = spec.strip()
+    if not (body.startswith("rgba(") and body.endswith(")")):
+        raise ValueError(f"not an rgba() colour token: {spec!r}")
+    parts = [int(p) for p in body[5:-1].split(",")]
+    if len(parts) != 4:
+        raise ValueError(f"not an rgba() colour token: {spec!r}")
+    return parts[0], parts[1], parts[2], parts[3]
 
 # ======================================================================================
 # Tab bar and chrome

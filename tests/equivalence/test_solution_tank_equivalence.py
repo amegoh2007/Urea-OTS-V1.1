@@ -282,7 +282,7 @@ def _design(**over):
 def _run(v1, script, ticks: int, dt: float = DT, before=None):
     """Drive the tank alone through `script(k)`, comparing everything every tick."""
     s = _v1_state(v1)
-    tank, lic, fic = st.SolutionTank(), st.lic_323507(), st.fic_324401()
+    tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()
     if before:
         before(s, tank, lic, fic)
     b = None
@@ -347,7 +347,7 @@ def test_the_controllers_are_seeded_as_v1_seeds_them(v1):
                 v1c["sp_lo"], v1c["sp_hi"]) == (
             loop.mode, loop.op, loop.sp, loop.pv, loop.pv1, loop.pv2, loop.Kc, loop.Ti,
             loop.Td, loop.act, loop.op_lo, loop.op_hi, loop.sp_lo, loop.sp_hi), loop.tag
-    tank = st.SolutionTank()
+    tank = st.SolutionTank(backward_species=False)
     assert (s.r323_d002_M_I, s.r323_d002_M_II, s.r323_d002_T, s.w_d002, s.w_d002_II,
             s.HV_323D002_TIE) == (tank.m_i_kg, tank.m_ii_kg, tank.t_c, tank.w, tank.w_ii, False)
 
@@ -422,7 +422,7 @@ def _diverge(v1, script, ticks: int, dt: float, before, limit_reached):
     both and hand back every later tick as (V1 result, V1 total holdup before and after, the
     port's total holdup before, port result)."""
     s = _v1_state(v1)
-    tank, lic, fic = st.SolutionTank(), st.lic_323507(), st.fic_324401()
+    tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()
     before(s, tank, lic, fic)
     after, reached = [], False
     for k in range(ticks):
@@ -519,15 +519,15 @@ def test_the_tie_opened_on_a_colder_compartment_two_decided_divergence(v1):
 def test_stages_three_and_four_coupled_through_a_drain_step(v1):
     """V1's stage 3 feeds V1's stage 4; the ported 323F010 feeds the ported 323D002."""
     s = _v1_state(v1)
-    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
-    tank, lic, fic = st.SolutionTank(), st.lic_323507(), st.fic_324401()
+    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
+    tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()
     for k in range(600):
         m319 = R323_M319_DES * (0.8 if k >= 20 else 1.0)
         s.tlag["R324_recyc"], s.tlag["R324_recyc_T"], s.tlag["R324_recyc_comp"] = NO_RECYCLE
         a3 = stage3._v1_stage3(v1, s, m319, d.F004_T_SP_C, stage3.W319, stage3.NO_BLOW, DT)
         a4 = _v1_stage4(v1, s, a3["m317"], a3["dep317"][0], a3["dep317"][1], DT)
         b3 = sep.step(tic, pic, m319, d.F004_T_SP_C, stage3.W319, *stage3.NO_BLOW,
-                      d.HIC_323605_DES_PCT, P_LP_BARA, d.P_324E002_DES_BARA, DT)
+                      d.HIC_323605_DES_PCT_V1, P_LP_BARA, d.P_324E002_DES_BARA, DT)
         b4 = tank.step(lic, fic, b3.m_317_kgh, b3.drain_t_c, b3.drain_w, *NO_RECYCLE, False, DT)
         stage3._assert_tick(a3, b3, s, sep, tic, pic, f"stage 3, tick {k}")
         _assert_tick(a4, b4, s, tank, lic, fic, f"stage 4, tick {k}")
@@ -538,9 +538,9 @@ def test_all_four_stages_coupled_through_a_stripper_feed_cut(v1):
     s = _v1_state(v1)
     col = rc.RectifyingColumn(chest=rc.V1_CHEST)
     loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
-    drum, lic5 = ft.FlashTank(), ft.lic_323505()
-    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
-    tank, lic, fic = st.SolutionTank(), st.lic_323507(), st.fic_324401()
+    drum, lic5 = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
+    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
+    tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()
     for k in range(500):
         drain = FEED_DES * (0.85 if k >= 20 else 1.0)
         s.tlag["R324_recyc"], s.tlag["R324_recyc_T"], s.tlag["R324_recyc_comp"] = NO_RECYCLE
@@ -554,7 +554,7 @@ def test_all_four_stages_coupled_through_a_stripper_feed_cut(v1):
         b2 = drum.step(lic5, b1.m_314_kgh, b1.drain_t_c, b1.drain_w, d.F004_P_BARA, sep.p_bara,
                        DT)
         b3 = sep.step(tic, pic, b2.m_319_kgh, b2.drain_t_c, b2.drain_w, b2.blowthrough_kgh,
-                      b2.blowthrough_kmolh, b2.blowthrough_y, d.HIC_323605_DES_PCT, P_LP_BARA,
+                      b2.blowthrough_kmolh, b2.blowthrough_y, d.HIC_323605_DES_PCT_V1, P_LP_BARA,
                       d.P_324E002_DES_BARA, DT)
         b4 = tank.step(lic, fic, b3.m_317_kgh, b3.drain_t_c, b3.drain_w, *NO_RECYCLE, False, DT)
         stage1._assert_tick(a1, b1, s, col, loops1, f"stage 1, tick {k}")
@@ -572,7 +572,7 @@ def test_the_vendor_valve_decided_divergence(v1):
     stroked, V1's linear trim from 50 % passes 1.70 times it, the vendor's modified equal
     percentage from 72.36 % 1.46 times."""
     s = _v1_state(v1, valves_decided=False)
-    tank, lic, fic = st.SolutionTank(), st.lic_323507(), st.fic_324401()
+    tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()
     assert (s.FIC_324401["op"], fic.op) == (50.0, DECIDED_FV401_OP)
     _manual(s, fic, "FIC_324401", 85.0)
     x = _design()

@@ -26,7 +26,7 @@ def test_the_live_opening_and_the_stations_command(bridge, packet):
 
 
 def test_pv_322203_opens_hic_322203(bridge):
-    face = HandValveFaceplate(bridge, {"t": "avalve", "tag": "PV-322203", "face": "hic2",
+    face = HandValveFaceplate(bridge, {"t": "ind", "tag": "PV-322203", "face": "hic2",
                                        "bind": "CO2_FEED.PV_322203"})
     face.show()
     assert face.windowTitle() == "HIC-322203 → PV-322203 MIN OPENING"

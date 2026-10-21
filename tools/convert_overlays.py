@@ -15,7 +15,7 @@ tag and the dot-path it reads from the state packet.
 rewrite: a hand-typed coordinate is a silent defect that only a pixel comparison catches.
 This converter is the only path from the drawing geometry into V1.1. What an element DOES
 may be changed by a decision of the process engineer, and only through `DECIDED_EDITS`,
-which names the decision beside each edit; where an element sits, only through `NUDGE`, V1's
+which names the decision beside each edit, or for a whole type through `DECIDED_RETYPES`; where an element sits, only through `NUDGE`, V1's
 migration table for the same purpose, each row a decision (handoff A-7); and an element V1's
 screens lack is added only through `DECIDED_ADDITIONS`, each a decision (decision 40).
 
@@ -62,7 +62,11 @@ DECIDED_EDITS = (
         "tag": "HS-322915", "cmd": "HS-322915",
         "note": ("HS-322915 OVERRIDE CLOSE, a maintained control-room keyswitch: while it is "
                  "turned XV-322915 stays shut whatever I 22.1's limit says (AC4 PC22.5.1); "
-                 "the lamp is lit while TT-322015 is over its limit"),
+                 "the square is green, red while the override is on, and framed amber while "
+                 "TT-322015 is over its limit"),
+        # The slide's square (328-2, shape 208, its comment): "the green background turns red"
+        # when the override is activated. Decided 2026-10-16 (decision 129).
+        "key": "HAND_SWITCHES.HS_322915",
     }),
     # Handoff B-39, decided 2026-10-09 (project.md decision 81): FIC-328402 meters PFD 735,
     # 328P003's feed to 328E007 and the desorbers, where V1 hangs it on 744. The indicator keeps
@@ -117,6 +121,16 @@ DECIDED_ADDITIONS = (
                                "0-10 uS/cm range: a 322E002 tube leak's ammonium bicarbonate")}),
 )
 
+#: Element types the process engineer decided to render as another type, every element of the
+#: type at once: {source type: (new type, fields set where the element has none)}. Decided
+#: 2026-10-16 (project.md decision 129): no valve icon on a screen but the block valves' (XV).
+#: Each modulating valve's icon stood on the slide's tag label below the drawn valve, a second
+#: valve over the drawing's own; it becomes a plain readout of the valve's opening in per cent,
+#: keeping its binding, its click and its faceplate route.
+DECIDED_RETYPES = {
+    "avalve": ("ind", {"u": "%", "dec": 1}),
+}
+
 #: The only geometry edits: V1's migration procedure's ``NUDGE`` table, each row a decision of the
 #: process engineer that moves or resizes one element off its recorded shape (screen, element
 #: key, the centre and size it takes). Handoff A-7, decided 2026-10-09: zero overlap on every
@@ -136,6 +150,36 @@ NUDGE = (
     # TV-323013B, drawn 31 px below TV-323013A while the valve and its readout stand 34 px: down
     # 3 px, so the two 34-px stacks meet without overlapping (211-244 and 245-278).
     ("screen-323-2", "tv323013b", {"y": 262}),
+    # Decided 2026-10-16 (project.md decision 129, the pages revised from their slides): no
+    # readout covers a drawn label, symbol or block, nor touches another with one more digit.
+    # HS-322915's override is the slide's 23.6 x 17.6 square inside its panel (shape 208), not a
+    # 120-px labelled button over the panel's text.
+    ("screen-328-2", "ovrxv322915", {"w": 24, "h": 18}),
+    # Each the least move, with a 2-px clearance, that leaves the readout off every drawn
+    # label, symbol and block and off every other element at one more digit:
+    # PIC-322203 off the CO2 Compressor block, up 9.
+    ("screen-322-1", "pic203", {"y": 552}),
+    # PT-323201 clear of LV-322501's opening, right 11.
+    ("screen-322-1", "pt3201", {"x": 1126}),
+    # TDY-329125 clear of FIC-329409, left 10.
+    ("screen-322-2", "tdy25", {"x": 599}),
+    # LV-323503's opening off its valve symbol, left 7.
+    ("screen-323-2", "lv323503", {"x": 803}),
+    # FIC-323418 and FIC-323401 off their valves' actuators.
+    ("screen-323-2", "fic323418", {"x": 631, "y": 547}),
+    ("screen-323-2", "fic323401", {"x": 563, "y": 648}),
+    # FIC-329402, FIC-328406 and FIC-328402 off their valves' actuators.
+    ("screen-328-1", "fic329402", {"y": 416}),
+    ("screen-328-1", "fic328406", {"x": 1221, "y": 469}),
+    ("screen-328-1", "fic328402", {"x": 741, "y": 669}),
+    # PT-324204 off 324F003's shoulder; TIC-324002 off 324E003's shell.
+    ("screen-324-1b", "pt324204", {"x": 444, "y": 169}),
+    ("screen-324-1b", "tic324002", {"x": 436}),
+    # HIC-323605 off its valve's actuator, PY-324701 off 324F003's shell, TT-328006 clear of
+    # AI-328701: each a pixel or five.
+    ("screen-324-1", "hic323605", {"x": 519}),
+    ("screen-324-1b", "py324701", {"y": 231}),
+    ("screen-328-1", "tt328006", {"x": 907}),
 )
 
 
@@ -366,8 +410,16 @@ def validate(screens: dict[str, list[dict]]) -> dict[str, int]:
 
 
 def apply_decided_edits(screens: list[tuple[str, list[dict]]]) -> None:
-    """Apply `DECIDED_EDITS` and `NUDGE` in place, then append `DECIDED_ADDITIONS`; raise if an
-    edited element does not exist or an added one is not a valid new element."""
+    """Apply `DECIDED_RETYPES`, `DECIDED_EDITS` and `NUDGE` in place, then append
+    `DECIDED_ADDITIONS`; raise if an edited element does not exist or an added one is not a
+    valid new element."""
+    for _sid, elements in screens:
+        for el in elements:
+            if el["t"] in DECIDED_RETYPES:
+                new_type, defaults = DECIDED_RETYPES[el["t"]]
+                el["t"] = new_type
+                for name, value in defaults.items():
+                    el.setdefault(name, value)
     by_key = {(sid, el["k"]): el for sid, elements in screens for el in elements}
     for sid, key, fields in DECIDED_EDITS + NUDGE:
         el = by_key.get((sid, key))
@@ -464,7 +516,6 @@ SLIDE_RX = (STAGE_W / SLIDE_EMU_W) / (STAGE_H / SLIDE_EMU_H)
 ELEMENT_TYPES = {{
     "ind":    "IndicatorWidget",       # black box, live value + unit
     "nav":    "NavHotspotWidget",      # transparent screen-jump hotspot
-    "avalve": "ActuatedValveWidget",   # modulating valve, stem position
     "pump":   "PumpWidget",            # green running / grey stopped
     "bar":    "BargraphWidget",        # vertical level fill
     "strm":   "StreamHotspotWidget",   # stream inspector popup

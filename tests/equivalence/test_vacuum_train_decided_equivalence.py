@@ -55,7 +55,7 @@ def _v1_tear_trip(v1, n: int, cut_at: int) -> list:
     u1 = fe.FirstEvaporator(chest=fe.V1_CHEST, lv_329505=None)
     l1 = fe.FirstEvaporatorLoops(pic=fe.pic_329203(fe.V1_CHEST),
                                  trap=fe.lic_329505(fe.V1_TRAP_OP_DES_PCT))
-    u2 = se.SecondEvaporator(chest=se.V1_CHEST)
+    u2 = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False)
     l2 = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST))
     tv2 = design_specs()["324E002"].t_v_solved_des
     tv5 = design_specs()["324E005"].t_v_solved_des

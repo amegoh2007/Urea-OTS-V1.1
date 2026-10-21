@@ -642,9 +642,9 @@ def test_the_recirculation_end_to_end_through_a_stripper_feed_cut(v1):
     s = _v1_state(v1)
     col = rc.RectifyingColumn(chest=rc.V1_CHEST)
     loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
-    drum, lic5 = ft.FlashTank(), ft.lic_323505()
-    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
-    tank, lic, fic = st.SolutionTank(), st.lic_323507(), st.fic_324401()
+    drum, lic5 = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
+    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
+    tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()
     lpcc, loops8 = lp.LpCarbamateCondenser(), _loops()
     cond, loops9 = fc.FlashCondenser(**fc.V1_CONDENSER), stage9._loops()
     m718b_prev = e3.E003_M718B_DES_KGH
@@ -667,7 +667,7 @@ def test_the_recirculation_end_to_end_through_a_stripper_feed_cut(v1):
                       drum.p_bara, p_d001, DT)
         b2 = drum.step(lic5, b1.m_314_kgh, b1.drain_t_c, b1.drain_w, p_e011, sep.p_bara, DT)
         b3 = sep.step(tic, pic, b2.m_319_kgh, b2.drain_t_c, b2.drain_w, b2.blowthrough_kgh,
-                      b2.blowthrough_kmolh, b2.blowthrough_y, d.HIC_323605_DES_PCT, P_LP_BARA,
+                      b2.blowthrough_kmolh, b2.blowthrough_y, d.HIC_323605_DES_PCT_V1, P_LP_BARA,
                       d.P_324E002_DES_BARA, DT)
         b4 = tank.step(lic, fic, b3.m_317_kgh, b3.drain_t_c, b3.drain_w, *stage4.NO_RECYCLE,
                        False, DT)

@@ -27,6 +27,7 @@ from ureasim.engine.plant import build_plant, recirc
 from ureasim.engine.schedule import Boundary, DeclaredTear, Schedule, State, Step
 from ureasim.engine.scheduler import Scheduler
 from ureasim.engine.state import PlantState
+from ureasim.units.recirc import flash_tank as ft
 from ureasim.units.recirc import pre_evaporator as pe
 from ureasim.units.recirc import rectifying_column as rc
 from tests.equivalence import test_solution_tank_equivalence as stage4
@@ -85,6 +86,12 @@ def test_the_liquor_train_through_the_scheduler_is_v1s_chain(v1):
     units, loops = recirc.units()
     # V1's linear chest valves: PV-329202's and PV-329208's trims have their own tests.
     units["323C003"].chest, units["323F010"].chest = rc.V1_CHEST, pe.V1_CHEST
+    # V1's linear HV-323605 (its Neldisc has its own tests), at V1's 50 %.
+    units["323F010"].vent = pe.V1_VENT
+    # V1's 323F004: its holdup and level law, no ceiling (A-22 and B-100 have their own tests).
+    units["323F004"] = ft.FlashTank(**ft.V1_DRUM)
+    # V1's explicit species step at a heel (B-98's backward step has its own tests).
+    units["323D002"].backward_species = False
     # V1's bubble point on the design vacuum: the live PT-323204 (B-22) has its own tests.
     units["323F010"].live_bubble = False
     loops["323C003"] = (loops["323C003"][0], rc.pic_329202(rc.V1_CHEST), loops["323C003"][2])
@@ -95,7 +102,7 @@ def test_the_liquor_train_through_the_scheduler_is_v1s_chain(v1):
                     p_324e002=d.P_324E002_DES_BARA, rec_kgh=stage4.NO_RECYCLE[0],
                     rec_t=stage4.NO_RECYCLE[1], rec_w=stage4.NO_RECYCLE[2])
     plant = PlantState(units={u: units[u] for u in TRAIN}, loops={u: loops[u] for u in TRAIN},
-                       operator={"HIC-323605": d.HIC_323605_DES_PCT, "HV-323D002-TIE": False},
+                       operator={"HIC-323605": d.HIC_323605_DES_PCT_V1, "HV-323D002-TIE": False},
                        boundary=boundary)
     sch = Scheduler(_train_schedule(), plant)
     s = stage4._v1_state(v1)

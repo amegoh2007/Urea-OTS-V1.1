@@ -22,7 +22,7 @@ from ureasim.core.relief import (
     psv_area_from_rated_m2,
     reseat_vent_kgh,
 )
-from ureasim.data.relief_devices import GAS_KD_ASSUMED, RELIEF_DEVICES, RELIEF_SIZING
+from ureasim.data.relief_devices import GAS_KD_FULL_LIFT, RELIEF_DEVICES, RELIEF_SIZING
 
 
 def _sv32351():
@@ -113,15 +113,16 @@ def test_a_relief_valve_vents_nothing_shut_and_its_count_of_capacity_lifted():
     assert tiny == pytest.approx(reseat_vent_kgh(5.52, 5.51, 432.15, 0.01, 18.0, 0.1), rel=1e-12)
 
 
-def test_a_liquid_rated_valve_relieves_gas_on_its_orifice_at_the_assumed_coefficient():
-    """A-16, decided 2026-10-01. SV32357's orifice F, 240.53 mm2, at the series' gas coefficient
-    0.917: at its 6.61 bar a relieving pressure, 881.6 kg/h of the 323E011 node's M 17.4 vapour at
-    57 C — the law's output, linear in Kd, so 0.917 / 0.975 of what the law's default gives."""
+def test_a_liquid_rated_valve_relieves_gas_on_its_orifice_at_sempells_gas_coefficient():
+    """A-16, decided 2026-10-01; decision 130, 2026-10-16. SV32357's orifice F, 240.53 mm2, at the
+    0.922 Sempell prints for orifice F in gas service (881.6 kg/h on A-16's assumed 0.917): at its
+    6.61 bar a relieving pressure, 886.4 kg/h of the 323E011 node's M 17.4 vapour at 57 C — the
+    law's output, linear in Kd, so 0.922 / 0.975 of what the law's default gives."""
     sz = RELIEF_SIZING["SV32357"]
     rv = GasReliefValve(valve=SafetyValve("SV32357", 6.01, 5.51), area_m2=sz.area_mm2 * 1.0e-6,
-                        kd=GAS_KD_ASSUMED)
+                        kd=GAS_KD_FULL_LIFT)
     w = rv.vent_kgh(6.61, 99.0, 330.15, 17.395, 1.0e3, 0.1)
-    assert w == psv_api520_choked_kgh(240.53e-6, 6.61, 330.15, 17.395, kd=0.917)
-    assert w == pytest.approx(881.6, abs=0.1)
+    assert w == psv_api520_choked_kgh(240.53e-6, 6.61, 330.15, 17.395, kd=0.922)
+    assert w == pytest.approx(886.4, abs=0.1)
     assert w / psv_api520_choked_kgh(240.53e-6, 6.61, 330.15, 17.395) == pytest.approx(
-        0.917 / 0.975, rel=1e-12)
+        0.922 / 0.975, rel=1e-12)

@@ -281,6 +281,9 @@ class SolutionTank:
     #: The inlet line's packet FIFO and the FT-324401 lag.
     line_state: dict = field(default_factory=dict)
     lag_state: dict = field(default_factory=dict)
+    #: The backward species step at a heel (decided 2026-10-17, handoff B-98); False is V1's
+    #: explicit step, which the equivalence harnesses keep.
+    backward_species: bool = True
 
     def step(self, lic: ProcessLoop, fic: ProcessLoop,
              drain_kgh: float, drain_t_c: float, drain_w: dict,
@@ -409,7 +412,8 @@ class SolutionTank:
             w_pool = liquor_stage.advance_species(w_pool, m_pool_pre, self.m_i_kg + self.m_ii_kg,
                                                   feed.m_kgh, feed.w, 0.0, w_pool,
                                                   m_324 + overflow * 3600.0 / max(dt, DT_FLOOR_S),
-                                                  0.0, dt, m_in2_kgh=recycle, w_in2=recycle_w)
+                                                  0.0, dt, m_in2_kgh=recycle, w_in2=recycle_w,
+                                                  backward=self.backward_species)
             self.w = w_pool
             self.w_ii = dict(w_pool)
         else:
@@ -419,7 +423,7 @@ class SolutionTank:
             w_i_new = liquor_stage.advance_species(
                 self.w, m_i_pre, self.m_i_kg, feed.m_kgh, feed.w, 0.0, self.w,
                 m_324 + spill * 3600.0 / max(dt, DT_FLOOR_S), 0.0, dt,
-                m_in2_kgh=recycle, w_in2=recycle_w)
+                m_in2_kgh=recycle, w_in2=recycle_w, backward=self.backward_species)
             m_ii_mix = m_ii_pre + spill
             if spill > 0.0 and m_ii_mix > BLEND_FLOOR_KG:
                 # The spill carries Compartment I's liquor from before the tick. The blend

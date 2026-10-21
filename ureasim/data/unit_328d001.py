@@ -17,7 +17,7 @@ Sources
 -------
 * ``Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md`` — PFD 737, 718A, 774, 775, 776 and
   786 (PFD-22), 786's composition (93.08 / 6.31 / 0.61 wt% NH3 / H2O / CO2) and 776's 1095 kg/m3
-  at 61 C; 737's 46.21 mol% water at 117 C and 3.5 bar a.
+  at 61 C; 737's 46.21 mol% water at 117 C and 3.5 bar a; 328E004's cooling water, 1028 / 1029.
 * ``References/328E004 328D001 328P002 Datasheets.md`` — 328D001, 1684 mm inside and 1950 mm
   tangent to tangent; 328E004's 4357 kW, 212 m2 on 300 U-tubes, cooling water 30 -> 38 C.
 * The vendor's as-built assembly drawing UD-AU-328-DZ-0006-003 rev 02 (the vendor archive,
@@ -36,8 +36,8 @@ Sources
 * Uhde P&ID sheet 103/2 (``References/Merged_Searchable_PIDs.pdf``, page 5): PIC-328202's signal
   from sheet 104 onto PV-328202 on the drum's vent; LIC-328501 on LV-328501 in the line to
   323E003; TIC-328002's TV-328002 on the cooling-water return.
-* Flowserve's calculation sheets for LV-328501, FV-328404 and PV-328202
-  (`ureasim.data.control_valves`).
+* Flowserve's calculation sheets for LV-328501, FV-328404 and PV-328202, and Metso's sizing sheet
+  for TV-328002 (`ureasim.data.control_valves`).
 * V1 ``backend/main.py``: the 328D001 block (1571-1646), RHO_775_KGM3 (5974), the offgas anchor
   (2065-2068), and the seeds in ``State.__init__`` (6840-6847, 6993-7025, 7066-7081). Each value
   carries its provenance.
@@ -48,7 +48,13 @@ from __future__ import annotations
 import math
 
 from ureasim.core.stream import MW_COMP
-from ureasim.data.control_valves import FV_328404, LV_328501, PV_328202, design_stroke_pct
+from ureasim.data.control_valves import (
+    FV_328404,
+    LV_328501,
+    PV_328202,
+    TV_328002,
+    design_stroke_pct,
+)
 from ureasim.data.desorption_train import (
     C002_M737_DES_KGH,
     C002_M775_DES_KGH,
@@ -58,7 +64,7 @@ from ureasim.data.desorption_train import (
     D001_T_C,
 )
 from ureasim.data.relief_devices import (
-    GAS_KD_ASSUMED,
+    GAS_KD_FULL_LIFT,
     RELIEF_DEVICES,
     RELIEF_SIZING,
     gas_reseat_bara,
@@ -165,10 +171,22 @@ PV202_XT = PV_328202.normal_case.xt
 # 328E004: the condenser's duty and the drum's energy anchor
 # ======================================================================================
 
-#: 328E004's design duty [kW] (datasheet) and TV-328002's design stroke [%] (V1). V1's duty is
-#: stroke-proportional, Q = Q_des . op / 50, not a UA on the cooling water.
+#: 328E004's design duty [kW] (datasheet) and TV-328002's design stroke [%] as V1 runs it, linear;
+#: the equivalence harness keeps it. V1's duty is stroke-proportional, Q = Q_des . op / 50, not a UA
+#: on the cooling water.
 E004_Q_DES_KW = 4357.0
 E004_TV_OP_DES_PCT = 50.0
+
+#: 328E004's cooling water at design [kg/h], PFD 1028: 408 t/h at 30 C, returning as 1029 at 38 C.
+E004_CW_DES_KGH = 408000.0
+
+#: TV-328002 on its vendor's trim (decision 23's class, decided 2026-10-17): Metso's DN 200
+#: Neldisc, maximum Cv 3050 (`data.control_valves.TV_328002`, item 23), its printed capacities as
+#: its curve, its design stroke where it passes PFD 1028's 408 t/h on its normal case, 55.04 %.
+#: 328E004's duty and TT-329007 read the water the trim passes against its design stroke's, in
+#: place of V1's stroke ratio; TIC-328002 is seeded there.
+TV_328002_OP_DES_PCT = design_stroke_pct(TV_328002, E004_CW_DES_KGH)
+TV_328002_CHAR = TV_328002.characteristic
 
 #: The cooling water [deg C]: supply 30 (PFD 1028), return 38 at design (PFD 1029), and the
 #: display ceiling V1 clamps TT-329007 at (the 2.2 bar a return flashes near it). The supply is
@@ -284,9 +302,10 @@ SV32353_SET_BARA = RELIEF_DEVICES["SV32353"].set_bara
 SV32353_RESEAT_BARA = gas_reseat_bara(RELIEF_DEVICES["SV32353"])
 
 #: Its orifice K, 1462.20 mm2 [m2] (Sempell UD-RL-G00-DZ-0001-001 page 90, rated on liquid at
-#: alpha_w 0.644), and the gas coefficient taken for it, 0.917 — an assumption (A-16, option b).
+#: alpha_w 0.644), and its orifice's gas coefficient, 0.922, Sempell's for it in gas service
+#: (decision 130; 0.917 assumed until 2026-10-16, A-16 option b).
 SV32353_AREA_M2 = RELIEF_SIZING["SV32353"].area_mm2 * 1.0e-6
-SV32353_KD = GAS_KD_ASSUMED
+SV32353_KD = GAS_KD_FULL_LIFT
 
 __all__ = [
     "D001_M737_DES_KGH", "D001_M718A_DES_KGH", "D001_IN_DES_KGH", "D001_M786_DES_KGH",
@@ -295,7 +314,8 @@ __all__ = [
     "D001_VOL_CYL_M3", "D001_VOL_M3", "D001_HEAD_VOL_M3", "LT_328501_TAP_LO_M", "LT_328501_SPAN_M",
     "D001_LEVEL_DES_PCT", "D001_H_DES_M", "D001_M_DES_KG", "D001_FULL_KG", "D001_M_FLOOR_KG",
     "W786_DES", "MW786_DES", "PV202_P2_BARA", "PV202_OP_DES_PCT_V1", "PV202_CHAR",
-    "PV202_OP_DES_PCT", "PV202_XT", "E004_Q_DES_KW", "E004_TV_OP_DES_PCT", "E004_CW_T_IN_C",
+    "PV202_OP_DES_PCT", "PV202_XT", "E004_Q_DES_KW", "E004_TV_OP_DES_PCT", "E004_CW_DES_KGH",
+    "TV_328002_OP_DES_PCT", "TV_328002_CHAR", "E004_CW_T_IN_C",
     "E004_CW_T_OUT_DES_C", "E004_CW_T_MAX_C", "D001_SENS_DES_KW", "D001_LAM737_KJKG",
     "E004_COND_FLOOR", "C002_OFFGAS_H2O_PFD_MOLPCT", "C002_OFFGAS_PHI",
     "C002_OFFGAS_H2O_DES_MOLPCT", "C002_DT_TOP_NO_REFLUX_K", "TIC_328008_KC", "TIC_328008_TI_S",

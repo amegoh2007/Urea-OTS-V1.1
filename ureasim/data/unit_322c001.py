@@ -49,7 +49,7 @@ from ureasim.core.packet import normalise_solution_mass_fraction as _w_norm
 from ureasim.core.stream import MW_COMP
 from ureasim.data.control_valves import LV_322502, PV_322201, design_stroke_pct
 from ureasim.data.relief_devices import (
-    GAS_KD_ASSUMED,
+    GAS_KD_FULL_LIFT,
     RELIEF_DEVICES,
     RELIEF_SIZING,
     gas_reseat_bara,
@@ -328,9 +328,10 @@ SV32253_SET_BARA = RELIEF_DEVICES["SV32253"].set_bara
 SV32253_RESEAT_BARA = gas_reseat_bara(RELIEF_DEVICES["SV32253"])
 
 #: Its orifice M, 2827.43 mm2 [m2] (Sempell UD-RL-G00-DZ-0002-001 page 2, rated on liquid at
-#: alpha_w 0.644), and the gas coefficient taken for it, 0.917 — an assumption (A-16, option b).
+#: alpha_w 0.644), and its orifice's gas coefficient, 0.922, Sempell's for it in gas service
+#: (decision 130; 0.917 assumed until 2026-10-16, A-16 option b).
 SV32253_AREA_M2 = RELIEF_SIZING["SV32253"].area_mm2 * 1.0e-6
-SV32253_KD = GAS_KD_ASSUMED
+SV32253_KD = GAS_KD_FULL_LIFT
 
 __all__ = [
     "C001_M755_DES_KGH", "C001_RHO_755_KGM3", "C001_M756_DES_KGH", "C001_CPL_DES_KGH",

@@ -71,8 +71,10 @@ def test_the_residual_credit_scales_with_the_load_decided_divergence(v1):
     """B-75. The CO2 demand cut to 80 %: the reactor's load ratio settles at 0.79 and the recycle
     tear it deletes falls with it. V1 still credits the design residual, 2024.9 kg/h, and its loop
     runs down; the port credits the residual at the same ratio (1521.6 kg/h after two minutes).
-    After two minutes V1's PT-329201 reads 141.4895 bar a, the port's 141.5025 (load ratio 0.7915,
-    on session 53's code, 2026-10-15; 141.4957, 141.5088, 0.7916 and 1523.2 with PV-329202 and
+    After two minutes V1's PT-329201 reads 141.4894 bar a, the port's 141.5024 (load ratio 0.7915,
+    with HV-323605, PV-323203 and TV-328002 on their Metso trims, 2026-10-17 — V1's side through the
+    steam network it shares with the port; 141.4895 and 141.5025 on session 53's code, 2026-10-15;
+    141.4957, 141.5088, 0.7916 and 1523.2 with PV-329202 and
     PV-329208 on their vendor trims, 2026-10-15; 141.4928 and 141.5058 before them;
     with 322E003 on its own liquor and its sump, decided 2026-10-14; 141.6382 and 141.6505 with B-91 (a) and B-92, decided 2026-10-10 and 2026-10-14,
     the reactor's residence on the liquid passing: the load ratio 0.7867; 1640.8, 140.3239 and
@@ -93,15 +95,17 @@ def test_the_residual_credit_scales_with_the_load_decided_divergence(v1):
     assert ratio == pytest.approx(0.7915, abs=1e-4)
     assert pt.resid_credit_kgh == pt.loop_mass_frac * ratio * SYN_LOOP_RESID_DES_KGH
     assert pt.resid_credit_kgh == pytest.approx(1521.6, abs=0.1)
-    assert (p_v1, pt.p_syn_bara) == (pytest.approx(141.4895, abs=1e-4),
-                                     pytest.approx(141.5025, abs=1e-4))
+    assert (p_v1, pt.p_syn_bara) == (pytest.approx(141.4894, abs=1e-4),
+                                     pytest.approx(141.5024, abs=1e-4))
 
 
 def test_the_recondensed_backlog_returns_to_the_sump_decided_divergence(v1):
     """B-76. 329P006A stopped for a minute: the backlog builds while 322E003 cannot condense and
     recondenses after. V1 deletes what recondenses; the port returns it to 322E003's sump on the
-    next tick, 141.71 kg in three minutes. V1's sump ends at 3650.55 kg, the port's at 3766.50
-    (session 54's code, B-31 decided 2026-10-16; 3650.56 and 3766.51 on session 53's; 141.63, 3650.40 and 3766.41 before; with B-91 (a) and B-92, decided 2026-10-10 and 2026-10-14: 141.49, 3634.17 and 3745.06 before them; with
+    next tick, 141.71 kg in three minutes. V1's sump ends at 3650.65 kg, the port's at 3766.57
+    (323F004 on its geometry, B-100, decided 2026-10-17, through 323E003's 308; 3650.52 and 3766.49
+    with the three Metso valves on their trims, 2026-10-17; 3650.55 and 3766.50 on session 54's code,
+    B-31 decided 2026-10-16; 3650.56 and 3766.51 on session 53's; 141.63, 3650.40 and 3766.41 before; with B-91 (a) and B-92, decided 2026-10-10 and 2026-10-14: 141.49, 3634.17 and 3745.06 before them; with
     B-81's lines and B-77 (b) and AC4's trips, decided 2026-10-09: 138.79, 3636.88 and 3746.40
     before them; both sides with FFIC-321404A / B, B-85 decided 2026-10-09 — 138.64, 3639.66 and
     3749.20 before; on the session-44 decisions: TT-322002 on 165 C, the standard atmosphere,
@@ -118,8 +122,8 @@ def test_the_recondensed_backlog_returns_to_the_sump_decided_divergence(v1):
     rec_kg = sum(r["PT-329201"].m_recond_kgh for _, r, _ in hist[:-1]) * h.DT / 3600.0
     sump = sched.plant.units["322E003"]
     assert rec_kg == pytest.approx(141.71, abs=0.01)
-    assert (s.scrub_holdup_kg, sump.holdup_kg) == (pytest.approx(3650.55, abs=0.01),
-                                                   pytest.approx(3766.50, abs=0.01))
+    assert (s.scrub_holdup_kg, sump.holdup_kg) == (pytest.approx(3650.65, abs=0.01),
+                                                   pytest.approx(3766.57, abs=0.01))
 
 
 def test_a_full_sump_holds_its_excess_in_the_scrubber_decided_divergence(v1):
@@ -237,8 +241,9 @@ def test_the_trips_as_ac4_executes_them_decided_divergence(v1, case):
     the Safeguard SG1 — XV-322902 shut (PC21.5.1 .12-.15; XV-322902 and XV-322903 decided
     2026-10-16). The CO2 demand cut to zero: V1 latches 21.4 and stops the machines, the valves
     open; on AC4 FY-322403 below its L2 loses 21.2, the machines stop on their flags and the valves
-    shut. After a minute V1's loop stands at 139.2729 / 139.5415 bar a, AC4's, blocked in with the
-    CO2 and the carbamate recycle isolated, at 141.1460 / 140.8889 (before 2026-10-16, when 21.2
+    shut. After a minute V1's loop stands at 139.2729 / 139.5413 bar a, AC4's, blocked in with the
+    CO2 and the carbamate recycle isolated, at 141.1460 / 140.8889 (V1's CO2 case 139.5415 before
+    the three Metso valves went on their trims, 2026-10-17; before 2026-10-16, when 21.2
     left XV-322902 and XV-322903 open, both at 139.4947 / 139.5184; V1's side moves too, through
     the steam network it shares with the port)."""
     def act(k, plant, s):
@@ -265,7 +270,7 @@ def test_the_trips_as_ac4_executes_them_decided_divergence(v1, case):
     assert ends[False][6:8] == (True, True)
     assert ends[True][6:] == (False, False, False, False)
     assert (ends[False][5], ends[True][5]) == {"fault": (139.2729, 141.146),
-                                               "co2": (139.5415, 140.8889)}[case]
+                                               "co2": (139.5413, 140.8889)}[case]
 
 
 def _the_loop_at_130_7(k, plant, s):
@@ -308,3 +313,64 @@ def test_the_reactor_liquor_stands_at_its_bubble_point_decided_divergence(v1):
     assert last.t_nodes_c[3] == pytest.approx(176.778, abs=1e-3)
     assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(130.5110, abs=1e-4),
                                                    pytest.approx(130.4826, abs=1e-4))
+
+
+def test_the_saturation_fraction_solved_on_the_tick_decided_divergence(v1):
+    """A-21, decided 2026-10-17: 322E002's saturation fraction solved with its own melt's bubble
+    pressure on the tick, against V1's lines with B-91's fraction read a tick late (the
+    transcription). HV-322605 60 -> 100 % at 0.5 s. On the tear the fraction rings with a period
+    of two ticks — 322E002 condenses 3.7 then 227.1 t/h, its melt at 171 then 220 bar a — and the
+    gas it passes builds the loop to 152.52 bar a in 30 s; solved on the tick it condenses a
+    steady 131.8 t/h at a fraction of 0.514, its melt at 176.5 bar a, and the loop stands at
+    141.357 bar a. Before the step the two differ by the seed's own drift (the tear's fraction
+    dips to 0.99998 in the first ticks; solved, the seed condenses at 1.0 on its first)."""
+    def act(k, plant, s):
+        if k == 0:
+            plant.units["322E002"].implicit_saturation = True
+        if k == 5:
+            plant.operator["HIC-322605"] = s.HIC_322605 = 100.0
+    hist, _, _ = h.run_both(v1, 301, act, decided=h.ALL, check=False)
+    out, res, p_v1 = hist[4]
+    assert res["322E002"].holdup.condenser.liq_kgh == pytest.approx(out.hpcc["liq_kgh"], rel=1e-4)
+    (a, ra, _), (b, rb, p_v1) = hist[299], hist[300]
+    assert (a.hpcc["liq_kgh"], b.hpcc["liq_kgh"]) == (pytest.approx(3743.5, abs=0.1),
+                                                     pytest.approx(227106.6, abs=0.1))
+    assert (a.hpcc["P_bub"], b.hpcc["P_bub"]) == (pytest.approx(171.34, abs=0.01),
+                                                 pytest.approx(220.29, abs=0.01))
+    assert p_v1 == pytest.approx(152.5153, abs=1e-4)
+    hp = rb["322E002"].holdup
+    assert (hp.condenser.liq_kgh, hp.condenser.p_bub_bara, hp.sat_frac) == (
+        pytest.approx(131793.2, abs=0.1), pytest.approx(176.49, abs=0.01),
+        pytest.approx(0.5139, abs=1e-4))
+    assert ra["322E002"].holdup.condenser.liq_kgh == pytest.approx(131806.5, abs=0.1)
+    assert rb["PT-329201"].p_syn_bara == pytest.approx(141.3569, abs=1e-4)
+
+
+def test_322e003s_capacity_on_its_shells_effectiveness_decided_divergence(v1):
+    """B-99, decided 2026-10-17: 322E003's condensation capacity on its shell's conductance eps . C
+    at the live circulation, its published duty capped at that capacity, against V1's linear flow
+    law (the transcription). FIC-329409's set point 306 -> 250 t/h at 0.5 s: the two part on the
+    tick after; two minutes on, with FT-329409 at 296.7 t/h, V1's capacity is 0.9695 and leaves
+    631.0 kg/h of the loop's gas uncondensed, the loop 140.7047 bar a; on the shell's effectiveness
+    — UA-limited, NTU 0.19 — 0.9971 and 115.3 kg/h, 140.7007 bar a, the duty 5313.7 kW, that
+    fraction of the 5329.5 demanded, and TT-329125 95.428 C."""
+    def act(k, plant, s):
+        if k == 0:
+            plant.units["322E003"].effectiveness_capacity = True
+        if k == 5:
+            plant.loops["322E003"][0].fic_sp = s.FIC["sp"] = 250.0
+    hist, _, _ = h.run_both(v1, 1201, act, decided=h.ALL, check=False)
+    parted = next(k for k, (out, res, _) in enumerate(hist)
+                  if res["322E003"].rho_cond != out.rho_cond)
+    assert parted == 6
+    out, res, p_v1 = hist[1200]
+    sc = res["322E003"]
+    assert (out.rho_cond, out.scrub["uncond_kgh"], p_v1) == (
+        pytest.approx(0.96947, abs=1e-5), pytest.approx(631.0, abs=0.1),
+        pytest.approx(140.7047, abs=1e-4))
+    assert (sc.rho_cond, sc.scrubber.uncond_kgh, res["PT-329201"].p_syn_bara) == (
+        pytest.approx(0.99705, abs=1e-5), pytest.approx(115.3, abs=0.1),
+        pytest.approx(140.7007, abs=1e-4))
+    assert sc.ccw.m_ccw_kgh == pytest.approx(296659.0, abs=1.0)
+    assert sc.scrubber.q_ccw_kw == pytest.approx(5313.7, abs=0.1)
+    assert sc.scrubber.t_ccw_out_c == pytest.approx(95.428, abs=1e-3)

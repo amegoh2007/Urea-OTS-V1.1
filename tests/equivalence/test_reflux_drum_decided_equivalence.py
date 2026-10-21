@@ -8,7 +8,8 @@ against the port, bit-exact until it first acts, then V1's behaviour asserted on
 the port's on the port's. Four were decided by the process engineer for this unit on 2026-09-30
 (decisions 28, 29 and 30, and handoff B-53), one on 2026-10-01 (SV32353, handoffs B-47 and A-16);
 five are classes decided on other units and applied under §5 rule 7 (decisions 24, 11, 23 and
-10).
+10), TV-328002's Neldisc among decision 23's (2026-10-17), which the other harness runs on V1's
+linear law (`test_reflux_drum_equivalence._drum_and_loops`).
 """
 
 from __future__ import annotations
@@ -137,7 +138,7 @@ def test_sv32353_relieves_a_shut_vent_decided_divergence(v1):
     assert r.s.a328_d001_P == pytest.approx(111.635, abs=1e-3)
     assert r.drum.p_bara == pytest.approx(6.0097, abs=1e-4)
     assert abs(r.made) < 1e-6 and abs(r.made_v1) < 1e-6
-    s, drum, loops = d001_eq._v1_state(v1, ALL), rd.RefluxDrum(), rd.RefluxDrumLoops()
+    s, (drum, loops) = d001_eq._v1_state(v1, ALL), d001_eq._drum_and_loops()
     before(s, drum, loops)
     lifts, was, p_hi, p_lo, vented = [], False, 0.0, 99.0, 0.0
     for k in range(4800):
@@ -212,6 +213,26 @@ def test_the_valves_on_their_vendor_trims_decided_divergence(v1, v1_name, name, 
     port = {"776": r.b.m_776_kgh, "786": r.b.m_786_kgh, "775": r.b.m_775_kgh}[field]
     assert (r.a[field], port) == (pytest.approx(v1_flow, rel=1e-12),
                                   pytest.approx(flow, abs=0.01))
+
+
+def test_tv_328002_on_its_vendor_trim_decided_divergence(v1):
+    """Decision 23's class, decided 2026-10-17: TV-328002 on Metso's DN 200 Neldisc, its printed
+    capacities as its curve, from its 55.04 % design stroke, where V1 runs it linear from 50 %:
+    328E004's duty and TT-329007 read the water the trim passes against its design stroke's. At the
+    design seed both duties are 4357 kW and the strokes differ, so the two part on the first tick's
+    TIC-328002 output and nothing else. 737 cut a fifth at 5 s: ten minutes on V1's TV-328002 has
+    closed 10.5 points, to 39.50 %, and its drum stands at 59.050 C; the Neldisc closes 9.3 points,
+    to 45.73 %, and its drum stands at 59.303 C, 328E004 taking 3446 kW against V1's 3442. Neither
+    side makes liquid."""
+    r = _both(v1, lambda k: _design(m737=(0.8 * t.C002_M737_DES_KGH if k >= 10
+                                          else t.C002_M737_DES_KGH)),
+              1200, 0.5, None, ALL, port=(rd.RefluxDrum(), rd.RefluxDrumLoops()))
+    assert r.parted == 0
+    assert (r.a["tic"], r.b.tic_op_pct) == (pytest.approx(39.496, abs=1e-3),
+                                            pytest.approx(45.731, abs=1e-3))
+    assert (r.s.a328_d001_T, r.drum.t_c) == (pytest.approx(59.050, abs=1e-3),
+                                             pytest.approx(59.303, abs=1e-3))
+    assert abs(r.made) < 1e-6 and abs(r.made_v1) < 1e-6
 
 
 def test_tic_328002_on_span_decided_divergence(v1):

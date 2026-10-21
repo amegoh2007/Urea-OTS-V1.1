@@ -438,13 +438,17 @@ def test_the_capacity_gate_has_three_independent_failures():
     """Throttle the water, lose the temper, or stop the pumps — each alone is enough.
 
     All three read exactly 1.0 at design, so the product does too and the gate is inert
-    there. Measured: half flow gives 0.5, stopped pumps give 0.0, and a supply temperature
-    at the condensing temperature gives 0.0 because the driving force has gone.
+    there. Measured: half flow gives 0.912 on the shell's effectiveness (decided 2026-10-17,
+    B-99 (b1): the shell is UA-limited, NTU 0.19) where V1's linear law gives 0.5, stopped pumps
+    give 0.0, and a supply temperature at the condensing temperature gives 0.0 because the
+    driving force has gone.
     """
     assert condensation_capacity(CCW_KGH_DES, 1.0, CCW_T_IN_DES_C,
                                  OVERFLOW_P_DES_BARA, 1.0) == 1.0
     assert condensation_capacity(CCW_KGH_DES / 2, 1.0, CCW_T_IN_DES_C,
-                                 OVERFLOW_P_DES_BARA, 1.0) == 0.5
+                                 OVERFLOW_P_DES_BARA, 1.0) == pytest.approx(0.91176, abs=1e-5)
+    assert condensation_capacity(CCW_KGH_DES / 2, 1.0, CCW_T_IN_DES_C,
+                                 OVERFLOW_P_DES_BARA, 1.0, effectiveness=False) == 0.5
     assert condensation_capacity(CCW_KGH_DES, 0.0, CCW_T_IN_DES_C,
                                  OVERFLOW_P_DES_BARA, 1.0) == 0.0
     assert condensation_capacity(CCW_KGH_DES, 1.0, OVERFLOW_T_DES_C,

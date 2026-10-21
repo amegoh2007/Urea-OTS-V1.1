@@ -21,6 +21,14 @@ Source
 Ported from V1 ``backend/main.py``: ``sol_bubble_t_dep``, ``sol_vapour_y_vle``,
 ``sol_biuret_xi`` and ``sol_advance`` (reports TD-014, A-11, B-8, F-8, TD-009, F-11).
 
+One decided divergence (2026-10-17, handoffs B-98 and B-101; decision 78's class): where a stage's
+outflows pass more on the tick than it holds — a heel with a throughflow — the species step takes
+what it drains and what it boils off at the composition at the end of the step, not at its start.
+V1's explicit step there drains each species at the old holdup's fraction, floors water and urea at
+zero and leaves the liquor reading 0.000 % urea; a drain taken backward with the vapour still
+explicit floors the volatiles on alternate ticks and rings. Everywhere else the step is V1's to the
+bit.
+
 What changed in the port, and why it is not a physics change
 ------------------------------------------------------------
 V1 keeps three module-level dictionaries — the two design memos and ``SOL_VLE_DOMAIN``, which
@@ -164,7 +172,8 @@ def biuret_extent(stage: LiquorStage, m_kg: float, w: dict, t_c: float) -> float
 
 def advance_species(w: dict, m_pre_kg: float, m_new_kg: float, m_in_kgh: float, w_in: dict,
                     m_vap_kgh: float, y: dict, m_liq_kgh: float, xi_kmolh: float, dt: float,
-                    m_in2_kgh: float = 0.0, w_in2: dict = None) -> dict:
+                    m_in2_kgh: float = 0.0, w_in2: dict = None,
+                    backward: bool = True) -> dict:
     """Integrate one stage's species holdup by one step and return its new composition.
 
     Process utility
@@ -182,14 +191,42 @@ def advance_species(w: dict, m_pre_kg: float, m_new_kg: float, m_in_kgh: float, 
         w_new         = (M . w)_new / sum (M . w)_new          (C6: sum w == 1)
 
     Each species holdup is floored at zero. A stage with nothing left keeps its composition.
+
+    Where the outflows pass more than the stage holds on the step, (m_liq + m_vap) . dt / 3600 >
+    M_new, the explicit step would take more of a species than there is: the drain and the vapour
+    then leave at the step's end state, the backward step (decided 2026-10-17, handoffs B-98 and
+    B-101; decision 78's class), each species boiling off at its live partition r_i = y_i / w_i,
+
+        (M . w_i)_new = [ M_pre . w_i + ( m_in . w_in,i + m_in2 . w_in2,i + nu_i . xi ) . dt / 3600 ]
+                        / ( 1 + (m_liq + m_vap . r_i) . dt / (3600 . M_new) )
+
+    (a species the vapour carries but the liquor holds none of is drawn on its sources), which holds
+    a heel with a throughflow at the composition of what passes through it. ``backward=False`` is
+    V1's explicit step at every state.
     """
+    implicit = (backward and m_new_kg > MASS_FLOOR
+                and (m_liq_kgh + m_vap_kgh) / 3600.0 * dt > m_new_kg)
     out = {}
     for k in SOLUTION_SPECIES:
-        m_k = (m_pre_kg * w.get(k, 0.0)
-               + (m_in_kgh * w_in.get(k, 0.0)
-                  + (m_in2_kgh * w_in2.get(k, 0.0) if w_in2 else 0.0)
-                  - m_vap_kgh * y.get(k, 0.0) - m_liq_kgh * w.get(k, 0.0)
-                  + _NU_KG.get(k, 0.0) * xi_kmolh) / 3600.0 * dt)
+        if implicit:
+            # The sources on the old holdup; the drain and the vapour at the new composition.
+            w_k, y_k = w.get(k, 0.0), y.get(k, 0.0)
+            src = (m_pre_kg * w_k
+                   + (m_in_kgh * w_in.get(k, 0.0)
+                      + (m_in2_kgh * w_in2.get(k, 0.0) if w_in2 else 0.0)
+                      + _NU_KG.get(k, 0.0) * xi_kmolh) / 3600.0 * dt)
+            if w_k > 0.0:
+                out_kgh = m_liq_kgh + m_vap_kgh * y_k / w_k
+            else:
+                src -= m_vap_kgh * y_k / 3600.0 * dt
+                out_kgh = m_liq_kgh
+            m_k = src / (1.0 + out_kgh / 3600.0 * dt / m_new_kg)
+        else:
+            m_k = (m_pre_kg * w.get(k, 0.0)
+                   + (m_in_kgh * w_in.get(k, 0.0)
+                      + (m_in2_kgh * w_in2.get(k, 0.0) if w_in2 else 0.0)
+                      - m_vap_kgh * y.get(k, 0.0) - m_liq_kgh * w.get(k, 0.0)
+                      + _NU_KG.get(k, 0.0) * xi_kmolh) / 3600.0 * dt)
         out[k] = max(m_k, 0.0)
     tot = sum(out.values())
     if tot <= MASS_FLOOR or m_new_kg <= MASS_FLOOR:

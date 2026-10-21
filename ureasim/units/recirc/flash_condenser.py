@@ -27,13 +27,14 @@ and, since 2026-10-07, 323F004's own vapour space above its level set point (bel
     dP/dt = (R T / V_v) (n_gen - n_vent) + (P / T) dT/dt - (P / V_v) dV_v/dt       [core.node]
 
     n_gen  = gen / MW_702,     gen    = G - C(P)
-    n_vent = m_702 / MW_702,   m_702  = 440 (h / 25) sqrt( max(P - 1.0, 0) / 0.13 )
+    n_vent = m_702 / MW_702,   m_702  = 440 (phi(h) / phi(21.64)) sqrt( max(P - 1.0, 0) / 0.13 )
     C(P)   = 5589 max(T_dew - 35, 0) / 10,    T_dew = 45 + Tsat(P) - Tsat(1.13)
 
 with G = 701 + 786 + 321 + 3.4 the gas load [kg/h], C the condensation capacity on the node's dew
-point against the 35 C cooling-water mean, and h the PV-323203 stroke [%] (decided 2026-10-15,
-handoff B-30; below). The node settles where the condenser leaves what the valve passes,
-G - C(P) = m_702(P): at design G - C = 440 and h = 25 %, so P* = 1.13 bar a. The capacity rises
+point against the 35 C cooling-water mean, h the PV-323203 stroke [%] (decided 2026-10-15,
+handoff B-30; below) and phi its Neldisc trim (decided 2026-10-17; below). The node settles where
+the condenser leaves what the valve passes, G - C(P) = m_702(P): at design G - C = 440 and
+h = 21.64 %, so P* = 1.13 bar a. The capacity rises
 about 14 100 kg/h per bar about the design, against the vent's 1700 and 323F004's flash, which
 takes this pressure one tick later (a lower node flashes more PFD 701), 2800: the condenser
 holds the node. A shut vent stands where the condenser takes the whole gas, 1.16 bar a at
@@ -93,6 +94,10 @@ vent's differential floored at zero (decision 80's class): PV-323203 passes noth
 at or below the absorber it discharges to. At the design node both are V1's to the bit;
 ``FlashCondenser(**V1_CONDENSER)`` is V1's, which the equivalence harness keeps.
 
+An eighth, decided 2026-10-17 (decision 23's class): **PV-323203 on Metso's Neldisc**, its printed
+capacities as its curve, from the 21.64 % where its sheet passes PFD 702; V1 runs it linear from
+25 %. PIC-323203 is seeded there, so the design point is exact on either.
+
 A seventh, decided 2026-10-16 (handoff B-31): **each inlet at its producer's live temperature.**
 V1 charges 701 at 106 C, 786 at 61 C, 321 at 74 C and 791 at 56 C whatever 323F004, 328D001,
 323E003 and 328D003's compartment II do. The port charges each as its departure from its
@@ -119,8 +124,8 @@ A fourth, decided 2026-10-01 (handoffs B-47, A-16): **the node relieves through 
 323D011, `core.relief`'s law. V1 relieves nothing, and on its constant capacity a shut PV-323203
 runs the node past the valve's 6.01 bar a set pressure with no ceiling (B-30; on the dew point the
 condenser now holds a shut vent at 1.16 bar a). The valve is rated on liquid alone, so it
-relieves the vapour on its orifice's own area and the series' gas coefficient, 0.917, taken as an
-assumption; it reseats on the gas blowdown at 5.51 bar a. Like the vent, what it passes is gas
+relieves the vapour on its orifice's own area and its orifice's gas coefficient, 0.922, Sempell's
+for orifice F in gas service (decision 130); it reseats on the gas blowdown at 5.51 bar a. Like the vent, what it passes is gas
 that does not land in the tank as condensate, so it is booked against the tank and does not
 condense in the energy balance. Its share of the tank's swell is left out of the pressure step,
 so the reseat cap holds exactly; it is a thousandth of the molar term.
@@ -134,6 +139,11 @@ envelope can then fill, and above its 4.375 m3 of liquid the excess leaves as a 
 overflow (decision 11's class); V1, which has neither stream, fills the vapour space to its 2 %
 floor. The overflow leaves through PV-323203's vent line, the envelope's only outlet above its
 liquid, to 323C005, which takes it into its sump a tick later (decided 2026-10-03, handoff A-20).
+
+A full 323F004 overflows up its vapour line into the shell the same way (decided 2026-10-17,
+handoff A-22): liquid, not gas load, landing in the tank with its sensible heat at the drum's
+temperature of this tick. V1 has no such stream. The tank carries no composition, so the urea
+liquor it brings is booked as liquid mass like the drum overflow's ammonia water.
 
 323F004's vapour space in the node (decided 2026-10-07, handoff B-51)
 ---------------------------------------------------------------------
@@ -200,7 +210,6 @@ from ureasim.data.unit_323e011 import (
     E011_MW_VAP,
     E011_P_BARA,
     E011_P_FLOOR_BARA,
-    E011_PV_OP_DES_PCT,
     E011_RECON_KGH,
     E011_RHO_L_KGM3,
     E011_T321_C,
@@ -239,6 +248,7 @@ from ureasim.data.unit_323e011 import (
     VENT_DP_MIN_BAR,
 )
 from ureasim.units.recirc.flash_gas_node import (
+    PV_323203_TRIM,
     condensation_capacity_kgh,
     dew_point_c,
     vent_generation_kgh,
@@ -256,21 +266,22 @@ DT_FLOOR_S = 1e-9
 
 #: 323E011 as V1 runs it — the constant capacity and the reverse vent — which the equivalence
 #: harness keeps (handoff B-30, decided 2026-10-15): ``FlashCondenser(**V1_CONDENSER)``.
-V1_CONDENSER = {"dew_capacity": False, "vent_dp_floor_bar": VENT_DP_FLOOR_BAR}
+V1_CONDENSER = {"dew_capacity": False, "vent_dp_floor_bar": VENT_DP_FLOOR_BAR, "pv_323203": None}
 
 
 # ======================================================================================
 # The three controllers, seeded exactly as V1 seeds them
 # ======================================================================================
 
-def pic_323203() -> ProcessLoop:
+def pic_323203(op_des_pct: float = PV_323203_TRIM[0]) -> ProcessLoop:
     """PIC-323203, the node pressure. DIRECT acting: a node above set point opens PV-323203.
 
-    Seeded as V1 seeds it, but with the table's gain rescaled to PT-323203's span — 60 %/bar,
+    Seeded as V1 seeds it, but at PV-323203's vendor design stroke (V1's 25 % is
+    ``E011_PV_OP_DES_PCT``) and with the table's gain rescaled to PT-323203's span — 60 %/bar,
     not V1's 0.60 (decided 2026-09-27, handoff B-32)."""
     return ProcessLoop(
         tag="PIC-323203", Kc=PIC_323203_KC, Ti=PIC_323203_TI_S, Td=PIC_323203_TD_S, act=-1.0,
-        op=E011_PV_OP_DES_PCT, sp=E011_P_BARA, pv=E011_P_BARA, pv1=E011_P_BARA, pv2=E011_P_BARA,
+        op=op_des_pct, sp=E011_P_BARA, pv=E011_P_BARA, pv1=E011_P_BARA, pv2=E011_P_BARA,
         op_lo=0.0, op_hi=100.0, sp_lo=PIC_323203_SP_LO_BARA, sp_hi=PIC_323203_SP_HI_BARA)
 
 
@@ -296,7 +307,7 @@ def fic_323418() -> FlowLoop:
 
 def sv_32357() -> GasReliefValve:
     """SV32357, the node's safety valve on 323D011, shut: set 6.01 bar a, reseating at 5.51 on
-    the gas blowdown; orifice F, 240.53 mm2, at the assumed gas coefficient 0.917 and the law's
+    the gas blowdown; orifice F, 240.53 mm2, at its orifice's gas coefficient 0.922 and the law's
     exponent 1.30 (decided 2026-10-01, handoff A-16)."""
     return GasReliefValve(valve=SafetyValve("SV32357", SV32357_SET_BARA, SV32357_RESEAT_BARA),
                           area_m2=SV32357_AREA_M2, kd=SV32357_KD)
@@ -378,6 +389,8 @@ class FlashCondenser:
     #: PV-323203's differential floor [bar]: zero, no reverse vent (B-30); V1's 0.001
     #: (`data.unit_323e011.VENT_DP_FLOOR_BAR`) in the harness.
     vent_dp_floor_bar: float = VENT_DP_MIN_BAR
+    #: PV-323203's trim (decided 2026-10-17); None is V1's linear law from 25 %.
+    pv_323203: tuple | None = PV_323203_TRIM
     #: Each inlet at its producer's live temperature, as its departure from the producer's design
     #: (decided 2026-10-16, handoff B-31); False is V1's design temperatures.
     live_inlets: bool = True
@@ -386,7 +399,8 @@ class FlashCondenser:
              m_701_kgh: float, blow_505_kgh: float, blow_501_kgh: float,
              m_786_kgh: float, m_321_kgh: float, m_402_kgh: float,
              dt: float, *, m_d001_over_kgh: float = 0.0,
-             t_d001_over_c: float = E011_T786_C, t_f004_c: float = F004_T_SP_C,
+             t_d001_over_c: float = E011_T786_C, m_f004_over_kgh: float = 0.0,
+             t_f004_c: float = F004_T_SP_C,
              t_e003_c: float = E003_T_C,
              t_d003_ii_c: float = D003_TII_C) -> FlashCondenserResult:
         """Advance 323E011 / 323D011 by one tick.
@@ -406,6 +420,9 @@ class FlashCondenser:
             temperature it leaves at (decided 2026-10-03, handoff A-15). Like the 791 wash it is
             liquid, not gas load: it lands in 323D011 with its sensible heat. The drum's
             temperature is also 786's (B-31).
+        m_f004_over_kgh
+            The liquor a full 323F004 overflows up its vapour line into the shell (decided
+            2026-10-17, handoff A-22), at ``t_f004_c``: liquid, like 328D001's overflow.
         t_f004_c, t_e003_c, t_d003_ii_c
             The producers' live temperatures of this tick: 323F004's for 701, 323E003's for 321
             and 328D003's compartment II's for 791 (decided 2026-10-16, handoff B-31). Each
@@ -422,13 +439,14 @@ class FlashCondenser:
         m_in = (E011_IN_DES_KGH + (m_701 - E011_M701_DES_KGH)
                 + (m_786_kgh - E011_M786_DES_KGH)
                 + (m_321_kgh - E011_M321_DES_KGH)
-                + (m_402_kgh - E011_M402_DES_KGH)) + m_d001_over_kgh
+                + (m_402_kgh - E011_M402_DES_KGH)) + m_d001_over_kgh + m_f004_over_kgh
 
         # ----- PIC-323203 -> PV-323203, and what the condenser cannot take --------------
         pic_op = pic.step(self.p_bara, dt)
-        m_702 = vent_valve_kgh(pic_op, self.p_bara, self.vent_dp_floor_bar)
-        # The 791 wash is liquid absorbent, not gas load; nor is 328D001's overflow.
-        gas = max(m_in - m_402_kgh - m_d001_over_kgh, 0.0)
+        m_702 = vent_valve_kgh(pic_op, self.p_bara, self.vent_dp_floor_bar, self.pv_323203)
+        # The 791 wash is liquid absorbent, not gas load; nor are 328D001's and 323F004's
+        # overflows.
+        gas = max(m_in - m_402_kgh - m_d001_over_kgh - m_f004_over_kgh, 0.0)
         if self.dew_capacity:
             # The condenser on its dew point, uncapped: below its capacity it draws on the gas
             # the node holds (decided 2026-10-15, handoff B-30; 323E003's form, B-34).
@@ -498,7 +516,8 @@ class FlashCondenser:
                  + m_786_kgh * (t_786 - t_pre)
                  + m_321_kgh * (t_321 - t_pre)
                  + m_402_kgh * (t_791 - t_pre)
-                 + m_d001_over_kgh * (t_d001_over_c - t_pre)) / 3600.0 * CP_LP_CARBAMATE)
+                 + m_d001_over_kgh * (t_d001_over_c - t_pre)
+                 + m_f004_over_kgh * (t_f004_c - t_pre)) / 3600.0 * CP_LP_CARBAMATE)
 
         # ----- the node: moles on the free volume, on the OLD holdup (V1 report A-6), and
         # 323F004's vapour space, one gas space with it (decided 2026-10-07, handoff B-51) -----
@@ -525,11 +544,12 @@ class FlashCondenser:
                 return vessel_dpdt(
                     p_bara, t_k, v_v, E011_MW_VAP,
                     (gas - condensation_capacity_kgh(p_bara)) / E011_MW_VAP,
-                    vent_valve_kgh(pic_op, p_bara, self.vent_dp_floor_bar) / E011_MW_VAP,
+                    vent_valve_kgh(pic_op, p_bara, self.vent_dp_floor_bar,
+                                   self.pv_323203) / E011_MW_VAP,
                     dtdt_k_s=dtdt, dvvdt_m3_s=-(m_net / 3600.0) / E011_RHO_L_KGM3)
             p_free, backward = stable_pressure_step(self.p_bara, dt, dpdt, E011_P_FLOOR_BARA)
             if backward:
-                m_702 = vent_valve_kgh(pic_op, p_free, self.vent_dp_floor_bar)
+                m_702 = vent_valve_kgh(pic_op, p_free, self.vent_dp_floor_bar, self.pv_323203)
                 gen = gas - condensation_capacity_kgh(p_free)
                 m_net, m_overflow = tank_net_kgh(m_702)
         else:
@@ -548,14 +568,15 @@ class FlashCondenser:
         self.t_prev_c = t_pre
 
         # ----- the energy balance: the latent heat of what does not leave as vent or relief --
-        m_cond = max(m_in - m_402_kgh - m_d001_over_kgh - m_702 - m_relief, 0.0)
+        m_cond = max(m_in - m_402_kgh - m_d001_over_kgh - m_f004_over_kgh - m_702 - m_relief,
+                     0.0)
         p_net = sens + m_cond / 3600.0 * E011_LAMV_KJKG - q
 
         # ----- TT-323011 and the tank --------------------------------------------------
         # SEMI-IMPLICIT in the inlets and in the cooling water, whose heat-capacity rates are
         # flows or a temperature-driven wall.
         k_cap = ((max(m_701, 0.0) + E011_RECON_KGH + m_786_kgh + m_321_kgh + m_402_kgh
-                  + m_d001_over_kgh) / 3600.0 * CP_LP_CARBAMATE + E011_UA_KW)
+                  + m_d001_over_kgh + m_f004_over_kgh) / 3600.0 * CP_LP_CARBAMATE + E011_UA_KW)
         self.t_c = t_pre + p_net * dt / max(self.m_kg * CP_LP_CARBAMATE + k_cap * dt,
                                             HEAT_CAPACITY_FLOOR_KJK)
         self.m_kg = max(self.m_kg + m_net / 3600.0 * dt, D011_M_FLOOR_KG)

@@ -61,10 +61,11 @@ def test_the_desorbers_and_the_lp_section():
 
 
 def test_the_liquid_rated_valves_relieve_gas_on_the_series_coefficient_and_the_gas_blowdown():
-    """A-16, decided 2026-10-01 (option b): alpha_w 0.917, SV32351/52's certified full-lift gas
-    coefficient, taken for the valves Sempell rated on liquid alone; they reseat 10 % of set below
-    on gas, not the 20 % of their liquid sizing."""
-    assert rd.GAS_KD_ASSUMED == rd.RELIEF_SIZING["SV32351"].kd == 0.917
+    """Decision 130 (2026-10-16; A-16's option b took 0.917): the valves Sempell rated on liquid
+    alone relieve gas on the full-lift gas coefficient Sempell prints for their orifices F, K and M
+    in the same file (SV38107, SV30909, SV30203: 0.922); SV32351/52 keep their own 0.917. They
+    reseat 10 % of set below on gas, not the 20 % of their liquid sizing."""
+    assert rd.GAS_KD_FULL_LIFT == 0.922 and rd.RELIEF_SIZING["SV32351"].kd == 0.917
     for tag in ("SV32253", "SV32353", "SV32357"):
         sz, dev = rd.RELIEF_SIZING[tag], rd.RELIEF_DEVICES[tag]
         assert sz.service == "liquid" and sz.blowdown == 0.20

@@ -18,7 +18,8 @@ Three routings are the process engineer's, and not V1's:
   passes loads the column's pressure, SV32351 / SV32352 relieve it at their set pressure, and what
   is left leaves overhead to 323E003 with the column's own gas. V1 sends it straight to 323E003.
 * **A full 328D001 overflows into 323E011** up its vent line (handoff A-15), the same tick: the
-  drum steps in section 20, the condenser in 24.
+  drum steps in section 20, the condenser in 24. **A full 323F004 does too**, up its vapour line
+  (handoff A-22, decided 2026-10-17): the drum steps in section 9.
 * **PFD 734 enters 323E003** (handoff B-37, decided 2026-10-10): FIC-323401's ammonia water from
   328D003, which steps before the condenser, the same tick, as its departure from the PFD's row
   (B-94, decided 2026-10-14). V1 books it into no unit.
@@ -103,7 +104,7 @@ def _323e011(plant, a, dt):
         *plant.loops["323E011"], a["m_701_kgh"], a["blow_505_kgh"], a["blow_501_kgh"],
         a["m_786_kgh"], a["m_321_kgh"], a["m_402_kgh"], dt,
         m_d001_over_kgh=a["m_d001_over_kgh"], t_d001_over_c=a["t_d001_c"],
-        t_f004_c=a["t_f004_c"], t_e003_c=a["t_e003_c"], t_d003_ii_c=a["t_d003_ii_c"])
+        m_f004_over_kgh=a["m_f004_over_kgh"], t_f004_c=a["t_f004_c"], t_e003_c=a["t_e003_c"], t_d003_ii_c=a["t_d003_ii_c"])
 
 
 def _sic_323902(plant, a, dt):
@@ -167,6 +168,7 @@ def steps() -> dict:
             "m_402_kgh": Result("328D003", "m_791_kgh"),
             "m_d001_over_kgh": Result("328D001", "m_overflow_kgh"),
             "t_d001_c": Result("328D001", "t_c"),
+            "m_f004_over_kgh": Result(f004, "m_overflow_kgh"),
             "t_f004_c": Result(f004, "t_c"), "t_e003_c": Result("323E003", "t_c"),
             "t_d003_ii_c": Result("328D003", "t_ii_c")}, _323e011),
         "SIC-323902": Step("SIC-323902", "323P001B's standby faceplate", "323", 33, {},

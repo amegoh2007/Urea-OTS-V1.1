@@ -213,7 +213,7 @@ def test_fic_324401_in_auto_decided_divergence(recirc_v1):
     on the first tick; both come down monotonically, V1's within 1 % in 160.9 s, the port's in
     182.3 s."""
     s = st_eq._v1_state(recirc_v1, decided=False)
-    tank, lic, fic = st.SolutionTank(), st.lic_323507(), st.fic_324401()
+    tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()
     s.FIC_324401["mode"] = "AUTO"
     s.FIC_324401["sp"] = fic.sp = 80.0
     fic.set_mode("AUTO")

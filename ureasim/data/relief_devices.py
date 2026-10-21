@@ -42,7 +42,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 __all__ = ["ReliefCase", "ReliefDevice", "RELIEF_DEVICES", "relief_devices_on", "ReliefSizing",
-           "RELIEF_SIZING", "GAS_KD_ASSUMED", "GAS_BLOWDOWN", "gas_reseat_bara"]
+           "RELIEF_SIZING", "GAS_KD_FULL_LIFT", "GAS_BLOWDOWN", "gas_reseat_bara"]
 
 
 @dataclass(frozen=True)
@@ -380,13 +380,17 @@ RELIEF_SIZING: dict[str, ReliefSizing] = {tag: sizing for tags, sizing in _SIZIN
 # A liquid-rated valve on a vapour node (decided 2026-10-01, handoff A-16)
 # ======================================================================================
 
-#: The gas discharge coefficient taken for a valve Sempell rated on liquid alone, where the model
-#: relieves vapour through it (SV32253 on 322C001, SV32353 on 328D001, SV32357 on 323D011): the
-#: series' own full-lift gas coefficient, alpha_w 0.917, as certified on SV32351/52's orifice T
-#: (UD-RL-G00-DZ-0002-001 page 3). An ASSUMPTION, decided by the process engineer on 2026-10-01
-#: (option b): Sempell's VdTUV type test for orifices F, K and M in gas service is not in the
-#: archive (handoff, Open data gaps); to be validated in Phase 7.
-GAS_KD_ASSUMED = RELIEF_SIZING["SV32351"].kd
+#: The gas discharge coefficient of a valve Sempell rated on liquid alone, where the model relieves
+#: vapour through it (SV32253 on 322C001, orifice M; SV32353 on 328D001, K; SV32357 on 323D011, F):
+#: the coefficient Sempell prints for the same orifice in gas service at full lift, in the same
+#: series and file (UD-RL-G00-DZ-0001-001, AD 2000-A2, VdTUV type test) — orifice F on SV38107
+#: (page 130), K on SV30909 (page 62), M on SV30203 (page 10): "60 using coeff. of discharge"
+#: 0.922 on each, 0.830 its derated "57 coeff. of discharge", the same pair as every other
+#: full-lift gas or steam orifice in the file; a lift-limited or small (D1, E) orifice prints less.
+#: Read 2026-10-16 (project.md decision 130). It replaces the 0.917 the process engineer took
+#: on 2026-10-01 (handoff A-16, option b), SV32351/52's orifice T in the later file
+#: UD-RL-G00-DZ-0002-001, when the F, K and M type test was not found.
+GAS_KD_FULL_LIFT = 0.922
 
 #: How far below set a valve relieving gas reseats [- of set]: 10 %, the Series S manual's figure
 #: for gases (UD-RL-G00-DZ-0001-003, section 3.9), and Sempell's on every gas valve it sized here.

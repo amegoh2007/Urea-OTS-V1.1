@@ -45,7 +45,7 @@ def test_the_keyswitch_and_the_route(bridge):
     assert (key.valve_field.text(), key.limit_field.text()) == ("CLOSED", "NORMAL")
     key.turn(True)
     key.turn(False)
-    route = RouteFaceplate(bridge, {"t": "avalve", "tag": "LV-324501B", "route": "B"})
+    route = RouteFaceplate(bridge, {"t": "ind", "tag": "LV-324501B", "route": "B"})
     route.show()
     assert route.fields["A"].text() == "75.0"
     route.route("B")

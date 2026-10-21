@@ -83,6 +83,33 @@ V1's constant block still carries a comment describing an older law, P_target = 
 (relative flash excess) with a 90 s lag. V1 retired it (report A-7: pressure followed flow,
 where physically flow follows pressure); it is not ported.
 
+A full drum overflows into 323E011 (decided 2026-10-17, handoff A-22)
+---------------------------------------------------------------------
+V1 clamps LI-323505's reading at 100 % and not the holdup, so a drum whose drain is pinched keeps
+filling with nothing leaving. Decision 11's class: above the full drum (on V1's drum, the holdup at
+which LI-323505 reads 100 %) the excess leaves as a published overflow, at the drum's composition
+and temperature,
+
+    m_overflow = (M_new - M_full) / dt,   M_new = M_full,
+
+and the process engineer routed it up the vapour line into 323E011's shell — the one gas space
+the drum shares (B-51) — where it lands in 323D011 with its sensible heat, as a full 328D001's
+does (A-15). Inert below a full drum. ``FlashTank(ceiling=False)`` is V1's, which the
+equivalence harness keeps.
+
+The drum on its geometry (decided 2026-10-17, handoff B-100 (b), decision 33's class)
+------------------------------------------------------------------------------------
+V1 sizes the holdup on a 180 s residence, 5075 kg — ten times the 518 kg of operating fluid the
+datasheet's weights give and more than the 3.40 m3 drum holds — and reads LI-323505 as that holdup
+over 0.6. Here the drum is its shell, 1384 mm by 1800 mm between two DIN 28013 heads
+(`data.unit_323.F004_VESSEL`), and LT-323505 reads the liquid's height between its taps: a DP
+cell from the outlet line, 867 mm below the bottom tangent, to N7 on the top head, 2900 mm above
+(`data.unit_323.lt_323505_pct`). LIC-323505's 60 % then holds 1837 kg, 874 mm above the bottom
+tangent, 65 s of PFD 319; a full drum, 3761 kg, overflows (A-22); and LV-323505's nozzle, N3 at
+the bottom head's lowest point, reads 17.8 %, where its seal is placed (``seal_fraction``'s nozzle
+at that reading, V1's 3 % band). ``V1_DRUM`` — V1's holdup, its level law and no ceiling — is the
+equivalence harness's.
+
 Source
 ------
 V1 ``backend/main.py`` step_sim, "Stage 2: Flash Tank 323F004" (lines 8410-8507) and the
@@ -106,8 +133,10 @@ from ureasim.data.unit_323 import (
     F004_LIQUOR,
     F004_LVL_SP_PCT,
     F004_M_DES_KG,
+    F004_M_DES_KG_V1,
     F004_M_FLOOR_KG,
     F004_M_FULL_KG,
+    F004_M_FULL_KG_V1,
     F004_M_TAU_S,
     F004_P_BARA,
     F004_T_SP_C,
@@ -119,11 +148,13 @@ from ureasim.data.unit_323 import (
     LV505_FL,
     LV505_OP_DES_PCT,
     LV505_PV_DES_BARA,
+    LT_323505_NOZZLE_PCT,
     M701_DES_KGH,
     Q701_DES_KW,
     RHO_F004_DES,
     RHO_S319,
     W_S319,
+    lt_323505_pct,
 )
 from ureasim.thermo.empirical import urea_soln_rho
 from ureasim.thermo.urea_liquor import stage_bubble_p
@@ -139,6 +170,12 @@ INLET_ROUTE = "323C003_TO_323F004"
 #: capacity [kJ/K] and the blow-through gas molar sum [-].
 HEAT_CAPACITY_FLOOR_KJK = 1e-6
 MOLAR_SUM_FLOOR = 1e-9
+
+#: Guard on the tick in the overflow [s], as 328D001's.
+DT_FLOOR_S = 1e-9
+
+#: V1's drum, which the equivalence harness runs: its 5075 kg holdup on its level law, no ceiling.
+V1_DRUM = {"ceiling": False, "geometric": False, "m_kg": F004_M_DES_KG_V1}
 
 
 def lic_323505() -> ProcessLoop:
@@ -197,6 +234,8 @@ class FlashTankResult:
     lv505_op_pct: float
     m_319_kgh: float
     seal_fraction: float
+    #: What a full drum overflows into 323E011's shell [kg/h], at its temperature (A-22).
+    m_overflow_kgh: float
     #: Drum vapour passing an uncovered LV-323505 into 323F010 [kg/h], [kmol/h], and its mass
     #: fractions (None while the nozzle is sealed).
     blowthrough_kgh: float
@@ -227,6 +266,12 @@ class FlashTank:
     w: dict = field(default_factory=lambda: dict(W_S319))
     #: The inlet line's packet FIFO.
     line_state: dict = field(default_factory=dict)
+    #: A full drum overflowing into 323E011 (decided 2026-10-17, handoff A-22); False is V1's
+    #: uncapped holdup, which the equivalence harness keeps.
+    ceiling: bool = True
+    #: The drum on its geometry and LT-323505 between its taps (decided 2026-10-17, handoff
+    #: B-100); False is V1's holdup over 0.6 (`V1_DRUM`).
+    geometric: bool = True
 
     def step(self, lic: ProcessLoop, drain_kgh: float, drain_t_c: float, drain_w: dict,
              p_e011_bara: float, p_f010_bara: float, dt: float) -> FlashTankResult:
@@ -264,7 +309,10 @@ class FlashTank:
         m_701 = max(M701_DES_KGH * ((q_avail - q_relax) / Q701_DES_KW), 0.0)
 
         # ----- LIC-323505 -> LV-323505, and the seal on its nozzle --------------------
-        level = clamp(self.m_kg / F004_M_FULL_KG * 100.0, 0.0, 100.0)
+        if self.geometric:
+            level = lt_323505_pct(self.m_kg)
+        else:
+            level = clamp(self.m_kg / F004_M_FULL_KG_V1 * 100.0, 0.0, 100.0)
         lv505_op = lic.step(level, dt)
         m_319 = letdown_kgh(lv505_op, self.p_bara, p_f010_bara, self.w.get("Urea", 0.0),
                             self.t_c, stage_bubble_p(F004_LIQUOR, self.w, self.t_c, self.p_bara))
@@ -273,7 +321,7 @@ class FlashTank:
         # missing mass back, so an empty drum MADE liquor (report D-20). Uncovered, the trim
         # passes the drum's own vapour on IEC 60534 compressible flow; near atmospheric that
         # vapour is ideal (SRK Z > 0.99). Sealed, the gas is exactly 0.0.
-        seal = seal_fraction(level)
+        seal = seal_fraction(level, LT_323505_NOZZLE_PCT if self.geometric else 0.0)
         m_319 *= seal
         blow = 0.0
         blow_kmolh = 0.0
@@ -302,11 +350,19 @@ class FlashTank:
         k_cap = feed.m_kgh / 3600.0 * feed.cp_kj_kgk
         self.t_c = t_pre + p_net * dt / max(m_pre * cp_drum + k_cap * dt,
                                             HEAT_CAPACITY_FLOOR_KJK)
-        self.m_kg = max(m_pre + (feed.m_kgh - m_701 - m_319) / 3600.0 * dt, F004_M_FLOOR_KG)
+        m_new = max(m_pre + (feed.m_kgh - m_701 - m_319) / 3600.0 * dt, F004_M_FLOOR_KG)
+        # Above a full drum the excess overflows to 323E011 at the drum's
+        # composition (decision 11's class, A-22). Inert below a full drum.
+        m_overflow = 0.0
+        m_full = F004_M_FULL_KG if self.geometric else F004_M_FULL_KG_V1
+        if self.ceiling and m_new > m_full:
+            m_overflow = (m_new - m_full) / max(dt, DT_FLOOR_S) * 3600.0
+            m_new = m_full
+        self.m_kg = m_new
         y_701, domain = liquor_stage.vapour(F004_LIQUOR, w_pre, self.t_c, self.p_bara)
         xi = liquor_stage.biuret_extent(F004_LIQUOR, m_pre, w_pre, self.t_c)
         self.w = liquor_stage.advance_species(w_pre, m_pre, self.m_kg, feed.m_kgh, feed.w,
-                                              m_701, y_701, m_319, xi, dt)
+                                              m_701, y_701, m_319 + m_overflow, xi, dt)
 
         # ----- the pressure: the 323E011 / 323D011 node's, adopted last -----------------
         self.p_bara = p_e011_bara
@@ -316,6 +372,7 @@ class FlashTank:
             t_bub_c=t_bub, q_relax_kw=q_relax, q_avail_kw=q_avail,
             m_701_kgh=m_701, y_701=y_701, vapour_domain=domain,
             level_pct=level, lv505_op_pct=lv505_op, m_319_kgh=m_319, seal_fraction=seal,
+            m_overflow_kgh=m_overflow,
             blowthrough_kgh=blow, blowthrough_kmolh=blow_kmolh, blowthrough_y=blow_y,
             lv505_blowthrough=bool(blow > 0.0),
             drain_t_c=t_pre, drain_w=w_pre, xi_kmolh=xi,
@@ -324,7 +381,7 @@ class FlashTank:
 
 
 __all__ = [
-    "INLET_ROUTE", "HEAT_CAPACITY_FLOOR_KJK", "MOLAR_SUM_FLOOR",
+    "INLET_ROUTE", "HEAT_CAPACITY_FLOOR_KJK", "MOLAR_SUM_FLOOR", "DT_FLOOR_S", "V1_DRUM",
     "lic_323505", "letdown_kgh",
     "FlashTankResult", "FlashTank",
 ]

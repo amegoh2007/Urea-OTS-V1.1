@@ -472,13 +472,78 @@ FV_329409 = VendorValve(
     "FV-329409", 1240.0, _neldisc(1240.0, _FV_329409_CASES), "liquid", _FV_329409_CASES, 1,
     _metso(26, 25))
 
+# Read 2026-10-16 (handoff Open data gaps, "valves no vendor set lists"; Metso's pages 20-24, items
+# 19-23, rev 00, 7 February 2005): five more Neldisc butterflies. Catalogued for their units' ports
+# (§5 rule 7); not yet wired, their units still run V1's laws.
+
+#: HV-323605, 323F010's vapour to 324E002: DN 400 Neldisc (L-ANSI150), maximum Cv 13700 (item 19,
+#: page 20). "Vapours", specific gravity 0.641 (to air), k 1.4: 14734 / 21870 Nm3/h at 99 C from 0.5
+#: to 0.47 bar a, xT 0.38 / 0.29. The sheet prints no density: the cases carry 0.641 times air's
+#: normal density, 28.9647 / 22.414 kg/Nm3 — 0.8283 kg/Nm3, so case 1 is 12 205 kg/h against PFD
+#: 790's 12 040: case 1 is the normal case.
+_HV_323605_RHO_KGNM3 = 0.641 * 28.9647 / NORMAL_MOLAR_VOLUME_M3_KMOL
+_HV_323605_CASES = (
+    SizingCase(0.5, 0.47, 99.0, 14734.0, _HV_323605_RHO_KGNM3, 4704.52, 65.1, xt=0.38),
+    SizingCase(0.5, 0.47, 99.0, 21870.0, _HV_323605_RHO_KGNM3, 7110.53, 78.1, xt=0.29))
+HV_323605 = VendorValve(
+    "HV-323605", 13700.0, _neldisc(13700.0, _HV_323605_CASES), "gas", _HV_323605_CASES, 0,
+    _metso(20, 19))
+
+#: PV-323203, the LP flash gas node's vent to 323C005: a DN 200 x 150 Neldisc (L4K, PN 10), maximum
+#: Cv 840, FpCv 634.57 (item 22, page 23), rated on the FpCv as PV-329204 is. "Carbamate gas", k 1.4:
+#: 540 / 1600 Nm3/h at 45 C from 1.1 to 1.0 bar a, inlet density 0.69 kg/m3, xT 0.53 / 0.52. In
+#: normal cubic metres that density is 0.69 . (1.01325 / 1.1) . (318.15 / 273.15) = 0.740 kg/Nm3
+#: (the ideal gas law, calculated): case 1 is 400 kg/h against PFD 702's 440, the normal case.
+_PV_323203_RHO_KGNM3 = 0.69 * (1.01325 / 1.1) * (318.15 / 273.15)
+_PV_323203_CASES = (
+    SizingCase(1.1, 1.0, 45.0, 540.0, _PV_323203_RHO_KGNM3, 55.92, 20.4, xt=0.53),
+    SizingCase(1.1, 1.0, 45.0, 1600.0, _PV_323203_RHO_KGNM3, 166.05, 44.6, xt=0.52))
+PV_323203 = VendorValve(
+    "PV-323203", 634.57, _neldisc(634.57, _PV_323203_CASES), "gas", _PV_323203_CASES, 0,
+    _metso(23, 22))
+
+#: PV-323202A and PV-323202B, "circulating water" at 65 C: DN 300 (Cv 7300) and DN 250 (Cv 4870)
+#: Neldiscs, 305.8 / 917.8 / 1233.4 m3/h each (items 20, 21, pages 21-22). They are the tempered-
+#: water valves at cooler 329E002 that P&IDs 103/1 and 109 tag PV-323202A / B and the loop summary
+#: T 323013 tags TV-323013A (DN 300, FC, 917.8 m3/h) and TV-323013B (DN 250, FO) — the second column
+#: of handoff B-36's table (As-Built §XXXIII.5), not the gas vent the port calls PV-323202. The
+#: sheets print no density: IAPWS-IF97's saturated liquid at 65 C (decision 116's class).
+_TW_65_RHO_KGM3 = rho_liquid_sat_kgm3(65.0)
+_PV_323202A_CASES = (
+    SizingCase(6.0, 4.1, 65.0, 305.8, _TW_65_RHO_KGM3, 254.18, 13.2, fl=0.87),
+    SizingCase(5.3, 4.1, 65.0, 917.8, _TW_65_RHO_KGM3, 959.92, 37.8, fl=0.82),
+    SizingCase(4.4, 4.1, 65.0, 1233.4, _TW_65_RHO_KGM3, 2580.01, 65.9, fl=0.71))
+PV_323202A = VendorValve(
+    "PV-323202A", 7300.0, _neldisc(7300.0, _PV_323202A_CASES), "liquid", _PV_323202A_CASES, 1,
+    _metso(21, 20))
+_PV_323202B_CASES = (
+    SizingCase(6.0, 3.4, 65.0, 305.8, _TW_65_RHO_KGM3, 217.28, 16.5, fl=0.86),
+    SizingCase(5.3, 3.4, 65.0, 917.8, _TW_65_RHO_KGM3, 762.87, 42.4, fl=0.81),
+    SizingCase(4.4, 3.4, 65.0, 1233.4, _TW_65_RHO_KGM3, 1413.13, 60.3, fl=0.74))
+PV_323202B = VendorValve(
+    "PV-323202B", 4870.0, _neldisc(4870.0, _PV_323202B_CASES), "liquid", _PV_323202B_CASES, 1,
+    _metso(22, 21))
+
+#: TV-328002, 328E004's cooling-water return on TIC-328002: DN 200 Neldisc, maximum Cv 3050 (item
+#: 23, page 24): "circulating water" at 38 C, 150 / 410 / 530 m3/h from 2.9 / 2.4 / 2.07 to 2.0 bar a,
+#: FL 0.85 / 0.77 / 0.54. No density printed: IAPWS-IF97's saturated liquid at 38 C.
+_TV_328002_RHO_KGM3 = rho_liquid_sat_kgm3(38.0)
+_TV_328002_CASES = (
+    SizingCase(2.9, 2.0, 38.0, 150.0, _TV_328002_RHO_KGM3, 182.24, 21.2, fl=0.85),
+    SizingCase(2.4, 2.0, 38.0, 410.0, _TV_328002_RHO_KGM3, 747.18, 55.0, fl=0.77),
+    SizingCase(2.07, 2.0, 38.0, 530.0, _TV_328002_RHO_KGM3, 2308.86, 90.5, fl=0.54))
+TV_328002 = VendorValve(
+    "TV-328002", 3050.0, _neldisc(3050.0, _TV_328002_CASES), "liquid", _TV_328002_CASES, 1,
+    _metso(24, 23))
+
 #: Every catalogued valve, by tag.
 VENDOR_VALVES = {v.tag: v for v in (
     FV_323401, FV_323402, FV_323418, LV_323503, LV_323505, FV_324401, FV_328402, FV_328404,
     FV_328405, FV_328406, LV_328505, PV_328202, PV_328203, LV_322502, PV_322201, LV_323501,
     LV_328501, PV_322203, PV_324202, PV_324203, HV_329605, HV_329606, LV_329502, LV_329503,
     LV_329504, PV_329205A, PV_329205B, PV_329203, PV_329212, FV_329401, PV_329202, PV_329204,
-    PV_329207A, PV_329207B, PV_329208, LV_329505, FV_329409)}
+    PV_329207A, PV_329207B, PV_329208, LV_329505, FV_329409, HV_323605, PV_323203, PV_323202A,
+    PV_323202B, TV_328002)}
 
 __all__ = [
     "NORMAL_MOLAR_VOLUME_M3_KMOL", "MW_CO2", "SizingCase", "VendorValve", "design_stroke_pct",
@@ -488,5 +553,6 @@ __all__ = [
     "LV_322502", "PV_322201", "LV_323501", "LV_328501", "PV_322203", "PV_324202", "PV_324203",
     "HV_329605", "HV_329606", "LV_329502", "LV_329503", "LV_329504", "PV_329205A",
     "PV_329205B", "PV_329203", "PV_329212", "FV_329401", "PV_329202", "PV_329204", "PV_329207A",
-    "PV_329207B", "PV_329208", "LV_329505", "FV_329409", "VENDOR_VALVES",
+    "PV_329207B", "PV_329208", "LV_329505", "FV_329409", "HV_323605", "PV_323203", "PV_323202A",
+    "PV_323202B", "TV_328002", "VENDOR_VALVES",
 ]

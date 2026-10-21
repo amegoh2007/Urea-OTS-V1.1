@@ -177,7 +177,10 @@ def _322e003(plant, a, dt):
     react = a["reaction"]
     c = ccw.step(react.co2_scale, react.delta_x, dt)
     p = a["p_syn_bara"]
-    rho_cond = condensation_capacity(c.m_ccw_kgh, c.pump_frac, c.t_ccw_in_c, p, react.co2_scale)
+    # The shell's capacity on its effectiveness at the live circulation (B-99 (b1), decided
+    # 2026-10-17); the sump's switch keeps V1's linear flow law.
+    rho_cond = condensation_capacity(c.m_ccw_kgh, c.pump_frac, c.t_ccw_in_c, p, react.co2_scale,
+                                     effectiveness=sump.effectiveness_capacity)
     # The sump's liquor above its bubble point condenses no more than its saturation fraction,
     # whatever the shell could: its own liquor's bubble pressure of the tick before (handoff B-91,
     # decided 2026-10-10 and, on 322E003's own liquor, 2026-10-14).
@@ -194,7 +197,8 @@ def _322e003(plant, a, dt):
         hic604_pct=a["hic_322604_pct"], liq_carry_kmolh=a["carry_kmolh"],
         t_carry_c=a["t_overflow_c"], choke_level_pct=sump.level_pct,
         spindle_phi=max(spindle_phi(a["hic_322602_pct"]), 1e-6), cool_frac=cool,
-        wash_ratio=a["m_308_kgh"] / E003_M308_DES_KGH, sump_room_kgh=room)
+        wash_ratio=a["m_308_kgh"] / E003_M308_DES_KGH, sump_room_kgh=room,
+        capacity_frac=rho_cond if sump.effectiveness_capacity else None)
     # The overflow and off-gas lines ride the live loop pressure: PT-329201 sits on the overflow line,
     # where the scrubber's own result carries the two lines' design pins (V1 `main.py` 8105-8106).
     sc = replace(sc, p_overflow_bara=p, p_offgas_bara=p)

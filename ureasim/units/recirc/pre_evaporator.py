@@ -95,6 +95,12 @@ table's gain per cent of PT-329208's span, without the chest-gain scale V1 multi
 and TIC-323012, which has no table row, on its sibling TIC-323007's row on its own spans — V1's
 own retune limit-cycles behind the faster slave (As-Built §XL.2).
 
+Two valves on their vendors' trims (decision 23's class): PV-329208 on Metso's Neldisc from
+27.22 % (decided 2026-10-15), and HV-323605 on Metso's DN 400 Neldisc from 64.08 %, its printed
+capacities as its curve and its normal case's xT 0.38 (decided 2026-10-17), where V1 runs both
+linear — HV-323605 from 50 % on the globe valve's xT. HIC-323605 is seeded at its design stroke.
+``PreEvaporator(chest=V1_CHEST, vent=V1_VENT)`` is V1's, which the equivalence harness keeps.
+
 The boundaries this stage reads, and when
 -----------------------------------------
   * the 323F004 drain, carried down the 323F004 -> 323F010 line, which this stage owns;
@@ -152,7 +158,10 @@ from ureasim.data.unit_323 import (
     F010_T_SP_C,
     F010_VOL_M3,
     HIC_323605_DES_PCT,
+    HIC_323605_DES_PCT_V1,
     HV605_CHAR,
+    HV605_CHAR_V1,
+    HV605_XT,
     M331_DES_KGH,
     M331_T_C,
     MEVAP_DES_KGH,
@@ -225,6 +234,11 @@ def tic_323012() -> ProcessLoop:
 PV_329208_CHEST = ChestValve(PV_329208_OP_DES_PCT, PV_329208.characteristic, PV_329208_XT)
 V1_CHEST = ChestValve(E010_OP_DES_PCT)
 
+#: HV-323605 as the port runs it, on its vendor's trim (Metso's Neldisc from 64.08 %, xT 0.38,
+#: decided 2026-10-17), and as V1 runs it, linear from 50 % on the globe valve's xT.
+HV_323605_VENT = ChestValve(HIC_323605_DES_PCT, HV605_CHAR, HV605_XT)
+V1_VENT = ChestValve(HIC_323605_DES_PCT_V1, HV605_CHAR_V1)
+
 
 def pic_329208(valve: ChestValve = PV_329208_CHEST) -> ProcessLoop:
     """PIC-329208, the 323E010 chest-pressure slave, in CASCADE under TIC-323012. Its output
@@ -272,7 +286,7 @@ def barometric_leg_kgh(holdup_kg: float, p_separator_bara: float) -> float:
 
 
 def vapour_outlet_kgh(stroke_pct: float, p_separator_bara: float, p_324e002_bara: float,
-                      t_c: float, mw_vap: float) -> float:
+                      t_c: float, mw_vap: float, valve: ChestValve = HV_323605_VENT) -> float:
     """What HV-323605 passes from the separator dome to the 324E002 shell [kg/h], report D-12.
 
     Process utility
@@ -285,21 +299,24 @@ def vapour_outlet_kgh(stroke_pct: float, p_separator_bara: float, p_324e002_bara
 
     Equation
     --------
-    The IEC 60534 compressible law, anchored on PFD 790 at the 50 % design stroke across the
-    0.46 -> 0.33 bar a design differential, well short of the choke:
+    The IEC 60534 compressible law, anchored on PFD 790 at the design stroke across the
+    0.46 -> 0.33 bar a design differential, short of the choke:
 
         w = w_des . Phi(h, P1, P2, T1, M) / Phi(h_des, P1_des, P2_des, T1_des, M_des)
 
-    A reverse differential passes nothing. Exactly the design overhead at the design state.
+    on ``valve``'s trim: the vendor's Neldisc from 64.08 %, its normal case's xT 0.38 (decision
+    23's class), which chokes once the 324E002 shell falls below about 0.30 bar a at the design
+    separator; V1's linear trim from 50 % on the globe valve's xT (`V1_VENT`). A reverse
+    differential passes nothing. Exactly the design overhead at the design state on either.
 
     Source: V1 `main.py` `hv323605_flow_kgh`.
     """
     return valve_gas_anchored(
         MEVAP_DES_KGH, stroke_pct / 100.0, p_separator_bara, p_324e002_bara,
         t_c + ABSOLUTE_ZERO_C,
-        HIC_323605_DES_PCT / 100.0, F010_P_BARA, P_324E002_DES_BARA,
+        valve.op_des_pct / 100.0, F010_P_BARA, P_324E002_DES_BARA,
         F010_T_SP_C + ABSOLUTE_ZERO_C,
-        mw_vap, characteristic=HV605_CHAR, mw_des=MW_VAP_DES)
+        mw_vap, characteristic=valve.characteristic, xt=valve.xt, mw_des=MW_VAP_DES)
 
 
 # ======================================================================================
@@ -373,8 +390,10 @@ class PreEvaporator:
     w: dict = field(default_factory=lambda: dict(W_S317))
     #: 323E010 chest pressure [bar a], the previous tick's — PIC-329208's PV.
     chest_p_bara: float = E010_PCHEST_DES_BARA
-    #: PV-329208's trim (decision 108's class, applied 2026-10-15).
+    #: PV-329208's trim (decision 108's class, applied 2026-10-15), and HV-323605's (decided
+    #: 2026-10-17).
     chest: ChestValve = PV_329208_CHEST
+    vent: ChestValve = HV_323605_VENT
     #: The previous tick's vapour mass fractions — the pressure step's molar-mass tear.
     y_vap: dict = field(default_factory=lambda: dict(Y_VAP_DES))
     #: The inlet line's packet FIFO and the LP-header lag.
@@ -500,7 +519,8 @@ class PreEvaporator:
         def dpdt(p: float) -> float:
             # A deeper trial vacuum boils more, and the vapour fills the space it leaves.
             boil = boil_at(p)[0]
-            pull_p = vapour_outlet_kgh(hic_323605_pct, p, p_324e002_bara, self.t_c, mw_vap)
+            pull_p = vapour_outlet_kgh(hic_323605_pct, p, p_324e002_bara, self.t_c, mw_vap,
+                                       self.vent)
             return vessel_dpdt(p, t_k, v_v, mw_vap,
                                (m_evap + boil) / mw_vap + blow_kmolh, pull_p / mw_vap,
                                dtdt_k_s=dtdt,
@@ -516,7 +536,8 @@ class PreEvaporator:
         self.p_bara = clamp(p_old + f_old * dt / (1.0 - jac * dt),
                             F010_P_MIN_BARA, F010_P_MAX_BARA)
         # The flow the step actually passed, at the pressure it ended on: what 324E002 takes.
-        pull = vapour_outlet_kgh(hic_323605_pct, self.p_bara, p_324e002_bara, self.t_c, mw_vap)
+        pull = vapour_outlet_kgh(hic_323605_pct, self.p_bara, p_324e002_bara, self.t_c, mw_vap,
+                                 self.vent)
         # The holdup boils at the pressure the step ended on; the drain takes only the liquor
         # above the heel that the boil-off leaves (decision 11's class).
         m_boil, self.t_c = boil_at(self.p_bara)
@@ -562,7 +583,7 @@ __all__ = [
     "INLET_ROUTE", "P_LP_LAG_KEY",
     "HEAT_CAPACITY_FLOOR_KJK", "DENSITY_FLOOR_KGM3", "MOLAR_SUM_FLOOR", "DT_FLOOR_S",
     "VAPOUR_RATE_FLOOR_KGH", "JACOBIAN_STEP_BARA",
-    "Y_VAP_DES", "MW_VAP_DES",
+    "Y_VAP_DES", "MW_VAP_DES", "HV_323605_VENT", "V1_VENT",
     "tic_323012", "pic_329208",
     "barometric_leg_kgh", "vapour_outlet_kgh",
     "PreEvaporatorResult", "PreEvaporator",

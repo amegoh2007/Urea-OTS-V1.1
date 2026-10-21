@@ -45,6 +45,12 @@ decided strokes, LIC-323503's demand through the trim, and V1's ``_fic_flow`` tr
 it (`decided_valves`); ``valves_decided=False`` is V1 verbatim. Both sides are asserted in
 the last section of this file.
 
+PV-323203 (decided 2026-10-17, decision 23's class)
+--------------------------------------------------
+The port runs it on Metso's Neldisc from its 21.64 % design stroke. ``V1_CONDENSER`` runs it on
+V1's linear law from 25 % and `_loops` seeds PIC-323203 there, so every scenario compares the port
+with V1's valve; both sides are asserted in `test_pv_323203_on_its_vendor_trim_decided_divergence`.
+
 SV32357 (handoffs B-47, A-16, decided 2026-10-01)
 -------------------------------------------------
 The port relieves the node through SV32357 on 323D011, which V1 does not have. The transcription
@@ -118,8 +124,8 @@ DECIDED_FIC418_OP = dv.design_stroke_pct(cvd.FV_323418, e.M718B_DES_KGH)
 
 #: SV32357 as decided (A-16), written from its sheets: set 5.0 bar g on 1.010 bar a (Uhde
 #: UD-RL-323-EC-0006), reseating 10 % of set below on gas; orifice F, 240.53 mm2 (Sempell
-#: UD-RL-G00-DZ-0001-001 page 91), at the series' gas coefficient 0.917 (page 3 of -0002-001).
-SV32357 = dr.Valve.orifice(5.0 + 1.010, 5.0 + 1.010 - 0.1 * 5.0, 240.53 * 1.0e-6, 0.917)
+#: UD-RL-G00-DZ-0001-001 page 91), at Sempell's gas coefficient for the orifice, 0.922 (decision 130).
+SV32357 = dr.Valve.orifice(5.0 + 1.010, 5.0 + 1.010 - 0.1 * 5.0, 240.53 * 1.0e-6, 0.922)
 
 
 @pytest.fixture(scope="module")
@@ -282,7 +288,7 @@ def _loops(v1_gain: bool = True):
     """The port's three controllers. With `v1_gain`, PIC-323203 runs V1's 0.60 %/bar in place
     of the decided 60 %/bar (B-32), so the rest of the unit can be compared with V1 tick for
     tick."""
-    pic = fc.pic_323203()
+    pic = fc.pic_323203(e.E011_PV_OP_DES_PCT)
     if v1_gain:
         pic.Kc = e.PIC_323203_KC_TABLE
     return pic, fc.lic_323503(), fc.fic_323418()
@@ -573,6 +579,35 @@ def test_pic_323203_on_its_transmitter_span_decided_divergence(v1, name):
     assert cond.p_bara == pytest.approx(sp, abs=1e-4)
 
 
+def test_pv_323203_on_its_vendor_trim_decided_divergence(v1):
+    """Decision 23's class, decided 2026-10-17: PV-323203 on Metso's Neldisc, its printed capacities
+    as its curve, from its 21.64 % design stroke, where V1 runs it linear from 25 %; PIC-323203 on
+    V1's 0.60 %/bar on both sides, so the valve is the only difference. PFD 701 up 10 % at tick 10:
+    bit-exact until PIC-323203 first moves the stroke, tick 11; the Neldisc's steeper gain about its
+    design stroke then holds the node lower — an hour on, V1 at 1.3380 bar a on 31.11 %, the port at
+    1.2784 on 26.66 %, both venting the 883 kg/h the constant capacity leaves."""
+    s = _v1_state(v1)
+    cond = fc.FlashCondenser(**{**fc.V1_CONDENSER, "pv_323203": fc.PV_323203_TRIM})
+    loops = (fc.pic_323203(), fc.lic_323503(), fc.fic_323418())
+    loops[0].Kc = e.PIC_323203_KC_TABLE
+    parted = None
+    for k in range(7200):
+        x = _design(m701=M701 * (1.1 if k >= 10 else 1.0))
+        a = _v1_stage9(v1, s, x["m701"], x["b505"], x["b501"], x["m786"], x["m321"], x["m402"],
+                       0.5)
+        b = cond.step(*loops, x["m701"], x["b505"], x["b501"], x["m786"], x["m321"], x["m402"],
+                      0.5)
+        if parted is None and (s.r3232_e011_P, a["vent"]) != (cond.p_bara, b.m_702_kgh):
+            parted = k
+    assert parted == 11
+    assert (s.r3232_e011_P, cond.p_bara) == (pytest.approx(1.3380, abs=1e-4),
+                                             pytest.approx(1.2784, abs=1e-4))
+    assert (a["pic"], b.pic_op_pct) == (pytest.approx(31.11, abs=0.01),
+                                        pytest.approx(26.66, abs=0.01))
+    assert (a["vent"], b.m_702_kgh) == (pytest.approx(882.93, abs=0.01),
+                                        pytest.approx(882.92, abs=0.01))
+
+
 def test_the_tank_pumped_to_its_floor_decided_divergence(v1):
     """B-33. The flash vapour and the 791 wash both stopped: 1602 kg/h still arrives and
     FIC-323418 draws its 3561.5 kg/h set point. Bit-exact until 323P008 reaches the heel, in
@@ -620,7 +655,7 @@ def _coupled(v1, script, ticks: int, before=None):
     drum adopts ``s.r3232_e011_P`` at the end of its stage, before stage 9 advances it; the
     ported drum is handed the condenser's pressure at the top of the tick — the same tear."""
     s = _v1_state(v1)
-    drum, lic5 = ft.FlashTank(), ft.lic_323505()
+    drum, lic5 = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
     cond, loops = fc.FlashCondenser(**fc.V1_CONDENSER), _loops()
     if before:
         before(s, cond, loops)
@@ -667,9 +702,9 @@ def test_the_liquor_train_and_its_flash_condenser_through_a_stripper_feed_cut(v1
     s = _v1_state(v1)
     col = rc.RectifyingColumn(chest=rc.V1_CHEST)
     loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
-    drum, lic5 = ft.FlashTank(), ft.lic_323505()
-    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
-    tank, lic, fic = st.SolutionTank(), st.lic_323507(), st.fic_324401()
+    drum, lic5 = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
+    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
+    tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()
     cond, loops9 = fc.FlashCondenser(**fc.V1_CONDENSER), _loops()
     for k in range(800):
         drain = FEED_DES * (0.85 if k >= 20 else 1.0)
@@ -686,7 +721,7 @@ def test_the_liquor_train_and_its_flash_condenser_through_a_stripper_feed_cut(v1
                       drum.p_bara, d.E003_P_DES_BARA, DT)
         b2 = drum.step(lic5, b1.m_314_kgh, b1.drain_t_c, b1.drain_w, p_node, sep.p_bara, DT)
         b3 = sep.step(tic, pic, b2.m_319_kgh, b2.drain_t_c, b2.drain_w, b2.blowthrough_kgh,
-                      b2.blowthrough_kmolh, b2.blowthrough_y, d.HIC_323605_DES_PCT, P_LP_BARA,
+                      b2.blowthrough_kmolh, b2.blowthrough_y, d.HIC_323605_DES_PCT_V1, P_LP_BARA,
                       d.P_324E002_DES_BARA, DT)
         b4 = tank.step(lic, fic, b3.m_317_kgh, b3.drain_t_c, b3.drain_w, *stage4.NO_RECYCLE,
                        False, DT)

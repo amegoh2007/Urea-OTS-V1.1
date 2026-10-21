@@ -81,7 +81,7 @@ def faceplate_for(element: Mapping[str, Any], bridge: QObject,
         return StreamInspector(bridge, element, parent)
     if t == "nav":
         return None
-    if t == "avalve" and element.get("route"):
+    if element.get("route"):
         return RouteFaceplate(bridge, element, parent)
     face = element.get("face")
     if face in ("hic", "hic2") and hand_valve_of(element) is not None:

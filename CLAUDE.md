@@ -270,8 +270,9 @@ is optional:
    downstream condition warrants it (decision 31); a node relieving through its certified safety
    valves — pop action at set, the vendor's blowdown, API 520 on the certified capacity, in
    `core/relief.py` (decision 32); a liquid-rated safety valve on a vapour node relieving on its
-   orifice's own area at the series' full-lift gas coefficient, 0.917, and the gas blowdown, an
-   assumption logged for Phase 7 (decision 34, 2026-10-01); a vessel's volume with its heads, and a
+   orifice's own area at the full-lift gas coefficient Sempell prints for that orifice in gas service,
+   0.922 for F, K and M, and the gas blowdown (decision 34, 2026-10-01; the coefficient read
+   2026-10-16, decision 130); a vessel's volume with its heads, and a
    level read between its transmitter's taps (decision 33); an exchanger V1 replaced with a fixed
    outlet temperature ported on its datasheet UA, its coolant at the supply temperature and the
    flow no document fixes back-solved so the design point holds (decision 36); a utility a trip
@@ -376,7 +377,12 @@ is optional:
    for — an ejector's discharge — on its adiabatic first law at its receiver's pressure, its water
    condensing below its dew point, as its departure from the design mix (decision 121); a V1 cascade
    its step_sim builds and calls with its permissive forced, run on the live permissive and seeded at
-   its fixed point on the plant's design (decision 123); and no approximation of
+   its fixed point on the plant's design (decision 123); a liquor stage's species step taking what
+   it drains and boils off at the step's end composition where its outflows pass more on the tick
+   than it holds (decisions 133, 137, decision 78's class); a saturation fraction and the bubble
+   pressure it sets solved together on the tick, not across it (decision 135); a cooler's
+   condensation capacity on its shell's effectiveness at the live coolant flow, its duty capped at it
+   (decision 136); and no approximation of
    the physics bought for a pacing target (decision 88). A
    new mechanism still goes to the process engineer, with both sides measured.
 

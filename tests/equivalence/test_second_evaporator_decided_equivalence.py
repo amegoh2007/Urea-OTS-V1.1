@@ -33,7 +33,7 @@ def _both(v1, script, n, off, sp=None, setup=None, vendor_trim=False):
     dec = h.ALL - {off}
     s = h._v1_state(v1, dec)
     chest = h.se.PV_329212_CHEST if vendor_trim else h.se.V1_CHEST
-    unit, loops = (h.se.SecondEvaporator(chest=chest),
+    unit, loops = (h.se.SecondEvaporator(chest=chest, backward_species=False),
                    h.se.SecondEvaporatorLoops(pic=h.se.pic_329212(chest)))
     if setup:
         setup(s, loops)

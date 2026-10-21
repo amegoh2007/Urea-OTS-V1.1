@@ -102,6 +102,9 @@ class ScrubberSump:
     mushy_factor: float = 1.0
     #: The last overflow's bubble pressure [bar a], the scrubber's saturation next tick (B-91).
     p_bub_bara: float = OVERFLOW_P_DES_BARA
+    #: 322E003's capacity on its shell's effectiveness and its duty capped at it (decided
+    #: 2026-10-17, handoff B-99 (b1)); False is V1's linear flow law, which the harness keeps.
+    effectiveness_capacity: bool = True
 
     def step(self, overflow_kmolh: dict, t_overflow_c: float, suction_kgh: float,
              cool_frac: float, sim_t_s: float, dt: float, recond_kgh: float = 0.0,

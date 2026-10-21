@@ -17,7 +17,7 @@ V1's. Four were decided by the process engineer for this unit on 2026-09-30, and
 2026-10-01:
 
   * "relief" — SV32353 vents the head space's vapour between its 6.01 bar a set pressure and its
-    5.51 reseat, on its orifice's own area at the assumed gas coefficient 0.917 (handoffs B-47,
+    5.51 reseat, on its orifice's own area at Sempell's gas coefficient for the orifice, 0.922 (handoffs B-47,
     A-16), the law written out in `decided_relief`; V1 relieves nothing;
 
   * "B-53" — the vessel's true 5500 l, heads included, and LI-328501 read between LT-328501's
@@ -119,8 +119,8 @@ def _li_taps(m_kg: float) -> float:
 
 #: SV32353 as decided (A-16), written from its sheets: set 5.0 bar g on 1.010 bar a (Uhde
 #: UD-RL-323-EC-0003), reseating 10 % of set below on gas; orifice K, 1462.20 mm2 (Sempell
-#: UD-RL-G00-DZ-0001-001 page 90), at the series' gas coefficient 0.917 (page 3 of -0002-001).
-SV32353 = dr.Valve.orifice(5.0 + 1.010, 5.0 + 1.010 - 0.1 * 5.0, 1462.20 * 1.0e-6, 0.917)
+#: UD-RL-G00-DZ-0001-001 page 90), at Sempell's gas coefficient for the orifice, 0.922 (decision 130).
+SV32353 = dr.Valve.orifice(5.0 + 1.010, 5.0 + 1.010 - 0.1 * 5.0, 1462.20 * 1.0e-6, 0.922)
 
 
 #: PIC-328202 and TIC-328002 as decided, written from their sources: the table's 2.50 on
@@ -177,6 +177,13 @@ def _v1_state(v1, decided=ALL):
         s.PIC_328202["Kc"] = DECIDED_PIC202_KC
         s.TIC_328002["Kc"] = DECIDED_TIC002_KC
     return s
+
+
+def _drum_and_loops():
+    """The port's drum and its loops, TV-328002 on V1's linear law from 50 % (its Neldisc, decided
+    2026-10-17, has its own both-ways test in `test_reflux_drum_decided_equivalence.py`)."""
+    return (rd.RefluxDrum(tv_328002=None),
+            rd.RefluxDrumLoops(tic_328002=rd.tic_328002(d.E004_TV_OP_DES_PCT)))
 
 
 def _v1_d001(v1, s, m_737, in_c002, m_793, dt, decided=ALL, m_over=0.0):
@@ -409,7 +416,7 @@ def test_the_vessel_and_its_level_as_decided(v1):
 
 
 def test_the_state_and_the_controllers_are_seeded_as_v1_seeds_them(v1):
-    s, drum, loops = _v1_state(v1), rd.RefluxDrum(), rd.RefluxDrumLoops()
+    s, (drum, loops) = _v1_state(v1), _drum_and_loops()
     assert (s.a328_d001_M, s.a328_d001_T, s.a328_d001_T_prev, s.a328_d001_P) == (
         drum.m_kg, drum.t_c, drum.t_prev_c, drum.p_bara)
     for v1_name, name in LOOPS:
@@ -453,7 +460,7 @@ def _run(v1, script, ticks: int, dt: float = DT, before=None, decided=ALL):
     """Drive the drum alone through `script(k)`, comparing everything every tick."""
     if not {"valve", "gains", "B-53"} <= decided:
         raise ValueError("the port's seeds are the decided ones; run V1's in the divergences")
-    s, drum, loops = _v1_state(v1, decided), rd.RefluxDrum(), rd.RefluxDrumLoops()
+    s, (drum, loops) = _v1_state(v1, decided), _drum_and_loops()
     if before:
         before(s, drum, loops)
     b = None
@@ -550,7 +557,7 @@ def test_the_drum_takes_737_on_the_same_tick(v1):
     pressure a tick late. A feed cut and then a reflux set-point step move every hand-off."""
     s = _v1_state(v1)
     col2, lic2 = fd.FirstDesorber(), fd.lic_328503()
-    drum, loops = rd.RefluxDrum(), rd.RefluxDrumLoops()
+    drum, loops = _drum_and_loops()
     seen = set()
     for k in range(3000):
         m738 = t.C002_M738_DES_KGH * (0.85 if k >= 10 else 1.0)
@@ -576,12 +583,12 @@ def test_the_drum_takes_737_on_the_same_tick(v1):
 # The departures, both sides
 # --------------------------------------------------------------------------------------
 
-def _both(v1, script, ticks, dt, before, v1_decided):
-    """V1 with `v1_decided` against the port: the tick they part, the tick each of the port's
-    flags first rises, each side's liquid books on what reaches the liquid, and both sides at
-    the end."""
+def _both(v1, script, ticks, dt, before, v1_decided, port=None):
+    """V1 with `v1_decided` against the port — `port`'s drum and loops, or `_drum_and_loops` —:
+    the tick they part, the tick each of the port's flags first rises, each side's liquid books on
+    what reaches the liquid, and both sides at the end."""
     s = _v1_state(v1, v1_decided)
-    drum, loops = rd.RefluxDrum(), rd.RefluxDrumLoops()
+    drum, loops = port or _drum_and_loops()
     if before:
         before(s, drum, loops)
     out = SimpleNamespace(parted=None, first={}, made_v1=0.0, made=0.0, s=s, drum=drum, a=None,

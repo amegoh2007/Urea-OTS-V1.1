@@ -60,8 +60,8 @@ CHEST_FD_STEP_REL = 1.0e-7      # finite-difference step, relative and absolute 
 
 @dataclass(frozen=True)
 class ChestValve:
-    """A steam valve as its anchored law reads it — a chest's, or a stripping-steam valve's: the
-    design stroke [%], the trim and its xT."""
+    """A vapour valve as its anchored law reads it — a chest's, a stripping-steam valve's or
+    HV-323605's: the design stroke [%], the trim and its xT."""
 
     op_des_pct: float
     characteristic: str | tuple = "linear"
