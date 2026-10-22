@@ -3,10 +3,10 @@ refused with its reason.
 
 What this is
 ------------
-Every action an operator or instructor takes on a console arrives here as V1's command dictionary
-(``{"type": "hic_set", "value": 60}``), after the server has checked the station's role and its
-plant sections (`ureasim.net.protocol`). This module is the engine's half (Claude.md §4a): whether
-the PLANT will take the command. A latched trip, a valve a trip holds shut, a set point a loop in
+Every action an operator or instructor takes on the console arrives here as V1's command
+dictionary (``{"type": "hic_set", "value": 60}``); no role or plant section is checked on the way
+(`project.md` decision 149). This module decides (Claude.md §4a): whether the PLANT will take the
+command. A latched trip, a valve a trip holds shut, a set point a loop in
 MAN does not use, a control the DCS does not have — each is refused, with the process reason,
 and the reason travels back to the trainee. A command V1 dropped without a word is answered here:
 a silently ignored command teaches a trainee that the plant ignored them.
@@ -61,7 +61,7 @@ __all__ = ["CommandResult", "SIMULATOR_COMMANDS", "PLANT_COMMANDS", "apply_comma
 
 #: Commands that act on the exercise, not the plant: the session answers them.
 SIMULATOR_COMMANDS = frozenset({"set_sim_mode", "reset_sim", "freeze", "snapshot_save",
-                                "snapshot_load", "assign"})
+                                "snapshot_load"})
 
 
 @dataclass(frozen=True)

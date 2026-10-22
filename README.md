@@ -17,64 +17,32 @@ Python 3.11 or newer.
 
 ## Run
 
-The simulator is **one plant with several consoles**: an engine process serving an
-instructor station and one or more trainee stations. The default deployment is a **single
-machine** (decided 2026-10-07): the engine plus one local console, the superuser, which may issue
-every command. The classroom deployment is supported since handoffs A-2 and A-8 closed
-(2026-10-16).
+The simulator is **one plant with a single local console** (decided 2026-10-22): the headless
+engine and the console window on one machine, talking over the loopback interface.
 
 On Windows, double-click **`launch.bat`** in this folder. It finds Python (the `py` launcher, or
 `python` on the PATH), checks for 3.11 or newer and for the packages in `requirements.txt`, and
-starts the engine with the local console; if anything is missing it says what and waits. Any
-arguments are passed to `run.py`, so `launch.bat server --host 0.0.0.0` works too.
+starts the engine with its console; if anything is missing it says what and waits. Any arguments
+are passed to `run.py`.
 
-Single machine — engine plus the local console:
+Or from a shell:
 
 ```bash
 python run.py
 ```
 
-Classroom — on the instructor machine, with an optional station token (`--token`, or the
-`UREASIM_TOKEN` environment variable) that every station must present:
-
-```bash
-python run.py server --host 0.0.0.0 --token T
-```
-
-```bash
-python run.py station --role instructor --token T
-```
-
-On each trainee machine:
-
-```bash
-python run.py station --host 10.0.0.5 --role operator --token T
-```
-
 The console opens on screen 321-1. Navigate with the tab bar, with a nav hotspot on the
 graphic, or by right-clicking any element.
 
-### Roles
-
-| role | may command |
-|---|---|
-| `observer` | nothing |
-| `operator` | every command V1's operator screens exposed |
-| `instructor` | the above, plus malfunction injection, reset, simulation pacing, freeze, exercise save and restore, and unit assignment |
-| `superuser` | everything, never narrowed by a unit assignment — the single-machine console, granted only on the engine's own machine |
-
-The **server** grants the role; a station only requests one. It is shown in the status bar,
-alongside an audit line naming every accepted command from any station.
-
-Two refusals are kept distinct, and both say why: the server refuses a command your *role*
-may not issue, and the engine refuses one the *plant* will not accept — a latched trip, an
-interlock, a closed valve.
+The status bar carries an audit line naming the last accepted command. A command the *plant*
+will not accept — a latched trip, an interlock, a closed valve — is refused by the engine, and the
+refusal says why.
 
 ### The engine
 
-The server runs the plant on its own physics thread: the design seed at start, fixed 0.1 s
+The engine runs the plant on its own physics thread: the design seed at start, fixed 0.1 s
 steps at the instructor's pacing, the console packet (V1's WebSocket key paths) published to
-every station ten times a second, each command applied between two ticks and answered with the
+the console ten times a second, each command applied between two ticks and answered with the
 plant's reason when it is refused. Exercises are saved under `~/ureasim-exercises` unless
 `UREASIM_EXERCISES` names another folder. The status bar shows whether the engine is running,
 frozen or faulted.
@@ -86,9 +54,10 @@ values it received.
 
 A left-click on an instrument opens its faceplate — a loop's PV, set point, output and mode, a
 pump's START / STOP, a hand valve's opening, a block valve's OPEN / CLOSE — one per instrument.
-ENTER sets the value typed and closes it; a refusal is shown with its reason. An instructor console
-has an **Instructor** menu (Ctrl+I): pacing, freeze, reset, the malfunctions, exercise save and
-restore, and the stations connected with the plant sections each one holds.
+ENTER sets the value typed and closes it; a refusal is shown with its reason. The **Instructor**
+menu (Ctrl+I) opens the controls that are not plant equipment, kept off the process screens:
+pacing, freeze, reset, the malfunctions, the CO2 demand on 320K002 (the battery-limit boundary)
+and exercise save and restore.
 
 ### The stream inspector
 
@@ -104,7 +73,7 @@ one minute to eight hours (or one typed, such as `30s` or `3h`), ten rulers, and
 pen's live value, MIN / MAX / AVG over the view and its value under each ruler. Right-click an
 instrument and choose **Trend**, or drag it onto the plot or a row, to add a pen. Every trace comes
 from the engine's historian — the window keeps no samples of its own — so it shows the last eight
-hours of the exercise whenever it is opened, and every console draws the same trace.
+hours of the exercise whenever it is opened.
 
 ## Test
 
@@ -154,9 +123,9 @@ ureasim/
   control/  PID, ratio, valves, jet pump, interlocks
   units/    unit operations, one package per plant section
   engine/   integrator, state, scheduler, historian, console packet, session
-  net/      station protocol, server, engine host — headless
+  net/      console protocol, server, engine host — headless
   hmi/      PyQt6 console                — no physics
-  data/     design basis, tags, generated screen layout
+  data/     design basis, generated screen layout
 ```
 
 Imports flow downward only. `thermo` knows nothing about the plant; `hmi` computes nothing.

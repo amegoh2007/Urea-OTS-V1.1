@@ -8,7 +8,6 @@ from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
 from ureasim.hmi import main_window
-from ureasim.net.protocol import Role
 
 
 class FakeBridge(QObject):
@@ -18,7 +17,6 @@ class FakeBridge(QObject):
 
     snapshot = pyqtSignal(object)
     command_result = pyqtSignal(int, bool, str)
-    roster_changed = pyqtSignal(object)
     exercises_received = pyqtSignal(object, str)
     history_received = pyqtSignal(int, bool, str, object)
 
@@ -26,7 +24,6 @@ class FakeBridge(QObject):
         super().__init__()
         self.latest = latest or {}
         self.connected = connected
-        self.role = Role.INSTRUCTOR
         self.sent: list[dict] = []
         self.requests = 0
         self.history: list[dict] = []

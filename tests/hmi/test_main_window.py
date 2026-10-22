@@ -2,7 +2,7 @@
 
 Pinned on a bridge with no server: a click opens the element's faceplate, a second click on the
 same instrument raises it rather than opening another, closing it frees the instrument; a stream
-hotspot says the inspector is not built; the Instructor menu shows for the instructor role only;
+hotspot says the inspector is not built; the Instructor menu is always shown (decision 149);
 the trend window opens once and takes trendable tags; a click is a release without a drag.
 """
 
@@ -27,14 +27,9 @@ def test_one_faceplate_per_instrument_and_the_instructor_menu(qapp):
     assert "LIC-323501" not in win._faceplates
     win.on_element_activated({"t": "strm", "tag": "S0305", "stream": "S0305"})
     assert "stream not published" in win.statusBar().currentMessage()
-    assert not win._instructor_menu.menuAction().isVisible()
-    win.on_role_changed("instructor")
+    # The single console (decision 149) carries the instructor's panel, with no role to grant.
     assert win._instructor_menu.menuAction().isVisible()
-    # The single-machine console (decided 2026-10-07) runs the exercise too.
-    win.on_role_changed("operator")
-    assert not win._instructor_menu.menuAction().isVisible()
-    win.on_role_changed("superuser")
-    assert win._instructor_menu.menuAction().isVisible()
+    assert not hasattr(win, "on_role_changed") and not hasattr(win, "on_assignment_changed")
     win.open_instructor_panel()
     assert win._instructor is not None and win._instructor.isVisible()
     win._instructor.close()

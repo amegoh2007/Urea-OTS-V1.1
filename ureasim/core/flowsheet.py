@@ -54,8 +54,7 @@ class Unit:
 
     ``tag`` is the plant identifier verbatim (``322E002``, ``323C003``) because that is what
     the operator, the datasheet and the P&ID all call it. ``section`` is the plant unit
-    number it is reported under (``322``, ``323``, ...), which is what the multi-station
-    unit-assignment check in `ureasim.data.tags` arbitrates on.
+    number it is reported under (``322``, ``323``, ...).
     """
 
     tag: str
@@ -144,7 +143,7 @@ class Flowsheet:
         return tuple(self._tears)
 
     def units_in_section(self, section: str) -> tuple[Unit, ...]:
-        """Every unit reported under one plant section — the unit-assignment scope."""
+        """Every unit reported under one plant section."""
         return tuple(u for u in self._units.values() if u.section == section)
 
     # --------------------------------------------------------------------- ordering ----

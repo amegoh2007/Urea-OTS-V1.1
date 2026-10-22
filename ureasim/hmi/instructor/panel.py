@@ -2,24 +2,25 @@
 
 What it is
 ----------
-A window on the instructor console with the controls that are not plant equipment
-(`ureasim.net.protocol.INSTRUCTOR_ONLY_COMMANDS`):
+A window on the console with the controls that are not plant equipment, kept off the process
+screens so they stay true to the DCS (`project.md` decision 149):
 
 * **Simulation** — the pacing (SLOW / FAST, `ureasim.data.engine.SIM_SPEED`), FREEZE and RUN,
   and RESET to the design seed after a confirmation;
 * **Malfunctions** — every equipment fault the engine can inject, armed and cleared
   (`ureasim.data.faceplates.MALFUNCTIONS`);
+* **Boundary** — the CO2 asked of 320K002 (``co2_set``), the battery-limit rate: a boundary
+  condition outside the simulated plant, with no operator lever (decision 73), offered from none
+  to V1's 120 % of the design feed (`ureasim.data.faceplates.CO2_DEMAND_MAX_FRAC`);
 * **Exercises** — save the plant under a name with a note, and restore a saved one after a
-  confirmation, from the list the server holds;
-* **Stations** — the consoles connected, their roles and plant, and the assignment of a trainee
-  station's plant sections (`ureasim.data.tags.SECTIONS`), or its release to the whole plant.
+  confirmation, from the list the engine's side holds.
 
-Like a faceplate it is a dumb renderer and an emitter: the pacing it shows is the packet's, the
-roster and the exercises are the server's lists, and every button sends one command whose answer
-— the server's for the role, the engine's for the exercise — is shown with its reason.
+Like a faceplate it is a dumb renderer and an emitter: the pacing and the CO2 demand it shows are
+the packet's, the exercises the engine's list, and every button sends one command whose answer —
+the engine's — is shown with its reason.
 
-Source: V1 ``frontend/app.js`` (the reset button, 120-160); the rest is the multi-station
-design's (`project.md` §3.5, handoff A-2).
+Source: V1 ``frontend/app.js`` (the reset button, 120-160) and ``frontend/co2_compressor.js`` (the
+CO2 demand's range); the rest is the port's (`project.md` §3.5).
 """
 
 from __future__ import annotations
@@ -28,7 +29,6 @@ from typing import Any, Mapping
 
 from PyQt6.QtCore import QObject, Qt
 from PyQt6.QtWidgets import (
-    QCheckBox,
     QDoubleSpinBox,
     QGridLayout,
     QGroupBox,
@@ -38,15 +38,13 @@ from PyQt6.QtWidgets import (
     QListWidget,
     QMessageBox,
     QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
     QVBoxLayout,
     QWidget,
 )
 
 from ureasim.data.engine import SIM_SPEED
-from ureasim.data.faceplates import MALFUNCTIONS
-from ureasim.data.tags import SECTIONS
+from ureasim.data.faceplates import CO2_DEMAND_MAX_FRAC, MALFUNCTIONS
+from ureasim.data.unit_321 import CO2_DES_KGH
 from ureasim.hmi import theme
 from ureasim.hmi.faceplates.base import faceplate_style
 from ureasim.hmi.state_access import get_path
@@ -70,15 +68,14 @@ class InstructorPanel(QWidget):
         column = QVBoxLayout(self)
         column.addWidget(self._simulation())
         column.addWidget(self._malfunctions())
+        column.addWidget(self._boundary())
         column.addWidget(self._exercises())
-        column.addWidget(self._stations())
         self.message = QLabel("", self)
         self.message.setWordWrap(True)
         column.addWidget(self.message)
 
         bridge.snapshot.connect(self.refresh)
         bridge.command_result.connect(self._on_result)
-        bridge.roster_changed.connect(self.show_roster)
         bridge.exercises_received.connect(self.show_exercises)
 
     # ---- building ----
@@ -125,6 +122,22 @@ class InstructorPanel(QWidget):
                            r, 3)
         return box
 
+    def _boundary(self) -> QGroupBox:
+        box = QGroupBox("Boundary", self)
+        row = QHBoxLayout(box)
+        row.addWidget(QLabel("320K002 CO2 demand", box))
+        self.co2_demand = QDoubleSpinBox(box)
+        self.co2_demand.setRange(0.0, CO2_DES_KGH / 1000.0 * CO2_DEMAND_MAX_FRAC)
+        self.co2_demand.setDecimals(3)
+        self.co2_demand.setSuffix(" t/h")
+        self.co2_demand.setValue(CO2_DES_KGH / 1000.0)
+        row.addWidget(self.co2_demand)
+        row.addWidget(self._button("SET", self.co2, box))
+        self.co2_now = QLabel("", box)
+        row.addWidget(self.co2_now)
+        row.addStretch(1)
+        return box
+
     def _exercises(self) -> QGroupBox:
         box = QGroupBox("Exercises", self)
         grid = QGridLayout(box)
@@ -143,70 +156,24 @@ class InstructorPanel(QWidget):
         grid.addLayout(side, 2, 2)
         return box
 
-    def _stations(self) -> QGroupBox:
-        box = QGroupBox("Stations", self)
-        column = QVBoxLayout(box)
-        self.roster_table = QTableWidget(0, 3, box)
-        self.roster_table.setHorizontalHeaderLabels(["Station", "Role", "Plant"])
-        self.roster_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self.roster_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
-        self.roster_table.itemSelectionChanged.connect(self._load_assignment)
-        column.addWidget(self.roster_table)
-        sections = QHBoxLayout()
-        self.section_boxes = {}
-        for sid, sec in SECTIONS.items():
-            cb = QCheckBox(sid, box)
-            cb.setToolTip(sec["name"])
-            self.section_boxes[sid] = cb
-            sections.addWidget(cb)
-        sections.addStretch(1)
-        column.addLayout(sections)
-        actions = QHBoxLayout()
-        actions.addWidget(self._button("ASSIGN", self.assign, box))
-        actions.addWidget(self._button("WHOLE PLANT", self.release, box))
-        actions.addStretch(1)
-        column.addLayout(actions)
-        self._roster: list[dict] = []
-        return box
-
     # ---- rendering ----
 
     def refresh(self, state: Mapping[str, Any]) -> None:
-        """The pacing the plant runs at, from the packet."""
+        """The pacing the plant runs at and the CO2 demand on 320K002, from the packet."""
         mode = get_path(state, "sim_mode")
         for m, b in self.pacing_buttons.items():
             b.setProperty("active", m == mode)
             b.style().unpolish(b)
             b.style().polish(b)
-
-    def show_roster(self, stations) -> None:
-        """The server's roster: each station, its role, its plant."""
-        self._roster = [dict(s) for s in stations]
-        self.roster_table.setRowCount(len(self._roster))
-        for r, s in enumerate(self._roster):
-            plant = ("whole plant" if s.get("sections") is None
-                     else " ".join(s["sections"]) or "none")
-            for c, text in enumerate((s.get("station", ""), s.get("role", ""), plant)):
-                item = QTableWidgetItem(str(text))
-                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                self.roster_table.setItem(r, c, item)
+        demand = get_path(state, "CO2_FEED.raw_th")
+        self.co2_now.setText("--" if demand is None else f"now {demand:.2f} t/h")
 
     def show_exercises(self, names, reason: str) -> None:
-        """The server's saved exercises."""
+        """The saved exercises."""
         self.exercise_list.clear()
         self.exercise_list.addItems([str(n) for n in names])
         if reason:
             self.say(reason, ok=False)
-
-    def _selected_station(self) -> dict | None:
-        rows = self.roster_table.selectionModel().selectedRows()
-        return self._roster[rows[0].row()] if rows else None
-
-    def _load_assignment(self) -> None:
-        s = self._selected_station()
-        held = set((s or {}).get("sections") or [])
-        for sid, cb in self.section_boxes.items():
-            cb.setChecked(sid in held)
 
     # ---- commands ----
 
@@ -248,6 +215,10 @@ class InstructorPanel(QWidget):
             cmd["rate"] = self.fault_rates[fault_id].value()
         self._send(cmd, f"{kind} {fault_id}")
 
+    def co2(self) -> None:
+        value = self.co2_demand.value()
+        self._send({"type": "co2_set", "value": value}, f"CO2 demand {value:g} t/h")
+
     def save(self) -> None:
         name = self.name_field.text().strip()
         self._send({"type": "snapshot_save", "name": name, "note": self.note_field.text()},
@@ -261,23 +232,6 @@ class InstructorPanel(QWidget):
         name = item.text()
         if self.confirm(f"Restore {name}?", "The running plant is replaced by the saved one."):
             self._send({"type": "snapshot_load", "name": name}, f"restore {name}")
-
-    def assign(self) -> None:
-        s = self._selected_station()
-        if s is None:
-            self.say("choose a station", ok=False)
-            return
-        sections = sorted(sid for sid, cb in self.section_boxes.items() if cb.isChecked())
-        self._send({"type": "assign", "station": s["station"], "sections": sections},
-                   f"assign {s['station']}")
-
-    def release(self) -> None:
-        s = self._selected_station()
-        if s is None:
-            self.say("choose a station", ok=False)
-            return
-        self._send({"type": "assign", "station": s["station"], "sections": None},
-                   f"whole plant to {s['station']}")
 
     def _ask(self, title: str, text: str) -> bool:
         answer = QMessageBox.question(self, title, text, QMessageBox.StandardButton.Yes

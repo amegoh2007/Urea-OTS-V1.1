@@ -19,7 +19,7 @@ V1.1 keeps **100 % of the process engineering** and discards **100 % of the mess
 | Language | Python 3 | Python 3 (unchanged) |
 | UI | HTML + vanilla JS + WebSocket | **PyQt6** desktop client |
 | Transport | FastAPI / WebSocket / JSON | length-prefixed JSON over TCP (`ureasim/net`) |
-| Stations | any number of browsers, no roles | instructor / operator / observer, enforced server-side |
+| Stations | any number of browsers, no roles | single local console (operator screens + instructor panel in one application) |
 | Structure | one monolith + orphans | strict layered package `ureasim/` |
 | Physics | correct, but buried | **identical equations**, extracted into named units |
 
@@ -31,7 +31,8 @@ re-anchor an equation during the rewrite. Port it exactly, then prove it ports e
 automated boundary feed (`units/synthesis/co2_compressor.py`) whose hardwired governor and surge
 protection deliver the demanded CO2 into the discharge line at whatever pressure the line presents —
 no curve, no speed, no surge, no operator command and no faceplate. The battery-limit CO2 rate is the
-instructor's boundary condition (`co2_set`, instructor-only), never a trainee's control. Do not model
+instructor's boundary condition (`co2_set`, on the instructor's panel), never a process screen's
+control. Do not model
 the machine's curves, its governor or its antisurge loop.
 
 ---
@@ -65,10 +66,12 @@ This is the house style. It is not negotiable.
    An `import` that points *upward* is a defect. `thermo` must never know a reactor exists;
    `hmi` must never compute a bubble point.
 3. **The engine is headless. Nothing at or below `ureasim/net` may import Qt.**
-   The simulator serves several consoles at once — an instructor station and one or more
-   trainee stations — so the engine runs as a server on a machine that may have no display.
-   A stray `from PyQt6 import ...` below the `hmi` layer breaks that deployment and will
-   not be noticed on a developer's laptop, where a display always exists.
+   The simulator has a single local console (decision 149), and the engine still runs headless
+   on its own physics thread behind a loopback server: physics stays strictly decoupled from
+   presentation, and the `pytest` equivalence suites and the Phase 7 transient runners drive
+   the engine with no display at all. A stray `from PyQt6 import ...` below the `hmi` layer
+   breaks that separation and will not be noticed on a developer's laptop, where a display
+   always exists.
 
    The check is one command:
 
@@ -190,25 +193,27 @@ Resolution order for any datum:
 If none of the three yields the datum: **stop, do not guess, log it in `handoff.md` §Open Data
 Gaps** and proceed with the rest of the work.
 
-## 4a. Multi-station rules
+## 4a. Console-engine boundary rules
 
-The simulator is **one plant with several consoles**. Five rules follow, and none of them
-is optional:
+The simulator is **one plant with a single local console** (2026-10-22, `project.md`
+decision 149): `python run.py` (or `launch.bat`) starts the headless engine on the loopback
+interface and the console attached to it over `ureasim/hmi/bridge.py`. Three rules follow, and
+none of them is optional:
 
 1. **The engine owns the plant; a console owns nothing.** A console renders the snapshot it
-   is sent and emits commands. It never computes, caches or corrects a value. Two consoles
-   showing different numbers for the same tag is a defect by construction.
-2. **The server enforces the role; the engine enforces the process.**
-   `ureasim/net/protocol.py` decides whether a *role* may issue a command type. Whether the
-   plant will *accept* it — a latched trip, an interlock, a closed valve — is the engine's
-   answer, and it must travel back to the operator with its reason. Never fold one into the
-   other: a process refusal that reads as a permissions error teaches the wrong lesson.
-3. **An operator station may do exactly what V1's operator screens allowed.** Only the
-   commands that are not plant equipment — malfunction injection, reset, simulation
-   pacing, freeze, exercise save and restore, and unit assignment — sit behind the
-   instructor role. Re-classifying a plant control would change what a trainee is being
-   taught, which §5 forbids.
-4. **Faceplates and the instructor's panel are dumb (2026-10-03).** Everything under
+   is sent and emits commands. It never computes, caches or corrects a value. A console
+   showing a number the engine did not publish for a tag is a defect by construction.
+2. **The engine enforces the process; the console separates plant operation from instructor
+   controls in the UI.** The operator mimics and faceplates expose only what the plant DCS
+   exposes — exactly what V1's operator screens allowed; re-classifying a plant control would
+   change what a trainee is being taught, which §5 forbids. The controls that are not plant
+   equipment — malfunctions, pacing, freeze, reset, exercise save and restore, and the
+   battery-limit `co2_set` — live in the Instructor menu's panel. No command is refused for who
+   sent it; whether the plant will *accept* it — a latched trip, an interlock, a closed valve —
+   is the engine's answer, and it travels back to the console's status bar with its process
+   reason. Station roles, the station token, the roster and unit assignment by section were the
+   multi-station deployment's (decisions 72, 124 and 125) and are retired.
+3. **Faceplates and the instructor's panel are dumb (2026-10-03).** Everything under
    `ureasim/hmi/faceplates/` and `ureasim/hmi/instructor/` renders the published packet and
    emits commands over the bridge, nothing else: no new logic, no local state, no decision
    the server or the engine owns. Which command a control sends is data
@@ -218,17 +223,6 @@ is optional:
    answer; it never accumulates packet values of its own. What it keeps is its view — the pens,
    the span, the ranges — not process data. **The stream inspector renders the packet's
    ``STREAMS`` record and computes nothing (2026-10-07)** (`ureasim/hmi/widgets/stream_hotspot.py`).
-5. **Two deployments (2026-10-07; handoffs A-2 and A-8 closed 2026-10-16).** The default is one
-   engine and one local console (`python run.py`). That console is the ``superuser``
-   (`ureasim/net/protocol.py`): no command type is refused for its role and no unit assignment
-   narrows it; the server grants the role only to a console on its own machine. The multi-station
-   deployment (`run.py server` and `run.py station`) is supported, and rules 2 and 3 hold in it:
-   trainees are assigned by plant section (`ureasim/data/tags.py`; ``None`` unrestricted, ``[]``
-   nothing, instructors and the superuser never narrowed; no per-tag locking), the instructor's panel
-   runs the exercise from an instructor station, and an engine started with a station token
-   (`--token` or ``UREASIM_TOKEN``) admits only the stations that present it, the superuser
-   included. The token admits a station; the role is still the one it requests. A superuser's
-   command is still the engine's to refuse, with its reason.
 
 ## 5. Fidelity rules for the port
 

@@ -101,8 +101,8 @@ def test_a_straight_train_needs_no_tears():
     assert fs.evaluation_order() == ("323C003", "323F004", "323F010", "323D002")
 
 
-def test_units_are_grouped_by_section_for_the_assignment_check():
-    """Unit assignment arbitrates on the section, so the graph must be able to report it."""
+def test_units_are_grouped_by_section():
+    """The graph reports the units of each plant section."""
     fs = _loop(with_tears=True)
     assert {u.tag for u in fs.units_in_section("322")} == {
         "322F001", "322E002", "322R001", "322E001", "322E003"}

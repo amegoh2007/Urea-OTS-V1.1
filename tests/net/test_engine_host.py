@@ -5,9 +5,8 @@ Pinned:
   (the commands are drained between slices, so the slicing must be invisible to the physics);
 * commands reach the plant between two ticks in arrival order, and each ack carries the plant's
   answer — accepted, or refused with the process reason;
-* the role and the assignment are the server's, enforced before the engine sees a command: an
-  observer commands nothing, a trainee assigned unit 323 is refused a unit-328 faceplate and the
-  synthesis loop's hand valve, and the instructor's simulator controls stay the instructor's;
+* every command is the engine's to answer (decision 149): a simulator control and a faceplate in
+  any section reach the plant, and a refusal is the plant's;
 * the console packet is published on V1's paths with the engine's status, and a trend's backfill
   is answered over the protocol.
 """
@@ -20,7 +19,7 @@ from ureasim.data.engine import MAX_PASS_NS
 from ureasim.engine.session import EngineSession
 from ureasim.net import protocol
 from ureasim.net.engine_host import EngineHost
-from ureasim.net.protocol import Kind, Role
+from ureasim.net.protocol import Kind
 from ureasim.net.server import StationServer
 from tests.net.test_server import Client
 
@@ -56,7 +55,7 @@ async def _ack(client: Client, cmd_id: int) -> dict:
 def test_commands_reach_the_plant_between_ticks_with_the_plants_answer(tmp_path):
     async def scenario():
         server, port, host = await _serve(tmp_path)
-        op = await Client.connect(port, Role.OPERATOR, "trainee-1")
+        op = await Client.connect(port)
         await op.send(protocol.command(1, {"type": "hic605_set", "op": 45.0}))
         await op.send(protocol.command(2, {"type": "xv_toggle", "id": "322915"}))
         await op.send(protocol.command(3, {"type": "hic605_set", "op": 55.0}))
@@ -72,45 +71,32 @@ def test_commands_reach_the_plant_between_ticks_with_the_plants_answer(tmp_path)
     asyncio.run(scenario())
 
 
-def test_the_server_arbitrates_roles_and_assignments_before_the_engine(tmp_path):
+def test_the_engine_answers_every_command_and_refuses_only_for_the_process(tmp_path):
+    """The single console (decision 149): a simulator control and a faceplate in any section reach
+    the plant; the only refusals are the plant's, with its reason."""
     async def scenario():
         server, port, host = await _serve(tmp_path)
-        obs = await Client.connect(port, Role.OBSERVER, "visitor")
-        trainee = await Client.connect(port, Role.OPERATOR, "trainee-323")
-        inst = await Client.connect(port, Role.INSTRUCTOR, "instructor")
-        await inst.send(protocol.command(1, {"type": "assign", "station": "trainee-323",
-                                             "sections": ["323"]}))
-        assert (await _ack(inst, 1))["ok"]
-        await obs.send(protocol.command(1, {"type": "hic605_set", "op": 10.0}))
-        assert "role 'observer' may not issue" in (await _ack(obs, 1))["reason"]
+        console = await Client.connect(port)
         for i, cmd in enumerate((
                 {"type": "r323_ctrl_set", "id": "LIC_328505", "mode": "MAN", "op": 10.0},
-                {"type": "r323_ctrl_set", "id": "FIC_329402", "mode": "MAN", "op": 10.0},
+                {"type": "r323_ctrl_set", "id": "LIC_323505", "mode": "MAN", "op": 40.0},
                 {"type": "hic605_set", "op": 10.0},
                 {"type": "freeze", "on": True}), start=1):
-            await trainee.send(protocol.command(i, cmd))
-            assert not (await _ack(trainee, i))["ok"], cmd
-        await trainee.send(protocol.command(9, {"type": "r323_ctrl_set", "id": "LIC_323505",
-                                                "mode": "MAN", "op": 40.0}))
-        assert (await _ack(trainee, 9))["ok"]
-        reasons = {m["id"]: m["reason"] for m in trainee.of_kind(Kind.ACK)}
-        assert "section 328" in reasons[1] and "section 329" in reasons[2]
-        assert "section 322" in reasons[3] and "may not issue 'freeze'" in reasons[4]
-        plant = host.session.plant
-        assert plant.operator["HIC-322605"] == 60.0 and not host.session.frozen
-        await inst.send(protocol.command(2, {"type": "freeze", "on": True}))
-        assert (await _ack(inst, 2))["ok"] and host.session.frozen
-        for c in (obs, trainee, inst):
-            await c.close()
+            await console.send(protocol.command(i, cmd))
+            assert (await _ack(console, i))["ok"], cmd
+        assert host.session.plant.operator["HIC-322605"] == 10.0 and host.session.frozen
+        await console.send(protocol.command(5, {"type": "xv_toggle", "id": "322915"}))
+        assert "XV-322915 has no operator open" in (await _ack(console, 5))["reason"]
+        await console.close()
         host.stop()
         await server.stop()
     asyncio.run(scenario())
 
 
-def test_the_packet_status_and_history_reach_the_stations(tmp_path):
+def test_the_packet_status_and_history_reach_the_console(tmp_path):
     async def scenario():
         server, port, host = await _serve(tmp_path)
-        obs = await Client.connect(port, Role.OBSERVER, "visitor")
+        obs = await Client.connect(port)
         while not [m for m in obs.of_kind(Kind.SNAPSHOT) if m["state"]]:
             await obs.pump(len(obs.inbox) + 1, timeout=10.0)
         state = [m for m in obs.of_kind(Kind.SNAPSHOT) if m["state"]][-1]["state"]
@@ -131,8 +117,9 @@ def test_the_packet_status_and_history_reach_the_stations(tmp_path):
             "RECIRC_323.C003.TIC_323007.pv"][-1] == 135.0
         assert "STRIP_322E001.LIC_322501.pv" in replies[8]["result"]["paths"]
         assert not replies[9]["ok"] and "names its paths" in replies[9]["reason"]
-        # The instructor saves an exercise between two ticks; the list comes from the session.
-        teacher = await Client.connect(port, Role.INSTRUCTOR, "teacher")
+        # The instructor's panel saves an exercise between two ticks; the list comes from the
+        # session.
+        teacher = await Client.connect(port)
         await teacher.send(protocol.command(11, {"type": "snapshot_save",
                                                  "name": "start-of-shift"}))
         assert (await _ack(teacher, 11))["ok"]

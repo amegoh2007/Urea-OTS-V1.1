@@ -17,8 +17,7 @@ reserves for the instructor:
     snapshot_load  an exercise restored by name, checked against the present model; the trends
                    restart, since the plant clock has jumped
 
-Every answer is (accepted, reason), the reason a refusal's, so it reaches the station that asked.
-``assign`` is the server's own and never reaches the engine.
+Every answer is (accepted, reason), the reason a refusal's, so it reaches the console that asked.
 
 The health block
 ----------------
@@ -201,7 +200,7 @@ class EngineSession:
             except (snapshot.SnapshotError, OSError) as exc:
                 return False, str(exc)
             return True, ""
-        return False, f"{kind} is the server's, not the engine's"
+        raise ValueError(f"no handler for the simulator command {kind!r}")
 
     def _install(self, plant: PlantState) -> None:
         """Run ``plant`` from now on: the clock restarts from its tick, the trends from empty."""

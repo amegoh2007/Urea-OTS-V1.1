@@ -1,10 +1,12 @@
-"""Station protocol — framing, message kinds, roles and command authorisation.
+"""Console protocol — framing and message kinds between the engine and its console.
 
 Why a protocol at all
 ---------------------
-The OTS runs as **one plant with several consoles**: an instructor station and one or more
-trainee stations, all watching the same simulation. That cannot be done in a single
-process, so the engine is a server and every console is a client.
+The OTS is **one plant with a single local console** (decided 2026-10-22, `project.md`
+decision 149). The engine still runs headless, on its own physics thread, and the console
+reaches it over a loopback socket: physics and presentation share no object, the equivalence
+suites and the Phase 7 runners drive the engine with no display at all, and a console that
+stalls never delays a tick.
 
 This module is the contract between them. It is pure Python with no Qt and no sockets, so
 both halves share exactly one definition of every message, and the whole thing is testable
@@ -22,73 +24,40 @@ Length-prefixed JSON over a stream socket::
 Length-prefixed rather than newline-delimited because a snapshot is a single large object
 and a delimiter scan would have to escape the payload. JSON rather than a binary codec
 because a training simulator's snapshot is read by humans during commissioning, and at
-10 Hz across a handful of stations the cost is irrelevant — V1 sent the same payload over a
-WebSocket.
+10 Hz the cost is irrelevant — V1 sent the same payload over a WebSocket.
 
-Roles
+Commands and refusals
+---------------------
+The console sends every command the engine takes: the plant controls V1's operator screens
+exposed, from the screens and faceplates, and the simulator controls that are not plant
+equipment — malfunction injection, reset, pacing, freeze, exercise save and restore, and the
+battery-limit CO2 demand — from the instructor's panel. The separation is the console's layout,
+not a permission: no command is refused for who sent it. The engine refuses what the process
+refuses — a latched trip, an interlock, a closed valve — and its reason travels back on the
+command's `ack`, so the operator learns why.
+
+Station roles, the station token, the roster and unit assignment by plant section were the
+multi-station deployment's (decisions 72, 124 and 125, handoffs A-2 and A-8) and were removed
+with it (decision 149).
+
+Audit
 -----
-    observer     sees the plant, commands nothing
-    operator     every command V1's operator screens exposed
-    instructor   the above, plus the simulator controls
-    superuser    every command and every list, no unit assignment — the single-machine console
-
-The split is deliberately conservative: an **operator station can do exactly what V1's UI
-allowed**, and the only commands moved behind the instructor role are the ones that are not
-plant equipment at all — malfunction injection, reset, and simulation pacing. Re-classifying
-a plant control would change what a trainee is being taught, which the rewrite must not do.
-
-**Single-machine mode (decided 2026-10-07).** The default deployment is one engine and one
-console on one machine (``run.py`` with no mode). That console is the ``superuser``: no command
-type is refused for its role and no unit assignment narrows it. The server grants the role only to
-a console on its own machine (a loopback peer), so the multi-station path is no weaker for it. A
-superuser's command is still the engine's to refuse: a latched trip or an interlock answers with
-its reason, as for any role.
-
-Station login (handoff A-2, closed 2026-10-16)
-----------------------------------------------
-An engine may be started with a shared station token. A station then presents it in its `hello`,
-and the server refuses one that presents none, or another, before it reads the role the station
-asks for. The token admits a station to the plant; among the stations it admits, each still
-requests its role, as on a closed classroom network. An engine started with no token checks none,
-and a `hello` with no token is the same message it always was.
-
-Unit assignment
----------------
-An instructor assigns each trainee a set of **plant sections** (321, 322, 323, 324, 328,
-329, 335). A command to a tag outside your sections is refused, by name, before it reaches
-the engine — so two trainees on one exercise cannot fight over the same loop without
-either realising.
-
-A station with **no** assignment is unrestricted. Assignment is a narrowing the instructor
-applies; a classroom that has not set one up behaves as it did before. Instructors are
-never restricted.
-
-Which section a command acts on is resolved by `ureasim.data.tags.section_of_command`. A
-command it cannot attribute is refused for an **assigned** station, so the gap is visible
-and fixable rather than becoming a hole in the assignment.
-
-Command arbitration within a section
-------------------------------------
-Inside a station's own sections, commands are applied by the engine in arrival order and
-the last one wins — the way a real DCS resolves two operators reaching for one valve. Every
-accepted command is broadcast to **all** stations as an `event`, so the instructor sees each
-trainee action as it happens and the exercise has a transcript.
+Every accepted command is echoed back as an `event`: the console's audit line, and the
+exercise's transcript.
 
 History
 -------
 A trend window opened mid-exercise backfills its pens from the engine's historian: a
 `history` request names the pens' paths and the span, and a `history_paths` request asks
 what the historian records (V1's ``/api/hist`` and ``/api/hist/paths``, carried here
-because a console has no other channel to the engine). Reading history changes nothing, so
-every role may ask; each answer is a `history_data` with the request's id.
+because a console has no other channel to the engine). Each answer is a `history_data` with the
+request's id.
 
 The instructor's panel
 ----------------------
-The instructor runs the exercise from a panel that needs two things only the server knows: the
-stations connected and the plant each holds, sent to every instructor console as a `roster`
-whenever a station joins, leaves or is assigned; and the saved exercises, which an instructor
-asks for with `exercise_list` and receives as `exercises`. Both are lists, not plant state: the
-consoles render them and command nothing through them.
+The panel restores a saved exercise from a list only the engine's side knows, which it asks for
+with `exercise_list` and receives as `exercises`. It is a list, not plant state: the console
+renders it and commands nothing through it.
 """
 
 from __future__ import annotations
@@ -99,8 +68,10 @@ from enum import Enum
 from typing import Any, Iterator, Mapping
 
 #: Wire-format version. A client whose version differs is refused at `hello`, with the
-#: reason, rather than being allowed to misread a field that changed meaning.
-PROTOCOL_VERSION = 1
+#: reason, rather than being allowed to misread a field that changed meaning. 2 since the
+#: single-console conversion (decision 149): `hello`, `welcome` and `event` carry no role,
+#: token or sections.
+PROTOCOL_VERSION = 2
 
 #: Frame header: one big-endian unsigned 32-bit length.
 _HEADER = struct.Struct(">I")
@@ -116,70 +87,6 @@ class ProtocolError(ValueError):
 
 
 # ======================================================================================
-# Roles
-# ======================================================================================
-
-class Role(str, Enum):
-    """What a connected station is permitted to do."""
-
-    OBSERVER = "observer"
-    OPERATOR = "operator"
-    INSTRUCTOR = "instructor"
-    #: The single-machine console (decided 2026-10-07): every command, never assigned.
-    SUPERUSER = "superuser"
-
-
-#: The roles that run the exercise: the instructor's commands, lists and roster, never narrowed
-#: by a unit assignment.
-EXERCISE_ROLES = frozenset({Role.INSTRUCTOR, Role.SUPERUSER})
-
-#: The roles the server grants only to a console on its own machine.
-LOCAL_ONLY_ROLES = frozenset({Role.SUPERUSER})
-
-
-def runs_the_exercise(role: Role) -> bool:
-    """True for a role with the instructor's rights: the simulator controls, the exercise list,
-    the roster, and no unit assignment."""
-    return role in EXERCISE_ROLES
-
-
-#: Simulator controls — NOT plant equipment. These change the exercise rather than the
-#: process, so a trainee must not reach them: a trainee who can clear their own malfunction
-#: or reset the plant is not being trained.
-INSTRUCTOR_ONLY_COMMANDS = frozenset({
-    "trigger_fault",      # malfunction injection
-    "clear_fault",
-    "reset_sim",          # reinitialise the plant to a seed
-    "set_sim_mode",       # SLOW / FAST simulation pacing
-    "freeze",             # hold the integrator
-    "snapshot_save",      # store an exercise state
-    "snapshot_load",      # restore one
-    "assign",             # give a trainee station its plant sections
-    "co2_set",            # the battery-limit CO2 rate: 320K002 is a boundary feed outside the
-                          # simulated plant, with no operator lever (decided 2026-10-08)
-})
-
-
-def is_authorised(role: Role, command_type: str) -> bool:
-    """True when `role` may issue `command_type`.
-
-    An observer commands nothing. An operator may issue every plant command V1's screens
-    exposed — including the ``*_fault`` suffix form V1 accepted through its generic ``set``
-    handler, which is treated as fault injection here and therefore gated. The superuser may
-    issue every command.
-    """
-    if role is Role.SUPERUSER:
-        return True
-    if role is Role.OBSERVER:
-        return False
-    gated = (command_type in INSTRUCTOR_ONLY_COMMANDS
-             or command_type.endswith("_fault"))
-    if gated:
-        return runs_the_exercise(role)
-    return True
-
-
-# ======================================================================================
 # Message kinds
 # ======================================================================================
 
@@ -187,7 +94,7 @@ class Kind(str, Enum):
     """Message discriminator, carried as the ``t`` field."""
 
     # client -> server
-    HELLO = "hello"            # {role, station, protocol[, token]}
+    HELLO = "hello"            # {station, protocol}
     COMMAND = "command"        # {id, cmd}
     PING = "ping"              # {id}
     HISTORY = "history"        # {id, paths, span, max_points, end}
@@ -195,16 +102,14 @@ class Kind(str, Enum):
     EXERCISE_LIST = "exercise_list"  # {id}
 
     # server -> client
-    WELCOME = "welcome"        # {role, station, protocol, engine, sections}
-    ASSIGNMENT = "assignment"  # {station, sections}
+    WELCOME = "welcome"        # {station, protocol, engine}
     REFUSED = "refused"        # {reason}
     SNAPSHOT = "snapshot"      # {seq, t_plant, state}
     STATUS = "status"          # {text, level}
     ACK = "ack"                # {id, ok, reason}
-    EVENT = "event"            # {station, role, cmd, text}
+    EVENT = "event"            # {station, cmd, text}
     PONG = "pong"              # {id}
     HISTORY_DATA = "history_data"  # {id, ok, reason, result}
-    ROSTER = "roster"          # {stations: [{station, role, sections}]}
     EXERCISES = "exercises"    # {id, ok, reason, names}
 
 
@@ -212,42 +117,19 @@ class Kind(str, Enum):
 # Constructors — one function per message, so no call site hand-builds a dict
 # --------------------------------------------------------------------------------------
 
-def hello(role: Role, station: str, token: str | None = None) -> dict:
-    """Client's opening message: who it is and what it claims to be.
-
-    ``token`` is the engine's station token, carried only when the station has one: an engine
-    started with a token admits no station without it.
-    """
-    message = {"t": Kind.HELLO.value, "role": Role(role).value,
-               "station": station, "protocol": PROTOCOL_VERSION}
-    if token is not None:
-        message["token"] = token
-    return message
+def hello(station: str) -> dict:
+    """Client's opening message: the console's name, for the audit line, and its version."""
+    return {"t": Kind.HELLO.value, "station": station, "protocol": PROTOCOL_VERSION}
 
 
-def welcome(role: Role, station: str, engine: str, sections=None) -> dict:
-    """Server's acceptance, echoing the role actually granted and any assignment.
-
-    ``sections`` is ``None`` for an unrestricted station, which is what a station with no
-    assignment is. An empty list would mean "assigned nothing", which is a different thing.
-    """
-    return {"t": Kind.WELCOME.value, "role": Role(role).value, "station": station,
-            "protocol": PROTOCOL_VERSION, "engine": engine,
-            "sections": None if sections is None else sorted(sections)}
-
-
-def assignment(station: str, sections) -> dict:
-    """A station's plant sections, sent when the instructor changes them.
-
-    ``sections`` of ``None`` means unrestricted. The station shows this in its status bar,
-    so a trainee always knows which plant they are holding.
-    """
-    return {"t": Kind.ASSIGNMENT.value, "station": station,
-            "sections": None if sections is None else sorted(sections)}
+def welcome(station: str, engine: str) -> dict:
+    """Server's acceptance, naming the engine build the console is attached to."""
+    return {"t": Kind.WELCOME.value, "station": station, "protocol": PROTOCOL_VERSION,
+            "engine": engine}
 
 
 def refused(reason: str) -> dict:
-    """Server's rejection of a station's `hello` or of a frame it could not read."""
+    """Server's rejection of a console's `hello` or of a frame it could not read."""
     return {"t": Kind.REFUSED.value, "reason": reason}
 
 
@@ -262,7 +144,7 @@ def snapshot(seq: int, t_plant: float, state: Mapping[str, Any]) -> dict:
 
 
 def status(text: str, level: str) -> dict:
-    """Engine health for the station's status bar. ``level`` is ok / warn / fault."""
+    """Engine health for the console's status bar. ``level`` is ok / warn / fault."""
     return {"t": Kind.STATUS.value, "text": text, "level": level}
 
 
@@ -280,14 +162,13 @@ def ack(cmd_id: int, ok: bool, reason: str = "") -> dict:
     return {"t": Kind.ACK.value, "id": cmd_id, "ok": ok, "reason": reason}
 
 
-def event(station: str, role: Role, cmd: Mapping[str, Any], text: str) -> dict:
-    """Audit broadcast: an accepted command, echoed to every station.
+def event(station: str, cmd: Mapping[str, Any], text: str) -> dict:
+    """Audit echo: an accepted command, sent back to the console.
 
-    This is what lets an instructor watch a trainee work without looking over a shoulder,
-    and it is also the exercise transcript.
+    The console's audit line shows the last one, and the sequence is the exercise's
+    transcript.
     """
-    return {"t": Kind.EVENT.value, "station": station, "role": Role(role).value,
-            "cmd": dict(cmd), "text": text}
+    return {"t": Kind.EVENT.value, "station": station, "cmd": dict(cmd), "text": text}
 
 
 def history(req_id: int, paths, span_s: float, max_points: int = 800,
@@ -307,12 +188,6 @@ def history_data(req_id: int, ok: bool, reason: str = "", result: Any = None) ->
     """The answer to a `history` or `history_paths` request; a refusal carries its reason."""
     return {"t": Kind.HISTORY_DATA.value, "id": req_id, "ok": ok, "reason": reason,
             "result": result}
-
-
-def roster(stations) -> dict:
-    """The connected stations, for the instructors: each one's name, role and sections
-    (``None`` unrestricted)."""
-    return {"t": Kind.ROSTER.value, "stations": [dict(s) for s in stations]}
 
 
 def exercise_list(req_id: int) -> dict:
@@ -406,11 +281,9 @@ class FrameReader:
 
 __all__ = [
     "PROTOCOL_VERSION", "HEADER_SIZE", "MAX_FRAME_BYTES",
-    "ProtocolError", "Role", "Kind",
-    "INSTRUCTOR_ONLY_COMMANDS", "EXERCISE_ROLES", "LOCAL_ONLY_ROLES", "runs_the_exercise",
-    "is_authorised",
-    "hello", "welcome", "assignment", "refused", "snapshot", "status",
+    "ProtocolError", "Kind",
+    "hello", "welcome", "refused", "snapshot", "status",
     "command", "ack", "event", "ping", "pong", "history", "history_paths", "history_data",
-    "roster", "exercise_list", "exercises",
+    "exercise_list", "exercises",
     "encode", "decode", "FrameReader",
 ]

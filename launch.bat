@@ -1,10 +1,9 @@
 @echo off
 rem Urea Plant OTS V1.1 - launcher.
 rem
-rem Double-click to start the simulator on this machine: the engine and the local superuser
-rem console (run.py's default). Any arguments are passed to run.py unchanged, for example
-rem     launch.bat server --host 0.0.0.0 --token T
-rem     launch.bat station --host 10.0.0.5 --role operator --token T
+rem Double-click to start the simulator on this machine: the engine and its console, as
+rem python run.py does. Any arguments are passed to run.py unchanged, for example
+rem     launch.bat --port 8766
 
 setlocal
 title Urea Plant OTS V1.1

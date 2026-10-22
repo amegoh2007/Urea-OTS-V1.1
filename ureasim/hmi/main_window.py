@@ -9,25 +9,23 @@ Layout parity with V1
 Screen navigation works three ways, as it does on the real console and in V1: the tab bar,
 a nav hotspot drawn on the graphic, and a right-click screen menu.
 
-Multi-station
--------------
-This window is one console among several attached to the same plant. It owns no state: it
-renders whatever snapshot arrives and sends operator actions back. Three consequences are
+One console
+-----------
+This window is the simulator's single console (`project.md` decision 149). It owns no state:
+it renders whatever snapshot arrives and sends operator actions back. Two consequences are
 visible to the user:
 
-  * the **role** the server granted is shown in the status bar, because a trainee who
-    believes they are an operator but was granted observer will read every refusal as a
-    plant fault;
-  * every accepted command from **any** station appears in the audit line, so an instructor
-    watches trainees work without looking over a shoulder;
-  * a refused command says why, in the status bar, rather than doing nothing.
+  * every accepted command appears in the audit line, the exercise's transcript at a glance;
+  * a refused command says why — the engine's process reason, a latched trip, an interlock, a
+    closed valve — in the status bar, rather than doing nothing.
 
 Faceplates and the instructor's panel
 -------------------------------------
 A left-click opens the element's faceplate (`ureasim.hmi.faceplates`), one per instrument: a
-second click raises the one already open. An instructor console has an Instructor menu that opens
-the exercise panel (`ureasim.hmi.instructor`). Both render the packet and send commands through the
-bridge; neither holds plant state.
+second click raises the one already open. The Instructor menu opens the exercise panel
+(`ureasim.hmi.instructor`), which holds the controls that are not plant equipment, so the process
+screens stay true to the DCS. Both render the packet and send commands through the bridge; neither
+holds plant state.
 
 The trend window
 ----------------
@@ -73,7 +71,6 @@ from ureasim.hmi.instructor import InstructorPanel
 from ureasim.hmi.screen_view import ScreenView
 from ureasim.hmi.state_access import BindMap
 from ureasim.hmi.trend import TAG_MIME, TrendWindow, trend_sources
-from ureasim.net.protocol import EXERCISE_ROLES
 
 #: QSettings scope. Layout is per user, per machine.
 SETTINGS_ORG = "UreaSimulator"
@@ -134,8 +131,6 @@ class MainWindow(QMainWindow):
         bridge.status.connect(self.on_status)
         bridge.audit_event.connect(self.on_audit_event)
         bridge.command_result.connect(self.on_command_result)
-        bridge.role_changed.connect(self.on_role_changed)
-        bridge.assignment_changed.connect(self.on_assignment_changed)
 
         self._activate(SCREENS[0][0])
 
@@ -217,26 +212,21 @@ class MainWindow(QMainWindow):
         self._led = HealthLed(bar)
         self._engine_label = QLabel("disconnected", bar)
         self._audit_label = QLabel("", bar)
-        self._scope_label = QLabel("", bar)
-        self._role_label = QLabel("", bar)
         self._screen_label = QLabel("", bar)
 
-        for w in (self._engine_label, self._audit_label, self._scope_label,
-                  self._role_label, self._screen_label):
+        for w in (self._engine_label, self._audit_label, self._screen_label):
             f = QFont()
             f.setFamilies(theme.UI_FONT_FAMILIES)
             f.setPixelSize(theme.UI_FONT_PX)
             w.setFont(f)
             w.setStyleSheet(f"color:{theme.TAB_TEXT};")
         # The audit line is the quietest thing on the bar: it is glanceable context about
-        # what other stations are doing, not a message this operator has to act on.
+        # what was last done, not a message the operator has to act on.
         self._audit_label.setStyleSheet(f"color:{theme.SIGNAL};")
 
         bar.addWidget(self._led)
         bar.addWidget(self._engine_label, 1)
         bar.addWidget(self._audit_label, 2)
-        bar.addPermanentWidget(self._scope_label)
-        bar.addPermanentWidget(self._role_label)
         bar.addPermanentWidget(self._screen_label)
         self.setStatusBar(bar)
 
@@ -264,13 +254,12 @@ class MainWindow(QMainWindow):
             action.triggered.connect(lambda _c, sid=screen_id: self._activate(sid))
             screens_menu.addAction(action)
 
-        # The instructor's menu, shown once the server has granted the instructor role.
+        # The instructor's menu: the simulation controls, apart from the process screens.
         self._instructor_menu = self.menuBar().addMenu("&Instructor")
         panel_action = QAction("&Exercise panel", self)
         panel_action.setShortcut("Ctrl+I")
         panel_action.triggered.connect(self.open_instructor_panel)
         self._instructor_menu.addAction(panel_action)
-        self._instructor_menu.menuAction().setVisible(False)
 
     # ----------------------------------------------------------------------------------
     # Navigation
@@ -310,10 +299,10 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(str)
     def on_audit_event(self, text: str) -> None:
-        """An accepted command from any station, including this one.
+        """An accepted command, echoed back by the engine's side.
 
-        Kept to a single line: an instructor wants to see that something happened and who
-        did it, not to read a log while supervising an exercise.
+        Kept to a single line: the operator wants to see that something happened, not to read
+        a log while running the plant.
         """
         self._audit_label.setText(text)
 
@@ -321,36 +310,13 @@ class MainWindow(QMainWindow):
     def on_command_result(self, cmd_id: int, ok: bool, reason: str) -> None:
         """Outcome of a command this console sent.
 
-        A refusal is always shown with its reason - a latched trip, a process interlock, or
-        a role that does not allow the action. V1 dropped unknown commands silently, which
-        teaches a trainee that the plant ignored them.
+        A refusal is always shown with its reason - a latched trip, a process interlock, a
+        closed valve. V1 dropped unknown commands silently, which teaches a trainee that the
+        plant ignored them.
         """
         if ok:
             return
         self.statusBar().showMessage(f"REFUSED: {reason}", 6000)
-
-    @pyqtSlot(str)
-    def on_assignment_changed(self, text: str) -> None:
-        """Show the plant this station holds.
-
-        Blank when unrestricted. A trainee assigned nothing sees it in red: every command
-        refused with no visible reason is the worst possible training experience.
-        """
-        self._scope_label.setText(text)
-        colour = theme.HEALTH_FAULT if text == "NO PLANT ASSIGNED" else theme.SIGNAL
-        self._scope_label.setStyleSheet(f"color:{colour}; font-weight:bold;")
-
-    @pyqtSlot(str)
-    def on_role_changed(self, role: str) -> None:
-        """Show the role the SERVER granted, which may not be the one requested."""
-        self._role_label.setText(role.upper())
-        self._instructor_menu.menuAction().setVisible(
-            role in (r.value for r in EXERCISE_ROLES))
-        colour = {"superuser": theme.TAB_ACTIVE_TEXT,
-                  "instructor": theme.TAB_ACTIVE_TEXT,
-                  "operator": theme.HEALTH_OK,
-                  "observer": theme.SIGNAL}.get(role, theme.TAB_TEXT)
-        self._role_label.setStyleSheet(f"color:{colour}; font-weight:bold;")
 
     # ----------------------------------------------------------------------------------
     # Element interaction
@@ -360,9 +326,8 @@ class MainWindow(QMainWindow):
     def on_element_activated(self, element: Mapping[str, Any]) -> None:
         """Route a left-click to the element's faceplate, one per instrument.
 
-        Any role may open a faceplate to read it; a command an observer sends is refused by
-        the server, with the reason, as any other refusal. A stream hotspot or an analyser opens
-        the stream inspector, unless the packet does not publish its stream.
+        A stream hotspot or an analyser opens the stream inspector, unless the packet does not
+        publish its stream.
         """
         tag = element.get("tag", "")
         key = faceplate_key(element)
@@ -382,7 +347,7 @@ class MainWindow(QMainWindow):
         face.show()
 
     def open_instructor_panel(self) -> None:
-        """The instructor's exercise panel; the server refuses its commands to any other role."""
+        """The instructor's exercise panel: the simulation controls, its answers the engine's."""
         if self._instructor is None:
             self._instructor = InstructorPanel(self.bridge, self)
         self._instructor.show()

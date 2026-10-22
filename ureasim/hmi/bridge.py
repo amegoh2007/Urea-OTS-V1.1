@@ -2,9 +2,9 @@
 
 Why this moved out of `ureasim/engine`
 --------------------------------------
-Multi-station operation makes the engine a **headless server**: it runs on a box with no
-display and must not import Qt at all. The bridge is the *console's* end of that link, so
-it belongs with the console.
+The engine runs **headless**, on its own physics thread behind a loopback server, and must not
+import Qt at all (`project.md` decision 149 keeps it so for the single console). The bridge is
+the *console's* end of that link, so it belongs with the console.
 
     ureasim/net/       protocol + server   — pure Python, no Qt, runs headless
     ureasim/hmi/bridge EngineBridge        — QTcpSocket client, lives with the UI
@@ -13,7 +13,7 @@ Everything that crosses between the plant and this console still crosses here, a
 else:
 
     plant   ->  UI      `snapshot`, `status`, `audit_event` signals
-    server  ->  UI      `roster_changed`, `exercises_received` (the instructor's lists)
+    server  ->  UI      `exercises_received` (the instructor's list)
     engine  ->  UI      `history_received` (the historian's answer to a trend)
     UI      ->  plant   `send_command`, `request_exercises`, `request_history`
 
@@ -40,11 +40,11 @@ A trend draws the engine historian's ring buffers, never samples of its own: it 
 `request_history` and receives the answer, matched by its request id, on `history_received`.
 The bridge forwards both and holds nothing, so a console that reconnects has lost no history.
 
-Station login
--------------
-A console given the engine's station token presents it in every `hello`, reconnections included
-(handoff A-2, closed 2026-10-16). An engine that refuses it says why, and the console shows the
-reason and does not retry: a wrong token stays wrong.
+Refusal
+-------
+An engine that refuses the console's `hello` — another protocol version, a console not on its
+machine — says why, and the console shows the reason and does not retry: the reason will not
+change.
 """
 
 from __future__ import annotations
@@ -56,7 +56,7 @@ from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 from PyQt6.QtNetwork import QAbstractSocket, QTcpSocket
 
 from ureasim.net import protocol
-from ureasim.net.protocol import FrameReader, Kind, ProtocolError, Role
+from ureasim.net.protocol import FrameReader, Kind, ProtocolError
 
 log = logging.getLogger(__name__)
 
@@ -79,19 +79,12 @@ class EngineBridge(QObject):
     status(text, level)
         Engine or link health for the status bar. ``level`` is ok / warn / fault.
     audit_event(text)
-        An accepted command from any station, including this one — the audit feed.
+        An accepted command, echoed back by the engine's side — the audit feed.
         Named `audit_event`, not `event`: `QObject.event()` is the virtual Qt calls for
         every event delivery, and a signal of that name replaces it. The process then
         crashes on construction, which is how this was found.
     command_result(cmd_id, ok, reason)
         The outcome of a command this console sent.
-    role_changed(role)
-        The role the server actually granted, which may differ from the one requested.
-    assignment_changed(text)
-        The plant sections this station holds, as a display string. Empty means
-        unrestricted.
-    roster_changed(stations)
-        The connected stations, each ``{station, role, sections}`` — sent to instructors.
     exercises_received(names, reason)
         The saved exercises' names, answering `request_exercises`; ``reason`` is the server's
         when it gave none.
@@ -104,21 +97,12 @@ class EngineBridge(QObject):
     status = pyqtSignal(str, str)
     audit_event = pyqtSignal(str)
     command_result = pyqtSignal(int, bool, str)
-    role_changed = pyqtSignal(str)
-    assignment_changed = pyqtSignal(str)
-    roster_changed = pyqtSignal(object)
     exercises_received = pyqtSignal(object, str)
     history_received = pyqtSignal(int, bool, str, object)
 
-    def __init__(self, station: str = "station", role: Role = Role.OPERATOR,
-                 parent: QObject | None = None, *, token: str | None = None):
+    def __init__(self, station: str = "station", parent: QObject | None = None):
         super().__init__(parent)
         self._station = station
-        self._requested_role = Role(role)
-        #: The engine's station token, presented in every `hello`; ``None`` presents none.
-        self._token = token
-        self._granted_role = Role.OBSERVER
-        self._sections: list[str] | None = None
         self._host = ""
         self._port = 0
 
@@ -151,7 +135,7 @@ class EngineBridge(QObject):
     # ----------------------------------------------------------------------------------
 
     def connect_to(self, host: str, port: int) -> None:
-        """Connect to a station server, retrying until it succeeds or `close` is called."""
+        """Connect to the engine's console server, retrying until it succeeds or `close` is called."""
         self._host = host
         self._port = port
         self._attempt = 0
@@ -176,16 +160,6 @@ class EngineBridge(QObject):
         return self._connected
 
     @property
-    def role(self) -> Role:
-        """The role the SERVER granted. Never assume the requested one was allowed."""
-        return self._granted_role
-
-    @property
-    def sections(self) -> list[str] | None:
-        """Plant sections this station may command; ``None`` means unrestricted."""
-        return self._sections
-
-    @property
     def latest(self) -> Mapping[str, Any]:
         """The most recent snapshot. Empty while the link is down."""
         return self._latest
@@ -201,8 +175,7 @@ class EngineBridge(QObject):
 
     def _on_connected(self) -> None:
         self._attempt = 0
-        self._socket.write(protocol.encode(
-            protocol.hello(self._requested_role, self._station, self._token)))
+        self._socket.write(protocol.encode(protocol.hello(self._station)))
         self._stale.start()
 
     def _on_disconnected(self) -> None:
@@ -270,26 +243,15 @@ class EngineBridge(QObject):
 
         elif kind == Kind.WELCOME.value:
             self._connected = True
-            granted = Role(str(message.get("role", Role.OBSERVER.value)))
-            self._granted_role = granted
-            self.role_changed.emit(granted.value)
-            self._apply_sections(message.get("sections"))
             engine = message.get("engine", "unattached")
-            if granted is not self._requested_role:
-                # Say so loudly. A trainee who believes they are an operator but was
-                # granted observer will read every refusal as a plant fault.
-                self.status.emit(
-                    f"connected as {granted.value} — requested "
-                    f"{self._requested_role.value} — engine: {engine}", "warn")
-            else:
-                self.status.emit(f"connected as {granted.value} — engine: {engine}",
-                                 "ok" if engine != "unattached" else "warn")
+            self.status.emit(f"connected — engine: {engine}",
+                             "ok" if engine != "unattached" else "warn")
 
         elif kind == Kind.REFUSED.value:
             reason = str(message.get("reason", "refused"))
             log.error("server refused the connection: %s", reason)
             # No retry: the reason will not change. The flag is set before the abort, whose
-            # `disconnected` would otherwise schedule one (a refused token retried every few
+            # `disconnected` would otherwise schedule one (a refused `hello` retried every few
             # seconds, found in session 56).
             self._refused = True
             self._connected = False
@@ -308,14 +270,8 @@ class EngineBridge(QObject):
                                      bool(message.get("ok")),
                                      str(message.get("reason", "")))
 
-        elif kind == Kind.ASSIGNMENT.value:
-            self._apply_sections(message.get("sections"))
-
         elif kind == Kind.EVENT.value:
             self.audit_event.emit(str(message.get("text", "")))
-
-        elif kind == Kind.ROSTER.value:
-            self.roster_changed.emit(list(message.get("stations") or []))
 
         elif kind == Kind.EXERCISES.value:
             self.exercises_received.emit(list(message.get("names") or []),
@@ -325,21 +281,6 @@ class EngineBridge(QObject):
             self.history_received.emit(int(message.get("id", 0)), bool(message.get("ok")),
                                        str(message.get("reason", "")), message.get("result"))
 
-    def _apply_sections(self, sections) -> None:
-        """Record and announce this station's assigned plant.
-
-        ``None`` is unrestricted and shows nothing; an EMPTY list is 'assigned nothing' and
-        must be visible, or a trainee sees every command refused with no explanation on the
-        screen in front of them.
-        """
-        self._sections = None if sections is None else [str(s) for s in sections]
-        if self._sections is None:
-            self.assignment_changed.emit("")
-        elif not self._sections:
-            self.assignment_changed.emit("NO PLANT ASSIGNED")
-        else:
-            self.assignment_changed.emit("UNITS " + " ".join(sorted(self._sections)))
-
     # ----------------------------------------------------------------------------------
     # Commands
     # ----------------------------------------------------------------------------------
@@ -348,7 +289,7 @@ class EngineBridge(QObject):
         """Send an operator action. Returns its id, or 0 if the link is down.
 
         The result arrives later on `command_result`, carrying the engine's own reason for
-        any refusal — a latched trip, an interlock, or a role that does not allow it.
+        any refusal — a latched trip, an interlock, a closed valve.
         """
         if not self._connected:
             return 0
@@ -358,7 +299,7 @@ class EngineBridge(QObject):
         return cmd_id
 
     def request_exercises(self) -> bool:
-        """Ask the server for the saved exercises; the answer arrives on `exercises_received`."""
+        """Ask for the saved exercises; the answer arrives on `exercises_received`."""
         if not self._connected:
             return False
         self._socket.write(protocol.encode(protocol.exercise_list(self._next_command_id)))

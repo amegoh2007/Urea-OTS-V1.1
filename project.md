@@ -8,10 +8,10 @@ built, B-18, B-37 and B-20 decided and closed, trip 21.2's hand switches and AI-
 screens, the plant DCS's readback applied — the cold start reaches 79.7 bar a in 16 000 s, still
 short of the start-up band (session 50); B-94 closed on PFD 734's departure form, the steady state
 3080 of 3188, 322E003 on its own liquor and a full sump, 323P008's trip from AC4 PC23, B-95 closed
-as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57)
+as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `D:\Work\Urea Simulation` (V1 — reference only, never edited from here)
-**Last updated:** 2026-10-22 (session 67)
+**Last updated:** 2026-10-22 (session 68)
 
 ---
 
@@ -66,13 +66,13 @@ V1.1 keeps the physics **byte-for-byte equivalent** and rebuilds everything arou
   scalar, exactly as V1 wrote them, so numerical results are bit-comparable.
 * **pytest** — regression harness, including V1-vs-V1.1 equivalence tests.
 
-PyQt6 replaces the browser stack. The engine is a **headless server** and every console is
-a network client, because the OTS runs as one plant with several stations. A console talks
-to the plant through exactly one boundary object, `ureasim/hmi/bridge.EngineBridge`, which
-speaks the station protocol over a `QTcpSocket`. Nothing else crosses.
+PyQt6 replaces the browser stack. The OTS runs as a **single local console** (decision 149)
+communicating with the headless physics engine thread over `ureasim/hmi/bridge.EngineBridge`,
+which speaks the console protocol over a `QTcpSocket` on the loopback interface (`127.0.0.1`).
+The console talks to the plant through exactly that one boundary object. Nothing else crosses.
 
-**Nothing at or below `ureasim/net` may import Qt.** The engine runs on a machine that may
-have no display.
+**Nothing at or below `ureasim/net` may import Qt.** Physics stays decoupled from presentation,
+and the test suites and the Phase 7 runners drive the engine with no display.
 
 ### 3.2 Layers
 
@@ -90,9 +90,9 @@ have no display.
                  └──────────────────┬───────────────────────┘
                                     │  TCP, length-prefixed JSON
                  ┌──────────────────┴───────────────────────┐
-                 │  ureasim/net          station transport  │   no Qt
-                 │  ├─ protocol.py       frames, roles, auth │
-                 │  ├─ server.py         asyncio fan-out     │
+                 │  ureasim/net          console transport  │   no Qt
+                 │  ├─ protocol.py       frames, messages    │
+                 │  ├─ server.py         asyncio, loopback   │
                  │  └─ engine_host.py    the physics thread  │
                  └──────────────────┬───────────────────────┘
                  ┌──────────────────┴───────────────────────┐
@@ -140,7 +140,7 @@ have no display.
                  └──────────────────────────────────────────┘
                  ┌──────────────────────────────────────────┐
                  │  ureasim/data         design basis        │
-                 │  constants.py, design_point.py, tags.py   │
+                 │  constants.py, design_point.py, ...       │
                  └──────────────────────────────────────────┘
 ```
 
@@ -165,7 +165,7 @@ Urea Simulator V1.1/
 │  ├─ control/     PID, cascade, ratio, valves, interlocks
 │  ├─ units/       unit operations, one package per plant section
 │  ├─ engine/      integrator, state, scheduler, historian, snapshot
-│  ├─ net/         station protocol + server (headless)
+│  ├─ net/         console protocol + server (headless)
 │  ├─ hmi/         PyQt6 client (screens, widgets, faceplates, trend)
 │  └─ data/        design basis, tag registry, screen definitions
 ├─ tests/          mirrors ureasim/, plus V1-equivalence regressions
@@ -206,42 +206,28 @@ centre of each deleted shape. That approach is preserved verbatim.
 * Trend window stays a **separate top-level window** with 10 pens, 7 spans and 10 rulers,
   as in V1.
 
-### 3.5 Multi-station operation
+### 3.5 Single-console operation
 
-The simulator serves one plant to several consoles. A typical classroom is an instructor
-station and one to four trainee stations.
+The simulator is one plant with a single local console (decision 149, 2026-10-22; it superseded
+the multi-station deployment of decisions 72, 124 and 125). `python run.py` (or `launch.bat`)
+starts the engine and the console on one machine:
 
 ```
-   instructor console ─┐
-   trainee console   ─┼── TCP ──> StationServer ──> engine (one plant)
-   trainee console   ─┤
-   observer console  ─┘
+   console (PyQt6) ── loopback TCP ──> StationServer ──> engine host ──> engine (one plant)
 ```
 
-**Roles**, granted by the server and never asserted by the client:
+All plant controls sit on the ten DCS screens and their faceplates, exactly what V1's operator
+screens exposed. The controls that are not plant equipment — pacing, freeze, reset, malfunction
+injection, the battery-limit CO2 demand (`co2_set`) and exercise save and restore — sit in the
+Instructor menu's panel, so the process screens stay true to the DCS. The separation is the
+console's layout: no command is refused for who sent it.
 
-| role | may command |
-|---|---|
-| `observer` | nothing |
-| `operator` | every command V1's operator screens exposed |
-| `instructor` | the above, plus malfunction injection, reset, simulation pacing, freeze, exercise save/restore |
-| `superuser` | everything, never narrowed by an assignment; granted only to a console on the engine's own machine (session 44, the default console) |
+**Engine process refusals.** The engine decides whether the *plant* will accept a command — a
+latched trip, an interlock, a closed valve — and its reason travels back to the console's status
+bar. V1 dropped unknown commands silently, which teaches a trainee that the plant ignored them.
 
-The split is deliberately conservative. Only commands that are **not plant equipment** sit
-behind the instructor role; an operator station can do exactly what V1's UI allowed.
-Re-classifying a plant control would change what a trainee is being taught.
-
-**Two separate refusals, never conflated:**
-
-* the **server** decides whether a *role* may issue a command type;
-* the **engine** decides whether the *plant* will accept it — a latched trip, an interlock,
-  a closed valve.
-
-Both reasons travel back to the operator who tried. V1 dropped unknown commands silently,
-which teaches a trainee that the plant ignored them.
-
-**Audit.** Every accepted command is broadcast to all stations, naming the station that
-issued it, so an instructor watches trainees work without looking over a shoulder.
+**Audit.** Every accepted command is echoed back to the console, naming the console that issued
+it; the status bar's audit line shows the last one.
 
 **Back-pressure.** Snapshots are dropped for a console that falls behind; commands and acks
 never are. A slow console sees the latest plant state when it catches up, not a backlog of
@@ -249,21 +235,15 @@ stale ones.
 
 **A disconnected console goes blank.** Every indicator returns to `--` and the status bar
 says why. A frozen screen that still looks live is the most dangerous thing an OTS console
-can do.
-
-Launch modes (`run.py`):
+can do. A link silent for 5 s is treated as dead (the staleness watchdog).
 
 ```bash
-python run.py                                  # engine + the local superuser console
-python run.py server --host 0.0.0.0 --token T  # engine only, admitting stations that present T
-python run.py station --host 10.0.0.5 --role operator --token T
+python run.py                                  # the engine and its console
 ```
 
-The station token is optional (`--token` or ``UREASIM_TOKEN``; decision 125): it admits a station,
-the role is still the one the station requests.
-
-The single-machine mode still talks over a real socket, so it is exactly the multi-machine
-case with a shorter wire — a bug that only appears over the network cannot hide there.
+The engine binds `127.0.0.1` only, and refuses a `hello` from any other address. The console
+still talks over a real socket rather than sharing objects with the engine, so no widget can
+reach into the physics and the engine never waits on a repaint.
 
 ### 3.6 The engine scheduler — as built in Phase 5
 
@@ -571,10 +551,13 @@ steam system (`steam/`).
       and when a unit needs one, not before.
 
 ### Phase 5 — Engine and transport (`ureasim/engine`, `ureasim/net`)
-- [x] `net/protocol.py` — framing, message kinds, roles, command authorisation
-- [x] `net/server.py` — asyncio fan-out, audit broadcast, late joiners, back-pressure
+- [x] `net/protocol.py` — framing, message kinds, roles, command authorisation (roles retired in
+      session 68, decision 149)
+- [x] `net/server.py` — asyncio fan-out, audit broadcast, late joiners, back-pressure (one loopback
+      console since session 68, decision 149)
 - [x] `hmi/bridge.py` — `QTcpSocket` client, reconnect backoff, staleness watchdog
-- [x] `run.py` — `server` / `station` / combined launch modes
+- [x] `run.py` — `server` / `station` / combined launch modes (the combined launch alone since
+      session 68, decision 149)
 - [x] `state.py` — the plant clock and the recycle tears (session 29): the eight that cross
       units in a frozen `TearState` committed at the end of the tick, V1's seeds `==`, 748/750
       `==` V1's `s.tlag` over 3000 coupled ticks; the units and controllers join it with the
@@ -625,10 +608,11 @@ steam system (`steam/`).
 - [x] `main_window.py` — tab bar, screen menu, health LED, layout persistence
 - [x] `engine/bridge.py` — the single engine-to-UI boundary
 - [x] Geometry gates: centring, stage bounds, pinned collision set
-- [x] Role badge, audit line and refusal reporting in the status bar
+- [x] Role badge, audit line and refusal reporting in the status bar (the role badge and the
+      assignment readout retired in session 68, decision 149)
 - [x] Unit assignment: tag-to-section resolver, server enforcement, station status bar; session 41:
       every engine command type attributed to the section it moves, `r323_ctrl_set` by its
-      faceplate (§LVIII.5)
+      faceplate (§LVIII.5); retired in session 68 with `data/tags.py` (decision 149)
 - [x] The engine attached: `run.py` serves the live plant to every console (session 41)
 - [x] The console's history request (`hmi/bridge.py`), with the trend window (session 43, As-Built
       §LX.3): ``request_history``, ``history_received``
@@ -636,7 +620,8 @@ steam system (`steam/`).
       over every element; the loop, speed, pump, hand-valve, block-valve, keyswitch, route, MASTER SP
       and indicator faceplates, each a renderer of the packet and an emitter of the engine's commands
 - [x] `instructor/` — malfunction panel, unit assignment, freeze, exercise save/restore,
-      station roster (session 42, §LIX.6; the roster and the exercise list on the protocol)
+      station roster (session 42, §LIX.6; the roster and the exercise list on the protocol); the
+      roster and unit assignment retired and the CO2 demand added in session 68 (decision 149)
 - [x] `trend/` — separate window, 10 pens, rulers, spans (session 43, §LX.4): V1's window over the
       engine historian alone, the whole window asked once a second; a pen from an element's menu or
       by dragging the element onto the window
@@ -649,6 +634,10 @@ steam system (`steam/`).
       section assignment signed off as built; A-2 closed on the optional station token
       (`run.py --token` or ``UREASIM_TOKEN``), checked at ``hello`` in constant time, a refused
       station disconnected and its console not retrying; the instructor's panel unpaused
+- [x] The single-console conversion (session 68, decision 149, As-Built Part LXXXIII): `run.py`'s
+      `server` and `station` modes, roles, the station token, the roster and unit assignment
+      removed; the loopback bridge, back-pressure, the 5 s watchdog and the engine's process
+      refusals kept; ``co2_set`` on the instructor's panel
 - [x] The Phase 6 display gaps (session 44, §LXI.2-6): B-5, B-6 / B-7, B-9, B-11, B-16 closed
 
 ### Phase 7 — Verification
@@ -797,6 +786,7 @@ steam system (`steam/`).
 - [x] Session 66's B-108 to B-111 confirmed as built by the process engineer (session 67)
 - [x] As-Built §LXXXII.3's two display-only notes signed off as built, no B-113 (session 67)
 - [x] Sessions 62 to 67 committed (session 67)
+- [x] Session 68 committed (session 68); the repository has no remote, so nothing is pushed
 
 ---
 
@@ -4706,6 +4696,42 @@ root-cause note and directive). The note's numbers were measured first and hold:
 
 `handoff.md`'s Sections A, B and C are empty; the open data gaps are the only open items.
 
+### Session 68 — the single-console conversion (decision 149)
+
+The process engineer signed off As-Built §LXXXII.3's two display-only notes as built (no B-113) and
+asked for sessions 62 to 67 to be committed (`15e66c2`), then decided to convert the simulator to a
+single console (a pasted directive, confirmed in chat). Built as directed (As-Built Part LXXXIII):
+
+* **Launch.** `run.py` keeps the combined launch alone: the engine on `127.0.0.1` and its console,
+  `--port`, `--station` and `--verbose`; the `server` and `station` modes, `--host`, `--role`,
+  `--token` and ``UREASIM_TOKEN`` are gone, from `launch.bat` and `README.md` too.
+* **Transport.** `net/protocol.py` loses ``Role``, ``INSTRUCTOR_ONLY_COMMANDS``,
+  ``is_authorised``, the ``roster`` and ``assignment`` kinds and the token; ``hello`` names the
+  console, ``welcome`` the engine, and the version is 2, so an older console is refused, not
+  misread. `net/server.py` binds `127.0.0.1`, refuses a ``hello`` from any other address (no login
+  stands in front of the plant), checks no role, token or section, and passes every command to the
+  engine; back-pressure, the catch-up on ``hello``, the audit echo, history and the exercise list
+  are unchanged. `data/tags.py` and its test are deleted: unit assignment was its only consumer.
+* **Console.** `hmi/bridge.py` takes no role or token and emits no role, assignment or roster;
+  the 5 s watchdog, the blanking on a lost link and the no-retry refusal stay. `main_window.py`
+  drops the role badge and the assignment readout and always shows the Instructor menu. The
+  instructor's panel drops the roster and unit assignment and gains a **Boundary** group: the CO2
+  demand on 320K002 (``co2_set``), 0 to V1's 120 % of the design feed
+  (`data/faceplates.CO2_DEMAND_MAX_FRAC`, V1's ``co2_compressor.js``), with the packet's
+  ``CO2_FEED.raw_th`` beside it — no console control sent it before.
+* **Tests.** `tests/net/test_server_login.py`, `test_server_superuser.py` and
+  `tests/data/test_tags.py` deleted; `test_protocol.py`, `test_server.py`, `test_engine_host.py`,
+  `tests/hmi/test_bridge.py`, `test_main_window.py`, `instructor/test_panel.py` and
+  `tests/test_run.py` rewritten for the single console; `test_co2_compressor.py` now pins that only
+  the instructor's panel sends ``co2_set``.
+* **Smoke run.** The engine and the console started offscreen through `run.py`'s own functions:
+  welcomed, ``ENGINE RUNNING — SLOW``, the panel's CO2 demand set to 60.08 t/h and FREEZE both
+  acknowledged, the audit line fed, the packet's demand 60.08.
+
+`python -m pytest` — **7 454 collected** (7 638 at session 67: 184 fewer, the role, token, roster and assignment tests removed with their mechanisms and the single-console tests added), thirteen parallel parts, all green on their first run, and the suites touched after it began re-run green; `tests/docs` green; pyflakes clean; the headless grep prints nothing.
+
+`handoff.md`'s Sections A, B and C stay empty; the open data gaps are the only open items.
+
 ## 5. Design decisions on record
 
 1. **PyQt6, not PyQt5.** Qt6 is current, has proper high-DPI scaling for the 1366×720 stage,
@@ -5019,13 +5045,15 @@ root-cause note and directive). The note's numbers were measured first and hold:
 72. **Single-machine deployment until the port is complete** (2026-10-07, handoffs A-2, A-8): one
     engine and one local console, the superuser — every command, never assigned, granted to a loopback
     peer only; the station login and unit assignment deferred; the instructor's panel paused.
-    Lifted 2026-10-16 (decisions 124, 125); one machine stays the default deployment.
+    Lifted 2026-10-16 (decisions 124, 125); one machine stays the default deployment. **Superseded
+    by decision 149** (2026-10-22): one machine is the only deployment, its console no role at all.
 73. **320K002 is a boundary feed outside the simulation's scope** (2026-10-08, revising the
     2026-10-07 decision that put it on Nuovo Pignone's curves): "a fully automated boundary feed ...
     without any operator intervention or faceplate exposure". Its hardwired governor and surge
     protection deliver the demanded CO2 into the discharge line at whatever pressure the line
     presents — no curve, speed, surge or stonewall; the battery-limit rate is the instructor's
-    (`co2_set`, instructor-only); the line, its check valve and PV-322203 stay as built.
+    (`co2_set`, an Instructor Panel boundary condition since decision 149, not a server-enforced
+    role gate); the line, its check valve and PV-322203 stay as built.
 74. **The product-line routes on the isometrics** (2026-10-07, handoff A-11: "A physics-based
     simulation cannot rely on layout estimates when the actual plant geometry is available"): each
     route's as-built straight pipe and long-radius elbow arcs from its bill of material, each size at
@@ -5229,12 +5257,14 @@ root-cause note and directive). The note's numbers were measured first and hold:
 124. **Unit assignment by plant section, signed off** (2026-10-16, handoff A-8 closed): the
      section-level assignment built in sessions 3, 41 and 42 is the final V1.1 design; per-tag
      locking is not built. Every plant command type is attributed and tested; ``None`` unrestricted,
-     ``[]`` assigned nothing; instructors and the loopback superuser never narrowed.
+     ``[]`` assigned nothing; instructors and the loopback superuser never narrowed. **Superseded
+     by decision 149** (2026-10-22): unit assignment and `data/tags.py` removed.
 125. **The station token** (2026-10-16, handoff A-2 closed): an engine started with ``--token``
      admits only the stations whose ``hello`` presents it, the superuser included, and disconnects
      the rest with the reason; with no token, every station, as before. The token admits a station;
      its role is still the one it requests. The multi-station deployment is supported and the
-     instructor's panel unpaused; one machine with the superuser stays the default.
+     instructor's panel unpaused; one machine with the superuser stays the default. **Superseded
+     by decision 149** (2026-10-22): the station token removed.
 126. **The reactor liquor's buffering signed off** (2026-10-16, the 322E002 / 322E001 liquor data gap
      closed): decision 95's PT-329201 node — the loop's vapour on the gas law plus the reactor
      liquor's carbamate buffering on PFD 207's solubility, 2 160 kg/bar at design — is the V1.1
@@ -5367,3 +5397,14 @@ root-cause note and directive). The note's numbers were measured first and hold:
      the condenser's liquid make read 136.12 at the design. 322R001 carries no transmitter of its
      own (P&ID 102, UD-MR-322-EC-0001); the reading is the packet's and the stream inspector's.
      ``ReactorInventory(design_drop=False)`` on the harness.
+149. **Single-console architecture** (2026-10-22, session 68; superseding decisions 72, 124 and
+     125): the simulator is a single-console desktop application (`python run.py`, or
+     `launch.bat`). The multi-station server and station launch modes, station roles, the station
+     token, the station roster and trainee section assignment are removed, `data/tags.py` with
+     them. Retained: the headless engine boundary (`ureasim/net`, `hmi/bridge.EngineBridge` over
+     loopback `127.0.0.1`, the physics thread of `engine_host`), snapshot back-pressure, the 5 s
+     staleness watchdog, history backfill, and the engine's process refusals with their reasons.
+     The plant controls stay on the DCS screens and faceplates; pacing, freeze, reset,
+     malfunctions, the battery-limit `co2_set` and exercise save and restore stay in the
+     Instructor menu's panel, executed without a role gate. The server refuses a `hello` from any
+     address but the engine's own machine; the protocol version is 2.

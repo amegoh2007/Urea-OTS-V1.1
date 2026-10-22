@@ -1,70 +1,43 @@
-"""Station server — one engine, many consoles.
+"""Console server — the engine's end of the link to its console.
 
 What it is
 ----------
-An asyncio TCP server that fans the plant state out to every connected station and funnels
-operator commands back to the engine. Pure Python: **no Qt anywhere**, because the engine
-must run headless on a server box with no display.
+An asyncio TCP server on the loopback interface that sends the plant state to the console and
+passes the console's commands to the engine. Pure Python: **no Qt anywhere**, because the
+engine runs headless — physics and presentation share no object, and the test suites and the
+Phase 7 runners drive the engine with no display.
 
-    engine  --snapshot-->  StationServer  --broadcast-->  instructor + trainee consoles
-    engine  <--command---  StationServer  <--command----  a console, if its role allows
+    engine  --snapshot-->  StationServer  --snapshot-->  the local console
+    engine  <--command---  StationServer  <--command---  the local console
 
-Session shape
--------------
-A typical OTS session is one instructor station and one to four trainee stations, all
-watching the same plant. The instructor sees every trainee action as it happens, because
-each accepted command is broadcast back as an audit `event`.
+One console (decided 2026-10-22, `project.md` decision 149)
+-----------------------------------------------------------
+The simulator is a single-console application: one engine and one console on one machine
+(``python run.py``). The server binds the loopback interface and admits only a console on its
+own machine; it checks no role, no token and no unit assignment, and passes every command to
+the engine. Those were the multi-station deployment's (decisions 72, 124 and 125, handoffs A-2
+and A-8) and were removed with it.
 
-Why broadcast-on-tick rather than per-client polling
-----------------------------------------------------
-The snapshot is encoded **once** per publish and the same bytes are written to every
-station. With a 400-tag packet at 10 Hz, per-client encoding would multiply the engine's
-serialisation cost by the number of consoles for no benefit — every station wants the same
-state, by definition.
-
-Unit assignment
----------------
-An instructor narrows a trainee station to a set of plant sections. The server resolves
-each incoming command to its section (`ureasim.data.tags`) and refuses one that falls
-outside, naming the instrument, before the engine sees it. A station with no assignment is
-unrestricted, and an instructor (or the single-machine superuser) is never restricted.
-
-The superuser
--------------
-The default deployment is one machine (decided 2026-10-07), its one console the ``superuser`` —
-every command, never assigned. The server grants that role only to a console on its own machine:
-a loopback peer. A station elsewhere asking for it is refused at ``hello``, with the reason.
-
-Station login
--------------
-A server started with a station token (handoff A-2, closed 2026-10-16) admits only a station whose
-``hello`` presents it, the superuser included; the comparison takes the same time whatever the
-token sent, and a station refused for its token is disconnected, so it cannot try again on the
-same connection. A server started with no token admits every station, as before.
+A console that reconnects can hold two connections for a moment, its old one not yet noticed
+closed; the server serves every connection that has said `hello`, so the new one is never
+refused for the old one's sake.
 
 Commands reach the engine in arrival order
 ------------------------------------------
 The engine host (`ureasim.net.engine_host`) steps the plant on its own thread and applies each
 command between two ticks. Its handler therefore answers with an awaitable; the server sends the
-ack — and broadcasts the audit event — when the engine has answered, so a refusal's reason is the
+ack — and echoes the audit event — when the engine has answered, so a refusal's reason is the
 plant's, never a timeout's. A handler that answers at once (a test's, or none attached) is taken
 as it is.
 
-History
--------
+History and the exercise list
+-----------------------------
 A `history` or `history_paths` request goes to the history handler the host attaches, answered
-the same way; any ready station may ask, since reading the past commands nothing.
-
-The instructor's lists
-----------------------
-Every instructor console is sent the `roster` — each ready station, its role and its sections —
-when a station joins, leaves or is assigned, and answered an `exercise_list` request from the
-exercise lister the host attaches. Only an instructor (or the superuser) may ask for the
-exercises, as only they may save or restore one.
+the same way; an `exercise_list` request is answered from the exercise lister the host attaches.
 
 Back-pressure
 -------------
-A station whose socket cannot keep up would otherwise grow an unbounded write queue and
+A console whose socket cannot keep up would otherwise grow an unbounded write queue and
 eventually take the engine's memory with it. Each connection therefore drops snapshots it
 has not managed to flush: a console that falls behind sees the *latest* plant state when it
 catches up, never a backlog of stale ones. Commands and acks are never dropped — losing an
@@ -75,30 +48,29 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
-import hmac
 import inspect
 import ipaddress
 import logging
 import math
 from typing import Any, Callable, Mapping
 
-from ureasim.data import tags
 from ureasim.net import protocol
-from ureasim.net.protocol import FrameReader, Kind, ProtocolError, Role
+from ureasim.net.protocol import FrameReader, Kind, ProtocolError
 
 log = logging.getLogger(__name__)
 
 #: Default listening port. Chosen outside the registered range and away from V1's 8000.
 DEFAULT_PORT = 8765
-DEFAULT_HOST = "0.0.0.0"
+#: The loopback interface: the engine serves the console on its own machine only.
+DEFAULT_HOST = "127.0.0.1"
 
-#: How many unflushed snapshot frames a slow station may accumulate before the server
-#: starts dropping them for that station. One in flight plus one queued is enough to keep a
-#: healthy console saturated without letting a sick one build a backlog.
+#: How many unflushed snapshot frames a slow console may accumulate before the server
+#: starts dropping them for that connection. One in flight plus one queued is enough to keep
+#: a healthy console saturated without letting a sick one build a backlog.
 MAX_QUEUED_SNAPSHOTS = 2
 
-#: Command handler signature: it receives the command dict and the issuing station's name,
-#: and returns ``(accepted, reason)``, or an awaitable of it.
+#: Command handler signature: it receives the command dict and the console's name, and
+#: returns ``(accepted, reason)``, or an awaitable of it.
 CommandHandler = Callable[[Mapping[str, Any], str], Any]
 
 #: History handler signature: it receives the request message and returns the historian's answer
@@ -130,7 +102,7 @@ def _is_loopback(host: str) -> bool:
 
 
 class _Station:
-    """One connected console."""
+    """One console connection."""
 
     def __init__(self, writer: asyncio.StreamWriter, peer: str, host: str = ""):
         self.writer = writer
@@ -138,11 +110,7 @@ class _Station:
         #: The peer's address, without its port: a loopback address is this machine.
         self.host = host
         self.name = peer
-        self.role = Role.OBSERVER
         self.ready = False              # True once `hello` has been accepted
-        #: Plant sections this station may command. ``None`` means unrestricted, which is
-        #: NOT the same as an empty set (assigned nothing).
-        self.sections: set[str] | None = None
         self.dropped = 0                # snapshots skipped for back-pressure
         self._queued = 0
 
@@ -154,7 +122,7 @@ class _Station:
             log.debug("send to %s failed: %s", self.peer, exc)
 
     def send_snapshot(self, frame: bytes) -> None:
-        """Write a pre-encoded snapshot, dropping it if this station is behind.
+        """Write a pre-encoded snapshot, dropping it if this console is behind.
 
         The transport's own buffer is the measure of "behind": if bytes are still waiting
         to go out, this console is not keeping up and another frame would only deepen the
@@ -176,33 +144,24 @@ class _Station:
             log.debug("snapshot to %s failed: %s", self.peer, exc)
 
     def describe(self) -> str:
-        scope = ("all" if self.sections is None
-                 else ",".join(sorted(self.sections)) or "none")
-        return f"{self.name} ({self.role.value}, {scope}, {self.peer})"
+        return f"{self.name} ({self.peer})"
 
 
 class StationServer:
-    """Serves one simulation to many consoles.
+    """Serves one simulation to its local console.
 
     Parameters
     ----------
     command_handler
-        Called for each authorised command with ``(cmd, station_name)``. Returns
-        ``(accepted, reason)``. The engine owns the decision: the server only enforces the
-        *role*, never the process interlocks — a pump start refused by a latched trip is
-        the engine's answer, and it must reach the operator with its reason.
+        Called for each command with ``(cmd, console_name)``. Returns ``(accepted, reason)``.
+        The engine owns the decision: a pump start refused by a latched trip is the engine's
+        answer, and it must reach the operator with its reason.
     engine_name
         Reported in `welcome`, so a console can tell which engine build it is attached to.
-    token
-        The station token every ``hello`` must present, or ``None`` to admit every station.
-        An empty token is refused here: it would read as a login and admit anyone.
     """
 
     def __init__(self, command_handler: CommandHandler | None = None,
-                 engine_name: str = "unattached", token: str | None = None):
-        if token is not None and not token:
-            raise ValueError("an empty station token admits every station; pass None instead")
-        self._token = token
+                 engine_name: str = "unattached"):
         self._stations: set[_Station] = set()
         self._command_handler = command_handler
         self._history_handler: HistoryHandler | None = None
@@ -213,9 +172,6 @@ class StationServer:
         self._latest: dict[str, Any] = {}
         self._latest_t_plant = 0.0
         self._status: tuple[str, str] | None = None
-        #: station name -> sections. Kept by NAME, not by connection, so a trainee who
-        #: reconnects mid-exercise keeps the plant the instructor gave them.
-        self._assignments: dict[str, set[str]] = {}
 
     # ----------------------------------------------------------------------------------
     # Lifecycle
@@ -229,11 +185,11 @@ class StationServer:
         """
         self._server = await asyncio.start_server(self._serve_client, host, port)
         bound = self._server.sockets[0].getsockname()[1]
-        log.info("station server listening on %s:%d", host, bound)
+        log.info("console server listening on %s:%d", host, bound)
         return bound
 
     async def stop(self) -> None:
-        """Close every station and stop listening."""
+        """Close every connection and stop listening."""
         for station in list(self._stations):
             with contextlib.suppress(Exception):
                 station.writer.close()
@@ -246,68 +202,18 @@ class StationServer:
 
     @property
     def station_count(self) -> int:
-        """Consoles that have completed the handshake."""
+        """Connections that have completed the handshake."""
         return sum(1 for s in self._stations if s.ready)
-
-    def stations(self) -> list[str]:
-        """Descriptions of the connected consoles, for the instructor's station list."""
-        return [s.describe() for s in self._stations if s.ready]
-
-    # ----------------------------------------------------------------------------------
-    # Unit assignment
-    # ----------------------------------------------------------------------------------
-
-    def assign(self, station: str, sections) -> tuple[bool, str]:
-        """Give a station its plant sections. ``None`` restores unrestricted access.
-
-        Returns ``(accepted, reason)``. An unknown section id is refused rather than
-        dropped, because a typo that silently assigns nothing would leave a trainee locked
-        out of a plant the instructor believes they are holding.
-        """
-        if sections is None:
-            self._assignments.pop(station, None)
-            self._notify_assignment(station, None)
-            return True, ""
-
-        wanted = {str(s) for s in sections}
-        unknown = sorted(wanted - tags.SECTION_IDS)
-        if unknown:
-            return False, (f"unknown section(s) {', '.join(unknown)}; "
-                           f"valid: {', '.join(sorted(tags.SECTION_IDS))}")
-
-        self._assignments[station] = wanted
-        self._notify_assignment(station, wanted)
-        return True, ""
-
-    def assignment_of(self, station: str) -> set[str] | None:
-        """Sections a station holds, or ``None`` when it is unrestricted."""
-        return self._assignments.get(station)
-
-    def _notify_assignment(self, station: str, sections) -> None:
-        """Tell the affected station, and every instructor, what changed.
-
-        The trainee needs it for their status bar; instructors need it because they are
-        the ones running the exercise.
-        """
-        message = protocol.assignment(station, sections)
-        for s in list(self._stations):
-            # A station may hold more than one connection only transiently, during a
-            # reconnect, so update every connection carrying this name.
-            if s.name == station:
-                s.sections = None if sections is None else set(sections)
-            if s.ready and (s.name == station or protocol.runs_the_exercise(s.role)):
-                s.send(message)
-        self._broadcast_roster()
 
     # ----------------------------------------------------------------------------------
     # Engine side
     # ----------------------------------------------------------------------------------
 
     def publish(self, state: Mapping[str, Any], t_plant: float = 0.0) -> None:
-        """Broadcast one plant state to every station.
+        """Send one plant state to the console.
 
-        Called by the engine once per publish interval. The frame is encoded once and the
-        same bytes go to everyone.
+        Called by the engine once per publish interval. The frame is encoded once, whatever
+        the number of connections.
         """
         self._seq += 1
         try:
@@ -323,7 +229,7 @@ class StationServer:
                 station.send_snapshot(frame)
 
     def publish_status(self, text: str, level: str) -> None:
-        """Broadcast engine health, and remember it for stations that connect later."""
+        """Send engine health, and remember it for a console that connects later."""
         self._status = (text, level)
         message = protocol.status(text, level)
         for station in list(self._stations):
@@ -343,19 +249,6 @@ class StationServer:
         """Attach the saved exercises' lister. Until this is called, a request is refused."""
         self._exercise_lister = lister
 
-    def roster(self) -> list[dict]:
-        """Every ready station: its name, role and sections (``None`` unrestricted)."""
-        return [{"station": s.name, "role": s.role.value,
-                 "sections": None if s.sections is None else sorted(s.sections)}
-                for s in sorted(self._stations, key=lambda st: st.name) if s.ready]
-
-    def _broadcast_roster(self) -> None:
-        """Send the roster to every instructor console."""
-        message = protocol.roster(self.roster())
-        for s in list(self._stations):
-            if s.ready and protocol.runs_the_exercise(s.role):
-                s.send(message)
-
     # ----------------------------------------------------------------------------------
     # Connection handling
     # ----------------------------------------------------------------------------------
@@ -367,7 +260,7 @@ class StationServer:
         station = _Station(writer, peer, str(peer_info[0]) if peer_info else "")
         self._stations.add(station)
         frames = FrameReader()
-        log.info("station connected: %s", peer)
+        log.info("console connected: %s", peer)
 
         try:
             while True:
@@ -386,11 +279,9 @@ class StationServer:
             pass
         finally:
             self._stations.discard(station)
-            if station.ready:
-                self._broadcast_roster()
             with contextlib.suppress(Exception):
                 writer.close()
-            log.info("station disconnected: %s (%d snapshots dropped)",
+            log.info("console disconnected: %s (%d snapshots dropped)",
                      station.describe(), station.dropped)
 
     def _handle(self, station: _Station, message: Mapping[str, Any]) -> None:
@@ -423,56 +314,25 @@ class StationServer:
             station.send(protocol.refused(
                 f"protocol version {version} != {protocol.PROTOCOL_VERSION}"))
             return
-        refusal = self._login_refusal(message.get("token"))
-        if refusal:
-            # Before the role is read: a station without the token learns nothing more.
-            log.warning("station login refused from %s: %s", station.peer, refusal)
-            station.send(protocol.refused(refusal))
-            with contextlib.suppress(Exception):
-                station.writer.close()
-            return
-        try:
-            role = Role(str(message.get("role", Role.OBSERVER.value)))
-        except ValueError:
-            station.send(protocol.refused(f"unknown role {message.get('role')!r}"))
-            return
-        if role in protocol.LOCAL_ONLY_ROLES and not _is_loopback(station.host):
+        if not _is_loopback(station.host):
+            # The server binds the loopback interface; a peer elsewhere means it was bound
+            # wider, and a console there would command the plant with no login at all.
             where = station.host or "an unknown address"
             station.send(protocol.refused(
-                f"the {role.value} role is granted only to a console on the engine's own "
-                f"machine; this station connects from {where}"))
+                f"the engine serves only a console on its own machine; this console "
+                f"connects from {where}"))
             return
 
-        station.role = role
         station.name = str(message.get("station") or station.peer)
         station.ready = True
-        # Assignments are kept by station NAME, so a trainee who reconnects mid-exercise
-        # keeps the plant the instructor gave them.
-        station.sections = self._assignments.get(station.name)
-        station.send(protocol.welcome(role, station.name, self._engine_name,
-                                      station.sections))
-        log.info("station ready: %s", station.describe())
+        station.send(protocol.welcome(station.name, self._engine_name))
+        log.info("console ready: %s", station.describe())
 
-        # Bring the newcomer up to date immediately: the current state and the current
+        # Bring the console up to date immediately: the current state and the current
         # engine health, so it is not blank until the next publish.
         if self._status is not None:
             station.send(protocol.status(*self._status))
         station.send(protocol.snapshot(self._seq, self._latest_t_plant, self._latest))
-        self._broadcast_roster()
-
-    def _login_refusal(self, token: Any) -> str:
-        """Why a ``hello`` presenting ``token`` is refused, or ``""`` when it is admitted.
-
-        The comparison is `hmac.compare_digest`, whose time does not depend on how much of the
-        token was right, so the server's answer time gives a guesser nothing to climb.
-        """
-        if self._token is None:
-            return ""
-        if not isinstance(token, str) or not token:
-            return "this engine requires a station token, and the station presented none"
-        if not hmac.compare_digest(token.encode("utf-8"), self._token.encode("utf-8")):
-            return "the station token is not this engine's"
-        return ""
 
     def _handle_command(self, station: _Station, message: Mapping[str, Any]) -> None:
         cmd_id = int(message.get("id", 0))
@@ -483,31 +343,6 @@ class StationServer:
 
         cmd_type = str(cmd["type"])
 
-        if not protocol.is_authorised(station.role, cmd_type):
-            # Named refusal, not a silent drop: the operator must learn that the command
-            # was rejected and why, exactly as a real DCS tells them.
-            station.send(protocol.ack(
-                cmd_id, False,
-                f"role '{station.role.value}' may not issue '{cmd_type}'"))
-            log.info("refused %s from %s", cmd_type, station.describe())
-            return
-
-        # `assign` is the instructor's own control over the exercise, not a plant command:
-        # it is handled here and never reaches the engine.
-        if cmd_type == "assign":
-            accepted, reason = self.assign(str(cmd.get("station", "")),
-                                           cmd.get("sections"))
-            station.send(protocol.ack(cmd_id, accepted, reason))
-            if accepted:
-                self._broadcast_event(station, cmd)
-            return
-
-        allowed, reason = self._within_assignment(station, cmd)
-        if not allowed:
-            station.send(protocol.ack(cmd_id, False, reason))
-            log.info("out of scope: %s from %s", cmd_type, station.describe())
-            return
-
         if self._command_handler is None:
             station.send(protocol.ack(cmd_id, False, "no engine attached"))
             return
@@ -515,8 +350,8 @@ class StationServer:
         try:
             answer = self._command_handler(cmd, station.name)
         except Exception as exc:                            # pragma: no cover - defensive
-            # A failing command must not take the server, and therefore every other
-            # console, down with it.
+            # A failing command must not take the server, and therefore the console's link,
+            # down with it.
             log.exception("command handler raised on %s", cmd_type)
             station.send(protocol.ack(cmd_id, False, f"engine error: {exc}"))
             return
@@ -542,7 +377,7 @@ class StationServer:
             self._broadcast_event(station, cmd)
 
     def _handle_history(self, station: _Station, message: Mapping[str, Any]) -> None:
-        """A trend's backfill or the historian's path list, for any ready station."""
+        """A trend's backfill or the historian's path list."""
         req_id = int(message.get("id", 0))
         if self._history_handler is None:
             station.send(protocol.history_data(req_id, False, "no engine attached"))
@@ -558,11 +393,9 @@ class StationServer:
             station.send(protocol.history_data(req_id, True, "", _finite(answer)))
 
     def _handle_exercise_list(self, station: _Station, message: Mapping[str, Any]) -> None:
-        """The saved exercises' names, for an instructor."""
+        """The saved exercises' names, for the instructor's panel."""
         req_id = int(message.get("id", 0))
-        if not protocol.runs_the_exercise(station.role):
-            station.send(protocol.exercises(req_id, False, "only an instructor lists exercises"))
-        elif self._exercise_lister is None:
+        if self._exercise_lister is None:
             station.send(protocol.exercises(req_id, False, "no engine attached"))
         else:
             station.send(protocol.exercises(req_id, True, "", self._exercise_lister()))
@@ -575,39 +408,13 @@ class StationServer:
             return
         station.send(protocol.history_data(req_id, True, "", _finite(result)))
 
-    def _within_assignment(self, station: _Station,
-                           cmd: Mapping[str, Any]) -> tuple[bool, str]:
-        """Is this command inside the station's assigned plant?
-
-        An unassigned station, an instructor and the superuser are unrestricted. For an assigned
-        station, a command that cannot be attributed to a section is refused — failing
-        closed, so the assignment cannot be bypassed by a command the resolver does not
-        know about.
-        """
-        if protocol.runs_the_exercise(station.role) or station.sections is None:
-            return True, ""
-
-        section = tags.section_of_command(cmd)
-        if section is None:
-            return False, (
-                f"'{cmd.get('type')}' cannot be attributed to a plant section, so this "
-                f"station cannot issue it while assigned to "
-                f"{tags.describe_sections(station.sections)}")
-        if section not in station.sections:
-            target = tags.target_of_command(cmd) or cmd.get("type")
-            return False, (
-                f"{target} is in section {section} "
-                f"({tags.SECTIONS[section]['name']}); this station is assigned "
-                f"{tags.describe_sections(station.sections)}")
-        return True, ""
-
     def _broadcast_event(self, origin: _Station, cmd: Mapping[str, Any]) -> None:
-        """Tell every station what just happened, and who did it."""
+        """Echo an accepted command, and the console that sent it, to every connection."""
         text = f"{origin.name}: {cmd.get('type')}"
         target = cmd.get("id") or cmd.get("tag")
         if target:
             text += f" {target}"
-        message = protocol.event(origin.name, origin.role, cmd, text)
+        message = protocol.event(origin.name, cmd, text)
         for station in list(self._stations):
             if station.ready:
                 station.send(message)

@@ -1,17 +1,17 @@
-"""The engine host — the plant stepped on its own thread and served to the stations.
+"""The engine host — the plant stepped on its own thread and served to the console.
 
 What it is
 ----------
-The loop V1 ran as ``sim_task`` and ``push_task``, joined to the station server. A physics thread
+The loop V1 ran as ``sim_task`` and ``push_task``, joined to the console server. A physics thread
 pays the wall clock to the engine session in fixed 0.1 s steps at the instructor's pacing
-(`ureasim.engine.session`), applies the stations' commands between two ticks in arrival order,
+(`ureasim.engine.session`), applies the console's commands between two ticks in arrival order,
 answers trend queries from the historian, and hands the console packet to the server once a
 pass, 10 times a second. The server's event loop does nothing but the network, so a long pass —
-FAST pacing, a stiff transient — never delays a console's ack or another station's snapshot.
+FAST pacing, a stiff transient — never delays the console's ack or its snapshot.
 
-    stations --command--> StationServer --submit--> queue --> physics thread: session.handle
-    stations <--ack------ StationServer <--future-- answered between two ticks
-    stations <--snapshot- StationServer <--publish- physics thread: session.published_state
+    console --command--> StationServer --submit--> queue --> physics thread: session.handle
+    console <--ack------ StationServer <--future-- answered between two ticks
+    console <--snapshot- StationServer <--publish- physics thread: session.published_state
 
 Why commands go through the physics thread
 ------------------------------------------
@@ -68,7 +68,7 @@ def _fail(fut: asyncio.Future, exc: BaseException) -> None:
 
 
 class EngineHost:
-    """Runs one engine session for one station server."""
+    """Runs one engine session for its console server."""
 
     def __init__(self, session: EngineSession, server: StationServer,
                  engine_name: str = "ureasim") -> None:
@@ -135,7 +135,7 @@ class EngineHost:
                 return
             try:
                 value = work()
-            except Exception as exc:  # noqa: BLE001 - an engine error answers the station
+            except Exception as exc:  # noqa: BLE001 - an engine error answers the console
                 log.exception("engine job raised")
                 self._loop.call_soon_threadsafe(_fail, fut, exc)
             else:

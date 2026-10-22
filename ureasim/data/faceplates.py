@@ -9,7 +9,7 @@ carried here as data so that no Qt module holds plant knowledge and a test can p
 the engine handler that takes it.
 
 Three corrections to V1's table, each a V1 front-end defect, not a change of what an operator may
-do (`CLAUDE.md` §4a rule 3):
+do (`CLAUDE.md` §4a rule 2):
 
 * HIC-329605, HIC-329606 and HIC-323605 send ``op``. V1's front end sent ``value``, which its own
   ``handle_cmd`` never read (``if "op" in cmd``), so those three faceplates did nothing.
@@ -36,7 +36,7 @@ from ureasim.data.operator_commands import FACEPLATE_MODES
 __all__ = [
     "HandValve", "HAND_VALVES", "LOOP_COMMANDS", "CAS_MASTERS", "CAS_UNWIRED",
     "SpeedController", "SPEED_CONTROLLERS", "PUMP_TRIPS", "MASTER_SP_LEGS",
-    "Malfunction", "MALFUNCTIONS", "loop_command",
+    "Malfunction", "MALFUNCTIONS", "CO2_DEMAND_MAX_FRAC", "loop_command",
 ]
 
 
@@ -196,3 +196,14 @@ MALFUNCTIONS = (
     Malfunction("322E002 tube leak, process into the shell (rate at the design differential)",
                 "322E002", "322E002", rate_unit="t/h", rate_default=10.0),
 )
+
+
+# ======================================================================================
+# The instructor's boundary
+# ======================================================================================
+
+#: The CO2 demand the instructor's panel offers on 320K002 (``co2_set``, in t/h), as a fraction of
+#: the design feed: from none to V1's hard ceiling of 120 %. The battery-limit CO2 rate is a boundary
+#: condition outside the simulated plant, no operator lever (decision 73). Source: V1
+#: ``frontend/co2_compressor.js`` (``MIN``, ``MAX``; its 54.618 t/h is `unit_321.CO2_DES_KGH`).
+CO2_DEMAND_MAX_FRAC = 1.20

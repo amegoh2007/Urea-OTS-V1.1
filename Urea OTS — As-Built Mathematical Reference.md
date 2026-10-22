@@ -98,6 +98,7 @@ Design basis: `References/Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md
 - Part LXXX — B-104 to B-107 decided and built; A-23 closed; Scenarios5.md re-run (Phase 7)
 - Part LXXXI — B-108 to B-111 decided and built; Scenarios5.md re-run (Phase 7)
 - Part LXXXII — B-112 decided and built: PT on 322R001 on its feed line's PFD drop (Phase 7)
+- Part LXXXIII — Single-console conversion (Phase 6 / Phase 7)
 
 ---
 
@@ -1576,13 +1577,13 @@ same fixed step.
 | 210 | 323P001B's standby faceplate (``step_sim`` section 33) | ``_ctrl_ipd(s.SIC_323902, s.SIC_323902["op"], dt)``, 10081 | `units/recirc/lp_carbamate_condenser.sic_323902`; step ``SIC-323902`` | **`[PORTED]`** MAN at 0 %, stepped on its own output (§LVIII.3) |
 | 211 | The engine loop (``sim_task``, ``push_task``) | the physics and the push on one event loop | `net/engine_host.py`; `engine/session.py` | **rewrite's** session 41: the plant on its own physics thread, commands between two ticks, the pass in slices that run exactly its steps; V1's health block (§LVIII.4) |
 | 212 | Trend backfill (``/api/hist``, ``/api/hist/paths``) | REST | `net/protocol.py` ``history``, ``history_paths``, ``history_data``; `net/server.py` | **rewrite's** session 41: on the station protocol, any role (§LVIII.4) |
-| 213 | Command attribution to a plant section (handoff A-8) | — (V1 had no roles) | `data/tags.py` | **rewrite's** session 41: the field the engine acts on, in its precedence; ``r323_ctrl_set`` by its faceplate; every engine command type pinned (§LVIII.5) |
+| 213 | Command attribution to a plant section (handoff A-8) | — (V1 had no roles) | `data/tags.py` (deleted) | **`[RETIRED — Decision 149]`** 2026-10-22, the single-console conversion (§LXXXIII); was: **rewrite's** session 41: the field the engine acts on, in its precedence; ``r323_ctrl_set`` by its faceplate; every engine command type pinned (§LVIII.5) |
 | 214 | The stripper's blow-through at 323C003 (handoff A-16) | ``step_sim`` section 23 hands it to 323E003; the column never sees it | `units/recirc/rectifying_column.py` (``column_pressure_target_bara(blow_m3h=)``, ``head_space_relief_kgh``, ``sv_32351``); `engine/plant/recirc.py`; `data/unit_323c003.py` | **decided divergence 2026-10-03**: the gas loads PT-323201's line by its own volume, SV32351 / SV32352 relieve the head space at 6.01 bar a and reseat at 5.51, the rest leaves overhead to 323E003; with no blow-through and the valves shut the column ``==`` V1's; both ways in `test_rectifying_column_equivalence.py` (§LIX.1) |
 | 215 | 328D001's overflow (handoff A-15) | — (V1's drum has no ceiling) | `units/recirc/flash_condenser.py` (``m_d001_over_kgh``); `engine/plant/recirc.py` | **decided divergence 2026-10-03**: a full drum's overflow enters 323E011's shell up the vent line, the same tick, as liquid — no gas load, its sensible heat at the drum's temperature; with none ``==`` V1's; both ways in `test_flash_condenser_equivalence.py` (§LIX.2) |
 | 216 | 328C003's, 328C004's and 322C001's overflows (handoff A-15) | — | `engine/plant/boundary.py` ``BOUNDARY_SINKS``; `engine/packet/status.py` | **decided 2026-10-03**: boundary sinks — published to the consoles and the historian (``BOUNDARY_SINKS``), read by no unit (§LIX.2) |
 | 217 | 323D011's envelope full (decision 11's class) | — (V1 fills the vapour space to its 2 % floor) | `units/recirc/flash_condenser.py`; `data/unit_323e011.py` ``E011_FULL_KG`` | **decided class, applied 2026-10-03**: above 4204 kg of liquid the excess leaves as a published overflow; both ways in `test_flash_condenser_equivalence.py`; since session 43 to 323C005 (row 220, §LIX.2) |
 | 218 | The faceplates (V1's ``.modal`` cards) | `frontend/app.js` 183-1282, ``overlays.js`` ``activate`` | `hmi/faceplates/`; `data/faceplates.py` | **rewrite's** session 42: V1's routing over every element, each faceplate a renderer of the packet and an emitter of the engine's commands; three V1 front-end defects corrected — HIC-329605 / -329606 / -323605 send ``op``, no browser-kept loop state, FIC-328406's decided CAS offered (§LIX.5) |
-| 219 | The instructor's panel and its lists | V1's reset button only | `hmi/instructor/panel.py`; `net/protocol.py` ``roster``, ``exercise_list``, ``exercises``; `net/server.py`; `engine/session.py` ``exercises`` | **rewrite's** session 42: pacing, freeze, reset, malfunctions, exercises, unit assignment, the roster pushed to instructors (§LIX.6) |
+| 219 | The instructor's panel and its list | V1's reset button only | `hmi/instructor/panel.py`; `net/protocol.py` ``exercise_list``, ``exercises``; `net/server.py`; `engine/session.py` ``exercises`` | **rewrite's** session 42: pacing, freeze, reset, malfunctions, exercises (§LIX.6); the CO2 demand added, the roster and unit assignment removed in session 68 (decision 149, §LXXXIII) |
 | 220 | 323E011's envelope overflow (handoff A-20) | — (V1's envelope has no ceiling) | `units/desorption/atmospheric_absorber.py` (``m_e011_over_kgh``, ``t_e011_over_c``); `engine/state.py` ``TearState.m_e011_over_kgh``, ``t_e011_over_c``; `engine/plant/__init__.py` ``TEAR_WRITES``; `engine/plant/desorption.py` | **decided divergence 2026-10-03**: through PV-323203's vent line into 323C005's sump, a tick later (323C005 steps first), liquid with its sensible heat — not gas, not vented, not absorbed; with none the column ``==`` V1's; both ways in `test_atmospheric_absorber_equivalence.py` (§LX.1) |
 | 221 | The console's history request | ``trend.js`` ``fetch('/api/hist?...')`` | `hmi/bridge.py` ``request_history``, ``request_history_paths``, ``history_received`` | **rewrite's** session 43: the request on the station protocol (row 212), the answer matched by its id (§LX.3) |
 | 222 | The trend window (V1's ``trend.html`` popup) | `frontend/trend.js` | `hmi/trend/` (``series``, ``plot``, ``table``, ``window``); `data/trend.py`; `hmi/theme.py` ``TREND_*``, ``TW_*`` | **rewrite's** session 43: V1's ten pens, seven spans and a typed one, ten rulers, MIN / MAX / AVG, LOW / HIGH, marking, the quarter-span scroll, the clocks; departures: the historian the only source, the whole window asked once a second (V1 also appended every packet), and SAVE writes the window's image (§LX.4) |
@@ -1594,10 +1595,10 @@ same fixed step.
 | 228 | FIC-329409's and TIC-329005's tunings | 0.08 %/(t/h), 6 s; 1.0 %/K, 15 s | `data/unit_329_ccw.py` | **class applied 2026-10-07** (decision 10, its data read): the table's 0.60 / 250 s on FT-329409's 0-500 m3/h, 1.50 / 300 s on TT-329005's 0-200 C; both ways (`ccw_tuning_switch`, `test_synthesis_loop_equivalence.py`) (§LXI.9) |
 | 229 | TT-322012 across 322F001's no-flow branch (handoff B-11) | the 140 C step, displayed through ``EJ_T_TAU_S`` 120 s | `units/synthesis/indicators.py` (session 41) | **`[PORTED]`**, closed 2026-10-07: V1's lag smooths the step on the screen (§LXI.5) |
 | 230 | The four aliased thermocouple pairs (handoff B-5) | — | `data/screen_layout.py` | closed 2026-10-07 by measurement: on V1's reissued screens no two thermocouples share a path (§LXI.6) |
-| 231 | The single-machine console's role | — (V1 has no roles) | `net/protocol.py` ``Role.SUPERUSER``; `net/server.py`; `run.py` | **rewrite's**, decided by the process engineer 2026-10-07 (A-2 deferred): every command, no assignment, granted to a loopback peer only (§LXI.7) |
+| 231 | The single-machine console's role | — (V1 has no roles) | `net/protocol.py` ``Role.SUPERUSER`` (removed); `net/server.py`; `run.py` | **`[RETIRED — Decision 149]`** 2026-10-22, the single-console conversion (§LXXXIII); was: **rewrite's**, decided by the process engineer 2026-10-07 (A-2 deferred): every command, no assignment, granted to a loopback peer only (§LXI.7) |
 | 232 | The stream inspector | `frontend/app.js` ``renderStream``, ``openStreamPopup`` | `hmi/widgets/stream_hotspot.py` | **`[PORTED]`**: V1's rows to the string, proved by node on every published stream; departure: redrawn from every packet (§LXI.8) |
 | 233 | 320K002, a boundary feed (decision 73) | `main.py` the 320K002 block: a parabola fitted to two numbers, an 8 s integral governor, the 1.15 ceiling, a 1.6 bar a suction | `units/synthesis/co2_compressor.py` ``delivery_kgh``; `co2_line.CO2FeedLine.step(pic, demand, p_syn, dt)` | **`[DECIDED DIVERGENCE]`** 2026-10-08: the demand delivered, no curve, speed, surge or stonewall; the line floored on the PFD's 1.3 bar a; both ways in `test_co2_line_equivalence.py` (V1's block transcribed with its machine an argument): a part load on the first tick against V1's governor, the same settled line to 1e-6 (§LXII.1). Session 45's vendor-curve machine withdrawn |
-| 234 | The battery-limit CO2 rate, `co2_set` | an operator command, V1's COMPRESSOR SPEED hand station on 322-1 (`frontend/co2_compressor.js`) | `net/protocol.py` ``INSTRUCTOR_ONLY_COMMANDS`` | **`[DECIDED DIVERGENCE]`** 2026-10-08: the instructor's boundary, never a trainee's; both ways in `tests/net/test_protocol.py` (§LXII.1) |
+| 234 | The battery-limit CO2 rate, `co2_set` | an operator command, V1's COMPRESSOR SPEED hand station on 322-1 (`frontend/co2_compressor.js`) | `hmi/instructor/panel.py` ``co2``; `data/faceplates.py` ``CO2_DEMAND_MAX_FRAC`` | **`[DECIDED DIVERGENCE]`** 2026-10-08: the instructor's boundary, never a process screen's; an Instructor Panel control since decision 149 (2026-10-22), no longer role-gated in `net/protocol.py`; both ways in `tests/units/synthesis/test_co2_compressor.py` (§LXII.1, §LXXXIII) |
 | 235 | 320K002's surge and stonewall flags | ``K002_SURGE``, ``K002_STONEWALL`` in V1's ``flags`` | `engine/packet/status.py` | **`[DECIDED DIVERGENCE]`** 2026-10-08: not published — the boundary does neither (`tests/engine/packet/test_status.py`) |
 | 236 | The product-line routes (handoff A-11, decision 74) | 25, 15, 15, 30 and 40 m at 187.1 mm, layout estimates | `data/process_routes.py` ``ROUTE_SEGMENTS``, ``route_volume_m3``, ``elbow_arc_m`` | **`[DECIDED DIVERGENCE]`** 2026-10-07: the isometrics' straight pipe and elbow arcs at their own bores, dead times 28.2 / 32.6 / 23.1 / 30.5 / 25.0 s; both ways through `tests/equivalence/routes_switch.py` and `test_core_equivalence.py` (§LXII.3) |
 | 237 | 322C001's trace steam (decision 75) | none | `units/absorption/vent_line.py` ``trace_steam_kgh``, ``sv_purge_steam_kgh``; `data/unit_329.py` ``FO_329458_KGH``..., ``design_users``; `engine/plant/steam.py` | **`[DECIDED DIVERGENCE]`** 2026-10-07: 60 kg/h into TI-322015's gas, 30 kg/h into SV32253's discharge, choked on the 9-bar header, out of PFD 910; TI-322015 53.7 C at design (46.0 before); pinned in `tests/units/absorption/test_vent_line.py`, `test_lp_absorber.py` and `test_lp_absorber_decided_equivalence.py`, each with the value before it (§LXII.2) |
@@ -1653,9 +1654,9 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 286 | UF85 (unit 335): FFIC-335406 over FIC-335405 and the selector's UF85 (decision 123) | `main.py` ``step_uf85_cascade`` and ``route_lv324501``, called with the permissive forced and ``uf_ratio=0.0``: no UF85 | `units/finishing/uf85_dosing.py` (new); `data/unit_335.py` (new); `second_evaporator.melt_route` (``uf_ratio``), `MeltRoute.uf85_kgh`; the schedule's step "335"; the packet's selector and UF85 fields | **`[DECIDED DIVERGENCE]`** 2026-10-16: the dosing live on route A, LV-324501B its interlock, seeded at the ratio on the design drain (617.07 kg/h, 44.46 %); from V1's seeds ``==`` V1's two functions on every tick; V1's forced call ``==`` the port on its switch; 274 of 274 console bindings resolve (§LXXI.2) |
 | 287 | B-1, B-4 and B-12 signed off (decision 122) | V1's, as ported | — | **`[KEPT AS V1]`** 2026-10-16, signed off on the recorded evidence; the Henry constants and Körting's diagrams stay open data gaps (§LXXI.3) |
 | 288 | 323E011's gas-node relations split out | — | `units/recirc/flash_gas_node.py` (new), re-exported from `flash_condenser` | **`[PORTED]`** verbatim, no signature changed; `flash_condenser.py` 679 to 578 lines (§LXXI.4) |
-| 289 | Unit assignment by plant section, signed off (handoff A-8, decision 124) | — (V1 had no roles) | `data/tags.py`; `net/server.py` ``assign``, ``_within_assignment`` | **rewrite's**, signed off 2026-10-16 as the final design: 41 plant command types accounted for (38 attributed to their sections, 3 the instructor's), ``None`` unrestricted, ``[]`` nothing, instructors and the loopback superuser never narrowed; no per-tag locking (§LXXII.1) |
-| 290 | The station token (handoff A-2, decision 125) | — (V1 had no login) | `net/protocol.py` ``hello(token=)``; `net/server.py` ``StationServer(token=)``, ``_login_refusal``; `hmi/bridge.py` ``EngineBridge(token=)``; `run.py` ``--token``, ``UREASIM_TOKEN`` | **rewrite's**, decided 2026-10-16: an engine with a token refuses a ``hello`` without it before reading the role, in constant time, and disconnects the station; with none, nothing changes; the instructor's panel unpaused (§LXXII.2-3) |
-| 291 | A refused console retried | — | `hmi/bridge.py` ``_refused`` | **rewrite's defect, fixed** 2026-10-16: the refusal's abort emitted ``disconnected``, which scheduled a reconnect (three attempts in 1.5 s on a wrong token); now none, the reason left on the bar (§LXXII.2) |
+| 289 | Unit assignment by plant section, signed off (handoff A-8, decision 124) | — (V1 had no roles) | `data/tags.py`; `net/server.py` ``assign``, ``_within_assignment`` (all removed) | **`[RETIRED — Decision 149]`** 2026-10-22, the single-console conversion (§LXXXIII); was: **rewrite's**, signed off 2026-10-16 as the final design: 41 plant command types accounted for (38 attributed to their sections, 3 the instructor's), ``None`` unrestricted, ``[]`` nothing, instructors and the loopback superuser never narrowed; no per-tag locking (§LXXII.1) |
+| 290 | The station token (handoff A-2, decision 125) | — (V1 had no login) | `net/protocol.py` ``hello(token=)``; `net/server.py` ``StationServer(token=)``, ``_login_refusal``; `hmi/bridge.py` ``EngineBridge(token=)``; `run.py` ``--token``, ``UREASIM_TOKEN`` (all removed) | **`[RETIRED — Decision 149]`** 2026-10-22, the single-console conversion (§LXXXIII); was: **rewrite's**, decided 2026-10-16: an engine with a token refuses a ``hello`` without it before reading the role, in constant time, and disconnects the station; with none, nothing changes; the instructor's panel unpaused (§LXXII.2-3) |
+| 291 | A refused console retried | — | `hmi/bridge.py` ``_refused`` | **rewrite's defect, fixed** 2026-10-16: the refusal's abort emitted ``disconnected``, which scheduled a reconnect (three attempts in 1.5 s on a wrong token); now none, the reason left on the bar (§LXXII.2). The token is retired by decision 149; the fix stays, a refusal now another protocol version or a console off the engine's machine, pinned by `tests/hmi/test_bridge.py` (§LXXXIII) |
 | 292 | 323P003's protection (the 323D002 data-gap row) | — (V1 none) | `units/recirc/solution_tank` (``suction_lost``, B-26) | **as built, confirmed** 2026-10-16: AC4 PC23.1.7 / 1.8's MOTCONs carry no interlock (IC2 constant 1), the functional diagram and 323D002's level loops no trip; NPSH required 3.8 m, available 5 m (UD-AU-323-EC-0016), unused (§LXXIII.1) |
 | 293 | Trip 21.2's hand switches typed (decision 39) | — | `tools/convert_overlays.py` ``_ESD_NOTE``; `data/screen_layout.py` | **read** 2026-10-16: HS-321634, HS-322606, HS-323604 control-room keyswitches; HS-321603 / HS-321604 emergency shut-off switches, control-room and local, maintained as built; two console notes corrected (§LXXIII.2) |
 | 294 | TRIP_84_8_FLAG1 traced | — | `control/interlocks.Unit21TripInputs.trip_84_8_healthy` | **traced** 2026-10-16: the Safeguard SG1's PC15.1.5, the instrument air's two-of-three low pressure on PT-384207A / B / C, latched until RS_TR_84_8; the instrument air is not simulated, the flag healthy (§LXXIII.2) |
@@ -1693,6 +1694,7 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 326 | The azeotropic rise added in bar (decision 147) | decision 142's ratio | `units/synthesis/carbamate_condenser` ``low_nc_rise`` (bar), ``bubble_p_322e002`` | **`[DECIDED DIVERGENCE]`** 2026-10-22 (handoff B-111): f_N = f_N(3.0) + dP_EU / P_des, decision 51's class; V1's at and above N/C 3.0; both ways (§LXXXI.4) |
 | 327 | Scenarios5.md re-run on B-108 to B-111 | — | `run_coupled.EXTRA` (``x.reactor_pt_bara``, ``x.stage2_bisected``) | **measured** 2026-10-22: 14 cases, 82 of 165 (83); S5-6c, S5-6b, S5-5a and S5-6a trip 22.2 30 to 95 s later on the additive rise; eight deviations, 15 of 22 (§LXXXI.5-6) |
 | 328 | PT on 322R001 on its feed line's PFD drop (decision 148) | V1's ``p_syn - 144.2`` line, 136.12 bar a at the design | `units/synthesis/loop_hydraulics` ``reactor_bara(design_drop=)``; `units/synthesis/reactor_inventory` ``ReactorInventory.design_drop``; `data/unit_322_loop` ``REACT_FEED_DP_DES_BAR``, ``REACT_FEED_RHO_DES_LIVE``; `data/unit_322r001` ``TOP_P_DES_BARA``, ``FEED_W_UREA_DES`` | **`[DECIDED DIVERGENCE]`** 2026-10-22 (handoff B-112 (a)): 2.9 = 144.2 - 141.3 (A-13) at the seed's feed density and mass, 141.3 bar a at the design to the bit, 1.0 bar per bar of PT-329201 under B-109's cap; display only; both ways (§LXXXII.1) |
+| 329 | The single-console conversion (decision 149) | any number of browsers, no roles | `run.py`; `net/protocol.py`; `net/server.py`; `hmi/bridge.py`; `hmi/main_window.py`; `hmi/instructor/panel.py`; `data/faceplates.py` ``CO2_DEMAND_MAX_FRAC`` | **rewrite's**, decided 2026-10-22, superseding decisions 72, 124 and 125: one engine and one console on one machine, the server on `127.0.0.1` refusing any other address; no role, token, roster or section assignment; protocol version 2; the engine's process refusals, back-pressure, the 5 s watchdog and history kept; ``co2_set`` on the instructor's panel (§LXXXIII) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -1819,10 +1821,10 @@ indicator is therefore painted, not laid out.
 The transport carries no process equations, but it carries two rules that decide what a
 trainee learns, so they are recorded here rather than left in code comments.
 
-## XIII.1 Two refusals, never conflated
+## XIII.1 One refusal: the process's
 
-A command can be rejected for two entirely different reasons, and an operator must be able
-to tell them apart:
+Until 2026-10-22 a command could be rejected for two different reasons, kept apart so an operator
+could tell them apart:
 
 $$
 \text{refusal} =
@@ -1832,17 +1834,18 @@ $$
 \end{cases}
 $$
 
-The second is physics — a latched trip, an interlock, a closed valve — and its reason is
-the engine's own. A process refusal presented as a permissions error teaches a trainee that
-the console is broken; a permissions error presented as a process refusal teaches them the
-plant is broken. Both reasons travel back to the station that tried.
+**The role refusal is retired by decision 149** (the single-console conversion, Part LXXXIII): the
+server checks no role, so the only refusal left is the process's — a latched trip, an interlock, a
+closed valve — and its reason is the engine's own. It travels back to the console's status bar with
+that reason, so a trainee learns why the plant would not take the action.
 
 V1 had neither: an unknown command reached `handle_cmd`, matched no branch, and was
 discarded in silence. A trainee learned that the plant ignored them.
 
-## XIII.2 What an operator station may do
+## XIII.2 What the console may do
 
-The authorisation split is deliberately conservative:
+Until 2026-10-22 the server gated the commands that are not plant equipment behind the instructor
+role:
 
 $$
 \text{gated}(c) \;=\;
@@ -1850,26 +1853,14 @@ $$
 \big[\, c \text{ ends with } \texttt{\_fault} \,\big]
 $$
 
-$$
-\text{authorised}(r, c) =
-\begin{cases}
-\text{false} & r = \text{observer} \
-r = \text{instructor} & \text{gated}(c) \
-\text{true} & \text{otherwise}
-\end{cases}
-$$
-
-`INSTRUCTOR_ONLY` holds only commands that are **not plant equipment**: malfunction
-injection and clearing, reset, simulation pacing, freeze, and exercise save/restore.
-
-Everything else an operator station keeps, unchanged from V1 — every controller, valve,
-pump, hand station, ratio block and boundary feed its screens exposed. Re-classifying a
-plant control would change what a trainee is being taught, which Part 0's fidelity rules
-forbid.
-
-The `_fault` suffix clause exists because V1 accepted fault injection through its generic
-`set` handler by tag suffix as well as through `trigger_fault`. Without the clause the role
-check would be bypassable by spelling.
+with an observer commanding nothing and an operator every ungated command. **The role gate is
+retired by decision 149**: the single console sends every command the engine takes. The separation
+is now the console's layout. The process screens and their faceplates keep exactly what V1's
+operator screens exposed — every controller, valve, pump, hand station and ratio block —
+because re-classifying a plant control would change what a trainee is being taught, which Part 0's
+fidelity rules forbid. The controls that are not plant equipment — malfunction injection and
+clearing, reset, simulation pacing, freeze, exercise save and restore, and the battery-limit CO2
+demand (`co2_set`, decision 73) — sit in the Instructor menu's panel.
 
 ## XIII.3 Snapshot back-pressure
 
@@ -14098,6 +14089,10 @@ every open data gap, now with FFIC-335406's and FIC-335405's missing DCS rows ad
 
 # Part LXXII — A-8 signed off; A-2 closed on the station token; the checklist complete (Phase 6)
 
+*Superseded on 2026-10-22 by decision 149 (Part LXXXIII): the unit assignment, the station token
+and the roster recorded here were removed with the multi-station deployment. The no-retry fix of
+§LXXII.2 stays.*
+
 Session 56, 2026-10-16. The process engineer signed off A-8's section-level unit assignment as the
 final V1.1 design, asked for A-2 to close on an optional station token with the instructor's panel
 unpaused, and for `project.md`'s last three unticked checklist lines to be ticked. Decisions 124 and
@@ -17004,3 +16999,85 @@ P&ID 102, no screen binds the reading and no unit reads it, so no handoff item (
 floor on the reading after a trip — the base held at PT-329201 plus B-109's 3.5 bar, or the reading
 at PT-329201 plus the off-gas line's 0.6 bar — was offered as an optional display change and not
 taken.
+
+# Part LXXXIII — Single-console conversion (Phase 6 / Phase 7)
+
+Session 68, 2026-10-22. The process engineer signed off §LXXXII.3's two display-only notes as built
+(no B-113), had sessions 62 to 67 committed (`15e66c2`), and decided to convert the simulator from
+a multi-station application to a **single-console** one (`project.md` decision 149, superseding
+decisions 72, 124 and 125). The transport carries no process equation; what changed is who may send
+a command and how the console reaches the engine. Nothing in the physics moved.
+
+## LXXXIII.1 What was removed, and what was kept
+
+Removed:
+
+* `run.py`'s `server` and `station` modes, `--host`, `--role`, `--token` and ``UREASIM_TOKEN``
+  (and from `launch.bat` and `README.md`). `python run.py` starts the engine on `127.0.0.1` and the
+  console attached to it; `--port`, `--station` (the audit line's name) and `--verbose` remain.
+* `net/protocol.py`: ``Role`` and its four roles, ``EXERCISE_ROLES``, ``LOCAL_ONLY_ROLES``,
+  ``runs_the_exercise``, ``INSTRUCTOR_ONLY_COMMANDS`` and ``is_authorised`` (the ``_fault``
+  suffix gate with them), the ``assignment`` and ``roster`` kinds, and the ``hello`` token. `hello`
+  is ``{station, protocol}``, `welcome` ``{station, protocol, engine}``, `event` ``{station, cmd,
+  text}``; ``PROTOCOL_VERSION`` is 2, so a console of the multi-station protocol is refused with
+  the reason rather than misread.
+* `net/server.py`: the token check (``_login_refusal``), the role check, the superuser's loopback
+  grant, unit assignment (``assign``, ``_within_assignment``), the roster and its broadcast, and
+  the instructor-only exercise list.
+* `data/tags.py` (command-to-section attribution), whose only consumers were the assignment and
+  the instructor's section boxes; ``assign`` from the engine's ``SIMULATOR_COMMANDS``.
+* `hmi/bridge.py`: the role and token arguments and the ``role_changed``,
+  ``assignment_changed`` and ``roster_changed`` signals. `hmi/main_window.py`: the role badge and
+  the assignment readout; the Instructor menu is always shown. `hmi/instructor/panel.py`: the
+  station roster and the section assignment.
+
+Kept: the strict UI-to-physics boundary (`EngineBridge` over a loopback `QTcpSocket`, the engine
+host's physics thread, no Qt at or below `ureasim/net`), length-prefixed JSON framing, snapshot
+back-pressure (§XIII.3), the catch-up snapshot and status on `hello`, the 5 s staleness watchdog and
+the blanked screen on a lost link (§XIII.4), history backfill, the exercise list, the audit echo,
+and the engine's process refusals with their reasons (§XIII.1). A refusal of the console's `hello`
+is still shown and not retried (register row 291's fix).
+
+## LXXXIII.2 The console's one guard
+
+With the token gone, nothing but the network stands between a connection and the plant, so the
+server binds `127.0.0.1` (``DEFAULT_HOST``) and refuses a `hello` from any address that is not the
+engine's own machine — a loopback address, IPv4 loopback mapped into IPv6 included — with the
+reason. A console that reconnects can hold two connections for a moment; the server serves every
+connection that has said `hello`, so the new one is never refused for its own stale link.
+
+## LXXXIII.3 The CO2 demand on the instructor's panel
+
+`co2_set`, the battery-limit CO2 rate asked of 320K002 (decision 73), was role-gated in
+`net/protocol.py` and sent by no console control. It is now the instructor's panel's **Boundary**
+group: a demand in t/h from 0 to V1's hard ceiling of 120 % of the design feed (54.618 t/h ×
+``CO2_DEMAND_MAX_FRAC`` = 1.20, from V1's ``frontend/co2_compressor.js`` ``MIN`` and ``MAX``; the
+spin box holds three decimals, its top 65.542), sent as ``{"type": "co2_set", "value": v}`` and
+answered by the engine (refused while trip 22.2 or 21.2's flag is latched, as before), with the
+packet's ``CO2_FEED.raw_th`` shown beside it. The process screens still send it from no element.
+
+## LXXXIII.4 Tests
+
+* Deleted: `tests/net/test_server_login.py`, `tests/net/test_server_superuser.py`,
+  `tests/data/test_tags.py`.
+* Rewritten for the single console: `tests/net/test_protocol.py` (the handshake carries no role,
+  token or sections; version 2), `tests/net/test_server.py` (every command the engine's to answer,
+  the simulator controls and the ``_fault`` form included; a remote peer refused; an overlapping
+  reconnect served), `tests/net/test_engine_host.py`, `tests/hmi/test_bridge.py` (welcomed on a
+  real socket; a refused `hello` shown and not retried), `tests/hmi/test_main_window.py`,
+  `tests/hmi/instructor/test_panel.py` (the CO2 demand and its range) and `tests/test_run.py` (the
+  multi-station options gone).
+* `tests/units/synthesis/test_co2_compressor.py`: V1's hand station sends ``co2_set``; the port's
+  screens send it from no element and only the instructor's panel does, both ways.
+* A smoke run through `run.py`'s own functions, offscreen: the console welcomed, ``ENGINE RUNNING —
+  SLOW``, the panel's CO2 demand of 60.08 t/h and FREEZE acknowledged, the audit line fed, the
+  packet's demand 60.08.
+
+`python -m pytest` — **7 454 collected** (7 638 at session 67: 184 fewer, the role, token, roster and assignment tests removed with their mechanisms and the single-console tests added), thirteen parallel parts, all green on their first run, and the suites touched after it began re-run green; `tests/docs` green; pyflakes clean; the headless grep prints nothing.
+
+## LXXXIII.5 Not done
+
+* The class keeps its name, ``StationServer``, and the messages their ``station`` field (the
+  console's name in the audit line): renaming them changes no behaviour.
+* Register row 291 (a refused console no longer retried) is kept, not retired: its fix still
+  answers a refused `hello`.

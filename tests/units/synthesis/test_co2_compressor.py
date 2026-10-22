@@ -20,8 +20,6 @@ from ureasim.data.unit_320 import (
     SYN_P_DES_BARA,
 )
 from ureasim.data.unit_321 import CO2_DES_KGH
-from ureasim.net import protocol
-from ureasim.net.protocol import Role
 from ureasim.units.synthesis.co2_compressor import delivery_kgh
 from ureasim.units.synthesis.co2_line import CO2FeedLine, vent_pressure_loop
 
@@ -75,6 +73,19 @@ def test_a_shut_isolation_packs_the_line_until_sv32064_relieves_the_demand():
     assert r.relief_kgh == pytest.approx(CO2_DES_KGH, rel=1e-3)
 
 
-def test_no_operator_command_reaches_the_demand():
-    """The battery-limit CO2 rate is the instructor's boundary, never a trainee's control."""
-    assert not protocol.is_authorised(Role.OPERATOR, "co2_set")
+def test_no_process_screen_reaches_the_demand_decided_divergence():
+    """The battery-limit CO2 rate is the instructor's boundary, never a trainee's control (decision
+    73). V1's screen 322-1 carried its COMPRESSOR SPEED hand station, which sends ``co2_set``
+    (``frontend/co2_compressor.js``); the port's screens send it from no element, and of the
+    console's modules only the instructor's panel does (decision 149)."""
+    import pathlib
+
+    from ureasim.data.screen_layout import OVERLAYS
+    js = pathlib.Path(r"D:/Work/Urea Simulation/frontend/co2_compressor.js")
+    if js.exists():
+        assert "type: 'co2_set'" in js.read_text(encoding="utf-8", errors="replace")
+    assert all(e.get("cmd") != "co2_set" for els in OVERLAYS.values() for e in els)
+    hmi = pathlib.Path(__file__).resolve().parents[3] / "ureasim" / "hmi"
+    senders = {p.relative_to(hmi).as_posix() for p in hmi.rglob("*.py")
+               if "co2_set" in p.read_text(encoding="utf-8")}
+    assert senders == {"instructor/panel.py"}

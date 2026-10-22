@@ -182,14 +182,12 @@ def test_xv_322915_has_no_operator_open_decided_divergence():
     the valve: with TT-322015 under its limit it stays shut whatever the operator does, and the
     screen's only control for it is HS-322915, a maintained keyswitch."""
     from ureasim.data.screen_layout import OVERLAYS
-    from ureasim.data import tags
     s = {"xv": False, "live": False, "latched": False}
     assert _v1_i_22_1(s, 46.0, True) and not s["latched"]
     assert not any(vl.xv_322915_open(False, hs) for hs in (False, True))
     els = {e["k"]: e for e in OVERLAYS["screen-328-2"]}
     assert "cmd" not in els["xv322915"]
     assert (els["ovrxv322915"]["tag"], els["ovrxv322915"]["cmd"]) == ("HS-322915", "HS-322915")
-    assert tags.section_of_command({"type": "keyswitch_set", "id": "HS-322915", "on": True}) == "322"
 
 
 def test_the_flood_on_the_valves_rated_steam_decided_divergence(v1, monkeypatch):

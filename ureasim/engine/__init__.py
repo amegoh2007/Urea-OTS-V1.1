@@ -1,8 +1,9 @@
 """Simulation runtime: plant state, execution scheduler with recycle tearing, the fixed-step
 integrator, the trend historian, and the state-to-UI snapshot.
 
-Headless by rule. The engine serves several consoles at once (`ureasim.net.server`) and
-runs on a machine that may have no display, so **nothing in this package may import Qt**.
+Headless by rule. The engine runs behind the console server (`ureasim.net.server`): physics
+and presentation share no object, and the test suites and the Phase 7 runners drive it with no
+display, so **nothing in this package may import Qt**.
 The console's end of the link lives in `ureasim.hmi.bridge`.
 
 Package map
