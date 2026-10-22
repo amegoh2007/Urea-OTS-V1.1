@@ -60,7 +60,9 @@ Method
 
      P_diss Egan, Potts and Potts's dissociation pressure [bar, K], the solid's enthalpy Voskov and
      Voronin's (`thermo.enthalpy`, -645.05 kJ/mol at 298.15 K). The heat the solid releases holds the
-     outlet between the dry answer and the temperature the gas would just saturate at.
+     outlet between the dry answer and the temperature the gas would just saturate at. The solid's
+     saturation and the deposit at a temperature are `thermo.carbamate_solid`'s (split out
+     unchanged 2026-10-23, re-exported here); the enthalpy balance is this module's.
 
 Scope, stated
 -------------
@@ -90,6 +92,15 @@ from ureasim.thermo import enthalpy as h0
 from ureasim.thermo import iapws
 from ureasim.thermo import real_gas
 from ureasim.thermo.ammonia_backpressure import liquid_state, liquor_heat_of_absorption_j_mol
+from ureasim.thermo.carbamate_solid import (
+    CARBAMATE_DISSOC_A,
+    CARBAMATE_DISSOC_B_K,
+    SOLID_ITERS,
+    _deposit_at,
+    _less_deposit,
+    _supersaturation,
+    carbamate_kp_bar3,
+)
 from ureasim.thermo.domains import MW
 from ureasim.thermo.parameters import M_W
 
@@ -137,16 +148,6 @@ BRACKET_WIDENINGS = 8
 #: The most results kept, keyed on the exact call: a steady purge repeats its call every tick.
 CACHE_SIZE = 256
 _CACHE: dict = {}
-
-#: Solid ammonium carbamate's dissociation pressure [bar] at temperature T [K], over the solid at its
-#: own stoichiometry, 2 NH3 + CO2: log10 P = A - B / T. Source: E. P. Egan Jr., J. E. Potts Jr. and
-#: G. D. Potts, "Dissociation pressure of ammonium carbamate", Ind. Eng. Chem. 38 (1946) 454-456
-#: (1 atm at 58.7 C, 89 Torr at 25 C); admitted by the process engineer on 2026-10-14 (handoff B-79).
-CARBAMATE_DISSOC_A = 8.2697
-CARBAMATE_DISSOC_B_K = 2741.9
-
-#: Bisection budgets of the solid's two solves: the deposit at a temperature, the temperature.
-SOLID_ITERS = 80
 
 
 @dataclass(frozen=True)
@@ -372,56 +373,6 @@ def _no_liquor() -> dict:
     return {k: 0.0 for k in CONDENSABLE}
 
 
-def carbamate_kp_bar3(t_c: float) -> float:
-    """Solid ammonium carbamate's equilibrium constant, p_NH3^2 p_CO2 [bar^3], at ``t_c``.
-
-    Process utility
-    ---------------
-    The line a dry NH3-CO2 gas crosses when it starts to lay solid carbamate on a cold pipe wall —
-    the fouling HV-322604's purge line is traced against.
-
-    Equation
-    --------
-        Kp = (4/27) P^3,   log10 P[bar] = 8.2697 - 2741.9 / T[K]
-
-    P the dissociation pressure over the solid, its gas 2/3 NH3 and 1/3 CO2 (Egan, Potts and Potts).
-    """
-    p = 10.0 ** (CARBAMATE_DISSOC_A - CARBAMATE_DISSOC_B_K / (t_c + 273.15))
-    return 4.0 / 27.0 * p ** 3
-
-
-def _less_deposit(y: dict, s: float) -> dict:
-    """The gas left after ``s`` moles of solid per mole of gas, as mole fractions."""
-    v = 1.0 - 3.0 * s
-    out = dict(y)
-    out["NH3"] = y["NH3"] - 2.0 * s
-    out["CO2"] = y["CO2"] - s
-    return {k: max(val, 0.0) / v for k, val in out.items()}
-
-
-def _supersaturation(y: dict, s: float, t_c: float, p_bara: float) -> float:
-    """ln(p_NH3^2 p_CO2 / Kp) of the gas left after ``s`` deposited [-]; positive deposits more."""
-    g = _less_deposit(y, s)
-    if g["NH3"] <= 0.0 or g["CO2"] <= 0.0:
-        return -math.inf
-    return (2.0 * math.log(g["NH3"] * p_bara) + math.log(g["CO2"] * p_bara)
-            - math.log(carbamate_kp_bar3(t_c)))
-
-
-def _deposit_at(y: dict, t_c: float, p_bara: float) -> float:
-    """The solid a gas lays down at ``t_c`` to stand on its saturation [mol per mol of gas]."""
-    if _supersaturation(y, 0.0, t_c, p_bara) <= 0.0:
-        return 0.0
-    lo, hi = 0.0, min(y["NH3"] / 2.0, y["CO2"])
-    for _ in range(SOLID_ITERS):
-        mid = 0.5 * (lo + hi)
-        if _supersaturation(y, mid, t_c, p_bara) > 0.0:
-            lo = mid
-        else:
-            hi = mid
-    return 0.5 * (lo + hi)
-
-
 def solid_deposit(comp: dict, t_in_c: float, p_in_bara: float, p_out_bara: float,
                   t_dry_c: float) -> tuple[float, float] | None:
     """A dry gas's outlet above solid carbamate's saturation: (outlet [deg C], solid [kmol/h]).
@@ -621,5 +572,5 @@ __all__ = [
     "LINE_SEARCH_HALVINGS", "LN_BOUND", "MOLAL_MAX", "DEW_GUESSES_MOLAL", "W_GUESS_FRACTIONS",
     "T_TOL_K", "OUTER_ITERS", "BRACKET_STEP_K", "BRACKET_WIDENINGS", "CACHE_SIZE",
     "LetdownFlash", "incipient_liquor", "isothermal_liquor", "two_phase_enthalpy",
-    "letdown",
+    "letdown", "CARBAMATE_DISSOC_A", "CARBAMATE_DISSOC_B_K", "SOLID_ITERS", "carbamate_kp_bar3",
 ]

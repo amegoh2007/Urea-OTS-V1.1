@@ -100,6 +100,7 @@ Design basis: `References/Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md
 - Part LXXXII — B-112 decided and built: PT on 322R001 on its feed line's PFD drop (Phase 7)
 - Part LXXXIII — Single-console conversion (Phase 6 / Phase 7)
 - Part LXXXIV — The data gaps searched again; seven valves on their vendor sheets (Phase 7)
+- Part LXXXV — The housekeeping split: every module inside 600 lines (Phase 7)
 
 ---
 
@@ -17204,3 +17205,81 @@ steam drums' transmitters), AI-329701's configured range (the analyser data shee
 a 324F003 trend, a urea-melt Henry constant, 322C001's head volume and trip 22.2 in any logic file.
 
 `python -m pytest` — **7 475 collected** (7 454 at session 68: 21 more — the new sheets' catalogue, the Fisher module's own test and each valve's both-ways tests), thirteen parallel parts. The first run failed 33 tests, every one a measured value or a held stroke the new valves and water move (the desorbers' unit tests 15, the synthesis loop's decided harness 14, the vacuum condenser's trip, a faceplate's displayed 75.3 % and the catalogue's two); each was re-measured, its docstring restated, B-104's large move traced, and those files re-run green; `tests/docs` green; pyflakes clean; the headless grep prints nothing.
+
+# Part LXXXV — The housekeeping split: every module inside 600 lines (Phase 7)
+
+Session 70, 2026-10-23. A pasted directive asked for every Python module under `ureasim/` to sit at
+or below the 600-line house target (`CLAUDE.md` §1 rule 1), with no change to the physics or the
+behaviour (`project.md` decision 152). No relation, coefficient, clamp or anchor was touched; this
+Part records where each one now lives. The same session first checked session 69's LV-324501A / B
+density correction at the process engineer's request: the trims' mass capacity scales as sqrt(rho)
+on m = Kv sqrt(rho dP), B's full stroke 251.5 t/h against 197.3 t/h at the sheets' SG 0.751, a ratio
+of sqrt(1221 / 751) = 1.275, and A's needed Kv as m / sqrt(rho) — not inverted. `CLAUDE.md` §5.7 and
+decision 150 were reworded to say which capacity scales which way; §LXXXIV.4 already did.
+
+## LXXXV.1 The audit
+
+A line count over `ureasim/` found six modules above 600 lines (the paste quoted three, at older
+counts): `data/unit_323.py` 772, `units/synthesis/scrubber.py` 703, `engine/command.py` 650,
+`data/unit_324.py` 644, `thermo/condensing_letdown.py` 625 and `data/control_valves.py` 616. None was
+above the 800-line split.
+
+## LXXXV.2 The splits
+
+| module | lines (before) | what moved out | where it lives now |
+|---|---|---|---|
+| `data/control_valves.py` | 391 (616) | ``SizingCase``, ``VendorValve``, ``design_stroke_pct``, ``full_stroke_m3h``, ``NORMAL_MOLAR_VOLUME_M3_KMOL`` | `data/valve_sizing.py`, 107 (new) |
+| | | Metso's fourteen Neldiscs, with ``METSO_VALVES`` | `data/control_valves_metso.py`, 218 (new) |
+| `data/unit_323.py` | 561 (772) | stage 1, 323C003 / 323E002, with PFD 208 and 314 | `data/unit_323c003.py`, 308 (63): the column's tag module, its relief kept |
+| | | stage 4, 323D002 | `data/unit_323d002.py`, 116 (new) |
+| `data/unit_324.py` | 478 (644) | the condensers' ratings, the vapour rows, the ejectors' vendor ratings and the PFD motive | `data/unit_324_train.py`, 310 (105) |
+| `units/synthesis/scrubber.py` | 549 (703) | the condensing temperature, the shell's conductance and condensation capacity, their floors | `units/synthesis/scrubber_shell.py`, 156 (new) |
+| | | the sump level and LT-329501's swell and hunt | `units/synthesis/scrubber_level.py`, 94 (new) |
+| `engine/command.py` | 506 (650) | ``_Refused`` and the payload helpers | `engine/command_payload.py`, 69 (new) |
+| | | unit 329's steam handlers | `engine/command_steam.py`, 121 (new) |
+| `thermo/condensing_letdown.py` | 576 (625) | solid carbamate's Kp and the deposit at a temperature | `thermo/carbamate_solid.py`, 92 (new) |
+
+`unit_324` keeps on the stages' vacuums the condensers' rows (``CONDENSER_ROWS``) and the ejectors'
+design loads (``EJECTOR_DESIGN_LOADS``); `condensing_letdown` keeps ``solid_deposit``, the letdown's
+enthalpy balance with the deposit (its method step 5); `unit_323` keeps the three stage anchors and
+the letdowns' vapour pressures, built on the moved stage-1 names. The largest module under
+`ureasim/` is now `units/recirc/flash_condenser.py`, at 600.
+
+## LXXXV.3 How the moves were made
+
+* **Verbatim.** Each split was cut by a script on line ranges it asserted first, and checked by
+  comparing the lines of the original file with those of the files that replaced it: the only
+  lines not carried over are the section banners the new modules' docstrings stand in for and the
+  import lines that moved with their users.
+* **Re-exported, acyclic.** The module a name left imports it back and lists it in its
+  ``__all__`` (`scrubber` gained an ``__all__``, its public surface with the re-exports), so no
+  caller and no test changed an import. Each new module imports only what lies below it — the
+  sizing records below the catalogues, the payload helpers below the handlers, the stage-1 basis
+  below the section — so importing either side first works.
+* **Into the tag's module where one existed.** Stage 1 went into `unit_323c003`, which held
+  323C003's relief only and now opens with the column's design basis; the vacuum train's ratings
+  went into `unit_324_train`, which had imported them from `unit_324`. The first cut of stage 1
+  was written over `unit_323c003.py` itself; the file was restored from git before any test ran on
+  it, and the stage merged into it instead (`CLAUDE.md` §1 rule 1 now says to look first).
+* **Private helpers keep their names.** `command_payload`'s ``_Refused``, ``_num``, ``_want``,
+  ``_clamp``, ``_needs``, ``_trip``, ``_trip_name`` and `carbamate_solid`'s ``_less_deposit``,
+  ``_supersaturation``, ``_deposit_at`` are imported by the modules that call them; no test patches
+  a moved name (searched), so every call resolves to the same function as before.
+* **Two comments** that pointed across the cut were reworded: Metso's steam cases carry a unit
+  density "as for Flowserve's motive valves" (it read "as for the motive valves above"), and each
+  module that lost names says where they went.
+* **The node stores** are keyed on `parameters`, `standard_state`, `activity`, `speciation`,
+  `henry`, `iapws` and the node functions of `ammonia_backpressure`; none was touched, so the
+  stores stay valid and were not rebuilt.
+
+## LXXXV.4 Tests and checks
+
+One test file for each new module (§6's mirror), and one for `unit_324_train`, which had none:
+`tests/data/test_valve_sizing.py`, `test_control_valves_metso.py`, `test_unit_323c003.py`,
+`test_unit_323d002.py`, `test_unit_324_train.py`; `tests/units/synthesis/test_scrubber_shell.py`,
+`test_scrubber_level.py`; `tests/engine/test_command_payload.py`, `test_command_steam.py`;
+`tests/thermo/test_carbamate_solid.py`. Each pins measured design values of what it holds and that
+the module the names left re-exports the same objects. The equivalence suites pass unchanged, so the
+tolerances recorded in earlier Parts stand: no arithmetic moved.
+
+`python -m pytest` — **7 536 collected** (7 475 at session 69: 61 more, the ten new test files), fourteen parallel parts, all green on their first run; two skipped in `tests/hmi/test_screen_geometry.py`, whose value font is not installed on this machine (the skip is the test's own guard, unrelated to the split); `tests/docs` green; pyflakes clean over `ureasim`, `tests`, `tools` and `run.py`; the headless grep prints nothing.

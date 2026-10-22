@@ -44,7 +44,6 @@ from ureasim.data.operator_commands import (
     PIC_335201_OP_MAX_BARG,
     RATIO_SP_MAX,
     RATIO_SP_MIN,
-    STEAM_SP_MAX_BARA,
     SYNTHESIS_TRIPS,
     TRIP_21_HAND_SWITCHES,
     TIC_329005_SP_MIN_C,
@@ -54,6 +53,15 @@ from ureasim.data.unit_322c001 import C001_CPL_DES_KGH
 from ureasim.data.unit_322e002 import LEAK_DEFAULT_TH
 from ureasim.data.unit_322e003 import CCW_KGH_DES, CCW_T_OUT_DES_C
 from ureasim.data.unit_324 import PIC_335201_DES_BARG, PIC_335201_RELIEF_BARG
+from ureasim.engine.command_payload import _Refused, _clamp, _needs, _num, _trip, _trip_name, _want
+from ureasim.engine.command_steam import (
+    _leg_set,
+    _level_set,
+    _master207_set,
+    _pic329204_set,
+    _pic329205_set,
+    _steam_valve,
+)
 from ureasim.engine.state import PlantState
 from ureasim.units.steam.drums import D001, D005, D009
 
@@ -71,48 +79,6 @@ class CommandResult:
     ok: bool
     reason: str = ""
     text: str = ""
-
-
-class _Refused(Exception):
-    """A command the plant will not take; the message is the reason the operator reads."""
-
-
-# ======================================================================================
-# Payload helpers
-# ======================================================================================
-
-def _num(cmd: Mapping, key: str, lo: float = -math.inf, hi: float = math.inf) -> float:
-    """A finite number from the payload, clamped to [lo, hi] as V1's ``_finite`` and ``clamp``."""
-    try:
-        v = float(cmd[key])
-    except KeyError as exc:
-        raise _Refused(f"the command needs {key!r}") from exc
-    except (TypeError, ValueError) as exc:
-        raise _Refused(f"{key!r} must be a number") from exc
-    if not math.isfinite(v):
-        raise _Refused(f"{key!r} must be finite")
-    return max(lo, min(hi, v))
-
-
-def _want(cmd: Mapping) -> bool | None:
-    """An explicit start / stop (``on``), or None for a toggle."""
-    return None if cmd.get("on") is None else bool(cmd["on"])
-
-
-def _clamp(v: float, lo: float, hi: float) -> float:
-    return max(lo, min(hi, v))
-
-
-def _trip(plant: PlantState, key: str):
-    trips = plant.units["SYN-TRIPS"]
-    try:
-        return getattr(trips, f"i_{key}")
-    except AttributeError as exc:
-        raise _Refused(f"no trip {key!r}") from exc
-
-
-def _trip_name(key: str) -> str:
-    return "trip " + key.replace("_", ".")
 
 
 # ======================================================================================
@@ -243,14 +209,6 @@ def _controller_set(plant: PlantState, cmd: Mapping, _r) -> str:
     if "nc" in values:
         ctrl.set_bias(values["nc"])
     return f"{ctrl.tag} {ctrl.mode}"
-
-
-def _needs(cmd: Mapping, mode: str, **fields: str) -> None:
-    """Refuse a field the loop does not use in ``mode`` (V1's REST rule: a set point in AUTO, an
-    output in MAN, a bias in CAS)."""
-    for name, wanted in fields.items():
-        if name in cmd and mode != wanted:
-            raise _Refused(f"{name!r} is the operator's in {wanted} only; the loop is in {mode}")
 
 
 def _ratio_set(plant: PlantState, cmd: Mapping, _r) -> str:
@@ -472,108 +430,6 @@ def _r323_ctrl_set(plant: PlantState, cmd: Mapping, _r) -> str:
     if "op" in values:
         loop.op = _clamp(values["op"], loop.op_lo, loop.op_hi)
     return f"{tag} {mode}"
-
-
-# ======================================================================================
-# Unit 329
-# ======================================================================================
-
-def _steam_valve(attr_path: tuple, label: str) -> Callable:
-    """A steam valve's stroke written by hand; a controller in AUTO moves it again next tick, as
-    on V1."""
-    def handler(plant: PlantState, cmd: Mapping, _r) -> str:
-        obj = plant.units["329"]
-        for part in attr_path[:-1]:
-            obj = obj[part] if isinstance(obj, dict) else getattr(obj, part)
-        value = _num(cmd, "op", 0.0, 100.0)
-        if label == "HV-329601" and plant.units["329"].hv_329601.blocked:
-            raise _Refused("HV-329601 is forced by trip 21.2; its hand controller follows")
-        setattr(obj, attr_path[-1], value)
-        return f"{label} {value:g} %"
-    return handler
-
-
-def _pic329204_set(plant: PlantState, cmd: Mapping, _r) -> str:
-    pic = plant.units["329"].pic_329204
-    mode = _two_modes(cmd, pic.mode, "PIC-329204")
-    _needs(cmd, mode, op="MAN")
-    values = {k: _num(cmd, k) for k in ("op", "sp") if k in cmd}
-    pic.mode = mode
-    if "sp" in values:
-        pic.sp_bara = _clamp(values["sp"], 0.0, STEAM_SP_MAX_BARA)
-    if "op" in values:
-        pic.op_pct = _clamp(values["op"], 0.0, 100.0)
-    return f"PIC-329204 {mode}"
-
-
-def _pic329205_set(plant: PlantState, cmd: Mapping, _r) -> str:
-    """The split range: one output, 0-50 % PV-329205A admitting, 50-100 % PV-329205B letting
-    down."""
-    pic = plant.units["329"].pic_329205
-    mode = _two_modes(cmd, pic.mode, "PIC-329205")
-    _needs(cmd, mode, op="MAN")
-    values = {k: _num(cmd, k) for k in ("op", "sp") if k in cmd}
-    pic.mode = mode
-    if "sp" in values:
-        pic.sp_bara = _clamp(values["sp"], 0.0, STEAM_SP_MAX_BARA)
-    if "op" in values:
-        op = _clamp(values["op"], 0.0, 100.0)
-        pic.op_a_pct, pic.op_b_pct = (op * 2.0, 0.0) if op <= 50.0 else (0.0, (op - 50.0) * 2.0)
-    return f"PIC-329205 {mode}"
-
-
-def _two_modes(cmd: Mapping, current: str, label: str) -> str:
-    mode = str(cmd.get("mode", current)).upper()
-    if mode not in ("AUTO", "MAN"):
-        raise _Refused(f"{label} offers AUTO and MAN, not {mode}")
-    return mode
-
-
-def _level_set(tag: str, drum) -> Callable:
-    """LIC-329502 / 503 / 504: bumpless into AUTO on the level the transmitter reads."""
-    def handler(plant: PlantState, cmd: Mapping, _r) -> str:
-        st = plant.units["329"]
-        loop = getattr(st, tag.lower().replace("-", "_"))
-        mode = _two_modes(cmd, loop.mode, tag)
-        _needs(cmd, mode, op="MAN")
-        values = {k: _num(cmd, k) for k in ("op", "sp") if k in cmd}
-        if mode == "AUTO" and loop.mode != "AUTO":
-            loop.sp_pct = _clamp(drum[0].level_pct(getattr(st, drum[1])), 0.0, 100.0)
-        loop.mode = mode
-        if "sp" in values:
-            loop.sp_pct = _clamp(values["sp"], 0.0, 100.0)
-        if "op" in values:
-            loop.op_pct = _clamp(values["op"], 0.0, 100.0)
-        return f"{tag} {mode}"
-    return handler
-
-
-def _master207_set(plant: PlantState, cmd: Mapping, _r) -> str:
-    trio = plant.units["329"].pic_329207
-    if "on" in cmd:
-        trio.master_on = bool(cmd["on"])
-    if "sp" in cmd:
-        trio.master_sp_bara = _num(cmd, "sp", 0.0, STEAM_SP_MAX_BARA)
-    return f"MASTER-329207 {'ON' if trio.master_on else 'OFF'}, {trio.master_sp_bara:g} bar a"
-
-
-def _leg_set(leg: str) -> Callable:
-    """One leg of the PIC-329207 trio, honoured only with the master OFF (ON locks the trio)."""
-    def handler(plant: PlantState, cmd: Mapping, _r) -> str:
-        trio = plant.units["329"].pic_329207
-        if trio.master_on:
-            raise _Refused(f"PIC-329207{leg} follows MASTER-329207 while it is ON")
-        loop = trio.legs[leg]
-        mode = _two_modes(cmd, loop.mode, f"PIC-329207{leg}")
-        _needs(cmd, mode, op="MAN")
-        values = {k: _num(cmd, k) for k in ("op", "sp") if k in cmd}
-        loop.mode = mode
-        if "sp" in values:
-            loop.sp_bara = _clamp(values["sp"], 0.0, STEAM_SP_MAX_BARA)
-        if "op" in values:
-            loop.op_pct = _clamp(values["op"], 0.0, 100.0)
-        return f"PIC-329207{leg} {mode}"
-    return handler
 
 
 # ======================================================================================

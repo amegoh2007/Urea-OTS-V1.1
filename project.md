@@ -8,10 +8,10 @@ built, B-18, B-37 and B-20 decided and closed, trip 21.2's hand switches and AI-
 screens, the plant DCS's readback applied — the cold start reaches 79.7 bar a in 16 000 s, still
 short of the start-up band (session 50); B-94 closed on PFD 734's departure form, the steady state
 3080 of 3188, 322E003 on its own liquor and a full sump, 323P008's trip from AC4 PC23, B-95 closed
-as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69)
+as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `D:\Work\Urea Simulation` (V1 — reference only, never edited from here)
-**Last updated:** 2026-10-22 (session 69)
+**Last updated:** 2026-10-23 (session 70)
 
 ---
 
@@ -792,6 +792,13 @@ steam system (`steam/`).
       Fisher's sheets, HV-329601, PV-329207C and LV-324501A / B on Flowserve's, each wired with
       both sides tested (decision 150); 322E006 on PFD 28's 14 t/h, its UA re-anchored (decision
       151); four data-gap rows closed, 15 open (session 69, As-Built Part LXXXIV)
+- [x] Session 69's LV-324501A / B density correction checked (mass capacity on sqrt(rho), not
+      inverted), the wording of `CLAUDE.md` §5.7 and decision 150 clarified, and session 69
+      committed (`2e4d64c`)
+- [x] Every module under `ureasim/` at or below the 600-line target: `control_valves`,
+      `unit_323`, `unit_324`, `scrubber`, `engine/command` and `condensing_letdown` split along
+      their seams, the lines moved verbatim and every moved name re-exported; a test file for each
+      new module (session 70, decision 152, As-Built Part LXXXV)
 
 ---
 
@@ -4784,6 +4791,41 @@ review of session 68 came with the request; it raised nothing to act on. As-Buil
 
 `handoff.md`'s Sections A, B and C stay empty; 15 open data gaps remain.
 
+### Session 70 — the housekeeping split: every module inside 600 lines
+
+The process engineer asked first for session 69's LV-324501A / B density correction to be checked
+before its commit: the trims' mass capacity scales as sqrt(rho) on m = Kv sqrt(rho dP) (B's full
+stroke 251.5 t/h against 197.3 t/h at the sheets' SG 0.751, a ratio of 1.275), not inverted;
+`CLAUDE.md` §5.7 and decision 150 were reworded, and session 69 was committed (`2e4d64c`). Then a
+pasted directive asked for every module under `ureasim/` at or below the 600-line target with no
+change to the physics (decision 152, As-Built Part LXXXV):
+
+* **The audit.** Six modules above 600: `data/unit_323.py` 772, `units/synthesis/scrubber.py` 703,
+  `engine/command.py` 650, `data/unit_324.py` 644, `thermo/condensing_letdown.py` 625,
+  `data/control_valves.py` 616.
+* **The splits.** `control_valves` 391: the sizing records to `valve_sizing` (107), Metso's
+  fourteen Neldiscs to `control_valves_metso` (218). `unit_323` 561: stage 1 into the column's tag
+  module `unit_323c003` (308, its relief kept), stage 4 to `unit_323d002` (116). `unit_324` 478:
+  the condensers' ratings, the vapour rows and the ejectors' vendor ratings into `unit_324_train`
+  (310). `scrubber` 549: the shell to `scrubber_shell` (156), the sump level and LT-329501 to
+  `scrubber_level` (94). `engine/command` 506: the payload helpers to `command_payload` (69), unit
+  329's handlers to `command_steam` (121). `condensing_letdown` 576: solid carbamate's saturation
+  to `thermo/carbamate_solid` (92). The largest module is now `units/recirc/flash_condenser.py`, 600.
+* **How.** Lines cut by script on asserted ranges and checked line for line against the
+  originals; every moved public name re-exported by the module it left (`scrubber` gained an
+  ``__all__``); each new module imports nothing from the one it left; no test patches a moved name.
+  The first cut of stage 1 was written over the tracked `unit_323c003.py`; it was restored from
+  git before any test ran and the stage merged into it. The node stores' keys hash none of the
+  touched modules, so they were not rebuilt.
+* **Tests.** One file per new module and one for `unit_324_train`: `tests/data/test_valve_sizing.py`,
+  `test_control_valves_metso.py`, `test_unit_323c003.py`, `test_unit_323d002.py`,
+  `test_unit_324_train.py`; `tests/units/synthesis/test_scrubber_shell.py`, `test_scrubber_level.py`;
+  `tests/engine/test_command_payload.py`, `test_command_steam.py`; `tests/thermo/test_carbamate_solid.py`.
+
+`python -m pytest` — **7 536 collected** (7 475 at session 69: 61 more, the ten new test files), fourteen parallel parts, all green on their first run; two skipped in `tests/hmi/test_screen_geometry.py`, whose value font is not installed on this machine (the skip is the test's own guard, unrelated to the split); `tests/docs` green; pyflakes clean over `ureasim`, `tests`, `tools` and `run.py`; the headless grep prints nothing.
+
+`handoff.md`'s Sections A, B and C stay empty; 15 open data gaps remain.
+
 ## 5. Design decisions on record
 
 1. **PyQt6, not PyQt5.** Qt6 is current, has proper high-DPI scaling for the 1366×720 stage,
@@ -5477,3 +5519,14 @@ review of session 68 came with the request; it raised nothing to act on. As-Buil
      process engineer): 14 t/h (streams 1010 / 1011) where the port back-solved 10 374 kg/h on the
      datasheet UA for want of a document; the UA is back-solved instead, 20.448 kW/K, so 755 holds
      the PFD's 40 C, and the datasheet's 30.776 kW/K stays the rated surface's margin.
+152. **Every module inside the 600-line target** (2026-10-23, session 70, a pasted directive;
+     `CLAUDE.md` §1 rule 1): the six modules above 600 lines split along their physical seams with
+     no change to a relation — the vendor sizing records and Metso's catalogue out of
+     `control_valves` (`valve_sizing`, `control_valves_metso`); 323C003's stage into the column's
+     tag module `unit_323c003` beside its relief, and 323D002's into `unit_323d002`; the vacuum
+     train's condenser ratings, vapour rows and ejector ratings into `unit_324_train`; 322E003's
+     shell and sump level into `scrubber_shell` and `scrubber_level`; the command payload helpers
+     and unit 329's handlers into `command_payload` and `command_steam`; solid carbamate's
+     saturation into `thermo.carbamate_solid`. The lines move verbatim; the module a name left
+     re-exports it, so no caller changed an import; each new module imports nothing from the one
+     it left; each has its own test file.

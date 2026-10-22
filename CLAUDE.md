@@ -43,7 +43,12 @@ This is the house style. It is not negotiable.
 
 1. **Modular.** One physical concept per module. A module that models two unit operations is
    two modules. Target ceiling: **600 lines per file**. Above 800 lines, split it — no exceptions
-   without a written justification in `project.md`.
+   without a written justification in `project.md`. A split moves its lines verbatim along a
+   physical seam, the new module importing nothing from the one it left, and the module it left
+   re-exports every public name it lost, so no caller changes an import (2026-10-23, session 70:
+   every module under `ureasim/` at or below 600 lines). Before a split writes a module, check
+   that no module of that name exists: an equipment tag's module may already hold part of its
+   basis, and the split then goes into it.
 2. **Layered, one direction.** Dependencies flow *downward* only:
 
    ```
