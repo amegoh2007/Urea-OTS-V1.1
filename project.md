@@ -4822,7 +4822,7 @@ change to the physics (decision 152, As-Built Part LXXXV):
   `test_unit_324_train.py`; `tests/units/synthesis/test_scrubber_shell.py`, `test_scrubber_level.py`;
   `tests/engine/test_command_payload.py`, `test_command_steam.py`; `tests/thermo/test_carbamate_solid.py`.
 
-`python -m pytest` — **7 536 collected** (7 475 at session 69: 61 more, the ten new test files), fourteen parallel parts, all green on their first run; two skipped in `tests/hmi/test_screen_geometry.py`, whose value font is not installed on this machine (the skip is the test's own guard, unrelated to the split); `tests/docs` green; pyflakes clean over `ureasim`, `tests`, `tools` and `run.py`; the headless grep prints nothing.
+`python -m pytest` — **7 536 collected** (7 475 at session 69: 61 more, the ten new test files), fourteen parallel parts, all green, none skipped. The first run set Qt's offscreen platform, under which Qt lists no font families on this machine, so the two overlap tests of `tests/hmi/test_screen_geometry.py` skipped on their own font guard; the commit message (`2cfa3f2`) called them font skips, but no font is missing: Consolas and Courier New are installed in `C:\Windows\Fonts`, and Qt's native platform also lists Cascadia Mono. Re-run on the native platform, the geometry file passes 17 of 17 and `tests/hmi` 75 of 75; `tests/docs` green; pyflakes clean over `ureasim`, `tests`, `tools` and `run.py`; the headless grep prints nothing.
 
 `handoff.md`'s Sections A, B and C stay empty; 15 open data gaps remain.
 
