@@ -134,6 +134,11 @@ a Qt layout method gets none.
   Chat replies stay compressed. **Persisted artefacts — source code, code comments, the four
   Markdown documents, commit messages — are written in normal professional English.** Caveman is
   a chat register, never a documentation register.
+* **ALWAYS use the claude-mem skill (2026-10-22).** At session start, and before re-deriving any
+  earlier session's work, search claude-mem's cross-session memory (`Skill(claude-mem:mem-search)`)
+  for what is already known — a measurement, a decision, a dead end. It complements the four living
+  documents and never replaces them; claude-mem's skills that fan work out to sub-agents
+  (`claude-mem:do`, `claude-mem:build`) stay excluded by the no-sub-agents rule below.
 * **ALWAYS update the four living documents** — `project.md`, `handoff.md`,
   `Urea OTS — As-Built Mathematical Reference.md` and this file when its rules change —
   whenever any of the following happens:
@@ -382,7 +387,28 @@ is optional:
    than it holds (decisions 133, 137, decision 78's class); a saturation fraction and the bubble
    pressure it sets solved together on the tick, not across it (decision 135); a cooler's
    condensation capacity on its shell's effectiveness at the live coolant flow, its duty capped at it
-   (decision 136); and no approximation of
+   (decision 136); a heater's duty bounded by what its shell transfers at the live utility's LMTD
+   against the process side's design profile, on its design duty's anchor, the lift it cannot pay for
+   left in the product and a band holding the design seed's own drift unbound (decision 139); a
+   held-back inventory capped at what the vessel holding it holds full, the vessel upstream keeping
+   the rest and discharging no more than the full one passes, and a heat-transfer surface standing
+   submerged derated linearly to its flooded-surface floor, its product cooling by the same factor
+   (decision 140, decision 62's class); a liquor stage V1 runs mass-only carrying its species as its
+   departure from its PFD row, each inlet at its own row, its consumer on the live composition and
+   temperature a line residence late on its line's isometrics (decisions 141, 146); a melt's
+   bubble-pressure law below its azeotrope following the Extended UNIQUAC model's rise, added in bar
+   as its departure from the branch, not multiplied onto the design pressure (decisions 142, 147,
+   decision 51's class); a vacuum vessel's lost liquid seal admitting atmospheric air through its
+   drain's trim on the blow-through law (decision 143); a stage's coupled temperature-pressure
+   iteration that does not settle solved for its temperature on its own energy balance by a
+   bracketed root, V1's iteration kept to the bit wherever it converges (decision 144, decision 78's
+   class); an instrument that reads a liquor's bubble pressure capped at the pressure the liquor
+   stands at where it flashes, the threshold its own saturation fraction uses (decision 145); a
+   published reading with no transmitter of its own on its PFD's design pressure, its line's design
+   differential the subtraction of the PFD's two design pressures and its flow and density factors
+   normalised on the design seed, where V1 wrote the differential on the live loop pressure
+   (decision 148, decision 70's and A-13's classes); and
+   no approximation of
    the physics bought for a pacing target (decision 88). A
    new mechanism still goes to the process engineer, with both sides measured.
 
@@ -399,6 +425,8 @@ is optional:
 Start:
 1. Invoke `Skill(caveman)` at `full`.
 2. Read `project.md` (state) and `handoff.md` (open items).
+3. Search claude-mem (`Skill(claude-mem:mem-search)`) for the history of the items the session
+   takes up.
 
 End (mandatory):
 1. Update `project.md` checklist.

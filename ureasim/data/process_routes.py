@@ -80,10 +80,11 @@ from ureasim.data.design_point import (
     R324_FEED_DES,
 )
 from ureasim.data.unit_323 import EVAP_LAMBDA_KJKG, F010_P_BARA, W_S319
+from ureasim.data.unit_323e003 import D001_RHO_KGM3, E003_M308_DES_KGH
 from ureasim.thermo.empirical import urea_soln_cp
 from ureasim.thermo.urea_liquor import design_bubble_t
 
-__all__ = ["ID_DN400_MM", "ID_DN200_MM", "ID_DN150_MM", "ID_HP160_MM", "ID_HP120_MM",
+__all__ = ["ID_DN400_MM", "ID_DN200_MM", "ID_DN150_MM", "ID_HP160_MM", "ID_HP120_MM", "ID_HP70_MM",
            "LR_ELBOW_RADIUS_MM", "elbow_arc_m", "ROUTE_SEGMENTS", "route_volume_m3",
            "TWO_PHASE_SEGMENTS", "two_phase_volume_m3", "homogeneous_density",
            "M301_DES_KGH", "RHO_301_KGM3", "RHO_701_KGM3", "RHO_790_KGM3", "LETDOWN_FLASH",
@@ -102,6 +103,9 @@ ID_DN150_MM = 168.3 - 2.0 * 4.0
 #: bottoms line, the 187.1 mm V1 took for the whole train.
 ID_HP160_MM = 219.1 - 2.0 * 16.0
 ID_HP120_MM = 168.3 - 2.0 * 12.5
+
+#: DIN 2462 high-pressure pipe, 88.9 x 7.1 ("70") — PFD 308's line from 323P001 to 322E003.
+ID_HP70_MM = 88.9 - 2.0 * 7.1
 
 #: Long-radius elbows, ASME B16.9 (the bills of material: "ELBOW, LR, ANSI B 16.9"): centreline
 #: radius 1.5 times the nominal pipe size [mm], by DN.
@@ -155,6 +159,12 @@ ROUTE_SEGMENTS: dict[str, tuple[tuple[float, float], ...]] = {
                             + elbow_arc_m(200, 45, 3)),
                            (ID_DN150_MM, 1.3 + 13.9 + elbow_arc_m(150, 90, 7)
                             + elbow_arc_m(150, 45, 2))),
+    # PFD 308 (handoff B-110): 80-ACA11-323006-EK19L (UD-RL-100-MB-0017, as built), 323P001A/N2
+    # through its Y-strainer and angle valves to the tee where 323P001B's 323005 joins, 9.6 m of
+    # 70 high-pressure pipe, its bends formed in the pipe; then 80-ACA11-323004-EK19L (MB-0015, as
+    # built) from the tee up to 322E003/N5, 38.4 m less the tee's 0.2 m stub toward 323005, the
+    # standby's leg. 323P001A runs; 323008 (MB-0018) branches off the flowing path.
+    "323P001_TO_322E003": ((ID_HP70_MM, 9.6 + 38.4 - 0.2),),
 }
 
 
@@ -250,7 +260,7 @@ def _proc_route(name: str, source: str, destination: str, carrier_kgh: float,
     return ConsequenceRoute(source, destination, carrier_kgh, td_s)
 
 
-#: The five product-line routes on their isometrics; the liquid densities are V1's.
+#: The six product-line routes on their isometrics; the liquid densities are V1's, 308's the PFD's.
 PROCESS_ROUTES: dict[str, ConsequenceRoute] = {
     "322E001_TO_323C003": _proc_route("322E001_TO_323C003", "322E001", "323C003",
                                       R323_FEED_DES_KGH, 1150.0),
@@ -262,6 +272,9 @@ PROCESS_ROUTES: dict[str, ConsequenceRoute] = {
                                       R323_M317_DES, R323_D002_RHO),
     "323D002_TO_324E001": _proc_route("323D002_TO_324E001", "323D002", "324E001",
                                       R324_FEED_DES, R323_D002_RHO),
+    # PFD 308 at its own density, 1218 kg/m3 (handoff B-110).
+    "323P001_TO_322E003": _proc_route("323P001_TO_322E003", "323P001", "322E003",
+                                      E003_M308_DES_KGH, D001_RHO_KGM3),
 }
 
 

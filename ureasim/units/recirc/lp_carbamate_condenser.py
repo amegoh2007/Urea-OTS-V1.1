@@ -57,7 +57,16 @@ capacity draws from the envelope's own inventory, at most C = 10.37 kg per bar t
 is not credited to the tank. Each inlet enters at its producer's live temperature as a
 departure from the producer's design (decided 2026-10-16, handoff B-31, below).
 
-No species are carried: the node, the tank and PFD 308 have no composition in V1.
+The liquor's composition (decided 2026-10-22, handoff B-105): V1 carries no species through the
+node, the tank or PFD 308, so 322E003 washes with PFD 308's design carbamate whatever the LPCC
+takes in. Here the tank is stirred and carries NH3, CO2, H2O and urea as its departure from PFD
+308, each liquid inlet at its PFD row's composition and the condensate at the gas's closure on PFD
+308 (`data.unit_323e003.W_COND`):
+
+    M dd/dt = S - L d,    S = sum_i (m_i - m_i,des) (w_i - w_308),    w_308,live = w_308 + d
+
+L the liquid entering, stepped backward so it holds at a heel. Every inlet at its design leaves d
+exactly zero, the design tank PFD 308 to the bit; ``track_species=False`` is V1's.
 
 Where this unit departs from V1 — decided 2026-09-27 and 2026-10-10 (B-32, B-34, B-35, B-37)
 ------------------------------------------------------------------------------------------
@@ -143,6 +152,8 @@ from ureasim.data.unit_323e003 import (
     E003_LAMC_KJKG,
     E003_M308_DES_KGH,
     E003_M321_DES_KGH,
+    E003_M718B_DES_KGH,
+    E003_M776_DES_KGH,
     E003_M797_DES_KGH,
     E003_M_COND_DES_KGH,
     E003_PV_OP_DES_PCT,
@@ -178,6 +189,12 @@ from ureasim.data.unit_323e003 import (
     TW_SUP_T_C,
     TW_T_C,
     TW_TAU_S,
+    LIQUOR_SPECIES,
+    W_308,
+    W_718B,
+    W_734,
+    W_776,
+    W_COND,
 )
 from ureasim.data.desorption_train import D001_T_C
 from ureasim.data.unit_322c001 import C001_T_C
@@ -387,6 +404,9 @@ class LpCarbamateCondenserResult:
     t_c: float
     m_kg: float
     level_pct: float
+    #: PFD 308's composition as 323P001 delivers it [mass fractions] (B-105): PFD 308's own row
+    #: plus the tank's departure, the row itself at design and in V1.
+    w_308: dict = field(default_factory=lambda: dict(W_308))
 
 
 @dataclass
@@ -404,6 +424,11 @@ class LpCarbamateCondenser:
     #: Each inlet at its producer's live temperature, as its departure from the producer's design
     #: (decided 2026-10-16, handoff B-31); False is V1's design temperatures.
     live_inlets: bool = True
+    #: The tank liquor's departure from PFD 308's composition [mass fractions] (handoff B-105).
+    dw: dict = field(default_factory=lambda: {k: 0.0 for k in LIQUOR_SPECIES})
+    #: The liquor's composition carried through the tank into 308 (decided 2026-10-22, handoff
+    #: B-105); False is V1's mass-only LPCC, which the plant-level harnesses keep.
+    track_species: bool = True
 
     def step(self, pic: ProcessLoop, lic: ProcessLoop, sic: ProcessLoop, tic: ProcessLoop,
              m_305_kgh: float, m_flash_gas_kgh: float, m_heater_gas_kgh: float,
@@ -518,6 +543,17 @@ class LpCarbamateCondenser:
         suction_lost = m_308 > m_308_avail
         if suction_lost:
             m_308 = m_308_avail
+        # The liquor's composition (B-105): the stirred tank's departure from PFD 308 on what its
+        # inlets bring off their designs, stepped backward on the holdup before the tick.
+        if self.track_species:
+            gain = dt / 3600.0
+            liquid_in = max(in_kgh - m_321, 0.0) * gain
+            for k in LIQUOR_SPECIES:
+                src = ((m_cond - E003_M_COND_DES_KGH) * (W_COND[k] - W_308[k])
+                       + (m_718b_kgh - E003_M718B_DES_KGH) * (W_718B[k] - W_308[k])
+                       + (m_776_kgh - E003_M776_DES_KGH) * (W_776[k] - W_308[k])
+                       + d734 * (W_734[k] - W_308[k]))
+                self.dw[k] = (self.m_kg * self.dw[k] + src * gain) / (self.m_kg + liquid_in)
         self.m_kg = max(self.m_kg + (in_kgh - m_321 - m_308) / 3600.0 * dt, D001_M_FLOOR_KG)
 
         return LpCarbamateCondenserResult(
@@ -528,6 +564,7 @@ class LpCarbamateCondenser:
             env_in_kgh=env_in, t_dew_c=t_dew, capacity_kgh=capacity, env_cond_kgh=env_cond,
             p_bara=self.p_bara, t_c=self.t_c, m_kg=self.m_kg,
             level_pct=self.m_kg / D001_M_FULL_KG * 100.0,
+            w_308={k: W_308[k] + self.dw[k] for k in LIQUOR_SPECIES},
         )
 
 

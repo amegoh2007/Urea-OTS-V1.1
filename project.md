@@ -11,7 +11,7 @@ short of the start-up band (session 50); B-94 closed on PFD 734's departure form
 as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `D:\Work\Urea Simulation` (V1 — reference only, never edited from here)
-**Last updated:** 2026-10-21 (session 61)
+**Last updated:** 2026-10-22 (session 67)
 
 ---
 
@@ -763,6 +763,40 @@ steam system (`steam/`).
       V1's drum on the switch, both ways (session 61, decision 138, §LXXVII.4); Sections A, B and C
       of `handoff.md` empty again
 - [x] Full `pytest` suite green (session 61, 7535 collected; two synthesis pins re-pinned, their file green)
+- [x] S1-1.2's conversion traced tick by tick and A-21's option (c) prototyped and measured on
+      S1-1.2 and S2-3.1a, scratch only (session 62, §LXXVIII); B-102 and B-103 raised
+- [x] B-102 decided (b) and built: 322E001's duty bounded by its shell on the live steam's LMTD
+      against the tube side's design profile, a 5e-4 band (session 63, decision 139, §LXXIX.1)
+- [x] B-103 built on decision 62's class: LT-322501's full sump held back in the tubes (session 63,
+      §LXXIX.2)
+- [x] `Scenarios5.md`'s coupled loop transients put to the plant, both waves
+      (`tests/phase7/coupled.py`, `run_coupled.py`; session 63, §LXXIX.3-4)
+- [x] A-23: the console tests on settings of their own (session 64, §LXXX.1)
+- [x] B-104: 322E001's tubes standing full — the ceiling, HV-322605 capped at what the tubes take,
+      the submerged share derating the shell and cooling TT-322004 (session 64-65, decision 140,
+      §LXXX.2)
+- [x] B-105: 323D001's species and temperature into 322E003's wash (session 64, decision 141,
+      §LXXX.3)
+- [x] B-106: 322E002's melt on the Extended UNIQUAC rise below N/C 3.0 (session 64, decision 142,
+      §LXXX.4)
+- [x] B-107: 324F003's lost seal admits air (session 64, decision 143, §LXXX.5)
+- [x] `stripper.py` and `stripper_sump.py` inside 600 lines: `stripper_kinetics`, `stripper_level`
+      split out (session 64, §LXXX.6)
+- [x] `Scenarios5.md` re-run on the four, 14 cases, 83 of 165; eight deviations re-run, 16 of 22
+      (session 65, §LXXX.7-8)
+- [x] B-108: stage 2's temperature on its energy balance where its iteration does not settle
+      (session 66, decision 144, §LXXXI.1); LV-324501's selector split out to `melt_route`
+- [x] B-109: PT on 322R001 capped where the melt flashes (session 66, decision 145, §LXXXI.2)
+- [x] B-110: PFD 308's line from 323P001 to 322E003 on its isometrics, 24.94 s (session 66,
+      decision 146, §LXXXI.3)
+- [x] B-111: the azeotropic rise added in bar (session 66, decision 147, §LXXXI.4)
+- [x] `Scenarios5.md` re-run on the four (session 66, §LXXXI.5)
+- [x] B-112: PT on 322R001 on its feed line's PFD drop, 141.3 bar a at the design (session 67,
+      decision 148, §LXXXII.1); 322R001 has no transmitter of its own (P&ID 102,
+      UD-MR-322-EC-0001)
+- [x] Session 66's B-108 to B-111 confirmed as built by the process engineer (session 67)
+- [x] As-Built §LXXXII.3's two display-only notes signed off as built, no B-113 (session 67)
+- [x] Sessions 62 to 67 committed (session 67)
 
 ---
 
@@ -4475,6 +4509,203 @@ Part LXXVII):
 
 Next: the open data gaps (the final V1.1 ledger); Sections A, B and C are empty.
 
+### Session 62 — S1-1.2's conversion traced; A-21's option (c) measured
+
+Scratch traces and a scratch prototype only; no source file changed (As-Built Part LXXVIII).
+
+* **The conversion (S1-1.2, HIC-322605 60 -> 100 %).** Every tick recorded against a control, and
+  the reactor's extent recomputed with one input at a time taken from the control. While
+  HV-322605 drains the reactor (372 t/h for 146 s) the throughput the residence runs on rises to
+  374 m3/h and the conversion falls to 0.39-0.46, as Scenarios.md claims. The level then sits on
+  the funnel lip, 19.35 m, the outflow the production's, and the residence costs 1.2 points. From
+  about 4 minutes the conversion rises on the loop's chemistry: the reactor feed's H/C blend
+  (to 0.52) trips the stripper's H/C penalty (V1's volatile breakthrough, slip to 0.18), the
+  drained ammonia stays in the loop (feed N/C to 4.46), 322E002's melt bubbles above the loop
+  (fraction to 0.69), up to 113 t/h of gas reach the reactor and its carbamate heat lifts nodes 1-3
+  to the bubble point — the nodes worth 9.4 points at 30 minutes, the N/C 4.9. Run to an hour it
+  is a slow oscillation of about 50 minutes, undamped over the hour: +11.4 points at 30 minutes
+  (session 61's reading, its crest), -5.0 at 47. Trip 22.1's vent flood is set from 40 s in
+  session 61's runs too; "no trip" there meant the synthesis trips.
+* **Option (c) prototyped.** Q_max = Q_des . LMTD(live) / LMTD_des on 329D005's saturation,
+  TT-322013 and TT-322004, the desorbed NH3, CO2 and H2O scaled to meet it. 322E001's datasheet
+  (UD-AU-322-EC-0003 p. 4) leaves U and the corrected MTD blank and the archive's 322E001 file is
+  mechanical only, so the bound is anchored on the design duty (UA 1 160.5 kW/K calculated from the
+  datasheet's terminal temperatures, logged as a data gap). On S1-1.2: the duty held at 29.5-39.7
+  MW (lambda 0.36 at 60 s) where 78 MW was asked; the drained volatiles to 323C003 in the bottoms
+  (up to 304 t/h, 30 % NH3); 322E002 at least 0.97 saturated; PT-329201 at most 141.2 bar a; no vent
+  flood; the slow excursion a third of the as-built one. The claims agree as before (S1-1.2 1 of 5,
+  S2-3.1a 2 of 2), every departure smaller. Costs: the seed's own drift binds it (lambda 0.9999);
+  LT-322501 full for 32 s.
+* **Raised.** B-102 (the duty bound, options for the process engineer) and B-103 (LT-322501's clamp
+  deletes a full sump's excess, V1's — S2-2.3b on the as-built plant holds 100 % from 140 s, about
+  100 t/h; decision 62's class, to build).
+
+No source changed: the suite, pyflakes and the headless grep are as session 61 left them;
+`tests/docs` re-run after the documents, green.
+
+Next: B-102's decision; B-103 built on decision 62's class.
+
+### Session 63 — B-102 and B-103 built; Scenarios5.md put to the plant
+
+The process engineer decided B-102 (b) and asked for B-103 on decision 62's class; both built, each on
+a harness switch with both-ways tests (As-Built Part LXXIX).
+
+* **B-102, decision 139.** 322E001's split bounded by its shell: Q_max = Q_des . LMTD / LMTD_des,
+  past Q_max . (1 + 5e-4) the lift of NH3, CO2 and H2O beyond the sweep scaled by lambda (bisection)
+  until the per-species enthalpy balance meets it, the rest left in the bottoms
+  (`units/synthesis/stripper_shell`, new; `stripper_322e001(shell_bound=)`;
+  `StripperSump.shell_bound`). Two measurements went back to the process engineer first: a 1e-4
+  band, as asked, still binds on the seed's drift (1.68e-4 within the hour), so the band is 5e-4 and
+  the duty clamps continuously at its edge; and the LMTD on the live TT-322013 / TT-322004 binds at
+  every turndown (80 % load kept 42 % of its lift, V1's bottoms temperature rising on both sides of
+  the design), so the LMTD is the live steam's against the tube side's design 187 / 172 C. The
+  unperturbed seed: lambda 1.0 for an hour (the ratio at most 1.000184). HV-322605 to 100 % on the
+  loop harness: V1 asks 1.584 design duties on the tick after, the port pays 1.0005, lambda 0.635.
+* **B-103.** LT-322501's full sump holds its excess in the tubes (``held_kg``), run down first as the
+  sump drains, its gain booked as liquid; V1's clamp on the switch. S2-2.3b on the loop harness: 2.2 t
+  held 80 s after the sump fills, and V1's loop 1 bar higher — PT-329201's balance counted the liquor
+  V1 deleted as gas.
+* **Scenarios5.md.** `tests/phase7/coupled.py` (13 cases on the console's levers, Case 10 with no
+  lever), `run_coupled.py` (both waves, against a control, 45 minutes each), `test_coupled.py`;
+  `run_deviations.run_plant` samples result indicators beside the packet. **74 of 152 claims as
+  claimed**: the loop's first wave mostly as the note says, its delayed LP wave (the LPCC's pressure,
+  level and 308 surging back) once in 21, Helwan's hand-valved reactor draining to its lip where the
+  note's holds its level. The four mechanisms asked about, measured: the LPCC's water composition into
+  322E003 — needed (B-105); low N/C's azeotropic rise — in the thermo, reaching the loop only as
+  322E002's ceiling, not reached at N/C 2.93 (B-106, measure at 2.6 first); the stripper flooded into
+  its tubes — needed, B-103's held liquor reaching 64.6 t with no ceiling while the reactor drains
+  into it (B-104); 324F003's lost seal admitting air — needed (B-107, S1-5.4b re-run: PT-324203 flat).
+  Switched off (V1's split and clamp), the first twelve cases read 69 of 139 against the built
+  65 — eight claims move, two into agreement — and the trips move more: on V1's clamp S5-5a
+  latches every loop trip at 1 375 s, on V1's split S5-5b and S5-9 flood 322C001's vent (22.1);
+  built, none of the three, and S5-7 gains a 22.1 at 2 295 s.
+
+`python -m pytest` — **7 584 collected**, thirteen parallel parts: twelve green; the HMI part fails one
+test, `test_main_window.py::test_the_trend_window_opens_once_and_takes_trendable_tags`, on the
+committed tree as well — it reads the console's saved trend view from the user's `QSettings` (A-23).
+`tests/phase7/test_coupled.py` re-run green with S5-6b; `tests/docs` green after the documents.
+pyflakes clean; the headless grep prints nothing.
+
+Next: B-104 to B-107 (the process engineer's decisions); A-23 at the next code session.
+
+### Sessions 64 and 65 — B-104 to B-107 decided and built; A-23 closed; Scenarios5.md re-run
+
+The process engineer decided the four mechanisms session 63 measured and asked for A-23 (session 64's
+paste); session 65 completed the work after a context break. One question went back first: the
+paste's "flooded limit" for TT-322004 named no temperature, and the process engineer chose the
+crystallisation floor, 132.7 C. Each mechanism is on a harness switch with both-ways tests (As-Built
+Part LXXX).
+
+* **A-23.** `tests/hmi/conftest.py` gives every console test an INI file of its own for
+  `main_window`'s ``QSettings``; the trend-window test passes.
+* **B-104, decision 140.** The held liquor capped at the tubes standing full, 8 688.7 kg; holding any,
+  the tubes take the drain and (1 - sigma) of the design bottoms, HV-322605's discharge capped at it
+  and 322R001 keeping the rest, what still arrives past the ceiling handed back to its holdup; the
+  shell's capacity times 1 - 0.70 sigma and the bottoms to 132.7 + f_sub (T - 132.7). Two caps were
+  measured and rejected first: the room over the bottoms' live transit starved itself (the reactor
+  stopped discharging with the tubes 78 % full) and counting the transit's contents failed on its
+  dead time, which does not conserve them. Both ways on S5-5a's lever: from 218.1 s the take caps
+  HV-322605; ten minutes on the reactor discharges 26.3 t/h against V1's 226.2 and stands at 85.94 %.
+* **B-105, decision 141.** 323D001 carries NH3, CO2, H2O and urea as its departure from PFD 308 (each
+  inlet at its PFD row, the condensate at the gas's closure on PFD 308) and 322E003 washes with 308's
+  live composition and temperature. FV-323401 wide open: 308 to 33.45 % water in four minutes, the
+  reactor feed's H/C 0.4142 against V1's 0.4014. The seed's own LP drift reaches 308 at 1e-6.
+* **B-106, decision 142.** The melt's N/C factor below 3.0 on the Extended UNIQUAC rise; the paste's
+  diagnosis confirmed — the saturation fraction reads the K_N line, not the thermo, correcting session
+  63's handoff text. CO2 +20 % on a held pump: the loop reaches trip 22.2 at 161.6 s where V1's stands
+  at 141.5 bar a.
+* **B-107, decision 143.** The lost seal's air on LV-324501A's blow-through law (`units/evaporation/
+  leg_seal`). S1-5.4b: PT-324203 to 0.242 bar a, the melt to 96.71 %. At the 1 kg heel the stage's
+  fixed point no longer converges (B-108).
+* **Structure.** `stripper.py` 573 lines and `stripper_sump.py` 526, `stripper_kinetics` and
+  `stripper_level` split out unchanged; `leg_seal` new.
+* **Scenarios5.md re-run** (S5-W on FV-323401 in MAN at 100 %, S5-6c at CO2 +20 %): **83 of 165**; the
+  thirteen of session 63 74 of 152 again with sixteen claims moving — S5-W 6 -> 10 on B-105; S5-5a,
+  S5-6a, S5-6b and S5-6c reach trip 22.2 on B-106's rise, S5-5a's through the stripper the tubes'
+  cap starves. Eight deviations re-run: 16 of 22, S1-5.4b's vacuum now breaking.
+
+Raised: B-108 (stage 2's fixed point at its heel), B-109 (PT on 322R001 reading the melt's bubble
+pressure), B-110 (308's line transit), B-111 (B-106's fast trips).
+
+`python -m pytest` — **7 627 collected** (7 584 at session 63), thirteen parallel parts, all green:
+the HMI part on A-23's fixture; the two synthesis-harness parts re-run after the transcription's
+condenser was put on V1's line (`test_synthesis_loop_equivalence._hpcc_port(low_nc=False)` — it had
+picked up B-106's default and parted from the port at tick 6); three engine enumerations extended
+(81 declared tears, ``TEAR_NAMES`` with ``w_308`` and ``t_308_c``, ``LV_324501_DP_DES_BAR`` in
+A-13's audit). `tests/docs` green; pyflakes clean; the headless grep prints nothing.
+
+`CLAUDE.md` §3 gains the user's rule: always use the claude-mem skill (its search was offline this
+session — the Chroma store unreachable — and returned nothing).
+
+Next: B-108 to B-111 (the process engineer's decisions; B-110's data search first).
+
+### Session 66 — B-108 to B-111 decided and built; Scenarios5.md re-run
+
+The process engineer decided the four items sessions 64 and 65 raised (a pasted root-cause note and
+directive). The note's numbers were measured first and two differ from the code (As-Built Part
+LXXXI):
+
+* The Extended UNIQUAC melt bubbles at 44.37 bar a at N/C 3.0, not 49.4, so the ratio amplified the
+  rise 3.25 times, not 2.92.
+* B-109's min(P_bub, PT-329201) would have moved the design reading 3.5 bar. The cap is placed at
+  the saturation fraction's threshold instead.
+
+* **B-108, decision 144.** Where stage 2's G7 sweeps do not settle, the temperature is solved on the
+  stage's energy balance by bracketed false position (`units/evaporation/stage_fixed_point`).
+  * At the 1 kg heel under a broken vacuum TT-324002 holds 147 to 143 C where V1's last sweep
+    wandered between 43 and 146 C.
+  * LV-324501's selector moved to `units/evaporation/melt_route` (`second_evaporator.py` 552 lines).
+* **B-109, decision 145.** PT on 322R001 on min(P_bub, PT-329201 + 3.5 bar) plus V1's line drop.
+  * A melt at 216 bar a on a loop at 151 reads 170.2 where V1's read 231.7.
+  * The rest is V1's line law, raised as B-112.
+* **B-110, decision 146.** PFD 308's line found in the vendor archive. 323006 (UD-RL-100-MB-0017) and
+  323004 (MB-0015) give 47.8 m of 88.9 x 7.1 high-pressure pipe, 0.2095 m3, 24.94 s at design.
+  * 322E003 owns the line (`ScrubberSump.wash_line`).
+  * With FV-323401 wide open, TT-322002 is 163.61 C on the line against 163.43 on B-105's tear after
+    four minutes.
+* **B-111, decision 147.** The azeotropic rise added in bar: +9.38 at N/C 2.8, +38.04 at 2.6.
+  * CO2 +20 % on a held pump still trips 22.2, at 192.7 s (161.6 on the ratio): the melt reaches
+    N/C 2.40 in ten seconds.
+* **Scenarios5.md re-run**, 14 cases: **82 of 165** (83).
+  * S5-W 10 -> 9: the loop pressure's late rebound shrank inside its tolerance with 308's line.
+  * The four tripping cases trip 30 to 95 s later and no other verdict moves: S5-6c 195 s, S5-6b 445,
+    S5-5a 575, S5-6a 1 330.
+  * Eight deviations re-run: 15 of 22 (16). S1-1.2's loop now ends 0.6 bar up where it ended 11,
+    and its bottoms' ammonia claim, gained on the ratio, is lost.
+
+Raised: B-112 (PT on 322R001 on V1's feed-line law: 136.1 bar a at the design against the PFD's
+141.3, moving 2.31 bar per bar of PT-329201).
+
+`python -m pytest` — **7 636 collected** (7 627 at session 65; nine new), thirteen parallel parts, all green on their first run, the re-pinned B-106 loop test with them; `tests/docs` green; pyflakes clean; the headless grep prints nothing.
+
+Next: B-112 (the process engineer's decision).
+
+### Session 67 — B-112 decided and built; handoff Sections A, B and C empty
+
+The process engineer confirmed session 66's B-108 to B-111 as built and decided B-112 (a) (a pasted
+root-cause note and directive). The note's numbers were measured first and hold: V1's line factor is
+2.308 at the design seed (the mass reference 1.754, the density reference 1.316), 136.12 bar a, and
+3.31 bar per bar of PT-329201 under B-109's cap (As-Built Part LXXXII).
+
+* **The data search.** 322R001 carries no pressure transmitter: P&ID 102 draws TI-322005 to 009,
+  LI-322504 and SV-32251 / 32252 on it; loop summary UD-MR-322-EC-0001 lists no pressure loop on it.
+* **B-112, decision 148.** PT on 322R001 on min(P_bub, PT-329201 + 3.5) less the feed line's PFD drop,
+  144.2 - 141.3 = 2.9 bar (`unit_322_loop.REACT_FEED_DP_DES_BAR`, in A-13's audit), at the seed's feed
+  density (752.2 kg/m3) and mass (250 639 kg/h).
+  * The plant's first tick reads 141.3 bar a to the bit; under B-109's cap one bar per bar of
+    PT-329201 (151.6 on a loop at 151, where V1's line read 170.2).
+  * Display only: S5-6b re-run with its control, every other series identical to session 66's, trip
+    22.2 at 445 s, 7 of 13. The control reads 141.30 on a loop at 140.70; S5-6b peaks at 155.42 on
+    154.82 (session 66: 183.79 on 154.64).
+* **Found, not done** (As-Built §LXXXII.3): about two-thirds of the 2.9 bar is the reactor's own
+  liquid column, which the law scales with the flow; after a trip the reading is the cooling melt's
+  bubble pressure, 95.6 bar a under a 155 bar a loop, as on V1's line. Both notes signed off as built
+  by the process engineer (2026-10-22): the reading reaches no screen and no unit; no B-113.
+
+`python -m pytest` — **7 638 collected** (7 636 at session 66; two new), thirteen parallel parts, all green on their first run; `tests/docs` green; pyflakes clean; the headless grep prints nothing.
+
+`handoff.md`'s Sections A, B and C are empty; the open data gaps are the only open items.
+
 ## 5. Design decisions on record
 
 1. **PyQt6, not PyQt5.** Qt6 is current, has proper high-DPI scaling for the 1366×720 stage,
@@ -5054,7 +5285,8 @@ Next: the open data gaps (the final V1.1 ledger); Sections A, B and C are empty.
      78's class on decision 97): wherever the melt the tick-before fraction lets condense would move
      the fraction, f = f(P_bub(f), PT-329201) is solved within the tick, its root bracketed on [0, 1];
      at its fixed point the tick is the tear's to the bit. The stripper's split is not bounded by its
-     shell (option (c) not taken). ``CondenserHoldup(implicit_saturation=False)``, the tear, on the
+     shell (option (c) not taken then; decided 2026-10-21 as decision 139).
+     ``CondenserHoldup(implicit_saturation=False)``, the tear, on the
      synthesis harness's switch.
 136. **322E003's capacity on its shell's effectiveness** (2026-10-17, handoff B-99 (b1); decision 36's
      class): the condensation capacity's flow term is the shell's conductance eps . C over its
@@ -5070,3 +5302,68 @@ Next: the open data gaps (the final V1.1 ledger); Sections A, B and C are empty.
      2900 mm apart from the outlet line to N7 on the top head, V1's 60 % set point holding 1837 kg;
      the A-22 ceiling at the full drum; LV-323505's seal at the reading of an empty bottom head.
      ``V1_DRUM`` on the harness's switch; 323E011's 323F004 vapour space (B-51) unchanged.
+139. **322E001's duty bounded by its shell** (2026-10-21, handoff B-102 (b), session 63): the split's
+     per-species enthalpy balance bounded by Q_max = Q_des . LMTD(T_steam, 187, 172) / LMTD_des, the
+     live 329D005 saturation against the tube side's design profile (the live TT-322013 / TT-322004
+     measured binding every turndown: 80 % load kept 42 % of its lift); past Q_max . (1 + 5e-4) — the
+     band the smallest round number above the seed's drift, 1.68e-4 — the lift of NH3, CO2 and H2O
+     beyond the sweep scaled by lambda until the balance meets it, the rest left in the bottoms.
+     ``stripper_322e001(shell_bound=False)`` and ``StripperSump(shell_bound=False)`` on the harnesses.
+     B-103 (the same session) is decision 62's class, applied: LT-322501's full sump held back in the
+     tubes above it, ``StripperSump(hold_full=False)`` V1's clamp on the harnesses.
+140. **322E001's tubes standing full** (2026-10-22, handoff B-104, session 64; decision 62's class
+     extended): the liquor a full LT-322501 sump holds back in the tubes capped at the bundle
+     standing full, 8 688.7 kg (7.658 m3 at 1 134.64 kg/m3); holding any, the tubes take the drain
+     and their unsubmerged share of the design bottoms, take = drain + (1 - sigma) . 130 482 kg/h,
+     and 322R001 discharges through HV-322605 no more than that on this tick's bottoms per kilogram
+     taken, keeping the rest; what still arrives past the ceiling handed back to its holdup. The
+     shell's capacity derated by f_sub = 1 - 0.70 sigma (322E003's flooded-surface floor) and the
+     bottoms cooled to T_cryst + f_sub (T_bot - T_cryst), the process engineer choosing the
+     crystallisation floor, 132.7 C, as the "flooded limit" (AskUserQuestion, session 64). Two caps
+     measured and rejected first (the room over the live transit starves; the transit's contents
+     are not conserved by its dead time). ``StripperSump(tube_ceiling=False)`` on the harnesses.
+141. **323D001's liquor carried into 322E003** (2026-10-22, handoff B-105, session 64): the tank's
+     NH3, CO2, H2O and urea as its departure from PFD 308, each liquid inlet at its PFD row and the
+     condensate at the gas's closure on PFD 308, stepped backward on the holdup; 322E003's wash on
+     308's live composition (each species' departure on the delivered wash) and TT-322002 blended
+     by the wash's share on its temperature's departure from 74 C; both a tick late with 308's flow.
+     ``LpCarbamateCondenser(track_species=False)`` on the harnesses. `Scenarios5.md`'s LPCC case on
+     FV-323401 in MAN at 100 %, about 7 000 kg/h, past FIC-323401's 2 000 kg/h set-point ceiling.
+142. **322E002's melt below its azeotrope** (2026-10-22, handoff B-106, session 64): below N/C 3.0
+     the bubble pressure's N/C factor f_N(3.0) . P_EU(N/C) / P_EU(3.0), the Extended UNIQUAC
+     bubble pressure of the design tube-side feed at 170 C, its shape only; V1's K_N line at and
+     above 3.0. ``CondenserHoldup(low_nc_branch=False)`` on the harnesses.
+143. **324F003's lost seal admits air** (2026-10-22, handoff B-107, session 64): below LT-324501's
+     seal band atmospheric air at PFD 783's 32 C enters on the blow-through law on LV-324501A's
+     liquid sizing (the loop summary's 1221 kg/m3, 6.9 -> 3.7 bar a; PFD 402 at the 75 % design
+     stroke), choked, joining PV-324203's false air into 324E005.
+     ``SecondEvaporator(seal_air=False)`` on the harnesses.
+144. **Stage 2's fixed point on its energy balance** (2026-10-22, handoff B-108, session 66; decision
+     78's class): where V1's G7 sweeps do not settle to 1e-12 in 20, the stage's temperature solved
+     on its own energy balance, G(T) = T_sweep(T, P(T)) - T, P(T) the sweep's backward vacuum step
+     settled at the trial T, bracketed between the coldest of the feed and the melt and the hottest
+     of the chest and the melt, by false position to 1e-12; no sign change leaves V1's last sweep.
+     ``SecondEvaporator(bisect_fixed_point=False)`` on the harnesses.
+145. **PT on 322R001 capped where the melt flashes** (2026-10-22, handoff B-109, session 66;
+     decision 70's class): the reading's base min(P_bub, PT-329201 + 3.5 bar), the head
+     `liquor_saturation` uses, so V1's reading holds wherever the melt does and at the design. The
+     paste's min(P_bub, PT-329201) would have moved the design reading 3.5 bar, the design melt
+     bubbling at 322E002's 144.2. ``ReactorInventory(flash_cap=False)`` on the harness.
+146. **PFD 308's line on its isometrics** (2026-10-22, handoff B-110, session 66; B-21's and decision
+     74's classes): 323006 (UD-RL-100-MB-0017) and 323004 (MB-0015), 9.6 + 38.4 - 0.2 m of 88.9 x 7.1
+     high-pressure pipe, 0.2095 m3, 24.94 s at 36 835 kg/h and 1218 kg/m3; 322E003 owns the line,
+     its flow at once, 323D001's composition and temperature a residence late.
+     ``ScrubberSump(wash_line=False)`` on the harness.
+147. **The azeotropic rise added in bar** (2026-10-22, handoff B-111, session 66; decision 51's class
+     on decision 142): below N/C 3.0, f_N = f_N(3.0) + (P_EU(N/C) - P_EU(3.0)) / P_des, where the
+     ratio multiplied the Extended UNIQUAC model's rise by 144.2 / 44.37 = 3.25.
+148. **PT on 322R001 on its feed line's PFD drop** (2026-10-22, handoff B-112 (a), session 67;
+     decision 70's and A-13's classes): P_R001 = min(P_bub, PT-329201 + 3.5) - 2.9 (rho_des / rho)
+     (m / m_des)^2, the 2.9 bar the PFD's 144.2 at 322E002's outlet (202, 205) less 141.3 at the
+     reactor's top (203, 207) written as their subtraction (`unit_322_loop.REACT_FEED_DP_DES_BAR`),
+     rho_des the urea-solution correlation at the design seed's feed and 170 C (752.2 kg/m3),
+     m_des the seed's 250 639 kg/h, so the reading is 141.3 at the design to the bit and moves one
+     bar per bar of PT-329201 where B-109's cap binds. V1's ``p_syn - 144.2`` on the nominal 990 and
+     the condenser's liquid make read 136.12 at the design. 322R001 carries no transmitter of its
+     own (P&ID 102, UD-MR-322-EC-0001); the reading is the packet's and the stream inspector's.
+     ``ReactorInventory(design_drop=False)`` on the harness.

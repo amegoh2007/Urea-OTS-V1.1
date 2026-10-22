@@ -1,12 +1,13 @@
-"""What the console tests share: a Qt application, a bridge that records what a console sends, and
-the plant's packet after ten design ticks."""
+"""What the console tests share: a Qt application, a bridge that records what a console sends, the
+plant's packet after ten design ticks, and console settings of each test's own."""
 
 from __future__ import annotations
 
 import pytest
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
+from ureasim.hmi import main_window
 from ureasim.net.protocol import Role
 
 
@@ -60,6 +61,16 @@ class FakeBridge(QObject):
 @pytest.fixture(scope="session")
 def qapp():
     return QApplication.instance() or QApplication([])
+
+
+@pytest.fixture(autouse=True)
+def console_settings(tmp_path, monkeypatch):
+    """The console's settings in an INI file of the test's own (handoff A-23): a test never reads
+    the layout or the trend view an operator saved on this machine, and never writes one."""
+    path = str(tmp_path / "console.ini")
+    monkeypatch.setattr(main_window, "QSettings",
+                        lambda *_: QSettings(path, QSettings.Format.IniFormat))
+    return path
 
 
 @pytest.fixture(scope="session")

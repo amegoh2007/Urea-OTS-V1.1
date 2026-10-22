@@ -92,3 +92,20 @@ def test_a_full_vessel_spills_into_the_off_gas_line(seed):
         r = _step(unit, seed, hic605=0.0)
     assert r.carry_kgh > 0.0 and r.level_pct == pytest.approx(100.0, abs=1e-9)
     assert sum(r.carry_kmolh.values()) > 0.0
+
+
+def test_a_stripper_standing_full_holds_the_liquor_back_in_the_reactor(seed):
+    """B-104, decided 2026-10-22: HV-322605 discharges no more than 322E001's full tubes can take,
+    and what they hand back past their ceiling returns to the holdup — the reactor keeps both, its
+    level rising. Without a cap and with nothing handed back the step is the uncapped one's."""
+    free = _step(ReactorInventory(), seed)
+    unit = ReactorInventory()
+    capped = unit.step(seed["hpcc"], seed["co2"], seed["ratio"], 60.0, 74.0, seed["suction"],
+                       140.7, DT, m_out_cap_kgh=100_000.0, backup_kgh=20_000.0)
+    assert capped.m_out_kgh == 100_000.0 < free.m_out_kgh
+    assert capped.overflow_kgh == 100_000.0
+    gained = (free.m_out_kgh - 100_000.0 + 20_000.0) * DT / 3600.0
+    assert capped.m_liq_kg - free.m_liq_kg == pytest.approx(gained, rel=1e-9)
+    same = ReactorInventory().step(seed["hpcc"], seed["co2"], seed["ratio"], 60.0, 74.0,
+                                   seed["suction"], 140.7, DT, m_out_cap_kgh=1e9, backup_kgh=0.0)
+    assert (same.m_out_kgh, same.m_liq_kg) == (free.m_out_kgh, free.m_liq_kg)

@@ -13,6 +13,12 @@ boot routine sets it. The rewrite makes it a parameter with a module-level defau
 the same two states expressed differently: `ua_kjhk=None` is V1 before the pin, and the
 default is V1 after it. Both are exercised here, and the lifted namespace's global is written
 directly so the post-pin comparison is against V1's own code path rather than a stand-in.
+
+The decided divergence
+----------------------
+Below N/C 3.0 the melt's bubble pressure follows the Extended UNIQUAC rise toward its azeotrope
+(decided 2026-10-22, handoff B-106), where V1's K_N line falls. Every comparison above runs the
+port on V1's line (``low_nc=False``); section 5 runs both ways.
 """
 
 from __future__ import annotations
@@ -28,6 +34,7 @@ from ureasim.units.synthesis.carbamate_condenser import (
     bubble_p_322e002,
     carbamate_condenser_322e002,
     hpcc_flash_split,
+    low_nc_rise,
 )
 
 from . import b6_switch, b9_switch
@@ -199,7 +206,7 @@ def test_flash_off_design_pairs_match_v1(v1, t_c, p_loop):
 @pytest.mark.parametrize("hc", [0.2, 0.39824129577331385, 0.8, 4.0])
 def test_bubble_pressure_matches_v1(v1, t_c, nc, hc):
     """All three arguments, including the range where either factor floors at zero."""
-    assert bubble_p_322e002(t_c, nc, hc) == v1["bubble_p_322e002"](t_c, nc, hc)
+    assert bubble_p_322e002(t_c, nc, hc, low_nc=False) == v1["bubble_p_322e002"](t_c, nc, hc)
 
 
 def test_the_bubble_anchor_defaults_to_the_reactor_feed(v1):
@@ -239,7 +246,7 @@ def assert_same(v1, where, gas=None, liq=None, **kwargs):
     liq = v1["_design_liq"] if liq is None else liq
     theirs = v1["hpcc_322e002"](gas, liq, **kwargs)
     ours = carbamate_condenser_322e002(
-        gas["top_kmolh"], gas["T_top"], liq["comp"], liq["T_C"],
+        gas["top_kmolh"], gas["T_top"], liq["comp"], liq["T_C"], low_nc=False,
         **{KEYWORDS.get(k, k): v for k, v in kwargs.items()})
     for old_key, new_key in FIELDS:
         a, b = theirs[old_key], getattr(ours, new_key)
@@ -259,7 +266,7 @@ def test_the_unpinned_pass_agrees(v1):
         gas, liq = v1["_design_gas"], v1["_design_liq"]
         theirs = v1["hpcc_322e002"](gas, liq, gate=1.0)
         ours = carbamate_condenser_322e002(gas["top_kmolh"], gas["T_top"], liq["comp"],
-                                           liq["T_C"], gate=1.0, ua_kjhk=None)
+                                           liq["T_C"], gate=1.0, ua_kjhk=None, low_nc=False)
         for old_key, new_key in FIELDS:
             assert theirs[old_key] == getattr(ours, new_key), old_key
     finally:
@@ -375,3 +382,35 @@ def test_a_full_upset_state_agrees(v1):
                 gas=scaled(v1["_design_gas"], "top_kmolh", 0.6),
                 liq=scaled(v1["_design_liq"], "comp", 1.4),
                 t_shell=168.0, gate=0.8, t_prod_prev=196.0, p_loop=131.0, dt=2.0)
+
+
+# ======================================================================================
+# 5. The decided divergence: the azeotropic rise below N/C 3.0 (handoff B-106)
+# ======================================================================================
+
+@pytest.mark.parametrize("t_c", [120.0, 170.0, 200.0])
+@pytest.mark.parametrize("nc", [3.0, 3.072961, 3.5, 6.0])
+def test_at_and_above_the_branch_the_melt_is_v1s(v1, t_c, nc):
+    """From N/C 3.0 up the port's default is V1's K_N line, to the bit."""
+    hc = 0.39824129577331385
+    assert bubble_p_322e002(t_c, nc, hc) == v1["bubble_p_322e002"](t_c, nc, hc)
+
+
+@pytest.mark.parametrize("nc, v1_bara, port_bara, rise_bar", [
+    (2.95, 141.0084, 143.4525, 1.1463), (2.9, 139.7106, 145.3167, 3.0104),
+    (2.8, 137.1150, 151.6879, 9.3816), (2.6, 131.9238, 180.3498, 38.0435)])
+def test_below_the_branch_the_melt_rises_toward_its_azeotrope_decided_divergence(
+        v1, nc, v1_bara, port_bara, rise_bar):
+    """Both ways at 170 C on the design H/C and V1's default anchor, the reactor feed's N/C: V1's
+    line falls with the N/C, the port's bubble pressure rises on the Extended UNIQUAC model's rise
+    (B-106), added in bar to its value at the branch, 142.31 bar a (B-111): at 170 C the rise's
+    every bar is a bar of PI-322E002."""
+    hc = 0.39824129577331385
+    theirs = v1["bubble_p_322e002"](170.0, nc, hc)
+    ours = bubble_p_322e002(170.0, nc, hc)
+    assert theirs == bubble_p_322e002(170.0, nc, hc, low_nc=False)
+    assert theirs == pytest.approx(v1_bara, abs=1e-4)
+    assert ours == pytest.approx(port_bara, abs=1e-4)
+    assert ours - bubble_p_322e002(170.0, 3.0, hc) == pytest.approx(low_nc_rise(nc), rel=1e-12)
+    assert low_nc_rise(nc) == pytest.approx(rise_bar, abs=1e-4)
+    assert ours > bubble_p_322e002(170.0, 3.0, hc) > theirs

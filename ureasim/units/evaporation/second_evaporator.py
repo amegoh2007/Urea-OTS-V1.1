@@ -56,6 +56,13 @@ Where this stage departs from V1 — each a decided divergence, run both ways in
     takes the 7.427 m3 cylinder.
   * **The drain above its heel** (decision 11): LV-324501 drains only the melt above the 1 kg
     floor.
+  * **The lost seal admits air** (handoff B-107, decided 2026-10-22): once LT-324501's barometric
+    leg uncovers its seal, atmospheric air enters 324F003's vacuum through the drain's trim on the
+    blow-through law (`leg_seal`), choked, into 324E005 with the false air — where V1's empty leg
+    admits nothing and the vacuum holds.
+  * **The fixed point on the energy balance** (handoff B-108, decided 2026-10-22): where V1's
+    sweeps never settle — the 1 kg heel under a broken vacuum — the temperature is bracketed and
+    solved on the stage's energy balance (`stage_fixed_point`), where V1 leaves the last sweep.
 
 PV-329212 runs on its vendor trim (decision 23's class, decided 2026-10-14): Metso's DN 80
 balanced Neldisc, Cv 150, its printed capacities as its curve, from its 54.68 % design stroke, where
@@ -77,7 +84,6 @@ from ureasim.control.process_loop import ProcessLoop
 from ureasim.control.valve import cv_fraction
 from ureasim.core.node import backward_euler_pressure, vapour_volume_m3, vessel_dpdt
 from ureasim.core.numeric import clamp
-from ureasim.core.packet import SOLUTION_SPECIES
 from ureasim.core.signal import first_order_lag
 from ureasim.core.units_of_measure import ABSOLUTE_ZERO_C
 from ureasim.data.control_valves import PV_329212
@@ -126,7 +132,6 @@ from ureasim.data.unit_324 import (
     W_S401,
 )
 from ureasim.data.unit_329 import P_MP_BARA
-from ureasim.data.unit_335 import PFD_697_T_C, W_697
 from ureasim.thermo import iapws
 from ureasim.thermo.domains import NONVOLATILE
 from ureasim.thermo.empirical import urea_soln_cp
@@ -136,6 +141,9 @@ from ureasim.units import liquor_stage
 from ureasim.units.evaporation.condenser_node import inlet_kmolh
 from ureasim.units.evaporation.ejector_map import suction_capacity_kgh
 from ureasim.units.evaporation.holdup_boil import holdup_boil
+from ureasim.units.evaporation.leg_seal import seal_air_kgh
+from ureasim.units.evaporation.melt_route import MeltRoute, melt_route
+from ureasim.units.evaporation.stage_fixed_point import bisected_fixed_point
 from ureasim.units.evaporation.vacuum_condenser import (
     condensate_back_pressure,
     design_specs,
@@ -150,15 +158,11 @@ P_MP_LAG_KEY = "324E003_P_9_thermal"
 EJECTOR_TAG = "324F004"
 
 #: V1's numerical floors at this stage: the equilibrium strength [-], the heat capacity of the
-#: temperature step [kJ/K], a melt flow [kg/h], the step [s]; and the composition a selector
-#: stream must carry, and its flows, before they count [-], [kg/h] (``route_lv324501``).
+#: temperature step [kJ/K], a melt flow [kg/h], the step [s].
 W_EQ_FLOOR = 1e-6
 HEAT_CAPACITY_FLOOR_KJK = 1e-6
 FLOW_FLOOR_KGH = 1e-6
 DT_FLOOR_S = 1.0e-9
-ROUTE_W_FLOOR = 1.0e-15
-ROUTE_NORMALISED_TOL = 1.0e-12
-ROUTE_FLOW_FLOOR_KGH = 1.0e-15
 
 
 # ======================================================================================
@@ -268,65 +272,6 @@ def false_air_kgh(stroke_pct: float) -> float:
                               / cv_fraction(PV_324203_OP_DES_PCT / 100.0, "mod_equal_pct"))
 
 
-@dataclass(frozen=True)
-class MeltRoute:
-    """What LV-324501's selector sends where: the forward melt to 335 and the recycle to 323D002
-    [kg/h], each with its mass fractions and temperature [deg C]."""
-
-    route: str
-    forward_kgh: float
-    forward_w: dict
-    forward_t_c: float
-    recycle_kgh: float
-    recycle_w: dict
-    recycle_t_c: float
-    #: The UF85 joined to the forward melt [kg/h], PFD 697: none on route B.
-    uf85_kgh: float = 0.0
-
-
-def melt_route(m_402_kgh: float, w_402: dict, t_c: float, recycle: bool,
-               uf_ratio: float = 0.0) -> MeltRoute:
-    """LV-324501's selector node (V1 ``route_lv324501``).
-
-    Process utility
-    ---------------
-    The melt goes one way only: forward through LV-324501A to granulation, or — when the 335
-    melt header backs up past PIC-335201's relief setting — back through LV-324501B to 323D002.
-    UF85 joins the forward melt at the selector, ``uf_ratio`` kilograms per kilogram of melt
-    (unit 335's dosing, `units.finishing.uf85_dosing`; decided 2026-10-16, decision 123), and is
-    interlocked off on route B. Stage 2 routes its own drain with none, V1's live call.
-
-    Equations (V1's): the raw melt's fractions normalised; m_uf = r m on route A; the selector
-    stream (m w + m_uf w_697) / (m + m_uf) at its sensible-heat-weighted temperature
-    (m cp T + m_uf cp_697 40) / (m cp + m_uf cp_697) goes forward; on route B the raw melt returns
-    at T.
-    """
-    m_base = max(float(m_402_kgh), 0.0)
-    total_w = sum(max(float(w_402.get(k, 0.0)), 0.0) for k in SOLUTION_SPECIES)
-    if total_w <= ROUTE_W_FLOOR:
-        raise ValueError("LV-324501 stream 402G composition is empty")
-    if abs(total_w - 1.0) <= ROUTE_NORMALISED_TOL:
-        base_w = {k: float(w_402.get(k, 0.0)) for k in SOLUTION_SPECIES}
-    else:
-        base_w = {k: max(float(w_402.get(k, 0.0)), 0.0) / total_w for k in SOLUTION_SPECIES}
-    m_uf = 0.0 if recycle else max(float(uf_ratio), 0.0) * m_base
-    m_selector = m_base + m_uf
-    if m_selector > ROUTE_FLOW_FLOOR_KGH:
-        selector_w = {k: (m_base * base_w[k] + m_uf * W_697[k]) / m_selector
-                      for k in SOLUTION_SPECIES}
-    else:
-        selector_w = dict(base_w)
-    cp_base = urea_soln_cp(base_w["Urea"], t_c)
-    cp_uf = urea_soln_cp(W_697["Urea"], PFD_697_T_C)
-    heat_capacity_flow = m_base * cp_base + m_uf * cp_uf
-    selector_t = ((m_base * cp_base * t_c + m_uf * cp_uf * PFD_697_T_C) / heat_capacity_flow
-                  if heat_capacity_flow > ROUTE_FLOW_FLOOR_KGH else float(t_c))
-    if recycle:
-        return MeltRoute("B", 0.0, dict(base_w), float(t_c), m_base, dict(base_w), float(t_c))
-    return MeltRoute("A", m_selector, dict(selector_w), selector_t, 0.0, dict(base_w), float(t_c),
-                     m_uf)
-
-
 # ======================================================================================
 # The unit
 # ======================================================================================
@@ -386,6 +331,12 @@ class SecondEvaporatorResult:
     t_c: float
     p_bara: float
     w: dict
+    #: The air the lost seal admitted [kg/h] (B-107) and all the air into 324E005, the false air
+    #: and the seal's [kg/h]; the seal's exactly zero while it holds.
+    seal_air_kgh: float = 0.0
+    air_in_kgh: float = 0.0
+    #: The fixed point solved on the energy balance where the sweeps never settled (B-108).
+    bisected: bool = False
 
 
 @dataclass
@@ -406,6 +357,12 @@ class SecondEvaporator:
     #: The backward species step at a heel (decided 2026-10-17, handoff B-98); False is V1's
     #: explicit step, which the equivalence harnesses keep.
     backward_species: bool = True
+    #: Atmospheric air through the lost barometric seal (decided 2026-10-22, handoff B-107); False
+    #: is V1's sealed leg, which the equivalence harnesses keep.
+    seal_air: bool = True
+    #: The temperature on the energy balance where the sweeps never settle (decided 2026-10-22,
+    #: handoff B-108); False is V1's last sweep, which the equivalence harnesses keep.
+    bisect_fixed_point: bool = True
 
     def step(self, loops: SecondEvaporatorLoops, feed_kgh: float, feed_t_c: float,
              feed_w: dict, p_mp_bara: float, p_motive_bara: float, p_discharge_bara: float,
@@ -459,6 +416,11 @@ class SecondEvaporator:
 
         # ----- the vacuum: the false air on last tick's stroke, then PIC-324203 ----------
         fa = false_air_kgh(loops.vacuum.op)
+        # The lost seal's air (B-107) on the level and LIC-324501's stroke of the tick before,
+        # against the vacuum it enters; it reaches 324E005 with the false air.
+        air = (seal_air_kgh(self.m_kg / F003_M_FULL_KG * 100.0, loops.level.op, self.p_bara)
+               if self.seal_air else 0.0)
+        air_in = fa + air
         vac_op = loops.vacuum.step(self.p_bara, dt)
 
         # ----- T and P together (V1 G7) -----------------------------------------------
@@ -468,7 +430,10 @@ class SecondEvaporator:
         spec = design_specs()["324E005"]
         y_vap = vapour_y(w_pre, E003_LIQUOR.anchor.alpha)
         residual, converged, iterations, m_boil = math.inf, False, 0, 0.0
-        for iterations in range(1, PT_LOOP_MAXIT + 1):
+
+        def sweep(t_sol: float, p_sol: float) -> tuple[float, float, float]:
+            # One G7 sweep from the iterate (T, P): the vacuum's backward step, the temperature
+            # the melt boils back to, and the holdup's boil-off.
             q = max(E003_UA_KW * (t_chest - t_sol), 0.0)
             w_eq = equilibrium_urea_fraction(t_sol, p_sol, E003_W_UREA_DES, E003_T_DES_C,
                                              F003_P_DES_BARA, a_urea_water_k=MELT_A_UREA_WATER_K,
@@ -482,7 +447,7 @@ class SecondEvaporator:
             t_step = t_old + p_wr * dt / c_step
             # 324E005's trial inlet before the holdup boils: the design row moved by what the feed
             # boils and by the false air.
-            m_709_feed = E005_INLET_DES_KGH + (m_vap - V2_DES_KGH) + (fa - F003_FA_DES_KGH)
+            m_709_feed = E005_INLET_DES_KGH + (m_vap - V2_DES_KGH) + (air_in - F003_FA_DES_KGH)
 
             def boil_at(p: float) -> tuple[float, float]:
                 # The held melt boils back to its own boiling point at a trial vacuum (B-62).
@@ -491,14 +456,15 @@ class SecondEvaporator:
                     F003_M_FLOOR_KG, dt, w_des=E003_LIQUOR.w_des["Urea"], t_des_c=E003_T_DES_C,
                     p_des_bara=F003_P_DES_BARA, a_urea_water_k=MELT_A_UREA_WATER_K)
 
-            n_709 = inlet_kmolh("324E005", m_709_feed + boil_at(p_sol)[0], fa, F003_FA_DES_KGH)
+            n_709 = inlet_kmolh("324E005", m_709_feed + boil_at(p_sol)[0], air_in,
+                                F003_FA_DES_KGH)
             bp_709 = condensate_back_pressure(n_709, t_vent_324e005_c)
             t_k = t_sol + ABSOLUTE_ZERO_C
 
             def dpdt(p: float) -> float:
                 # The holdup's boil-off answers the trial pressure inside the implicit step: a
                 # deeper vacuum boils more, and more vapour loads the condenser's vent.
-                n = inlet_kmolh("324E005", m_709_feed + boil_at(p)[0], fa, F003_FA_DES_KGH)
+                n = inlet_kmolh("324E005", m_709_feed + boil_at(p)[0], air_in, F003_FA_DES_KGH)
                 vent = vent_kgh_at(spec, p, t_vent_324e005_c, n, bp_709)
                 pull = suction_capacity_kgh(EJECTOR_TAG, p, p_motive_bara, p_discharge_bara)
                 return vessel_dpdt(p, t_k, v_v, F003_MW_VAP, vent / F003_MW_VAP,
@@ -506,11 +472,26 @@ class SecondEvaporator:
 
             p_next = backward_euler_pressure(p_old, dt, dpdt, F003_P_MIN_BARA, F003_P_MAX_BARA)
             m_boil, t_next = boil_at(p_next)
+            return p_next, t_next, m_boil
+
+        for iterations in range(1, PT_LOOP_MAXIT + 1):
+            p_next, t_next, m_boil = sweep(t_sol, p_sol)
             residual = max(abs(p_next - p_sol), abs(t_next - t_sol))
             p_sol, t_sol = p_next, t_next
             if residual <= PT_LOOP_TOL:
                 converged = True
                 break
+        # Sweeps that never settle — the 1 kg heel under a broken vacuum (B-108): the temperature
+        # on the stage's energy balance between the coldest of the feed and the melt and the
+        # hottest of the chest and the melt.
+        bisected = False
+        if not converged and self.bisect_fixed_point:
+            root = bisected_fixed_point(sweep, min(feed_t_c, t_old), max(t_chest, t_old), p_sol,
+                                        PT_LOOP_TOL, PT_LOOP_MAXIT)
+            if root is not None:
+                p_sol, t_sol, m_boil, residual = (root.p_bara, root.t_c, root.m_boil_kgh,
+                                                  root.residual)
+                bisected = True
         self.t_c, self.p_bara = t_sol, p_sol
 
         # ----- the solved state ---------------------------------------------------------
@@ -524,7 +505,7 @@ class SecondEvaporator:
                                               a_urea_water_k=MELT_A_UREA_WATER_K)
         melt = max(feed_kgh - m_vap, 0.0)
         w_melt = clamp(urea_in / max(melt, FLOW_FLOOR_KGH), 0.0, 1.0)
-        m_709 = E005_INLET_DES_KGH + (m_vap + m_boil - V2_DES_KGH) + (fa - F003_FA_DES_KGH)
+        m_709 = E005_INLET_DES_KGH + (m_vap + m_boil - V2_DES_KGH) + (air_in - F003_FA_DES_KGH)
 
         # ----- LIC-324501 and the LV-324501A / B selector ----------------------------------
         level = clamp(m_pre / F003_M_FULL_KG * 100.0, 0.0, 100.0)
@@ -558,14 +539,14 @@ class SecondEvaporator:
             melt_kgh=melt, w_melt=w_melt, level_pct=level, level_op_pct=level_op,
             recycle_selected=recycle, lv_a_pct=lv_a, lv_b_pct=lv_b, m_402_kgh=m_402, route=route,
             y_vap=y_vap, xi_kmolh=xi, m_kg=self.m_kg, t_c=self.t_c, p_bara=self.p_bara,
-            w=self.w,
+            w=self.w, seal_air_kgh=air, air_in_kgh=air_in, bisected=bisected,
         )
 
 
 __all__ = [
     "P_MP_LAG_KEY", "EJECTOR_TAG", "W_EQ_FLOOR", "HEAT_CAPACITY_FLOOR_KJK", "FLOW_FLOOR_KGH",
-    "DT_FLOOR_S", "ROUTE_W_FLOOR", "ROUTE_NORMALISED_TOL", "ROUTE_FLOW_FLOOR_KGH",
+    "DT_FLOOR_S",
     "tic_324002", "pic_329212", "pic_324203", "lic_324501", "SecondEvaporatorLoops",
-    "leg_urea_strength", "false_air_kgh", "MeltRoute", "melt_route", "SecondEvaporatorResult",
+    "leg_urea_strength", "false_air_kgh", "SecondEvaporatorResult",
     "SecondEvaporator",
 ]

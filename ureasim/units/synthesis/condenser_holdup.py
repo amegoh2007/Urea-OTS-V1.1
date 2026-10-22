@@ -112,6 +112,9 @@ class CondenserHoldup:
     #: The saturation fraction solved with its own melt's bubble pressure on the tick (decided
     #: 2026-10-17, handoff A-21); False is the tick-late tear the synthesis harness keeps.
     implicit_saturation: bool = True
+    #: The melt's bubble pressure rising toward its azeotrope below N/C 3.0 (decided 2026-10-22,
+    #: handoff B-106); False is V1's K_N line, which the synthesis harness keeps.
+    low_nc_branch: bool = True
 
     def step(self, top_kmolh: dict, t_top_c: float, ej_comp_kgh: dict, ej_t_c: float,
              t_shell_c: float, p_syn_bara: float, phi_fwd: float,
@@ -132,7 +135,7 @@ class CondenserHoldup:
                 memo[f] = carbamate_condenser_322e002(
                     top_kmolh, t_top_c, ej_comp_kgh, ej_t_c, t_shell_c=t_shell_c, gate=1.0,
                     t_prod_prev_c=self.t_prod_prev_c, p_loop_bara=p_syn_bara, phi_prev=self.phi,
-                    dt=dt, nc_anchor=HPCC_NC_DES_LIVE, sat_frac=f)
+                    dt=dt, nc_anchor=HPCC_NC_DES_LIVE, sat_frac=f, low_nc=self.low_nc_branch)
             return memo[f]
 
         sat = saturation_fraction(self.p_bub_prev_bara, p_syn_bara)

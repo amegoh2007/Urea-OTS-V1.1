@@ -678,3 +678,26 @@ def test_a_full_sump_condenses_no_more_than_it_can_take():
     assert _kgh(none.overflow_kmolh) == pytest.approx(wash, rel=1e-12)
     assert none.sump_frac == 0.0
     assert _run(sump_room_kgh=1.0e9) == DESIGN
+
+
+def test_the_wash_arrives_as_323d001_delivers_it():
+    """Handoff B-105, decided 2026-10-22: the wash on 308's live composition and temperature, each
+    as its departure from PFD 308. Zero departures are V1's design wash to the bit. 323D001 diluted
+    by FV-323401 wide open (38.51 % water, 15 % more wash): the sump liquor's H/C rises from 1.355
+    to 1.812 and its N/C from 2.508 to 2.559, and the liquor boils at 122.84 bar a where the design
+    carbamate boils at 137.67, so it condenses more before its saturation binds. A wash 10 K cold
+    takes TT-322002 down 6.41 K."""
+    from ureasim.data import unit_323e003 as e3
+    base = _run(wash_ratio=1.0)
+    assert _run(wash_ratio=1.0, wash_dw={k: 0.0 for k in e3.W_308}, wash_dt_c=0.0) == base
+    diluted = {"NH3": 0.27327, "CO2": 0.33996, "H2O": 0.38510, "Urea": 0.00167}
+    dw = {k: diluted[k] - e3.W_308[k] for k in diluted}
+    v1, port = _run(wash_ratio=1.15), _run(wash_ratio=1.15, wash_dw=dw)
+    assert _kgh(port.carb_kmolh) == pytest.approx(_kgh(v1.carb_kmolh), rel=1e-12)
+    for r, hc, nc, p_bub in ((v1, 1.3547, 2.5081, 137.669), (port, 1.8120, 2.5594, 122.839)):
+        ov = r.overflow_kmolh
+        assert ov["H2O"] / ov["CO2"] == pytest.approx(hc, abs=1e-4)
+        assert ov["NH3"] / ov["CO2"] == pytest.approx(nc, abs=1e-4)
+        assert liquor_bubble_p_bara(ov, r.t_overflow_c) == pytest.approx(p_bub, abs=1e-3)
+    assert _run(wash_ratio=1.0, wash_dt_c=-10.0).t_overflow_c - base.t_overflow_c == \
+        pytest.approx(-6.413, abs=1e-3)

@@ -14,6 +14,7 @@ import pytest
 from ureasim.data.desorption_train import C002_M748_DES_KGH, C004_M739_DES_KGH
 from ureasim.data.engine import DT_S
 from ureasim.data.unit_323c005 import C005_M702_DES_KGH
+from ureasim.data.unit_323e003 import W_308
 from ureasim.engine.state import TEAR_NAMES, PlantClock, PlantState, TearState
 
 
@@ -22,15 +23,15 @@ def test_the_tears_that_cross_units_are_named_and_seeded_on_their_design_flows()
     38): unit 324's condensates and vent inerts, 328C004's 741, LV-324501B's recycle, the steam
     users' draws and 911; and 323P001's 308 wash the scrubber takes (session 39); 323E011's
     envelope overflow to 323C005 (A-20, session 43); unit 324's condensers' cold ends to 328D003
-    (B-31, session 54); 324F002's discharge temperature to 323C005 (B-97, session 55) — each
-    seeded on its design."""
+    (B-31, session 54); 324F002's discharge temperature to 323C005 (B-97, session 55); 308's
+    composition and temperature to 322E003 (B-105, session 64) — each seeded on its design."""
     tears = TearState()
     assert TEAR_NAMES == ("m_702_kgh", "m_756_kgh", "m_708_kgh", "m_748_kgh", "m_750_kgh",
                           "m_718a_kgh", "m_718b_kgh", "m_739_kgh", "m_719_kgh", "m_720_kgh",
                           "m_721_kgh", "m_759_kgh", "inert_706_kmolh", "m_741_kgh",
                           "m_recycle_324_kgh", "t_recycle_324_c", "w_recycle_324",
                           "steam_users_lp_kgh", "steam_users_9_kgh", "m_911_kgh", "m_308_kgh",
-                          "m_e011_over_kgh", "t_e011_over_c", "t_719_c", "t_720_c", "t_721_c",
+                          "w_308", "t_308_c", "m_e011_over_kgh", "t_e011_over_c", "t_719_c", "t_720_c", "t_721_c",
                           "t_759_c", "t_708_c")
     assert (tears.m_702_kgh, tears.m_748_kgh, tears.m_739_kgh) == (
         C005_M702_DES_KGH, C002_M748_DES_KGH, C004_M739_DES_KGH)
@@ -38,6 +39,7 @@ def test_the_tears_that_cross_units_are_named_and_seeded_on_their_design_flows()
         26768.0, 2758.0, 1763.0, 190.0)
     assert (tears.m_741_kgh, tears.m_recycle_324_kgh, tears.m_911_kgh) == (0.0, 0.0, 1105.0)
     assert tears.m_308_kgh == pytest.approx(36835.2, abs=0.1)
+    assert (dict(tears.w_308), tears.t_308_c) == (W_308, 74.0)
     assert (tears.m_e011_over_kgh, tears.t_e011_over_c) == (0.0, 45.0)
     assert (tears.t_719_c, tears.t_720_c, tears.t_721_c, tears.t_759_c) == (45.0, 40.0, 41.0, 55.0)
     assert tears.t_708_c == 121.0

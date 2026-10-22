@@ -28,7 +28,9 @@ function (`reactor.reactor_322r001`):
      production surge's recycle part is a lag with no inventory behind it, kept as V1 writes it
      (B-78 item 4, a Calibration Deferral). Liquid
      above the full vessel spills into the off-gas line to 322E003 (the carryover); the level is the
-     holdup over its density; LT-322504 reads the head across its 1.5 m narrow band.
+     holdup over its density; LT-322504 reads the head across its 1.5 m narrow band. A stripper whose
+     tubes stand full of liquor takes only what it can pass (handoff B-104, decided 2026-10-22):
+     m_out is capped at that, and what its tubes hand back past their ceiling returns to the holdup.
   4. **The stripper's feed.** What leaves through m_out is the 322E001 liquid feed of the next tick,
      the overflow composition scaled to that mass.
 
@@ -205,10 +207,17 @@ class ReactorInventory:
     #: The reaction's feed N/C and H/C, read by 322E001's efficiency penalty next tick [-].
     l_feed: float = REACTOR_FEED_NC_DES
     w_feed: float = REACTOR_FEED_HC_DES
+    #: PT on 322R001 on a melt flashing at 322E002's pressure, its base capped there (decided
+    #: 2026-10-22, handoff B-109); False is V1's bubble pressure, which the harness keeps.
+    flash_cap: bool = True
+    #: Its feed line on the PFD's 144.2 - 141.3 at the seed's feed, 141.3 bar a at design (decided
+    #: 2026-10-22, handoff B-112); False is V1's ``p_syn - 144.2`` line, which the harness keeps.
+    design_drop: bool = True
 
     def step(self, hpcc, co2_feed_th: float, ratio_pv: float, hic605_pct: float,
              hic602_pct: float, suction_kgh: float, p_syn_bara: float,
-             dt: float, sump_holdup_kg: float | None = None) -> ReactorStepResult:
+             dt: float, sump_holdup_kg: float | None = None,
+             m_out_cap_kgh: float | None = None, backup_kgh: float = 0.0) -> ReactorStepResult:
         """Advance the reactor one tick (module docstring, steps 1 to 4).
 
         ``hpcc`` is this tick's `carbamate_condenser.CondenserResult`; ``co2_feed_th`` the CO2 the
@@ -216,7 +225,9 @@ class ReactorInventory:
         ``suction_kgh`` 322F001's entrainment this tick; ``p_syn_bara`` PT-329201 of the tick
         before (the loop's declared tear); ``sump_holdup_kg`` 322E003's sump of the tick before,
         which the forward-carbamate pulse is drawn from (handoff B-78 item 2), or None for V1's
-        pulse from nowhere.
+        pulse from nowhere; ``m_out_cap_kgh`` what 322E001's tubes can take of HV-322605's
+        discharge this tick and ``backup_kgh`` what they handed back past their ceiling (handoff
+        B-104), None and 0.0 for a stripper with room, V1's.
         """
         # ----- 1. the drivers: fresh N/C prompt, recycle lagged on the loop inventory ---------
         a_rec = dt / (TAU_REC_MIN * 60.0)
@@ -241,7 +252,8 @@ class ReactorInventory:
             l_feed_des=REACT_L_FEED_DES, x_des_live=REACT_X_DES)
 
         # The published line pressures; the off-gas line reads TT-322009 of the tick before.
-        p_r001 = reactor_bara(hpcc.p_bub_bara, p_syn_bara, react.feed_kmolh, hpcc.t_prod)
+        p_r001 = reactor_bara(hpcc.p_bub_bara, p_syn_bara, react.feed_kmolh, hpcc.t_prod,
+                              flash_cap=self.flash_cap, design_drop=self.design_drop)
         p_og = reactor_offgas_bara(p_syn_bara, react.offgas_kmolh, self.t_offgas_c)
         self.l_feed, self.w_feed = react.l_feed, react.w_feed
 
@@ -293,6 +305,10 @@ class ReactorInventory:
                 + (1.0 - FRESH_FRAC) * self.m_in_lag_kgh)
         m_out = outlet_line_outflow_kgh(level_m, M_OVERFLOW_DES_KGH, hic605_pct, HIC605_DES_PCT,
                                         WEIR_CREST_M, WEIR_CW, t_bulk)
+        if m_out_cap_kgh is not None:
+            # 322E001's tubes standing full take no more than they pass (B-104): the reactor keeps
+            # the rest, and its level rises.
+            m_out = min(m_out, max(m_out_cap_kgh, 0.0))
         # The forward-carbamate pulse: the spindle-attributable draw's high-pass residue, zero at
         # the design opening and at any steady one (Fix-4).
         phi_sp = max(spindle_phi(hic602_pct), 1e-6)
@@ -304,7 +320,7 @@ class ReactorInventory:
             m_fwd = min(m_fwd, max(sump_holdup_kg, 0.0) * (3600.0 / dt))
         m_liq_0 = self.m_liq_kg
         self.m_in_prev_kgh = m_in
-        self.m_liq_kg += (m_in - m_out + m_fwd) * (dt / 3600.0)
+        self.m_liq_kg += (m_in - m_out + m_fwd + backup_kgh) * (dt / 3600.0)
         self.m_liq_kg = max(self.m_liq_kg, M_HOLDUP_MIN)
 
         # ----- 4. the stripper's feed: what m_out carries, at the overflow's composition --------

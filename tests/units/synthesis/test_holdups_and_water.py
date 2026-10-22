@@ -156,3 +156,30 @@ def test_the_recondensed_backlog_and_the_forward_pulse_reach_the_sump():
                             recond_kgh=3600.0, pulse_kgh=1800.0)
     assert r.holdup_kg == pytest.approx(HOLDUP_NLL_KG + 0.05, rel=1e-12)
     assert (r.recond_kgh, r.pulse_kgh) == (3600.0, 1800.0)
+
+
+def test_pfd_308_reaches_the_wash_a_line_residence_late():
+    """B-110, decided 2026-10-22: 308's line from 323P001 to 322E003/N5, 47.8 m of 74.7 mm bore
+    (0.2095 m3, 255 kg of carbamate at 1218 kg/m3), turns over in 24.94 s at the design 36.8 t/h.
+    A settled line hands back what departed, to the bit; a step in 323D001's water and
+    temperature departing on one tick arrives 250 ticks later, 25.0 s, and at half the flow 499
+    ticks later; without the line it arrives at once."""
+    from ureasim.data.process_routes import PROCESS_ROUTES
+    from ureasim.data.unit_323e003 import E003_M308_DES_KGH, E003_T_C, W_308
+    from ureasim.units.synthesis.scrubber_sump import WASH_ROUTE
+
+    assert PROCESS_ROUTES[WASH_ROUTE].design_dead_time_s == pytest.approx(24.937, abs=1e-3)
+    wet = {"NH3": W_308["NH3"] - 0.02, "CO2": W_308["CO2"] - 0.01, "H2O": W_308["H2O"] + 0.03,
+           "Urea": W_308["Urea"]}
+    for flow, ticks in ((E003_M308_DES_KGH, 250), (0.5 * E003_M308_DES_KGH, 499)):
+        sump = ScrubberSump()
+        w0 = dict(W_308)
+        t, w = sump.wash_arrival(flow, E003_T_C, w0, DT)
+        assert t == E003_T_C and w == w0
+        arrived = [sump.wash_arrival(flow, 76.0, wet, DT) for _ in range(600)]
+        first = next(k for k, (t, _) in enumerate(arrived) if t != E003_T_C)
+        assert first == ticks
+        assert arrived[first][0] == pytest.approx(76.0, abs=1e-12)
+        assert arrived[first][1]["H2O"] == pytest.approx(wet["H2O"], abs=1e-12)
+    v1 = ScrubberSump(wash_line=False)
+    assert v1.wash_arrival(E003_M308_DES_KGH, 76.0, wet, DT) == (76.0, wet)

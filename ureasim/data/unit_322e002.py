@@ -154,6 +154,14 @@ BUB_KN = 0.18
 #: negative: adding water to the melt lowers its bubble pressure.
 BUB_KW = -0.25
 
+#: The N/C below which the melt's bubble pressure rises toward its azeotrope [-], 3.0. Above it
+#: the calibrated K_N line holds, so the design and every high-N/C pin keep V1's law; below it
+#: the N/C factor follows the Extended UNIQUAC model's own rise (`thermo.vle.bubble_p_bara`),
+#: which climbs from 44.4 bar a at 3.0 to 53.8 at 2.8 and 82.4 at 2.6 on the design melt at
+#: 170 C, where the linear K_N line falls. Source: the process engineer's decision of
+#: 2026-10-22 on handoff B-106 (session 64).
+BUB_AZEOTROPE_NC = 3.0
+
 #: Clamp band on the melt N/C and H/C, as a multiple of their design references [-].
 #:
 #: These ratios are NH3/CO2 and H2O/CO2, so as a CO2-feed cut drives CO2 toward zero they
@@ -206,7 +214,7 @@ __all__ = [
     "STEAM_P_BARA", "STEAM_TSAT_PFD_C", "STEAM_TSAT_C",
     "DH_CARB_KJMOL", "CP_GAS", "LATENT_4BAR",
     "FLASH_DH", "FLASH_R_GAS_J", "FLASH_ITERS", "FLASH_T0_K",
-    "BUB_DHVAP_JMOL", "BUB_KN", "BUB_KW",
+    "BUB_DHVAP_JMOL", "BUB_KN", "BUB_KW", "BUB_AZEOTROPE_NC",
     "BUB_RATIO_LO_FRAC", "BUB_RATIO_HI_FRAC",
     "LEVEL_NLL_PCT", "TAU_FILL_MIN", "LEAK_DP_DES_BAR", "LEAK_VOLATILE",
     "LEAK_DEFAULT_TH",

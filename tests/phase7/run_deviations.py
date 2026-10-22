@@ -35,8 +35,9 @@ def _paths(devs) -> list:
     return sorted({e.path for d in devs for e in d.expects})
 
 
-def run_plant(dev: Deviation | None, duration_s: float, paths: list) -> dict:
-    """The design seed through ``dev`` (None: left alone) for ``duration_s`` after settling."""
+def run_plant(dev: Deviation | None, duration_s: float, paths: list, extra: dict = None) -> dict:
+    """The design seed through ``dev`` (None: left alone) for ``duration_s`` after settling.
+    ``extra`` maps a name to a function of the tick's results, sampled beside the packet."""
     from ureasim.engine.command import apply_command
     from ureasim.engine.packet import build_packet
     from ureasim.engine.plant import build_plant
@@ -47,8 +48,9 @@ def run_plant(dev: Deviation | None, duration_s: float, paths: list) -> dict:
     n_settle = int(round(SETTLE_S / DT))
     n_total = n_settle + int(round(duration_s / DT))
     every = int(round(SAMPLE_S / DT))
-    rec = {"key": dev.key if dev else "control", "t": [], "values": {p: [] for p in paths},
-           "commands": [], "trips": {}, "flags": {}}
+    extra = extra or {}
+    rec = {"key": dev.key if dev else "control", "t": [],
+           "values": {p: [] for p in (*paths, *extra)}, "commands": [], "trips": {}, "flags": {}}
     t0 = time.perf_counter()
     for k in range(1, n_total + 1):
         if dev is not None and k == n_settle + 1:
@@ -63,6 +65,8 @@ def run_plant(dev: Deviation | None, duration_s: float, paths: list) -> dict:
             rec["t"].append(t)
             for p in paths:
                 rec["values"][p].append(flat.get(p))
+            for name, fn in extra.items():
+                rec["values"][name].append(fn(sched.results))
             for key, val in flat.items():
                 if val is True and (key.startswith("trip_latched.") or key.startswith("flags.")):
                     rec["trips" if key.startswith("trip") else "flags"].setdefault(key, t)

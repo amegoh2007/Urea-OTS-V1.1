@@ -59,6 +59,7 @@ from ureasim.thermo.domains import NONVOLATILE
 from ureasim.units.evaporation import ejector_map as em
 from ureasim.units.evaporation import second_evaporator as se
 from ureasim.units.evaporation.holdup_boil import holdup_boil
+from ureasim.units.evaporation.melt_route import melt_route
 from tests.equivalence.b67_switch import switched_module, switched_specs
 from tests.equivalence.v1_loader import lift, load, v1_available
 
@@ -388,7 +389,8 @@ def _run(v1, script, n_ticks, decided=ALL, check=True, setup=None):
     """Drive V1's transcription and the port side by side; `script(k)` gives tick k's inputs."""
     s = _v1_state(v1, decided)
     # V1's linear chest valve: PV-329212's vendor trim is proved in its decided test.
-    unit = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False)
+    unit = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False, seal_air=False,
+                               bisect_fixed_point=False)
     loops = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST))
     if setup:
         setup(s, loops)
@@ -466,7 +468,8 @@ def test_set_point_steps_are_v1s(v1):
     """TIC-324002 to 142 C and PIC-324203 to 0.12 bar a at tick 5, 3000 ticks."""
     s = _v1_state(v1)
     # V1's linear chest valve: PV-329212's vendor trim is proved in its decided test.
-    unit = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False)
+    unit = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False, seal_air=False,
+                               bisect_fixed_point=False)
     loops = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST))
     for k in range(3000):
         if k == 5:
@@ -487,7 +490,7 @@ def test_the_selector_is_v1s(v1, m, recycle):
     drain, every field ``==``."""
     for w in (d.W_S402, {k: 2.0 * v for k, v in d.W_S402.items()}):
         r = v1["route_lv324501"](m, w, 140.3, recycle, uf_ratio=0.0)
-        p = se.melt_route(m, w, 140.3, recycle)
+        p = melt_route(m, w, 140.3, recycle)
         assert (r["route"], r["forward_kgh"], r["forward_comp"], r["forward_T_C"],
                 r["recycle_kgh"], r["recycle_comp"], r["recycle_T_C"], r["uf85_kgh"]) == (
             p.route, p.forward_kgh, p.forward_w, p.forward_t_c, p.recycle_kgh, p.recycle_w,

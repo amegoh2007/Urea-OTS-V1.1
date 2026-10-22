@@ -101,7 +101,8 @@ from ureasim.units.synthesis.scrubber import (
     liquor_bubble_p_bara,
     scrubber_322e003,
 )
-from ureasim.units.synthesis.stripper_sump import SUMP_SPAN_KG, BottomLevelLoop, StripperSump
+from ureasim.units.synthesis.stripper_level import BottomLevelLoop
+from ureasim.units.synthesis.stripper_sump import SUMP_SPAN_KG, StripperSump
 from tests.equivalence import b6_switch, b9_switch, b16_switch, b18_switch, ccw_tuning_switch
 from tests.equivalence.v1_loader import V1_BACKEND, lift, load, v1_available, v1_service
 
@@ -213,7 +214,7 @@ def _v1_state(v1):
     r = v1["reactor"]
     return SimpleNamespace(
         line=CO2FeedLine(), pic=vent_pressure_loop(),
-        station=design_feed_station(), sump=StripperSump(), lic=BottomLevelLoop(),
+        station=design_feed_station(), sump=StripperSump(hold_full=False), lic=BottomLevelLoop(),
         co2_raw_th=v1["CO2_DES_KGH"] / 1000.0,
         HIC_322602=74.0, HIC_322605=v1["REACT_HIC605_DES_PCT"],
         HIC_322604=v1["SCRUB_HIC604_DES_PCT"],
@@ -624,7 +625,7 @@ def _hpcc_port(strip, ej, t_shell, s, sat):
     r = carbamate_condenser_322e002(
         strip["top_kmolh"], strip["T_top"], ej["comp"], ej["T_C"], t_shell_c=t_shell, gate=1.0,
         t_prod_prev_c=s.hpcc_tprod, p_loop_bara=s.p_syn, phi_prev=s.hpcc_phi, dt=DT,
-        nc_anchor=pin.HPCC_NC_DES_LIVE, sat_frac=sat)
+        nc_anchor=pin.HPCC_NC_DES_LIVE, sat_frac=sat, low_nc=False)
     return {"phi_gas": r.phi_gas, "phi_film": r.phi_film, "phi_eq": r.phi_eq,
             "feed_kmolh": r.feed_kmolh, "gas_kmolh": r.gas_kmolh, "liq_kmolh": r.liq_kmolh,
             "gas_kgh": r.gas_kgh, "liq_kgh": r.liq_kgh, "gas_th": r.gas_th, "liq_th": r.liq_th,
@@ -707,11 +708,9 @@ def _assert_same(s, plant, out, k):
         assert a == b, (k, name, a, b)
 
 
-def run_both(v1, ticks, act=None, decided=ALL, check=True):
-    """The plant through the scheduler and the transcription beside it. ``act(k, plant, s)`` acts
-    on both before tick ``k``. Returns the transcription's per-tick outputs and the scheduler.
-    ``check`` asserts every tick ``==``; off, the two sides are only recorded (a departure's both
-    ways)."""
+def harness_plant():
+    """The port's plant on the harness's switches — every departure with its own tests on V1's
+    side of it — and its scheduler."""
     sch, plant = build_plant()
     # V1's linear FV-329409 from 60 %: its Metso trim has its own tests (decided 2026-10-15).
     plant.loops["322E003"] = (CcwLoop(**V1_FV_329409),)
@@ -721,7 +720,31 @@ def run_both(v1, ticks, act=None, decided=ALL, check=True):
     # V1's linear flow law for 322E003's capacity: its effectiveness (B-99, decided 2026-10-17)
     # has its own tests.
     plant.units["322E003"].effectiveness_capacity = False
-    sched = Scheduler(sch, plant)
+    # V1's unbounded stripper split and its clamped sump: 322E001's shell bound (B-102) and the
+    # full sump's held-back excess (B-103), decided 2026-10-21, have their own tests.
+    plant.units["322E001"].shell_bound = False
+    plant.units["322E001"].hold_full = False
+    # V1's sealed tubes, its K_N line below N/C 3.0 and its mass-only LPCC: the tubes' ceiling
+    # (B-104), the azeotropic rise (B-106), 308's composition (B-105) and its line (B-110), decided
+    # 2026-10-22, have their own tests.
+    plant.units["322E001"].tube_ceiling = False
+    plant.units["322E002"].low_nc_branch = False
+    plant.units["323E003"].track_species = False
+    plant.units["322E003"].wash_line = False
+    # V1's reactor PT on the melt's bubble pressure and its feed line on the live loop: its cap at
+    # 322E002's pressure (B-109) and its line on the PFD's design drop (B-112), decided 2026-10-22,
+    # have their own tests.
+    plant.units["322R001"].flash_cap = False
+    plant.units["322R001"].design_drop = False
+    return Scheduler(sch, plant), plant
+
+
+def run_both(v1, ticks, act=None, decided=ALL, check=True):
+    """The plant through the scheduler and the transcription beside it. ``act(k, plant, s)`` acts
+    on both before tick ``k``. Returns the transcription's per-tick outputs and the scheduler.
+    ``check`` asserts every tick ``==``; off, the two sides are only recorded (a departure's both
+    ways)."""
+    sched, plant = harness_plant()
     s = _v1_state(v1)
     hist = []
     for k in range(ticks):

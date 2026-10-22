@@ -538,6 +538,23 @@ E005_INLET_DES_KGH = VACUUM_CONDENSERS["324E005"].inlet_kgh
 LIC_324501_OP_DES_PCT = 75.0
 LV_324501_SPAN_KGH = P2_DES_KGH / (LIC_324501_OP_DES_PCT / 100.0)
 
+#: LV-324501A's liquid sizing case, what its trim passes as gas once LT-324501's barometric leg has
+#: lost its seal (decided 2026-10-22, handoff B-107): the loop summary's urea solution at 1221 kg/m3
+#: across 6.9 -> 3.7 bar a (UD-MR-324-EC-0001 rev 1, loop L 324501, sheet 2/4), its design
+#: differential the subtraction of the two (A-13's rule), on the model's design drain, PFD 402 at
+#: LIC-324501's 75 % stroke.
+LV_324501_P_UP_BARA = 6.9
+LV_324501_P_DOWN_BARA = 3.7
+LV_324501_DP_DES_BAR = LV_324501_P_UP_BARA - LV_324501_P_DOWN_BARA
+LV_324501_RHO_KGM3 = 1221.0
+
+#: The atmospheric air a lost seal admits: PFD 783's air at its 32 C [deg C], and its ratio of
+#: specific heats [-], 1.40 — air is the reference gas the trim's terminal pressure-drop ratio is
+#: measured on, so F_k is exactly 1. Source: the PFD's stream table (783: 79.06 % N2, 20.94 % O2,
+#: 28.85 kg/kmol, 32 C, 1 bar a).
+SEAL_AIR_T_C = 32.0
+SEAL_AIR_GAMMA = 1.40
+
 #: PIC-335201, the 335 melt header [bar g]: the set point above which LV-324501B opens and diverts the
 #: melt to 323D002, and the design header (V1 ``R335_LVB_RELIEF_BARG``, ``R335_PIC201_DES_BARG``,
 #: V1's approved G12 data; a battery-limit input, the granulator outside the simulated plant).
@@ -601,6 +618,8 @@ __all__ = [
     "E003_LAMBDA_STEAM_KJKG", "F003_M_TAU_S", "F003_LEVEL_SP_PCT", "F003_M_DES_KG",
     "F003_M_FULL_KG", "F003_M_FLOOR_KG", "F003_FA_DES_KGH", "PV_324203_OP_DES_PCT",
     "E005_INLET_DES_KGH", "LIC_324501_OP_DES_PCT", "LV_324501_SPAN_KGH", "PIC_335201_RELIEF_BARG",
+    "LV_324501_P_UP_BARA", "LV_324501_P_DOWN_BARA", "LV_324501_DP_DES_BAR", "LV_324501_RHO_KGM3",
+    "SEAL_AIR_T_C", "SEAL_AIR_GAMMA",
     "PIC_335201_DES_BARG", "E003_LIQUOR", "F003_P_MIN_BARA", "F003_P_MAX_BARA",
     "TT_324002_SPAN_C", "PT_329212_SPAN_BAR", "PT_324203_SPAN_BAR", "TIC_324002_KC",
     "TIC_324002_TI_S", "PIC_329212_KC", "PIC_329212_TI_S", "PIC_324203_KC", "PIC_324203_TI_S",

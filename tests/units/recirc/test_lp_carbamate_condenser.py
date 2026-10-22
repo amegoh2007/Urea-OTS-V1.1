@@ -188,3 +188,26 @@ def test_pfd_734_enters_as_its_departure_from_the_pfd():
     shut = _run_734(0.0, 4 * 3600)
     assert shut[600].in_kgh == pytest.approx(e3.E003_IN_DES_KGH - 1534.0, rel=1e-12)
     assert shut[14400].m_308_kgh - e3.E003_M308_DES_KGH == pytest.approx(-1544.6, abs=0.1)
+
+
+def test_the_liquor_carries_the_ammonia_water_into_308():
+    """Handoff B-105, decided 2026-10-22: the tank carries NH3, CO2, H2O and urea as its departure
+    from PFD 308, each inlet at its PFD row and the condensate at its closure on PFD 308. At the
+    design inlets 308 is PFD 308's row to the bit. FV-323401 wide open, 7 015 kg/h of 328D003's
+    90 % water: ten minutes on 308 carries 35.69 % water where PFD 308 has 30.83; after four hours
+    38.51 %, the stirred mix of what enters. V1's mass-only tank, the switch off, delivers PFD 308's
+    row whatever it takes in."""
+    assert _run_734(1534.0, 600)[600].w_308 == e3.W_308
+    up = _run_734(7015.0, 4 * 3600)
+    assert up[600].w_308["H2O"] == pytest.approx(0.35691, abs=1e-5)
+    assert up[14400].w_308 == {"NH3": pytest.approx(0.27327, abs=1e-5),
+                               "CO2": pytest.approx(0.33996, abs=1e-5),
+                               "H2O": pytest.approx(0.38510, abs=1e-5),
+                               "Urea": pytest.approx(0.00167, abs=1e-5)}
+    assert sum(up[14400].w_308.values()) == pytest.approx(1.0, abs=1e-12)
+    u = lp.LpCarbamateCondenser(track_species=False)
+    loops = (lp.pic_323202(), lp.lic_323502(), lp.sic_323901(), lp.tic_323013())
+    for _ in range(600):
+        r = u.step(*loops, M305, FLASH, POOL, 0.0, 0.0, e3.E003_M718B_DES_KGH,
+                   e3.E003_M776_DES_KGH, e.E011_P_BARA, 1.0, m_734_kgh=7015.0)
+    assert r.w_308 == e3.W_308

@@ -26,14 +26,17 @@ pytestmark = pytest.mark.skipif(
 v1 = h.v1
 
 
-def _both(v1, script, n, off, sp=None, setup=None, vendor_trim=False):
+def _both(v1, script, n, off, sp=None, setup=None, vendor_trim=False, seal_air=False,
+          bisect=False):
     """V1's transcription without the departure `off`, and the port, side by side; returns the
     tick each side's state was first not ``==`` the other's, and per tick (V1, port) records. The
-    port runs V1's linear chest valve unless ``vendor_trim`` (PV-329212's own test)."""
+    port runs V1's linear chest valve unless ``vendor_trim`` (PV-329212's own test), V1's sealed
+    leg unless ``seal_air`` (B-107's own test) and V1's last sweep unless ``bisect`` (B-108's)."""
     dec = h.ALL - {off}
     s = h._v1_state(v1, dec)
     chest = h.se.PV_329212_CHEST if vendor_trim else h.se.V1_CHEST
-    unit, loops = (h.se.SecondEvaporator(chest=chest, backward_species=False),
+    unit, loops = (h.se.SecondEvaporator(chest=chest, backward_species=False, seal_air=seal_air,
+                                         bisect_fixed_point=bisect),
                    h.se.SecondEvaporatorLoops(pic=h.se.pic_329212(chest)))
     if setup:
         setup(s, loops)
@@ -61,7 +64,8 @@ def _both(v1, script, n, off, sp=None, setup=None, vendor_trim=False):
                      "chest": (s.r324_e003_chest_P, unit.chest_p_bara),
                      "leg": (a["out"][7], b.m_402_kgh), "made": made,
                      "boil": (a["melt"][3], b.m_boil_kgh),
-                     "urea": (s.w_e003["Urea"], unit.w["Urea"])})
+                     "urea": (s.w_e003["Urea"], unit.w["Urea"]),
+                     "air": b.seal_air_kgh, "level": b.level_pct})
     return parted, hist
 
 
@@ -207,3 +211,74 @@ def test_pv_329212_on_its_vendor_trim_decided_divergence(v1):
     assert parted == 5
     assert hist[3000]["chest"] == (pytest.approx(5.636, abs=1e-4), pytest.approx(5.7619, abs=1e-4))
     assert hist[3000]["T"] == (pytest.approx(138.9208, abs=1e-4), pytest.approx(139.3903, abs=1e-4))
+
+
+def test_the_lost_seal_admits_air_decided_divergence(v1):
+    """B-107, decided 2026-10-22: once LT-324501 uncovers its barometric seal, atmospheric air enters
+    324F003 through the drain's trim on the blow-through law, where V1's empty leg admits nothing.
+    LIC-324501's set point 54.7 -> 10 % (S1-5.4b): the loop drains the leg past its set point on both
+    sides alike until LI-324501 crosses the seal's 3 % at 686.6 s. V1's vacuum stays at 0.131 bar a.
+    The port's leg admits up to 625 kg/h, PT-324203 peaks at 0.2416 bar a at 838 s with the level at
+    0.47 %, PIC-324203 throttling its bleed to 12.7 kg/h, and the melt weakens to 96.71 % urea; the
+    level recovers, the seal closes at 1 053.5 s, and after 25 minutes the vacuum stands at
+    0.1299 bar a and the melt at 139.03 C against V1's 140."""
+    def setup(s, loops):
+        s.LIC_324501["sp"] = loops.level.sp = 10.0
+    parted, hist = _both(v1, h._step(v1, 5), 15000, None, setup=setup, seal_air=True)
+    assert parted == 6866 and hist[6865]["air"] == 0.0 < hist[6866]["air"]
+    assert hist[6865]["level"] > 3.0 > hist[6866]["level"]
+    peak = max(range(15000), key=lambda k: hist[k]["P"][1])
+    assert peak == 8381
+    assert hist[peak]["P"] == (pytest.approx(0.131, abs=1e-12), pytest.approx(0.24164, abs=1e-5))
+    assert hist[peak]["fa"][1] == pytest.approx(12.713, abs=1e-3)
+    assert max(r["air"] for r in hist) == pytest.approx(625.46, abs=0.01)
+    assert (max(r["w"][0] for r in hist), min(r["w"][1] for r in hist)) == (
+        pytest.approx(0.9771, abs=1e-12), pytest.approx(0.96710, abs=1e-5))
+    assert next(k for k in range(peak, 15000) if hist[k]["air"] == 0.0) == 10535
+    end = hist[14999]
+    assert end["P"] == (pytest.approx(0.131, abs=1e-12), pytest.approx(0.12987, abs=1e-5))
+    assert end["T"] == (pytest.approx(140.0, abs=1e-9), pytest.approx(139.027, abs=1e-3))
+
+
+def test_the_fixed_point_on_the_energy_balance_at_the_heel_decided_divergence():
+    """B-108, decided 2026-10-22. LIC-324501 in MAN at 100 % drains 324F003 with B-107's lost seal
+    admitting air; V1's own sealed leg never meets this, so its side is the port with V1's last
+    sweep. Both stay ``==`` until the sweeps first miss their 1e-12, at 537.1 s; the drain reaches
+    the 1 kg floor at 540.4 s and the vacuum breaks to 0.29 bar a. V1's sweeps then swing — the
+    residual up to 158 K, TT-324002 between 43.1 and 146.5 C, 78.16 C after 15 minutes — and the
+    stage passes stage 1's melt at 94.31 %. Solved on the energy balance, the heel holds 147.2 to
+    143.3 C under TIC-324002, the melt 96.44 to 95.95 % and the vacuum 0.304 bar a, every
+    unconverged tick bracketed to 1e-12."""
+    sides = []
+    for bisect in (False, True):
+        unit = h.se.SecondEvaporator(chest=h.se.V1_CHEST, backward_species=False, seal_air=True,
+                                     bisect_fixed_point=bisect)
+        loops = h.se.SecondEvaporatorLoops(pic=h.se.pic_329212(h.se.V1_CHEST))
+        loops.level.mode, loops.level.op = "MAN", 100.0
+        sides.append((unit, loops))
+    hist, parted = [], None
+    for k in range(9000):
+        x = h._design(None)
+        hist.append([h.port_step(unit, loops, x) for unit, loops in sides])
+        if parted is None and (sides[0][0].t_c, sides[0][0].p_bara, sides[0][0].m_kg) != (
+                sides[1][0].t_c, sides[1][0].p_bara, sides[1][0].m_kg):
+            parted = k
+    assert parted == 5371 == next(k for k in range(9000) if not hist[k][0].converged)
+    floor = next(k for k in range(9000) if hist[k][1].m_kg == d.F003_M_FLOOR_KG)
+    assert floor == 5404
+    heel = [hist[k] for k in range(floor, 9000)]
+    assert max(r[0].residual for r in heel) == pytest.approx(158.20, abs=0.01)
+    assert (min(r[0].t_c for r in heel), max(r[0].t_c for r in heel)) == (
+        pytest.approx(43.10, abs=0.01), pytest.approx(146.52, abs=0.01))
+    assert min(r[0].w_melt for r in heel) == pytest.approx(0.9431, abs=1e-12)
+    assert all(r[1].bisected for r in hist if not r[1].converged)
+    assert max(r[1].residual for r in hist) <= d.PT_LOOP_TOL
+    assert (min(r[1].t_c for r in heel), max(r[1].t_c for r in heel)) == (
+        pytest.approx(143.341, abs=1e-3), pytest.approx(147.188, abs=1e-3))
+    assert (min(r[1].w_melt for r in heel), max(r[1].w_melt for r in heel)) == (
+        pytest.approx(0.95954, abs=1e-5), pytest.approx(0.96439, abs=1e-5))
+    end = hist[8999]
+    assert (end[0].t_c, end[1].t_c) == (pytest.approx(78.159, abs=1e-3),
+                                        pytest.approx(143.341, abs=1e-3))
+    assert (end[0].p_bara, end[1].p_bara) == (pytest.approx(0.28706, abs=1e-5),
+                                              pytest.approx(0.30377, abs=1e-5))

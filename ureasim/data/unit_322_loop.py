@@ -21,12 +21,17 @@ from ureasim.data.unit_320 import SYN_P_DES_BARA
 from ureasim.data.unit_321 import CO2_DES_KGH
 from ureasim.data.unit_322e002 import P_DES_BARA as HPCC_P_DES_BARA
 from ureasim.data.unit_322e003 import OFFGAS_DES_KMOLH
+from ureasim.data.unit_322e002 import T_PROD_DES_C as HPCC_T_PROD_DES_C
 from ureasim.data.unit_322f001 import MOTIVE_DES_KGH
+from ureasim.data.unit_322r001 import FEED_W_UREA_DES, OVERFLOW_RHO
+from ureasim.data.unit_322r001 import TOP_P_DES_BARA as REACT_TOP_P_DES_BARA
 from ureasim.data.unit_323e003 import E003_M308_DES_KGH
+from ureasim.thermo.empirical import urea_soln_rho
 
 __all__ = [
     "SYN_P_TAU_MIN", "V_R001_M3", "V_E001_M3", "V_E002_M3", "V_E003_M3", "SYN_LOOP_V_M3",
-    "RHO_E002_LIQ", "BUFFER_DLN_FRAC", "LIQUOR_DP_DES_BAR",
+    "RHO_E002_LIQ", "BUFFER_DLN_FRAC", "LIQUOR_DP_DES_BAR", "REACT_FEED_DP_DES_BAR",
+    "REACT_FEED_RHO_DES_LIVE",
     "SYN_LOOP_IN_DES_KGH", "SYN_LOOP_OUT_DES_KGH",
     "SYN_LOOP_RESID_DES_KGH", "SYN_P_FLOOR_BARA", "SYN_P_CEILING_BARA",
     "LOOP_LEVEL_NLL_SUM_PCT",
@@ -75,6 +80,19 @@ BUFFER_DLN_FRAC = 1.0e-3
 #: differential is the loop pressure the liquor holds (`liquor_saturation`; decided 2026-10-10,
 #: handoff B-91 (a)).
 LIQUOR_DP_DES_BAR = HPCC_P_DES_BARA - SYN_P_DES_BARA
+
+#: 322R001's feed line at design [bar], 2.9: 322E002's outlet at the PFD's 144.2 bar a (streams 202
+#: and 205) less the reactor's top at 141.3 (streams 203 and 207), written as a subtraction of the
+#: two design pressures (A-13). The design drop the published PT on 322R001 is normalised against
+#: (`loop_hydraulics.reactor_bara`; decided 2026-10-22, handoff B-112).
+REACT_FEED_DP_DES_BAR = HPCC_P_DES_BARA - REACT_TOP_P_DES_BARA
+
+#: The feed line's design density [kg/m3], about 752.2: the urea-solution correlation V1's line
+#: uses, at the design seed's feed (`unit_322r001.FEED_W_UREA_DES`) and 322E002's 170.0 C product,
+#: so the line's density ratio is exactly 1.0 at design (handoff B-112), as
+#: `unit_322r001.OVERFLOW_RHO_DES_LIVE` is the stripper's. V1 normalises on the nominal 990, which
+#: the correlation returns only at its own reference state.
+REACT_FEED_RHO_DES_LIVE = urea_soln_rho(FEED_W_UREA_DES, HPCC_T_PROD_DES_C, OVERFLOW_RHO)
 
 #: The boundary's design flows [kg/h] and the residual they leave, +2024.9: in, the motive on its
 #: re-pin (42 762.05), PFD 101's CO2 and 323E003's 308; out, PFD 208's bottoms and PFD 204's vent.

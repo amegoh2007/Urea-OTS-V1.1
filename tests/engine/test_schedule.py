@@ -142,7 +142,7 @@ def test_the_plants_order_is_a_topological_order_of_its_torn_flowsheet():
 
 
 def test_every_one_tick_read_of_the_plant_is_declared_with_a_reason():
-    """79 declared tears, each read: the V1 recycles and their kin, every downstream
+    """81 declared tears, each read: the V1 recycles and their kin, every downstream
     pressure a unit reads before its owner steps, the steam users' draws, the trips' output; the
     synthesis loop's 29 — PT-329201 to the six units that read it, the trips' latches to the feeds
     (21.2's to 320K002 too, decided 2026-10-16: its flag shuts XV-322902) and the network, 322E003's sump to 322F001 (its mushy zone too) and to 322R001's pulse, the
@@ -151,9 +151,10 @@ def test_every_one_tick_read_of_the_plant_is_declared_with_a_reason():
     323P001's 308 and 322C001's pressure; 323E011's envelope overflow and its temperature to
     323C005 (A-20); and B-31's eight (decided 2026-10-16): 323E011's temperature to 323E003, unit
     324's four cold ends to 328D003, 328D001's, 328C003's and 328C004's temperatures to 328C002;
-    and B-97's (decided 2026-10-16), 324F002's discharge temperature to 323C005."""
+    and B-97's (decided 2026-10-16), 324F002's discharge temperature to 323C005; and B-105's two
+    (decided 2026-10-22), 308's composition and temperature to 322E003."""
     s = P.schedule()
-    assert len(s.tears) == 79 and all(t.reason for t in s.tears)
+    assert len(s.tears) == 81 and all(t.reason for t in s.tears)
     assert set(s.tear_writes) == set(P.TEAR_WRITES)
 
 

@@ -48,8 +48,10 @@ from collections import deque
 
 import pytest
 
+from ureasim.units.synthesis import stripper_level as sl
 from ureasim.units.synthesis import stripper_sump as ss
-from ureasim.units.synthesis.stripper_sump import BottomLevelLoop, StripperSump
+from ureasim.units.synthesis.stripper_level import BottomLevelLoop
+from ureasim.units.synthesis.stripper_sump import StripperSump
 
 from .v1_loader import lift, load, v1_available, v1_service
 
@@ -127,12 +129,12 @@ def v1_sump_step(v1, state: dict, lic: dict, strip: dict, p_syn_bara: float,
         if lic["mode"] == "AUTO" and table:  # ---- the DCS's tuning and filtered derivative ----
             level, prev = state["strip_level"], lic.get("level_prev")
             prev = level if prev is None else prev
-            tf, td = ss.LIC_322501_TF_S, ss.LIC_322501_TD_S
+            tf, td = sl.LIC_322501_TF_S, sl.LIC_322501_TD_S
             g_prev = lic.get("d_filt", 0.0)
             lic["d_filt"] = (tf / (tf + dt)) * g_prev + (td / (tf + dt)) * (level - prev)
             lic["op"] = clamp(
-                lic["op"] + ss.LIC_322501_KC * ((e_lvl - lic["e_prev"])
-                                                + (dt / ss.LIC_322501_TI) * e_lvl
+                lic["op"] + sl.LIC_322501_KC * ((e_lvl - lic["e_prev"])
+                                                + (dt / sl.LIC_322501_TI) * e_lvl
                                                 + (lic["d_filt"] - g_prev)),
                 0.0, 100.0)
         elif lic["mode"] == "AUTO":
@@ -270,7 +272,9 @@ def drive(v1, ticks, dt: float = 1.0, level0: float = 50.0, mode: str = "AUTO",
     seeded state, which is the design state unless a test says otherwise. Tests reach this
     through the `run_both` fixture, which binds the lifted V1 namespace to it.
     """
-    sump = StripperSump(level_pct=level0)
+    # V1's clamped sump: the full sump's held-back excess (B-103, decided 2026-10-21) is
+    # asserted both ways in the last section.
+    sump = StripperSump(level_pct=level0, hold_full=False)
     lic_new = BottomLevelLoop(op=op0, sp=sp, pv=level0, e_prev=0.0, mode=mode)
 
     state = {"strip_level": level0, "tlag": {}}
@@ -498,10 +502,60 @@ def test_lic_322501_on_the_dcs_tuning_decided_divergence(v1):
             first = lic_old["op"] if first is None else first
         runs[table] = (first, lic_old["op"], state["strip_level"])
     assert v1["LIC_322501_KC"] == 2.5 and v1["LIC_322501_TI"] == 90.0
-    assert (ss.LIC_322501_KC, ss.LIC_322501_TI, ss.LIC_322501_TD_S, ss.LIC_322501_TF_S) == (
+    assert (sl.LIC_322501_KC, sl.LIC_322501_TI, sl.LIC_322501_TD_S, sl.LIC_322501_TF_S) == (
         0.20, 280.0, 1.0, 1.0)
     assert runs[False][0] == pytest.approx(84.017, abs=1e-3)
     assert runs[False][2] == pytest.approx(50.005, abs=1e-3)
     assert runs[True][0] == pytest.approx(49.111, abs=1e-3)
     assert runs[True][2] == pytest.approx(47.393, abs=1e-3)
     assert runs[True][1:] == (lic.op, sump.level_pct)
+
+
+# ======================================================================================
+# 9. The decided divergence: a full sump's excess held back in the tubes (B-103, 2026-10-21)
+# ======================================================================================
+
+def _full_sump_run(v1, hold_full: bool):
+    """LV-322501 in MAN at 80 %, the sump at 95 %: forty ticks of bottoms at 25 C, the mushy zone
+    shutting the drain, then eighty at the design 172 C. Returns each tick's (port level, port
+    held, V1 level), the port's net inflow integrated, and the run's two sumps."""
+    ticks = [(strip_at(T_bot=25.0), 140.7)] * 40 + [(strip_at(), 140.7)] * 80
+    sump = StripperSump(level_pct=95.0, hold_full=hold_full)
+    lic = BottomLevelLoop(op=80.0, sp=50.0, pv=95.0, e_prev=0.0, mode="MAN")
+    state = {"strip_level": 95.0, "tlag": {}}
+    lic_old = {"op": 80.0, "sp": 50.0, "pv": 95.0, "e_prev": 0.0, "mode": "MAN",
+               "pv_bad": False}
+    rows, net_kg = [], 0.0
+    for strip, p_syn in ticks:
+        r = sump.step(lic, strip["bot_kgh"], strip["T_bot"], strip["T_steam"],
+                      strip["top_kmolh"], strip["top_MW"], p_syn, strip["bot_mass_pct"], 1.0)
+        v1_sump_step(v1, state, lic_old, strip, p_syn, 1.0)
+        net_kg += (r.bottoms_in_kgh - r.drain_kgh) / 3600.0
+        rows.append((r.level_pct, r.held_kg, state["strip_level"]))
+    return rows, net_kg
+
+
+def test_a_full_sump_holds_its_excess_back_decided_divergence(v1):
+    """B-103, decided 2026-10-21 (decision 62's class). The mushy zone shuts LV-322501 and the
+    sump fills from 95 % at the bottoms' 130.48 t/h: full on the eleventh tick. V1 clamps
+    LT-322501 at 100 % and deletes what runs in after — 1 055 kg in thirty seconds. The port holds
+    it back in the tubes above the sump, every kilogram, and runs it down first when the hot
+    bottoms reopen the drain: V1's level falls on the first hot tick and stands at 73.0 % eighty
+    seconds on, the port's holds at 100 % for 39 s while what it held drains, and stands at 86.4 %.
+    The switch off is V1's clamp to the bit."""
+    span = ss.SUMP_SPAN_KG
+    rows_v1, _ = _full_sump_run(v1, hold_full=False)
+    assert all(port == v1_level for port, held, v1_level in rows_v1)
+    assert all(held == 0.0 for _, held, _ in rows_v1)
+    rows, net_kg = _full_sump_run(v1, hold_full=True)
+    level, held, v1_level = rows[39]
+    assert level == v1_level == 100.0
+    assert held == pytest.approx(1055.09, abs=0.01)
+    assert next(k for k, r in enumerate(rows) if r[0] == 100.0) == 10
+    # Every kilogram the port took in is in the sump or held above it.
+    level, held, v1_level = rows[-1]
+    assert level / 100.0 * span + held == pytest.approx(0.95 * span + net_kg, abs=1e-6)
+    hot_full = [k for k in range(40, 120) if rows[k][0] == 100.0]
+    assert len(hot_full) == 39
+    assert rows[40][2] < 100.0
+    assert (level, v1_level) == (pytest.approx(86.354, abs=1e-3), pytest.approx(72.987, abs=1e-3))

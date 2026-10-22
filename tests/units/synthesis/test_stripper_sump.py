@@ -39,14 +39,15 @@ from ureasim.data.unit_322e001 import (
     T_CRYSTALLISATION_C,
     T_DOWNSTREAM_DES_C,
     T_STRIPPER_TAU_S,
+    TUBES_FULL_KG,
 )
 from ureasim.units.consequence.seal import expansion_factor
 from ureasim.units.synthesis import stripper_sump as ss
+from ureasim.units.synthesis.stripper_level import BottomLevelLoop
 from ureasim.units.synthesis.stripper_sump import (
     LV_322501_DP_ANCHOR_BAR,
     LV_322501_PV_DES_BARA,
     bottoms_pv_bara,
-    BottomLevelLoop,
     StripperSump,
     StripperSumpResult,
     letdown_kgh,
@@ -69,11 +70,12 @@ DESIGN = dict(bottoms_kgh=130480.0, t_bot_c=T_BOTTOM_DES_C, t_steam_c=211.621649
 def run(n: int = 1, dt: float = 1.0, level0: float = LEVEL_SP_DES_PCT,
         mode: str = "AUTO", sp: float = LEVEL_SP_DES_PCT,
         op0: float = LV_322501_OPEN_DES_PCT, syn_bara: float = SYN_P_DES_BARA,
+        tube_ceiling: bool = True,
         **strip) -> tuple[StripperSumpResult, StripperSump, BottomLevelLoop]:
     """Run the sump for `n` ticks and return the last result with both state objects."""
     tick = dict(DESIGN)
     tick.update(strip)
-    sump = StripperSump(level_pct=level0)
+    sump = StripperSump(level_pct=level0, tube_ceiling=tube_ceiling)
     lic = BottomLevelLoop(op=op0, sp=sp, pv=level0, mode=mode)
     result = None
     for _ in range(n):
@@ -505,6 +507,92 @@ def test_the_level_cannot_leave_its_own_span():
     assert flooded.level_pct == 100.0
     _, emptied, _ = run(n=50, dt=5.0, level0=0.1, mode="MAN", op0=100.0, bottoms_kgh=0.0)
     assert emptied.level_pct == 0.0
+
+
+def test_a_full_sump_holds_its_excess_back_in_the_tubes():
+    """B-103, decided 2026-10-21 (decision 62's class): LV-322501 shut and 500 t/h of bottoms
+    for 250 s. LT-322501 reads 100 %, and every kilogram the full sump cannot take is held back
+    in the tubes above it — what the sump and the tubes gained is what ran in. V1's clamp, the
+    switch off, deletes it. Without the tubes' ceiling (B-104, its own test below)."""
+    result, flooded, _ = run(n=50, dt=5.0, level0=99.9, mode="MAN", op0=0.0,
+                             bottoms_kgh=500_000.0, tube_ceiling=False)
+    span_kg = ss.SUMP_SPAN_KG
+    assert flooded.level_pct == 100.0 and result.held_kg == flooded.held_kg > 0.0
+    # The bottoms line delivers its design flow until the step has crossed it; what it delivered
+    # over the run is in the sump or above it.
+    assert result.dm_kgh == pytest.approx(result.bottoms_in_kgh, rel=1e-9)
+    gained = flooded.level_pct / 100.0 * span_kg + flooded.held_kg - 0.999 * span_kg
+    assert 0.0 < gained < 500_000.0 * 250.0 / 3600.0
+    sump = StripperSump(level_pct=99.9, hold_full=False)
+    lic = BottomLevelLoop(op=0.0, mode="MAN")
+    for _ in range(50):
+        r = sump.step(lic, 500_000.0, DESIGN["t_bot_c"], DESIGN["t_steam_c"], DESIGN["top_kmolh"],
+                      DESIGN["top_mw"], SYN_P_DES_BARA, DESIGN["bot_mass_pct"], 5.0)
+    assert (sump.level_pct, sump.held_kg, r.held_kg, r.dm_kgh) == (100.0, 0.0, 0.0, 0.0)
+
+
+def test_the_tubes_hold_no_more_than_their_standing_full_liquor():
+    """B-104, decided 2026-10-22: the liquor held back above a full sump is capped at the tubes
+    standing full, 8 689 kg; what still arrives is handed back to 322R001, and the room the tubes
+    publish for HV-322605 is the drain alone. The same run as above: the tubes fill and stay full,
+    and the sump's gain and what it handed back are what ran in."""
+    result, flooded, _ = run(n=50, dt=5.0, level0=99.9, mode="MAN", op0=0.0,
+                             bottoms_kgh=500_000.0)
+    assert (flooded.level_pct, flooded.held_kg) == (100.0, TUBES_FULL_KG)
+    assert result.held_kg == TUBES_FULL_KG and result.drain_kgh == 0.0
+    assert result.backup_kgh > 0.0
+    assert result.backup_kgh == pytest.approx(result.bottoms_in_kgh, rel=1e-9)
+    assert result.dm_kgh == pytest.approx(0.0, abs=1e-6)
+    assert result.take_kgh == 0.0
+
+
+def test_the_tubes_take_the_drain_and_their_unsubmerged_share_of_the_design_bottoms():
+    """With no liquor held the tubes bound nothing; holding some, they take the drain and their
+    unsubmerged share of the design bottoms, so HV-322605 eases off as they fill. Without the
+    ceiling, B-103's, nothing is published."""
+    result, _, _ = run()
+    assert (result.held_kg, result.backup_kgh, result.take_kgh) == (0.0, 0.0, None)
+    sump = StripperSump(level_pct=100.0, held_kg=0.25 * TUBES_FULL_KG)
+    lic = BottomLevelLoop(op=LV_322501_OPEN_DES_PCT, mode="MAN")
+    r = sump.step(lic, BOTTOMS_DES_KGH, DESIGN["t_bot_c"], DESIGN["t_steam_c"], DESIGN["top_kmolh"],
+                  DESIGN["top_mw"], SYN_P_DES_BARA, DESIGN["bot_mass_pct"], 1.0)
+    assert r.take_kgh == pytest.approx(
+        r.drain_kgh + (1.0 - r.held_kg / TUBES_FULL_KG) * BOTTOMS_DES_KGH, rel=1e-12)
+    result, _, _ = run(tube_ceiling=False)
+    assert (result.backup_kgh, result.take_kgh) == (0.0, None)
+
+
+def test_a_drained_sump_fills_its_tubes_to_the_ceiling_and_passes_what_drains():
+    """The sump with LV-322501 at 10 % and the stripper's feed capped at what the tubes take (the
+    reactor's bound, one kilogram of bottoms per kilogram taken): the tubes fill to their 8 689 kg
+    in about ten minutes, what the transit still delivers past the ceiling, 2 505 kg, is handed
+    back, and then the tubes take exactly what drains."""
+    sump = StripperSump(level_pct=99.9)
+    lic = BottomLevelLoop(op=10.0, mode="MAN")
+    bottoms, back = BOTTOMS_DES_KGH - 2.0, 0.0
+    tick = (DESIGN["t_bot_c"], DESIGN["t_steam_c"], DESIGN["top_kmolh"], DESIGN["top_mw"],
+            SYN_P_DES_BARA, DESIGN["bot_mass_pct"], 1.0)
+    for _ in range(2000):
+        r = sump.step(lic, bottoms, *tick)
+        back += r.backup_kgh / 3600.0
+        bottoms = (BOTTOMS_DES_KGH - 2.0 if r.take_kgh is None
+                   else min(BOTTOMS_DES_KGH - 2.0, max(r.take_kgh, 0.0)))
+    assert sump.held_kg == TUBES_FULL_KG
+    assert back == pytest.approx(2505.3, abs=0.1)
+    assert r.take_kgh == r.drain_kgh == pytest.approx(28304.1, abs=0.1)
+    assert r.bottoms_in_kgh == pytest.approx(r.drain_kgh, rel=1e-9)
+
+
+def test_held_liquor_runs_down_before_the_level_falls():
+    """What the tubes held back drains first: the level stays at 100 % until it is gone."""
+    sump = StripperSump(level_pct=100.0, held_kg=1000.0)
+    lic = BottomLevelLoop(op=LV_322501_OPEN_DES_PCT, mode="MAN")
+    tick = (DESIGN["t_bot_c"], DESIGN["t_steam_c"], DESIGN["top_kmolh"], DESIGN["top_mw"],
+            SYN_P_DES_BARA, DESIGN["bot_mass_pct"], 1.0)
+    r = sump.step(lic, 0.0, *tick)
+    assert sump.level_pct == 100.0
+    assert sump.held_kg == pytest.approx(1000.0 - r.drain_kgh / 3600.0, rel=1e-12)
+    assert r.dm_kgh == pytest.approx(-r.drain_kgh, rel=1e-9)
 
 
 def test_the_level_integrates_the_real_net_flow():

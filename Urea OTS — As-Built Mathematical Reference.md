@@ -93,6 +93,11 @@ Design basis: `References/Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md
 - Part LXXV — Three Metso valves wired; the process-deviation scenarios put to the plant (Phase 7)
 - Part LXXVI — A full 323F004 overflows, the species step at a heel; A-21 and B-99 measured (Phase 7)
 - Part LXXVII — A-21, B-99, B-100 and B-101 decided and built (Phase 7)
+- Part LXXVIII — S1-1.2's conversion traced; A-21's option (c) measured (Phase 7)
+- Part LXXIX — B-102 and B-103 decided and built; Scenarios5.md put to the plant (Phase 7)
+- Part LXXX — B-104 to B-107 decided and built; A-23 closed; Scenarios5.md re-run (Phase 7)
+- Part LXXXI — B-108 to B-111 decided and built; Scenarios5.md re-run (Phase 7)
+- Part LXXXII — B-112 decided and built: PT on 322R001 on its feed line's PFD drop (Phase 7)
 
 ---
 
@@ -1671,6 +1676,23 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 309 | 322E003's capacity on its shell's effectiveness (decision 136) | V1's flow ratio m / m_des, its duty the demand | `units/synthesis/scrubber` ``shell_conductance_kwk``, ``condensation_capacity(effectiveness=)``, ``scrubber_322e003(capacity_frac=)``; `units/synthesis/scrubber_sump` ``effectiveness_capacity``; `engine/plant/synthesis_loop` | **`[DECIDED DIVERGENCE]`** 2026-10-17 (handoff B-99 (b1); decision 36's class): the capacity's flow term eps . C over its design's, the duty and TT-329125 capped at it below 1; V1's law on the switch; both ways (§LXXVII.2) |
 | 310 | The vapour draw in the heel's backward species step (decision 137) | V1's explicit ``sol_advance`` | `units/liquor_stage` ``advance_species`` | **`[DECIDED DIVERGENCE]`** 2026-10-17 (handoff B-101 (b); decision 133 extended): drain and vapour at the step's end composition where both together pass more than the stage holds; 323F010's heel 79.77 / 80.03 % (§LXXVII.3) |
 | 311 | 323F004 on its geometry, LT-323505 between its taps (decision 138) | V1's 5075 kg holdup on 180 s, LI-323505 = M / 8458 kg | `core/vessel_geometry` ``VerticalVessel``; `data/unit_323` ``F004_VESSEL``, ``lt_323505_pct``, ``LT_323505_*``; `units/recirc/flash_tank` ``FlashTank.geometric``, ``V1_DRUM`` | **`[DECIDED DIVERGENCE]`** 2026-10-17 (handoff B-100 (b), measured stable first; decision 33's class): 1836.6 kg at the 60 % set point, full at 3761.5 kg, the seal at an empty head's 17.8 %; ``V1_DRUM`` on every harness; both ways; row 305 closed (§LXXVII.4) |
+| 312 | S1-1.2's conversion traced; A-21's option (c) measured | — | scratch prototypes only | **measured** 2026-10-21: the conversion falls while HV-322605 drains the reactor, then rises on the loop's chemistry — the stripper's H/C slip keeps the drained ammonia in the loop, 322E002 loses its saturation and the reactor's carbamate heat lifts its nodes to the bubble point; a slow oscillation of about 50 minutes, its crest +11.4 points at 30 minutes, its trough -5.0 (§LXXVIII.1); option (c) the same loop at a third of the amplitude (§LXXVIII.3) |
+| 313 | 322E001's duty not bounded by its shell | V1's (the split asks the MP header for the duty its composition needs) | `units/synthesis/stripper` ``stripper_322e001`` | **raised** 2026-10-21 (handoff B-102): up to 78 MW asked of the 39.4 MW shell on a wide-open HV-322605; option (c) measured, the design duty its only anchor (§LXXVIII.2-3); **closed** 2026-10-21 (row 315) |
+| 314 | LT-322501's sump clamped at 100 % | V1's (``main.py`` 7657) | `units/synthesis/stripper_sump` ``StripperSump.step`` | **raised** 2026-10-21 (handoff B-103): the net inflow above a full sump deleted — S2-2.3b holds 100 % from 140 s, about 100 t/h; decision 62's class (§LXXVIII.4); **closed** 2026-10-21 (row 316) |
+| 315 | 322E001's duty bounded by its shell (decision 139) | V1's (the split asks the MP header for whatever its balance needs) | `units/synthesis/stripper_shell` ``enthalpy_balance``, ``shell_lmtd_k``, ``shell_capacity_ratio``, ``lifted_split``, ``bounded_split``; `units/synthesis/stripper` ``stripper_322e001(shell_bound=)``; `units/synthesis/stripper_sump` ``StripperSump.shell_bound``; `data/unit_322e001` ``SHELL_DUTY_BAND`` | **`[DECIDED DIVERGENCE]`** 2026-10-21 (handoff B-102 (b)): Q_max = Q_des . LMTD(T_steam, 187, 172) / LMTD_des, the live steam against the tube side's design profile; past Q_max . (1 + 5e-4) the lift beyond the sweep scaled by lambda to meet it; ``shell_bound = False`` on the harnesses; inert points to the bit, both ways (§LXXIX.1) |
+| 316 | LT-322501's full sump held back in the tubes | V1's clamp (``main.py`` 7657) | `units/synthesis/stripper_sump` ``StripperSump.held_kg``, ``hold_full``, ``StripperSumpResult.held_kg``, ``dm_kgh`` | **`[DECIDED DIVERGENCE]`** 2026-10-21 (handoff B-103; decision 62's class): what a full sump cannot take held above it and run down first, its gain booked as liquid; below full V1's to the bit; ``hold_full = False`` on the harnesses; both ways (§LXXIX.2) |
+| 317 | Scenarios5.md put to the plant | — | `tests/phase7/coupled.py`, `run_coupled.py`; `run_deviations.run_plant(extra=)` | **measured** 2026-10-21: 13 cases, 74 of 152 claims as claimed, both waves; the delayed LP wave once in 21; four mechanisms measured — B-104, B-105, B-107 needed, B-106 not shown yet (§LXXIX.3-5); all four decided and built 2026-10-22, the survey re-run (row 322) |
+| 318 | 322E001's tubes standing full (decision 140) | V1's clamp; B-103's held liquor with no ceiling | `units/synthesis/stripper_sump` ``StripperSump.tube_ceiling``, ``StripperSumpResult.backup_kgh``, ``take_kgh``; `units/synthesis/stripper_shell` ``submerged_fraction``, ``unsubmerged_factor``, ``submerged_bottoms_c``; `units/synthesis/stripper` ``stripper_322e001(held_kg=)``; `units/synthesis/reactor_inventory` ``ReactorInventory.step(m_out_cap_kgh=, backup_kgh=)``; `engine/plant/synthesis` ``_322r001``; `data/unit_322e001` ``TUBES_FULL_KG``, ``SUBMERGED_DUTY_FLOOR`` | **`[DECIDED DIVERGENCE]`** 2026-10-22 (handoff B-104; decision 62's class): the held liquor capped at 8 688.7 kg; holding any, the tubes take the drain and (1 - sigma) of the design bottoms, HV-322605's discharge capped at it and the reactor keeping the rest; the shell's capacity times 1 - 0.70 sigma, the bottoms to 132.7 + f_sub (T - 132.7); ``tube_ceiling = False`` on the harnesses; both ways (§LXXX.2) |
+| 319 | 323D001's liquor carried into 322E003 (decision 141) | V1's mass-only LPCC, the wash at PFD 308's design composition | `units/recirc/lp_carbamate_condenser` ``LpCarbamateCondenser.dw``, ``track_species``, ``LpCarbamateCondenserResult.w_308``; `units/synthesis/scrubber` ``scrubber_322e003(wash_dw=, wash_dt_c=)``; `engine/state` ``TearState.w_308``, ``t_308_c``; `engine/plant/synthesis_loop` ``_wash_departures``; `data/unit_323e003` ``LIQUOR_SPECIES``, ``W_308``, ``W_718B``, ``W_776``, ``W_734``, ``W_COND`` | **`[DECIDED DIVERGENCE]`** 2026-10-22 (handoff B-105): the tank's departure from PFD 308 on its inlets' departures, stepped backward; the wash on 308's live composition and TT-322002 on its temperature's departure; ``track_species = False`` on the harnesses; the seed's LP drift reaches 4e-5; both ways (§LXXX.3) |
+| 320 | 322E002's melt below its azeotrope (decision 142) | V1's K_N line on both sides | `units/synthesis/carbamate_condenser` ``low_nc_rise``, ``bubble_p_322e002(low_nc=)``, ``carbamate_condenser_322e002(low_nc=)``; `units/synthesis/condenser_holdup` ``CondenserHoldup.low_nc_branch``; `data/unit_322e002` ``BUB_AZEOTROPE_NC`` | **`[DECIDED DIVERGENCE]`** 2026-10-22 (handoff B-106): below N/C 3.0 f_N = f_N(3.0) . P_EU(N/C) / P_EU(3.0) on the design melt at 170 C (added in bar since 2026-10-22, row 326); V1's to the bit at and above 3.0; ``low_nc_branch = False`` on the harnesses; both ways (§LXXX.4) |
+| 321 | 324F003's lost seal admits air (decision 143) | V1's sealed leg | `units/evaporation/leg_seal` ``seal_air_kgh``, ``SEAL_AIR_RHO_KGM3``; `units/evaporation/second_evaporator` ``SecondEvaporator.seal_air``, ``SecondEvaporatorResult.seal_air_kgh``, ``air_in_kgh``; `engine/plant/evaporation` (``false_air2_kgh``); `data/unit_324` ``LV_324501_P_UP_BARA``, ``LV_324501_P_DOWN_BARA``, ``LV_324501_DP_DES_BAR``, ``LV_324501_RHO_KGM3``, ``SEAL_AIR_T_C``, ``SEAL_AIR_GAMMA`` | **`[DECIDED DIVERGENCE]`** 2026-10-22 (handoff B-107): the blow-through law on LV-324501A's liquid sizing, PFD 783's air, into 324E005 with the false air; ``seal_air = False`` on the harnesses; both ways (§LXXX.5) |
+| 322 | Scenarios5.md re-run on B-104 to B-107 | — | `tests/phase7/coupled.py` (S5-W on FV-323401 in MAN, S5-6c), `run_coupled.EXTRA` | **measured** 2026-10-22: 14 cases, 83 of 165; the 13 of session 63, 74 of 152 again with sixteen claims moving; S5-5a, S5-6a/b/c reach trip 22.2 on B-106's azeotropic rise (§LXXX.7-8) |
+| 323 | Stage 2's fixed point on its energy balance (decision 144) | V1's last G7 sweep | `units/evaporation/stage_fixed_point` ``bisected_fixed_point``; `units/evaporation/second_evaporator` ``SecondEvaporator.bisect_fixed_point``, ``SecondEvaporatorResult.bisected``; `units/evaporation/melt_route` (moved) | **`[DECIDED DIVERGENCE]`** 2026-10-22 (handoff B-108): where the sweeps miss 1e-12 in 20, G(T) = T_sweep(T, P(T)) - T by false position on [min(T_feed, T_old), max(T_chest, T_old)]; V1's to the bit where they converge; both ways (§LXXXI.1) |
+| 324 | PT on 322R001 capped where the melt flashes (decision 145) | V1's bubble pressure plus the line's drop | `units/synthesis/loop_hydraulics` ``reactor_bara(flash_cap=)``; `units/synthesis/reactor_inventory` ``ReactorInventory.flash_cap`` | **`[DECIDED DIVERGENCE]`** 2026-10-22 (handoff B-109): base min(P_bub, P_syn + 3.5 bar), the saturation fraction's head; V1's at the design and below the cap; both ways (§LXXXI.2) |
+| 325 | PFD 308's line from 323P001 to 322E003 (decision 146) | B-105's tear, the wash a tick late | `data/process_routes` ``323P001_TO_322E003``, ``ID_HP70_MM``; `units/synthesis/scrubber_sump` ``ScrubberSump.wash_line``, ``line_state``, ``wash_arrival``; `engine/plant/synthesis_loop` ``_wash_departures`` | **`[DECIDED DIVERGENCE]`** 2026-10-22 (handoff B-110): 47.8 m at 74.7 mm (UD-RL-100-MB-0017, -0015), 0.2095 m3, 24.94 s at design; B-21's class; both ways (§LXXXI.3) |
+| 326 | The azeotropic rise added in bar (decision 147) | decision 142's ratio | `units/synthesis/carbamate_condenser` ``low_nc_rise`` (bar), ``bubble_p_322e002`` | **`[DECIDED DIVERGENCE]`** 2026-10-22 (handoff B-111): f_N = f_N(3.0) + dP_EU / P_des, decision 51's class; V1's at and above N/C 3.0; both ways (§LXXXI.4) |
+| 327 | Scenarios5.md re-run on B-108 to B-111 | — | `run_coupled.EXTRA` (``x.reactor_pt_bara``, ``x.stage2_bisected``) | **measured** 2026-10-22: 14 cases, 82 of 165 (83); S5-6c, S5-6b, S5-5a and S5-6a trip 22.2 30 to 95 s later on the additive rise; eight deviations, 15 of 22 (§LXXXI.5-6) |
+| 328 | PT on 322R001 on its feed line's PFD drop (decision 148) | V1's ``p_syn - 144.2`` line, 136.12 bar a at the design | `units/synthesis/loop_hydraulics` ``reactor_bara(design_drop=)``; `units/synthesis/reactor_inventory` ``ReactorInventory.design_drop``; `data/unit_322_loop` ``REACT_FEED_DP_DES_BAR``, ``REACT_FEED_RHO_DES_LIVE``; `data/unit_322r001` ``TOP_P_DES_BARA``, ``FEED_W_UREA_DES`` | **`[DECIDED DIVERGENCE]`** 2026-10-22 (handoff B-112 (a)): 2.9 = 144.2 - 141.3 (A-13) at the seed's feed density and mass, 141.3 bar a at the design to the bit, 1.0 bar per bar of PT-329201 under B-109's cap; display only; both ways (§LXXXII.1) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -15267,7 +15289,7 @@ drains 43.5 points over half an hour, the stripper's level wave peaks 28.5 point
 ends 1.5 bar up rather than at the trip's 155 bar a, and the stripper's bottoms carry 2.2 points
 less ammonia, not 100 %. Session 59's "conversion falls" agreed only because the plant tripped and
 the reactor drained; on the running plant the conversion ends 11.4 points above the control's —
-measured, not explained, recorded for the process engineer with the other S1-1.2 claims the model
+measured, traced in session 62 to a slow oscillation of the loop's chemistry (§LXXVIII.1), recorded for the process engineer with the other S1-1.2 claims the model
 answers the other way (the loop pressure, the stripper's slip, 323C003's overhead). **A full 323F004
 floods 323E011 (S1-2.1)**, as session 60 found (A-22). **The colder or larger tempered water
 (S2-1.4a / b) moves only the temperatures**, as §LXXVI.4 measured; B-99's effectiveness changes the
@@ -15296,3 +15318,1689 @@ Nothing of the four decisions. Recorded, not raised: the stripper's split is not
 shell (A-21's option (c), not taken); the heel's 0.26-point alternation from the vapour's composition
 (decision 137's measured result); LIC-323505's 60 % set point is V1's, above the drawing's high
 liquid level (32.6 %); 323E011's 323F004 vapour space is B-51's constant.
+
+# Part LXXVIII — S1-1.2's conversion traced; A-21's option (c) measured (Phase 7)
+
+Session 62, 2026-10-21. Scratch traces and a scratch prototype only; no source file changed. The
+process engineer asked why a wide-open HV-322605 (S1-1.2) ended with the reactor's conversion 11.4
+points above the control's (§LXXVII.5), and for A-21's option (c) — 322E001's overhead bounded by
+the duty its shell can transfer — to be prototyped and measured on S1-1.2 and S2-3.1a. Each run
+starts from the design seed, settles 60 s and sets HIC-322605 60 -> 100 %, as `run_deviations`
+does, and every quantity below was recorded on every 0.1 s tick, against an unperturbed control.
+
+## LXXVIII.1 The conversion, traced
+
+`reactor.reactor_322r001` reads the per-pass conversion as the column's extent over the raw feed's
+CO2, x = xi_urea / CO2_feed, xi_urea from `reactor_column.urea_extent_pfr` on four inputs: the feed
+(322E002's two-phase product), the node temperatures of the tick before, the level and the
+throughput. Recomputing x with one input taken from the control's run at the same plant time
+attributes the departure (the recomputation reproduces both runs' recorded x to the bit):
+
+| t after the step | x, step / control | the control's feed | its nodes | its level | its throughput |
+|---|---|---|---|---|---|
+| 60 s | 0.4383 / 0.5418 | -4.94 points | -2.86 | +0.58 | **+17.78** |
+| 300 s | 0.5801 / 0.5417 | -1.39 | **-7.22** | +1.21 | +3.21 |
+| 900 s | 0.6074 / 0.5417 | -1.56 | **-8.56** | +1.15 | +1.86 |
+| 1800 s | 0.6554 / 0.5418 | -3.89 (N/C alone -4.85) | **-9.38** | +1.18 | -0.42 |
+
+Three phases:
+
+1. **The drain, 0-150 s: the conversion falls, as Scenarios.md claims.** HV-322605 passes 372 t/h,
+   the throughput the residence runs on rises from 227.5 to 374 m3/h, and x falls to 0.39-0.46;
+   the stripper, fed 426 t/h, lifts 8 558 kmol/h of NH3 overhead against 3 572, the reactor's
+   feed N/C jumps to 5.1, 322E002's melt bubbles at 173-180 bar a and its saturation fraction falls
+   to 0.48-0.55 (decision 135, solved on the tick, no ring).
+2. **The funnel lip, from 146 s.** The level reaches the lip, 0.7 m below the normal level: 77.39 %
+   of the 25 m column, 19.35 m, a 5 cm crest. Below it the vessel cannot discharge, so the outflow
+   is the lip's — the production, 222-250 t/h — and HV-322605 no longer sets it. The wetted volume
+   is 3.3 % below the design's and the throughput within 11 % of it: the residence costs 1.2
+   points of conversion for the rest of the run, no more.
+3. **The loop's chemistry, from about 4 min: the conversion rises.** The reactor feed's H/C, the
+   blend the stripper's composition penalty reads, rises from 0.398 to at most 0.516 (the water
+   the drained melt carried round); the stripper's H/C penalty g_hc = 1 - 1.5 (H/C - 0.398) falls to
+   0.82, and V1's volatile breakthrough, f_NH3,CO2 + 4 . slip . (1 - f), pushes NH3 and CO2
+   overhead (slip at most 0.18; g_nc stays 1.00). The bottoms leave lean (NH3 2.9-7.7 %, CO2
+   2.9-9.7 %, the control's 7.9 and 10.3), the ammonia stays in the loop, the reactor's feed N/C
+   rises to 4.46, 322E002's melt bubbles at up to 166 bar a against a loop of 142, its fraction
+   falls to 0.69 and up to 113 t/h of gas reach the reactor (the control's 61.5). There it forms
+   carbamate — up to 730 kmol/h of CO2 against the control's 292 — and its heat lifts nodes 1 to 3
+   to the liquor's bubble point (183.7-184.3 C, decision 102's ceiling; 8-27 t/h of volatiles
+   flashed into the off-gas, the control's 0.05). Hotter nodes and an NH3-richer feed raise the
+   extent; the lower level takes 1.2 points back.
+
+**Not settled at 30 minutes.** Run to 60 minutes the excursion is one half of a slow oscillation
+of about 50 minutes, undamped over the hour: x 0.656 at 29 min, 0.491 at 47 min, 0.540 and rising
+at 60 min, the slip back to 0.023; the feed N/C 2.89-4.46, 322E002's fraction 0.69-1, LT-322501
+20.5-91.9 % with LIC-322501 swinging the bottoms, PT-329201 141.1-143.2 bar a after the first three
+minutes (143.6 at the peak). The +11.36 points
+§LXXVII.5 read at 1800 s are this cycle's crest; read at 2820 s the same claim would be -5.0. No
+tick-to-tick ring: past the first second, no reversal of the fraction, the duty, the conversion,
+the bubble pressure or PT-329201 above its threshold, save one two-tick blip of the fraction at
+43.6 s.
+
+Also measured. Trip 22.1's vent flood — TT-322015 over 57 C, XV-322915 open — is set from 40 s on
+both session 61's deviation runs (S1-1.2 and S2-3.1a) and still set at 60 min, and the
+CARBAMATE_DEPOSITION flag from 5 s; §LXXVII.1's and §LXXVII.5's "no trip" meant the synthesis
+loop's trips (21.2, 21.8, 21.10, 22.2), none of which latches.
+
+## LXXVIII.2 Option (c), prototyped
+
+The duty the shell can transfer, condensing at 329D005's live saturation (the stripper's own
+``t_steam``) onto a tube side at TT-322013 (top) and TT-322004 (bottom):
+
+    Q_max = Q_des . LMTD(T_steam, T_top, T_bot) / LMTD(T_steam,des, T_top,des, T_bot,des)
+
+    LMTD = ((T_steam - T_bot) - (T_steam - T_top)) / ln((T_steam - T_bot) / (T_steam - T_top))
+
+Q_des 39 400 kW; the design temperatures the model's own, 211.62 / 187 / 172 C, LMTD_des 31.53 K, so
+Q_max is the design duty at the design seed. Where the duty the split asks for exceeds it, the part
+of each of NH3, CO2 and H2O the stripper lifts overhead beyond what the CO2 sweep brings in as gas
+is scaled by lambda in [0, 1], solved by bisection so `stripper_322e001`'s own per-species enthalpy
+balance (carbamate, free NH3, water, hydrolysis, sensible) equals Q_max; what is not lifted stays
+in the bottoms to LV-322501. The tube-side temperatures stay the model's (its load and flood
+relations), so a flooded stripper's hotter tubes lower Q_max: at 1.5 times the design overflow
+the shell gives 29.5 MW of the 59.6 MW asked, lambda 0.50, the overhead 124 t/h where 194 t/h was
+asked and the bottoms' NH3 24.0 % where 10.4 %.
+
+**Data.** 322E001's process datasheet (`References/Datasheets/322E001 Datasheet.pdf`,
+UD-AU-322-EC-0003 page 4, read from the scan) prints the duty, 39 400 kW, saturated MP steam at 214
+C and 20.5 bar a, the tube side at 187 C in and 172 C out, 1 519 m2, and leaves "corrected mean temp.
+diff." and "heat transf. coeff., max./calc." blank. The vendor archive's 322E001 file (Uhde's TOC,
+UD-AM-G00-AB-0022 pages 871-874) holds the fabricator's drawings and mechanical calculations (1161:
+foundation, arrangement, tube sheet, bundle, channels, bellows, lifting, the welding book) and no
+thermal rating. Calculated from the datasheet's terminal temperatures, UA = 39 400 / 33.95 = 1 160.5
+kW/K (U 764 W/m2 K); on the model's design temperatures (19.7 bar a, Tsat 211.62 C) that UA would
+give 36.6 MW, below the design duty — so the prototype anchors on the design duty instead, with no
+margin. Logged as an open data gap.
+
+## LXXVIII.3 Option (c), measured
+
+The same runs with the bound installed (`stripper_322e001` wrapped in the scheduler's step), 60
+minutes, and the deviation runner's own `run_plant` for the verdicts:
+
+| | as built (decision 135) | option (c) |
+|---|---|---|
+| 322E001's duty, 0-3 min | up to 78.1 MW asked and booked | held at 29.5-39.7 MW, lambda 0.36 at 60 s |
+| its bottoms, 0-3 min | up to 226 t/h, NH3 at most 24.5 % | up to 304 t/h, NH3 30.0 %, CO2 31.5 % |
+| LT-322501 | 20.5-91.9 % | 26.5-100 %: full 131-163 s |
+| the funnel lip reached | 146 s | 95 s |
+| 322E002's saturation fraction | 0.48 for two minutes, 0.69-1 after | at least 0.97 throughout |
+| PT-329201 | peak 143.6, 141.1-143.2 after 3 min | peak 141.2, 140.8-141.0 |
+| the CO2 feed | at least 51.6 t/h | at least 53.0 t/h |
+| the reactor feed's N/C | 5.1 in the drain, 2.89-4.46 after | 2.14 at 60 s, 2.79-3.19 after |
+| the conversion | 0.39-0.46, then 0.49-0.66 | 0.285 at 94 s, then 0.50-0.56 |
+| the slip (g_hc) | up to 0.18 | up to 0.021 |
+| nodes 1 / 2 | up to 183.8 / 184.5 C, at the bubble point | up to 176.4 / 181.4 C |
+| trip 22.1's vent flood | from 40 s, still set at 60 min | never |
+| CARBAMATE_DEPOSITION | from 5 s | from 30 s |
+| the control (no step) | — | lambda 0.9998-0.9999 on the seed's drift: the duty held at 39 400 kW where it drifts to 39 410, the conversion 0.5416 where 0.5418 |
+
+The verdicts, each against its own control (S2-3.1a read at 900 s):
+
+| claim | claimed | as built | option (c) |
+|---|---|---|---|
+| S1-1.2 LT-322504 (end) | falls | -43.5 yes | -43.5 yes |
+| S1-1.2 P_overflow (end) | falls | +1.5 NO | +0.3 NO |
+| S1-1.2 X_conv (end) | falls | +11.36 NO | +0.85 NO |
+| S1-1.2 bottoms NH3 (end) | rises | -2.22 NO | -0.31 NO |
+| S1-1.2 323C003 v305 (end) | rises | -11.47 NO | -1.08 NO |
+| S2-3.1a LI-322501 (peak) | rises | +28.5 yes | +50 yes |
+| S2-3.1a LT-322504 (end) | falls | -43.4 yes | -43.5 yes |
+
+Option (c) agrees with the same three claims and disagrees with the same four, every departure a
+fraction of the as-built one; the end-of-run conversion is again a phase of the slow excursion
+(+0.85 at 30 min, 0.559 at 35 min, 0.505 and falling at 60, 3.7 points below the control). What
+option (c) changes is where the drained liquor's volatiles go: to 323C003 through the bottoms in
+the first two minutes, rather than round the loop, so 322E002 never loses more than 3 % of its
+saturation, the reactor's carbamate heat stays near the control's (at most 346 kmol/h of CO2), the
+feed's H/C rises only to 0.41 and the slip to 0.021. Neither run rings tick to tick; lambda moves
+with the stripper's temperatures, evaluated on the tick, no tear.
+
+## LXXVIII.4 What the runs expose
+
+* **LT-322501's sump clamp deletes mass (V1's, `main.py` 7657).** `StripperSump.step` clamps the
+  level to 0-100 % and drops the net inflow above it. Option (c)'s surge fills the sump for 32 s
+  (little is lost, the bottoms back near the drain by then); on the as-built plant S2-2.3b
+  (LV-322501 46 -> 10 % in MAN) holds 100 % from 140 s to the end at 900 s, the net inflow about
+  100 t/h before the clamp: some 21 t deleted if it held. Decision 62's class (a full sump's excess
+  held back in the vessel draining into it) applies; raised as handoff B-103, not built (this
+  session made no source change).
+* **The bound sits at the design point.** With no rated U or corrected MTD the only anchor that
+  keeps the seed is the design duty itself, and the seed's own drift (B-94) then binds it.
+
+## LXXVIII.5 Not done
+
+Nothing built. Raised: B-102 (322E001's duty not bounded by its shell, option (c) measured, for the
+process engineer's decision) and B-103 (LT-322501's clamp); 322E001's service U and corrected MTD
+logged as an open data gap.
+
+# Part LXXIX — B-102 and B-103 decided and built; Scenarios5.md put to the plant (Phase 7)
+
+Session 63, 2026-10-21. The process engineer decided handoff B-102 (option (b), 322E001's duty
+bounded by its shell) and asked for B-103 on decision 62's class; both are built, each on a harness
+switch with both-ways tests. The coupled synthesis-loop transients of
+``References/scenarios/Scenarios5.md`` were then put to the plant, both waves.
+
+## LXXIX.1 322E001's duty bounded by its shell (decision 139, handoff B-102)
+
+**The decision, and the two measurements it was refined on.** Option (b) as prototyped in session
+62 (§LXXVIII.2), with a band on the ratio so the unperturbed seed's drift stays unbound. Two
+measurements came back to the process engineer before it was built:
+
+* *The band.* Asked for at 1e-4. On session 62's control run with the prototype installed the
+  demand over the capacity crosses 1 + 1e-4 at 374 s and peaks at 1.000168 within the hour, so
+  1e-4 still binds on the seed's own drift (lambda to 0.99985). Decided: **5e-4**, the smallest
+  round band above it, and the duty past the band clamped to Q_max . (1 + band) — continuous, no
+  step at the band's edge (`data.unit_322e001.SHELL_DUTY_BAND`).
+* *The LMTD.* As prototyped it ran on the live TT-322013 and TT-322004. Probed on the unit, that
+  binds at almost any load move, because V1's bottoms-temperature relations rise on BOTH sides of
+  the design — a turndown spreads the duty over less liquor and heats the bottoms toward the steam
+  (``dT_load``'s heating branch), an overload leaves them unstripped and as hot as the liquor fed
+  (B-9's ceiling) — so an LMTD on them peaks at the design and falls either way:
+
+  | the whole feed (overflow and sweep) | 0.70 | 0.80 | 0.95 | 1.00 | 1.05 | 1.30 |
+  |---|---|---|---|---|---|---|
+  | capacity on the live TT-322013 / TT-322004 | 0.221 | 0.393 | 0.814 | 1 | 0.867 | 0.754 |
+  | lambda on them | 0.238 | 0.420 | 0.842 | 1 | 0.779 | 0.538 |
+  | lambda on the design tube profile | 1 | 1 | 1 | 1 | 0.894 | 0.711 |
+
+  A turndown starved by a shell that V1's own temperatures say delivered its full duty. Decided:
+  **the live steam against the tube side's design profile**, so the capacity moves with 329D005's
+  saturation alone.
+
+**The relations** (`units/synthesis/stripper_shell`):
+
+    LMTD(Ts, Tt, Tb) = ((Ts - Tb) - (Ts - Tt)) / ln((Ts - Tb) / (Ts - Tt))     ends floored at 1e-6 K
+    Q_max / Q_des    = LMTD(T_steam, 187, 172) / LMTD(211.62, 187, 172),   LMTD_des = 31.5292 K
+
+    bound where   Q_demand > DUTY_RAW_DES . (Q_max / Q_des) . (1 + 5e-4)
+    top_k' = b_k + lambda (top_k - b_k),  b_k = min(top_k, sweep_k),  bot_k' = bot_k + top_k - top_k'
+                                                                       for NH3, CO2 and H2O
+    lambda in [0, 1]: the per-species enthalpy balance of (top', bot') = the bound   (bisection, 60)
+
+The balance is V1's block moved out of `stripper.stripper_322e001` into
+`stripper_shell.enthalpy_balance`, term for term and in V1's summation order, so the unbounded split
+is V1's to the bit. Everything evaluated before the split — the four temperatures, the reactions,
+the efficiencies, the slip, the flood terms — is untouched; the bound moves mass between the two
+products and makes none. Where even lambda = 0 (the sweep alone) costs more than the bound, nothing
+beyond the sweep is lifted. ``stripper_322e001(shell_bound=True)``, read by the engine from
+``StripperSump.shell_bound`` (`engine/plant/synthesis._322e001`); the design self-call is unbounded
+(it defines ``DUTY_RAW_DES_KW``; at design the capacity ratio is exactly 1.0). Published:
+``StripperResult.shell_capacity_ratio``, ``duty_demand_raw_kw`` (the split's ask) and
+``shell_lambda``; ``duty_raw_kw`` is what the shell pays, and the MP header's draw follows it.
+
+On the decided form the capacity is 0.9327 at 18.9 bar a, 1.0650 at 20.5, 0.6658 at 16 and 0.1695 at
+12 (188 C steam on a 187 C top). The bound binds on 1.05 times the overflow (lambda 0.929), 1.3
+(0.743), 1.6 (0.639), N/C + 0.33 (0.799), H/C 0.55 (0.813), a 150 C feed (0.841), the header at 16
+bar a (0.792) and at 12 (0.373), and is inert at every turndown, a lean or a rich sweep (40 and 80
+t/h), a raised header and a higher tube pressure.
+
+**The seed.** Unperturbed for an hour on the decided form: the demand over the capacity at most
+1.000184 (at 1290 s), at least 0.999927, the capacity 0.999985-1.000008; lambda 1.0 on every tick,
+so the seed is V1's split to the bit.
+
+**Tests.** `tests/equivalence/test_stripper_equivalence.py` sections 1-3 run the port with
+``shell_bound=False`` against V1's lifted stripper, to the bit as before; section 5 asserts both
+ways — twelve inert points (the design, sweeps of 0, 40 and 80 t/h, the header at 22 and 25 bar a,
+150 bar a in the tubes, 0.4 and 0.7 times the overflow, N/C 2.6 at H/C 0.30, a 195 C feed on a full
+sump, the empty stripper) to the bit with lambda 1.0, and eight binding points where V1 books the
+whole ask, the port's duty equals the bound to 1e-9, every pre-split field is V1's, each species'
+total is V1's to 1e-12 and the inerts' split exactly V1's. `tests/units/synthesis/test_stripper_shell.py`
+(8) pins the module without a V1 tree. On the loop
+(`test_synthesis_loop_decided_equivalence.py`), HV-322605 60 -> 100 % at 0.5 s: the two part on the
+tick after, V1's split asking 1.584 design duties and booking them; the port's shell gives 1.0005
+(capacity 1.000007), lambda 0.6347, 147.4 t/h overhead where V1 lifts 200.8, the bottoms at 21.37 %
+NH3 where V1's are at 11.43 %; ten seconds on V1 asks 3.13 duties and its loop stands at 145.258 bar
+a, the port's lambda 0.508 and its loop 140.689. `test_stripper.py`'s composition-choke test asserts
+the split's breakthrough on the unbounded split, and that bounded it pays the design duty
+(lambda < 1 at N/C + 0.2).
+
+## LXXIX.2 LT-322501's full sump held back in the tubes (decision 62's class, handoff B-103)
+
+`StripperSump.step` now holds what a full sump cannot take in ``held_kg`` — the stripper's tubes
+above it, the vessel that drains into it — and offers it to the sump first as it drains:
+
+    L* = L + (m_in - m_drain) dt / 3600 / M_span . 100 + held / M_span . 100
+    held = max(L* - 100, 0) / 100 . M_span,   L = clamp(L*, 0, 100),   M_span = 7 893.7 kg
+
+The held liquor adds exactly 0.0 while there is none, so a sump below full is V1's to the bit.
+``dm_kgh``, the gain PT-329201's vapour balance books as liquid (B-77 (b)), now includes the held
+liquor's. ``hold_full = False`` is V1's clamp (``main.py`` 7657), kept by the loop harness and by
+`test_stripper_sump_equivalence.drive`.
+
+**Measured.** The sump alone (`test_stripper_sump_equivalence.py` §9): LV-322501 in MAN at 80 %,
+the bottoms at 25 C shutting it through the mushy zone, the sump full from 95 % on the eleventh
+tick; thirty seconds on V1 has deleted 1 055.09 kg, the port holds every kilogram; on the hot
+bottoms V1's level falls at once, the port's holds 100 % for 39 s while the tubes drain, and
+eighty seconds on they stand at 72.987 % and 86.354 %. On the loop
+(`test_synthesis_loop_decided_equivalence.py`), S2-2.3b's LV-322501 46.1 -> 10 % at 0.5 s: full at
+140.2 s on both sides, and 80 s on the port holds 2 223.29 kg — and V1's loop stands at 141.997 bar a
+against the port's 141.041. **The clamp did more than delete liquor:** PT-329201's vapour balance
+books the sump's gain as liquid, so with the gain clamped to zero the liquor V1 deleted was counted
+as gas, about 1 bar in 80 s. Unit tests (2) without a V1 tree.
+
+**What the held liquor does not do.** It is a mass inventory only: the split, the hydrolysis
+holdup and the flood terms do not see tubes standing full (the stripper's tube submergence is not
+modelled), and nothing caps it at the tubes' 7.66 m3 (8.7 t at 1 134.6 kg/m3), past which the liquor
+would stand back into the reactor through HV-322605.
+
+## LXXIX.3 Scenarios5.md put to the plant
+
+``References/scenarios/Scenarios5.md`` is a fifth generic Stamicarbon note (§LXXV's four before
+it): an LPCC ammonia-water addition traced in eight steps and eleven coupled loop cases, each an
+initial perturbation, an intermediate shift and a delayed feedback, with the note's own two waves —
+the first five minutes and a delayed one at 15 to 45 minutes. Not plant data (CLAUDE.md §4): each
+step is an expectation, measured. `tests/phase7/coupled.py` puts thirteen of them on Helwan's
+console levers (Case 5 twice: the sump flooded and the reactor's liquor dumped; Case 6 twice: the
+NH3 pump slowed and the CO2 boundary raised on a held pump) and lists the one Helwan has no lever
+for (Case 10: no motive-ammonia preheater; 321P002 delivers off 321D003 at its pump's discharge
+temperature); `tests/phase7/run_coupled.py` runs each case and one control for 45 minutes after the
+settling minute, the packet and five result indicators sampled every 5 s (PT-329201 unrounded, the
+reactor's off-gas, lambda, the held liquor, 322E002's saturation). Each claim is read in its wave:
+**W1** the departure from the control of largest magnitude in (0, 300] s, **W2** the mean departure
+over [900, 2700] s, **REV** W2 less W1 (a reversal: "drops back"). A departure inside 1e-4 of the
+control's value reads as none; packet temperatures carry the console's 0.1 C.
+
+Two levers do less than asked. FIC-323401's set point stops at 2 000 kg/h (2.02 m3/h, V1's ceiling,
+`data.unit_328d003.FIC_323401_SP_HI_M3H`), so the LPCC case steps 1.55 -> 2.02 m3/h, 0.46 t/h of
+ammonia water (3.0 m3/h, 1.44 t/h, was asked and clamped).
+FFIC-321404's ratio set point stops at 2.0 (-1.1 %), so Case 6 slows 321P002B in MAN (-10 %) —
+below 322F001's stall at 0.907 of its design motive (`data.unit_322f001.STALL_PHI_MOTIVE`, the
+momentum closure's finding), so the ejector stalls on the step (suction 0, TT-322012 at the motive's
+39 C) — or, in Case 6b, raises the CO2 boundary 10 % on the held pump.
+
+**74 of the 152 claims as claimed.**
+
+| case | lever | claims as claimed | lambda min | held max [kg] | trips, flags |
+|---|---|---|---|---|---|
+| S5-W Ammonia water to the LPCC increased | FIC-323401 1.55 -> 2.02 m3/h | 6 of 17 | 1.000 | 0 | — |
+| S5-1 Raising the HPCC's LP steam pressure | MASTER-329207 5.01 -> 5.5 bar a | 9 of 12 | 0.971 | 0 | CARBAMATE_DEPOSITION at 1565 s |
+| S5-2 High N/C excursion above the azeotrope | FFIC-321404 ratio 2.023 -> 2.124 | 4 of 9 | 0.911 | 0 | — |
+| S5-3 Over-stripping: HP stripper steam raised | PIC-329204 19.7 -> 20.5 bar a | 6 of 11 | 1.000 | 0 | — |
+| S5-4 Inert blanketing: the HP scrubber vent throttled | HIC-322604 72 -> 40 % | 2 of 5 | 0.998 | 0 | trip 22.1 at 40 s, CARBAMATE_DEPOSITION at 5 s |
+| S5-5a HP stripper flooding: the sump flooded | LV-322501 in MAN 46 -> 10 % | 2 of 10 | 0.833 | 64,551 | CARBAMATE_DEPOSITION at 225 s |
+| S5-5b HP stripper flooding: excessive liquid load | HIC-322605 60 -> 100 % | 4 of 10 | 0.494 | 584 | CARBAMATE_DEPOSITION at 30 s |
+| S5-6a Low N/C excursion below the azeotrope: the NH3 pump slowed | SIC-321951 in MAN 83.6 -> 75.2 % | 8 of 13 | 0.762 | 0 | trip 22.1 at 280 s, EJECTOR_STALL at 10 s, CARBAMATE_DEPOSITION at 85 s |
+| S5-6b Low N/C excursion below the azeotrope: more CO2 | CO2 54.62 -> 60.08 t/h, SIC-321951 held | 9 of 13 | 0.987 | 0 | CARBAMATE_DEPOSITION at 5 s |
+| S5-7 Lowering the HPCC's LP steam pressure | MASTER-329207 5.01 -> 4.5 bar a | 7 of 13 | 0.725 | 0 | trip 22.1 at 2295 s, CARBAMATE_DEPOSITION at 350 s |
+| S5-8 HP scrubber tempered water degraded | TIC-329005 80 -> 86 C | 3 of 10 | 0.998 | 0 | CARBAMATE_DEPOSITION at 470 s |
+| S5-9 Opening the reactor's outlet valve | HIC-322605 60 -> 75 % | 6 of 11 | 0.702 | 0 | CARBAMATE_DEPOSITION at 30 s |
+| S5-11 Under-stripping: HP stripper steam dropped | PIC-329204 19.7 -> 18.9 bar a | 8 of 18 | 0.871 | 0 | CARBAMATE_DEPOSITION at 625 s |
+
+#### S5-W — Ammonia water to the LPCC increased (6 of 17)
+
+PFD 734, FIC-323401's ammonia water from 328D003 to 323E003: 1.55 -> 2.02 m3/h, its set point's 2000 kg/h ceiling; LIC-323502 on SIC-323901 carries the extra liquid to 322E003 as PFD 308.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 2 | LPCC_3232.E003.carbamate308_th — the LPCC level controller raises the HP carbamate pump | W1 | rises | +0.2 | +0.1007 | -0.09925 | rises | yes |
+| 2 | SCRUB_322E003.ov_th — absorption in the scrubber improves | W1 | rises | +0.234 | +0.3289 | +0.09488 | rises | yes |
+| 2 | SCRUB_322E003.TT_322002 — the scrubber's liquid overflow cools | W1 | falls | +0 | -0.4332 | -0.4332 | no change | NO |
+| 2 | SCRUB_322E003.TT_322011 — the scrubber's gas outlet cools | W1 | falls | -0.3 | -0.5421 | -0.2421 | falls | yes |
+| 3 | x.p_syn_bara — the synthesis pressure decreases | W1 | falls | +0.00102 | +0.013 | +0.01198 | no change | NO |
+| 3 | SCRUB_322E003.LT_329501 — the scrubber level rises | W1 | rises | +0.1 | +0.3839 | +0.2839 | rises | yes |
+| 4 | EJ_322F001.TT_322012 — the ejector temperature increases | W1 | rises | +0 | +0.2019 | +0.2019 | no change | NO |
+| 5 | REACT_322R001.LT_322504 — the reactor level rises | W1 | rises | +0 | +0.9687 | +0.9687 | no change | NO |
+| 5 | REACT_322R001.L_feed — the N/C ratio decreases | W1 | falls | +0 | +0 | +0 | no change | NO |
+| 6 | x.reactor_offgas_th — less gas leaves the reactor for the scrubber | W2 | falls | +0.02559 | +0.2274 | +0.2018 | rises | NO |
+| 7 | SCRUB_322E003.LT_329501 — the scrubber level drops back | REV | falls | +0.1 | +0.3839 | +0.2839 | rises | NO |
+| 7 | SCRUB_322E003.TT_322002 — the scrubber temperatures recede | REV | falls | +0 | -0.4332 | -0.4332 | falls | yes |
+| 8 | REACT_322R001.W_feed — the extra water raises the reactor's H/C | W2 | rises | +0.0003 | +0.003418 | +0.003118 | rises | yes |
+| 8 | REACT_322R001.X_conv — conversion drops after 30-45 min | W2 | falls | -0.02 | +0.3052 | +0.3252 | rises | NO |
+| 8 | REACT_322R001.TT_322005 — the reactor top temperature drops | W2 | falls | +0 | +0 | +0 | no change | NO |
+| 8 | STRIP_322E001.bot_mass_pct.NH3 — more unconverted carbamate loads the stripper | W2 | rises | -0.024 | -0.1993 | -0.1753 | falls | NO |
+| 8 | x.p_syn_bara — the synthesis pressure ultimately rebounds | REV | rises | +0.00102 | +0.013 | +0.01198 | no change | NO |
+
+lambda min 0.9996125347666714, held max 0.0 kg, HPCC saturation min 0.9989136057402939; trips {}; flags {}
+
+* not modelled: the LPCC's water concentration: 323E003, 323D001 and PFD 308 carry no species, and 322E003's wash is its design composition scaled by 308's mass
+* not modelled: the density analyser's cross-sensitivity to H/C
+
+#### S5-1 — Raising the HPCC's LP steam pressure (9 of 12)
+
+322E002 raises steam into 322D001A/B on the LP header: MASTER-329207 5.01 -> 5.5 bar a.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 1 | HPCC_322E002.liq_th — less stripper gas condenses in the HPCC | W1 | falls | -16.32 | -23.59 | -7.27 | falls | yes |
+| 1 | HPCC_322E002.gas_th — more gas enters the reactor | W1 | rises | +17.26 | +28.45 | +11.19 | rises | yes |
+| 1 | REACT_322R001.TT_322005 — reactor temperatures rise slightly | W1 | rises | +0.1 | +0.11 | +0.009972 | rises | yes |
+| 1 | x.p_syn_bara — the synthesis pressure climbs | W1 | rises | +0.2032 | +0.2194 | +0.01628 | rises | yes |
+| 1 | x.reactor_offgas_th — more gas leaves the reactor for the scrubber | W1 | rises | +3.306 | +16.11 | +12.8 | rises | yes |
+| 1 | SCRUB_322E003.TT_322011 — the scrubber's gas outlet heats | W1 | rises | +6.7 | +49.61 | +42.91 | rises | yes |
+| 1 | SCRUB_322E003.TT_322002 — the scrubber's overflow heats | W1 | rises | -1.1 | -4.933 | -3.833 | falls | NO |
+| 1 | SCRUB_322E003.LT_329501 — the scrubber level rises | W1 | rises | +1.8 | +5.289 | +3.489 | rises | yes |
+| 1 | EJ_322F001.TT_322012 — the ejector discharge temperature rises | W1 | rises | +0.5 | +2.286 | +1.786 | rises | yes |
+| 1 | HPCC_322E002.liq_th — the HPCC's condensation recovers partway | REV | rises | -16.32 | -23.59 | -7.27 | falls | NO |
+| 1 | x.reactor_offgas_th — the reactor's gas breakthrough subsides | REV | falls | +3.306 | +16.11 | +12.8 | rises | NO |
+| 1 | SCRUB_322E003.LT_329501 — the scrubber settles slightly higher | W2 | rises | +1.8 | +5.289 | +3.489 | rises | yes |
+
+lambda min 0.9711348633846087, held max 0.0 kg, HPCC saturation min 0.7761050203440982; trips {}; flags {'flags.CARBAMATE_DEPOSITION': 1565.0}
+
+
+#### S5-2 — High N/C excursion above the azeotrope (4 of 9)
+
+more motive NH3 to 322F001: FFIC-321404's ratio 2.023 -> 2.124 (+5 %), the reactor feed's N/C from 3.07 to about 3.2.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 0 | REACT_322R001.L_feed — the reactor N/C rises above 3.1 | W1 | rises | +0.033 | +0.0755 | +0.0425 | rises | yes |
+| 2 | SCRUB_322E003.LT_329501 — the scrubber level drops at once | W1 | falls | -4.5 | -17.39 | -12.89 | falls | yes |
+| 2 | EJ_322F001.TT_322012 — the ejector discharge cools | W1 | falls | +2.5 | -4.175 | -6.675 | rises | NO |
+| 2 | REACT_322R001.TT_322005 — the reactor temperature drops | W2 | falls | +0.1 | +0.228 | +0.128 | rises | NO |
+| 2 | x.p_syn_bara — the synthesis pressure rises sharply | W2 | rises | +0.1986 | +0.4144 | +0.2157 | rises | yes |
+| 2 | x.reactor_offgas_th — a large NH3 stream leaves the reactor for the scrubber | W2 | rises | +1.867 | -0.6732 | -2.54 | falls | NO |
+| 2 | SCRUB_322E003.off_th — uncondensed NH3 breaks through the scrubber overhead | W2 | rises | +0.007 | +0.151 | +0.144 | rises | yes |
+| 2 | LPCC_3232.E003.carbamate308_th — the LPCC's recycle raises the HP carbamate pump | W2 | rises | +0.03 | -5.629 | -5.659 | falls | NO |
+| 2 | SCRUB_322E003.LT_329501 — the scrubber level is pushed back up | REV | rises | -4.5 | -17.39 | -12.89 | falls | NO |
+
+lambda min 0.9107349007457185, held max 0.0 kg, HPCC saturation min 0.9457581811549326; trips {}; flags {}
+
+
+#### S5-3 — Over-stripping: HP stripper steam raised (6 of 11)
+
+329D005's MP header: PIC-329204 19.7 -> 20.5 bar a.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 3 | STRIP_322E001.TT_322004 — the stripper bottoms temperature rises | W1 | rises | +1 | +1.374 | +0.3742 | rises | yes |
+| 3 | STRIP_322E001.bot_mass_pct.NH3 — stripping efficiency rises | W1 | falls | -0.444 | -0.4336 | +0.01035 | falls | yes |
+| 3 | STRIP_322E001.top_th — more gas leaves the stripper top for the HPCC | W1 | rises | +1.07 | +0.7227 | -0.3473 | rises | yes |
+| 3 | x.p_syn_bara — the synthesis pressure rises | W1 | rises | +0.03517 | +0.009089 | -0.02608 | rises | yes |
+| 3 | x.reactor_offgas_th — more uncondensed gas passes the reactor to the scrubber | W1 | rises | +0.6899 | +0.6629 | -0.027 | rises | yes |
+| 3 | LPCC_3232.E003.carbamate308_th — the LPCC level controller throttles the HP carbamate pump | W1 | falls | -0.33 | -1.362 | -1.032 | falls | yes |
+| 3 | SCRUB_322E003.TT_322002 — the scrubber's overflow heats | W1 | rises | -0.2 | +0.05291 | +0.2529 | falls | NO |
+| 3 | SCRUB_322E003.TT_322011 — the scrubber's gas outlet heats | W1 | rises | -3.6 | +1.004 | +4.604 | falls | NO |
+| 3 | SCRUB_322E003.LT_329501 — the scrubber level dips | W1 | falls | +0.3 | -0.4006 | -0.7006 | rises | NO |
+| 3 | SCRUB_322E003.LT_329501 — then rebounds as the reactor gas condenses | REV | rises | +0.3 | -0.4006 | -0.7006 | falls | NO |
+| 3 | x.p_syn_bara — the loop settles at a higher pressure | W2 | rises | +0.03517 | +0.009089 | -0.02608 | no change | NO |
+
+lambda min 1.0, held max 0.0 kg, HPCC saturation min 0.990137003412622; trips {}; flags {}
+
+
+#### S5-4 — Inert blanketing: the HP scrubber vent throttled (2 of 5)
+
+HV-322604, 322E003's off-gas to 322C001: HIC-322604 72 -> 40 %.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 4 | HPCC_322E002.steam.kgh — the HPCC's LP steam generation drops | W2 | falls | +1101 | +1599 | +498.3 | rises | NO |
+| 4 | x.p_syn_bara — the synthesis pressure rises | W1 | rises | +0.1061 | +0.3358 | +0.2297 | rises | yes |
+| 4 | x.p_syn_bara — and keeps climbing, not self-correcting | REV | rises | +0.1061 | +0.3358 | +0.2297 | rises | yes |
+| 4 | x.reactor_offgas_th — more gas leaves the reactor for the scrubber | W1 | rises | -0.3376 | -1.008 | -0.6708 | falls | NO |
+| 4 | SCRUB_322E003.TT_322011 — the scrubber's gas outlet heats | W1 | rises | -14.4 | -16.23 | -1.83 | falls | NO |
+
+lambda min 0.9978412371327977, held max 0.0 kg, HPCC saturation min 0.9998900885241951; trips {'trip_latched.22_1': 40.0}; flags {'flags.CARBAMATE_DEPOSITION': 5.0}
+
+* not modelled: the inert film's mass-transfer resistance in 322E002 and 322E003 (no blanketing model: the condensers' capacities do not see the inerts)
+* not modelled: a passivation-air surge (no lever: the CO2's air is the boundary's)
+
+#### S5-5a — HP stripper flooding: the sump flooded (2 of 10)
+
+LIC-322501 in MAN, LV-322501 46 -> 10 %: LT-322501 fills and holds its excess back in the tubes (B-103).
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 5 | STRIP_322E001.TT_322004 — the stripper bottoms temperature plunges | W1 | falls | -7.6 | -9.597 | -1.997 | falls | yes |
+| 5 | STRIP_322E001.bot_mass_pct.NH3 — unstripped carbamate leaves the bottoms | W1 | rises | +1.037 | +5.227 | +4.19 | rises | yes |
+| 5 | RECIRC_323.C003.v305_th — a gas surge leaves the LP decomposer | W1 | rises | -19.24 | -19.68 | -0.4425 | falls | NO |
+| 5 | LPCC_3232.E003.P_bara — the LPCC's pressure rises | W2 | rises | -1 | -0.8878 | +0.1122 | falls | NO |
+| 5 | LPCC_3232.E003.TT_323006 — and its temperature | W2 | rises | -13.5 | -13.93 | -0.4299 | falls | NO |
+| 5 | LPCC_3232.E003.LI_323502 — and its level | W2 | rises | -8.3 | -1.065 | +7.235 | falls | NO |
+| 5 | LPCC_3232.E003.carbamate308_th — the HP carbamate pump ramps up | W2 | rises | -10.47 | -23.46 | -12.99 | falls | NO |
+| 5 | SCRUB_322E003.LT_329501 — the scrubber level surges | W2 | rises | -2.3 | -19 | -16.7 | falls | NO |
+| 5 | EJ_322F001.TT_322012 — the ejector temperature surges | W2 | rises | -1.4 | -17.71 | -16.31 | falls | NO |
+| 5 | REACT_322R001.LT_322504 — the reactor level spikes | W2 | rises | -0.2 | -38.9 | -38.7 | falls | NO |
+
+lambda min 0.8331892772741795, held max 64551.03082891535 kg, HPCC saturation min 0.8645936332115448; trips {}; flags {'flags.CARBAMATE_DEPOSITION': 225.0}
+
+* not modelled: the stripper's tube-side pressure drop (no dP transmitter or flooding hydraulics)
+* not modelled: the tubes' submergence: the split does not see a sump full into its tubes
+
+#### S5-5b — HP stripper flooding: excessive liquid load (4 of 10)
+
+the reactor's liquor dumped on the stripper: HIC-322605 60 -> 100 %.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 5 | STRIP_322E001.TT_322004 — the stripper bottoms temperature plunges | W1 | falls | +4.7 | +0.9571 | -3.743 | rises | NO |
+| 5 | STRIP_322E001.bot_mass_pct.NH3 — unstripped carbamate leaves the bottoms | W1 | rises | +17.37 | -0.6212 | -17.99 | rises | yes |
+| 5 | RECIRC_323.C003.v305_th — a gas surge leaves the LP decomposer | W1 | rises | +7.14 | -2.835 | -9.975 | rises | yes |
+| 5 | LPCC_3232.E003.P_bara — the LPCC's pressure rises | W2 | rises | +0.55 | -0.183 | -0.733 | falls | NO |
+| 5 | LPCC_3232.E003.TT_323006 — and its temperature | W2 | rises | +4 | -2.112 | -6.112 | falls | NO |
+| 5 | LPCC_3232.E003.LI_323502 — and its level | W2 | rises | +1.2 | -2.063 | -3.263 | falls | NO |
+| 5 | LPCC_3232.E003.carbamate308_th — the HP carbamate pump ramps up | W2 | rises | +0.69 | -3.295 | -3.985 | falls | NO |
+| 5 | SCRUB_322E003.LT_329501 — the scrubber level surges | W2 | rises | +5 | +1.701 | -3.299 | rises | yes |
+| 5 | EJ_322F001.TT_322012 — the ejector temperature surges | W2 | rises | +1.8 | +0.8266 | -0.9734 | rises | yes |
+| 5 | REACT_322R001.LT_322504 — the reactor level spikes | W2 | rises | -43.5 | -43.5 | -0.002216 | falls | NO |
+
+lambda min 0.49365849108057835, held max 583.99131985856 kg, HPCC saturation min 0.9384187983197124; trips {}; flags {'flags.CARBAMATE_DEPOSITION': 30.0}
+
+* not modelled: the stripper's tube-side pressure drop (no dP transmitter or flooding hydraulics)
+
+#### S5-6a — Low N/C excursion below the azeotrope: the NH3 pump slowed (8 of 13)
+
+the HP ammonia pump slowed: SIC-321951 in MAN, 321P002B 83.6 -> 75.2 % (-10 %), below 322F001's stall at 0.907 of its design motive; FFIC-321404's ratio set point stops at 2.0.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 0 | REACT_322R001.L_feed — the reactor N/C falls below 2.8 | W1 | falls | -0.117 | -0.1474 | -0.03036 | falls | yes |
+| 6 | SCRUB_322E003.LT_329501 — the scrubber level rises at once | W1 | rises | +50 | +50 | +0 | rises | yes |
+| 6 | EJ_322F001.TT_322012 — the ejector discharge heats | W1 | rises | -62.7 | -68.37 | -5.675 | falls | NO |
+| 6 | HPCC_322E002.liq_th — the HPCC's condensation drops | W1 | falls | -47.26 | -27.44 | +19.82 | falls | yes |
+| 6 | x.p_syn_bara — the synthesis pressure climbs sharply | W1 | rises | -0.8354 | +1.678 | +2.513 | falls | NO |
+| 6 | REACT_322R001.TT_322005 — reactor temperatures drop | W1 | falls | -2.4 | -21.34 | -18.94 | falls | yes |
+| 6 | REACT_322R001.X_conv — conversion drops | W1 | falls | -12.47 | -27.46 | -14.99 | falls | yes |
+| 6 | x.reactor_offgas_th — CO2-rich gas breaks through the reactor to the scrubber | W1 | rises | +6.173 | -6.941 | -13.11 | rises | yes |
+| 6 | SCRUB_322E003.TT_322002 — the scrubber heats | W1 | rises | -34.3 | -57.03 | -22.73 | falls | NO |
+| 6 | STRIP_322E001.TT_322004 — the stripper bottoms temperature ticks up | W1 | rises | -0.8 | -8.881 | -8.081 | falls | NO |
+| 6 | STRIP_322E001.TT_322004 — then drops as the low-conversion effluent arrives | REV | falls | -0.8 | -8.881 | -8.081 | falls | yes |
+| 6 | STRIP_322E001.bot_mass_pct.NH3 — carbamate slips through the stripper | W2 | rises | +2.448 | +5.481 | +3.033 | rises | yes |
+| 6 | LPCC_3232.E003.LI_323502 — the LP section floods | W2 | rises | -1.5 | -3.976 | -2.476 | falls | NO |
+
+lambda min 0.7618383940108842, held max 0.0 kg, HPCC saturation min 0.9998900885241951; trips {'trip_latched.22_1': 280.0}; flags {'flags.EJECTOR_STALL': 10.0, 'flags.CARBAMATE_DEPOSITION': 85.0}
+
+
+#### S5-6b — Low N/C excursion below the azeotrope: more CO2 (9 of 13)
+
+the N/C lowered with the motive held: SIC-321951 in MAN at its 83.56 %, the CO2 boundary 54.62 -> 60.08 t/h (+10 %, the instructor's co2_set), the reactor feed's N/C to about 2.8.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 0 | REACT_322R001.L_feed — the reactor N/C falls below 2.8 | W1 | falls | -0.1 | -0.1398 | -0.03978 | falls | yes |
+| 6 | SCRUB_322E003.LT_329501 — the scrubber level rises at once | W1 | rises | +5.8 | +12.54 | +6.743 | rises | yes |
+| 6 | EJ_322F001.TT_322012 — the ejector discharge heats | W1 | rises | +1.5 | +5.455 | +3.955 | rises | yes |
+| 6 | HPCC_322E002.liq_th — the HPCC's condensation drops | W1 | falls | -29.71 | -14.95 | +14.76 | falls | yes |
+| 6 | x.p_syn_bara — the synthesis pressure climbs sharply | W1 | rises | +0.435 | -0.1062 | -0.5412 | rises | yes |
+| 6 | REACT_322R001.TT_322005 — reactor temperatures drop | W1 | falls | +0.2 | -0.06371 | -0.2637 | rises | NO |
+| 6 | REACT_322R001.X_conv — conversion drops | W1 | falls | -9.25 | -6.143 | +3.107 | falls | yes |
+| 6 | x.reactor_offgas_th — CO2-rich gas breaks through the reactor to the scrubber | W1 | rises | +11.55 | +19.23 | +7.682 | rises | yes |
+| 6 | SCRUB_322E003.TT_322002 — the scrubber heats | W1 | rises | +5.2 | -5.133 | -10.33 | rises | yes |
+| 6 | STRIP_322E001.TT_322004 — the stripper bottoms temperature ticks up | W1 | rises | -5 | -8.176 | -3.176 | falls | NO |
+| 6 | STRIP_322E001.TT_322004 — then drops as the low-conversion effluent arrives | REV | falls | -5 | -8.176 | -3.176 | falls | yes |
+| 6 | STRIP_322E001.bot_mass_pct.NH3 — carbamate slips through the stripper | W2 | rises | -4.442 | -5.147 | -0.7051 | falls | NO |
+| 6 | LPCC_3232.E003.LI_323502 — the LP section floods | W2 | rises | -2.6 | -0.21 | +2.39 | falls | NO |
+
+lambda min 0.9871077574165139, held max 0.0 kg, HPCC saturation min 0.9998900885241951; trips {}; flags {'flags.CARBAMATE_DEPOSITION': 5.0}
+
+
+#### S5-7 — Lowering the HPCC's LP steam pressure (7 of 13)
+
+MASTER-329207 5.01 -> 4.5 bar a.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 7 | HPCC_322E002.liq_th — the HPCC condenses nearly all the stripper gas | W1 | rises | +16.92 | +13.91 | -3.007 | rises | yes |
+| 7 | x.p_syn_bara — the synthesis pressure drops rapidly | W1 | falls | -0.2419 | -0.6491 | -0.4071 | falls | yes |
+| 7 | REACT_322R001.TT_322008 — the reactor bottom temperature drops | W1 | falls | -1.6 | -1.985 | -0.3848 | falls | yes |
+| 7 | REACT_322R001.TT_322005 — and its top | W1 | falls | -1.4 | -14.3 | -12.9 | falls | yes |
+| 7 | x.reactor_offgas_th — almost no gas leaves the reactor for the scrubber | W1 | falls | +3.321 | +24.22 | +20.9 | rises | NO |
+| 7 | SCRUB_322E003.TT_322002 — the scrubber cools | W1 | falls | +0.1 | -27.23 | -27.33 | rises | NO |
+| 7 | SCRUB_322E003.LT_329501 — the scrubber level drops | W1 | falls | +0.9 | +29.17 | +28.27 | rises | NO |
+| 7 | EJ_322F001.TT_322012 — the ejector temperature decreases | W1 | falls | +0.3 | +5.88 | +5.58 | rises | NO |
+| 7 | REACT_322R001.X_conv — the colder reactor's conversion drops | W2 | falls | -4.16 | -23.48 | -19.32 | falls | yes |
+| 7 | STRIP_322E001.TT_322004 — the stripper bottoms temperature drops | W2 | falls | -0.1 | +0.8695 | +0.9695 | rises | NO |
+| 7 | STRIP_322E001.bot_mass_pct.NH3 — carbamate slips to the LPCC | W2 | rises | +1.248 | +9.006 | +7.758 | rises | yes |
+| 7 | LPCC_3232.E003.carbamate308_th — the HP carbamate pump ramps up | W2 | rises | -0.15 | -0.7551 | -0.6051 | falls | NO |
+| 7 | SCRUB_322E003.LT_329501 — the scrubber level is driven back up | REV | rises | +0.9 | +29.17 | +28.27 | rises | yes |
+
+lambda min 0.725110459262571, held max 0.0 kg, HPCC saturation min 0.9998900885241951; trips {'trip_latched.22_1': 2295.0}; flags {'flags.CARBAMATE_DEPOSITION': 350.0}
+
+
+#### S5-8 — HP scrubber tempered water degraded (3 of 10)
+
+TIC-329005 80 -> 86 C.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 8 | SCRUB_322E003.TT_322002 — the scrubber's overflow climbs | W1 | rises | +0.5 | +3.727 | +3.227 | rises | yes |
+| 8 | SCRUB_322E003.TT_322011 — its gas outlet climbs | W1 | rises | -0.7 | -5.111 | -4.411 | falls | NO |
+| 8 | EJ_322F001.TT_322012 — the ejector discharge heats | W1 | rises | -0.1 | -0.2066 | -0.1066 | falls | NO |
+| 8 | x.p_syn_bara — the synthesis pressure rises | W1 | rises | +0.007135 | +0.05344 | +0.04631 | no change | NO |
+| 8 | SCRUB_322E003.off_th — uncondensed gas breaks through the scrubber overhead | W1 | rises | +0.432 | +1.726 | +1.294 | rises | yes |
+| 8 | LPCC_3232.E003.LI_323502 — the LPCC's level rises | W2 | rises | +0 | -0.07978 | -0.07978 | falls | NO |
+| 8 | LPCC_3232.E003.TT_323006 — and its temperature | W2 | rises | +0 | -0.1956 | -0.1956 | falls | NO |
+| 8 | LPCC_3232.E003.carbamate308_th — the HP carbamate pump raises its flow | W2 | rises | -0.02 | -0.2863 | -0.2663 | falls | NO |
+| 8 | SCRUB_322E003.LT_329501 — the scrubber level rises | W2 | rises | +0.3 | +1.164 | +0.8637 | rises | yes |
+| 8 | SCRUB_322E003.TT_322002 — the scrubber temperatures are pulled partway back | REV | falls | +0.5 | +3.727 | +3.227 | rises | NO |
+
+lambda min 0.9984823580717681, held max 0.0 kg, HPCC saturation min 0.9998900885241951; trips {}; flags {'flags.CARBAMATE_DEPOSITION': 470.0}
+
+
+#### S5-9 — Opening the reactor's outlet valve (6 of 11)
+
+Helwan has no reactor level controller: HV-322605 opened, HIC-322605 60 -> 75 %.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 9 | REACT_322R001.LT_322504 — the reactor level drops | W1 | falls | -43.5 | -43.5 | +0.003047 | falls | yes |
+| 9 | STRIP_322E001.TT_322004 — the stripper bottoms temperature drops | W1 | falls | +8.1 | +1.025 | -7.075 | rises | NO |
+| 9 | STRIP_322E001.bot_mass_pct.NH3 — stripping efficiency declines | W1 | rises | +10.16 | -0.641 | -10.8 | rises | yes |
+| 9 | REACT_322R001.X_conv — conversion drops (less residence) | W1 | falls | -12.62 | +1.43 | +14.05 | falls | yes |
+| 9 | LPCC_3232.E003.LI_323502 — the LPCC level surges | W2 | rises | +0.7 | -2.078 | -2.778 | falls | NO |
+| 9 | LPCC_3232.E003.carbamate308_th — the HP carbamate pump ramps up | W2 | rises | +0.62 | -3.124 | -3.744 | falls | NO |
+| 9 | SCRUB_322E003.LT_329501 — the scrubber level rises | W2 | rises | +4.9 | +1.845 | -3.055 | rises | yes |
+| 9 | EJ_322F001.TT_322012 — the ejector temperature rises | W2 | rises | +1.6 | +0.9496 | -0.6504 | rises | yes |
+| 9 | REACT_322R001.LT_322504 — the reactor level climbs back up | REV | rises | -43.5 | -43.5 | +0.003047 | no change | NO |
+| 9 | REACT_322R001.L_feed — the reactor N/C is diluted | W2 | falls | +0.005 | +0 | -0.005 | no change | NO |
+| 9 | REACT_322R001.W_feed — and its H/C raised | W2 | rises | -0.0598 | +0.01153 | +0.07133 | rises | yes |
+
+lambda min 0.7016894739102333, held max 0.0 kg, HPCC saturation min 0.9371075064486034; trips {}; flags {'flags.CARBAMATE_DEPOSITION': 30.0}
+
+
+#### S5-11 — Under-stripping: HP stripper steam dropped (8 of 18)
+
+PIC-329204 19.7 -> 18.9 bar a.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 11 | STRIP_322E001.TT_322004 — the stripper bottoms temperature drops | W1 | falls | -0.9 | -1.117 | -0.2169 | falls | yes |
+| 11 | STRIP_322E001.bot_mass_pct.NH3 — stripping efficiency falls | W1 | rises | +1.586 | +3.671 | +2.085 | rises | yes |
+| 11 | STRIP_322E001.top_th — much less gas leaves the stripper top | W1 | falls | -5.14 | -8.267 | -3.127 | falls | yes |
+| 11 | x.p_syn_bara — the synthesis pressure drops | W1 | falls | -0.05203 | -0.2836 | -0.2315 | falls | yes |
+| 11 | HPCC_322E002.steam.kgh — the HPCC's LP steam generation falls | W1 | falls | +2847 | +3632 | +785.4 | rises | NO |
+| 11 | x.reactor_offgas_th — less gas passes the reactor to the scrubber | W1 | falls | +0.5997 | +6.269 | +5.669 | rises | NO |
+| 11 | SCRUB_322E003.TT_322002 — the scrubber's temperatures dip | W1 | falls | +0.1 | -5.039 | -5.139 | rises | NO |
+| 11 | SCRUB_322E003.LT_329501 — and its level | W1 | falls | +0.2 | +5.225 | +5.025 | rises | NO |
+| 11 | LPCC_3232.E003.P_bara — the LPCC's pressure rises | W2 | rises | +0.09 | +0.1631 | +0.07313 | rises | yes |
+| 11 | LPCC_3232.E003.TT_323006 — its temperature | W2 | rises | +0.1 | -0.9889 | -1.089 | falls | NO |
+| 11 | LPCC_3232.E003.LI_323502 — and its level | W2 | rises | +0 | -0.5224 | -0.5224 | falls | NO |
+| 11 | LPCC_3232.E003.carbamate308_th — the HP carbamate pump ramps up strongly | W2 | rises | +0.05 | -0.1643 | -0.2143 | falls | NO |
+| 11 | SCRUB_322E003.LT_329501 — the scrubber level rises sharply | REV | rises | +0.2 | +5.225 | +5.025 | rises | yes |
+| 11 | EJ_322F001.TT_322012 — the ejector temperature increases | W2 | rises | +0 | +2.728 | +2.728 | rises | yes |
+| 11 | REACT_322R001.LT_322504 — the reactor level rises | W2 | rises | -2.2 | -31.17 | -28.97 | falls | NO |
+| 11 | REACT_322R001.L_feed — the reactor N/C drops | W2 | falls | +0 | -3.047e-05 | -3.047e-05 | no change | NO |
+| 11 | REACT_322R001.W_feed — and its H/C rises | W2 | rises | -0.0047 | -0.04421 | -0.03951 | falls | NO |
+| 11 | REACT_322R001.X_conv — conversion falls | W2 | falls | -1.79 | -8.831 | -7.041 | falls | yes |
+
+lambda min 0.8708762201654067, held max 0.0 kg, HPCC saturation min 0.9998900885241951; trips {}; flags {'flags.CARBAMATE_DEPOSITION': 625.0}
+
+
+#### S5-10 — Scenarios5.md §10, cold motive NH3 (HP NH3 preheater fouled): not put
+
+Helwan's loop has no motive-ammonia preheater: 321P002 delivers the NH3 off 321D003 at its pump's discharge temperature, and no console lever moves it
+
+## LXXIX.4 What the survey shows
+
+**The first wave mostly agrees; the delayed LP wave does not arrive.** The loop's own first-five-
+minute responses read as claimed where the note's mechanism is the model's: raising or lowering
+322E002's LP steam (S5-1 9 of 12; S5-7's HPCC, pressure and reactor temperatures), the stripper's
+steam either way (S5-3's first six claims and S5-11's first four, ten of ten), more CO2 on a held
+pump (S5-6b 9 of 13). What the note's delayed feedback rests on — unstripped carbamate through the LP
+section raising the LPCC's pressure, temperature and level and 323P001's PFD 308 surging back into
+322E003 at 15-45 minutes — reads as claimed once in 21 (S5-11's LPCC pressure). Where the LP section
+does answer, it answers in the first wave and is gone by the second: S5-5b's dumped reactor sends
+7.1 t/h more gas from 323C003 in the first five minutes, and the LPCC rises 0.55 bar, 4 C and 1.2 %
+with 308 up 0.69 t/h, then all four fall below the control as the reactor sits on its funnel lip and
+the loop's throughput falls. LIC-323502 holds 323D001 on a slow loop and 323E003 condenses on its dew
+point (B-34), so the LPCC's level is not the integrator the note's cascade assumes.
+
+**Helwan's reactor drains where the note's holds its level.** HV-322605 is a hand valve with no level
+controller; opened to 75 % (S5-9) it drains 322R001 to the funnel lip, LT-322504 -43.5 points, as at
+100 % (S5-5b), and the note's "reactor level climbs back" cannot happen above the lip. Starved of
+top gas (S5-11), the loop's liquid inventory leaves through the stripper's bottoms: LT-322504 -31
+points at 15-45 minutes.
+
+**Trip 22.1's vent flood** (TT-322015 over 57 C) latches in S5-4 (40 s, HV-322604 throttled), S5-6a
+(280 s, the ejector stalled) and S5-7 (2 295 s); CARBAMATE_DEPOSITION sets in ten of the thirteen
+runs (never on the control), at 5 s in S5-4 and S5-6b.
+
+**B-102 and B-103 on the cases.** lambda falls to 0.49 (S5-5b), 0.70 (S5-9), 0.73 (S5-7), 0.76
+(S5-6a), 0.83 (S5-5a), 0.87 (S5-11), 0.91 (S5-2), 0.97 (S5-1); it stays 1.0 on over-stripping (S5-3,
+the raised header raises the capacity more than the ask). The tubes hold liquor only in S5-5a and
+S5-5b. Run again with both switched off — V1's split and V1's clamp, everything else as built
+(scratch `s63_coupled_v1.py`) — the twelve cases of the first survey read 69 of 139 where the built
+plant reads 65: eight claims move, six away — S5-2's off-gas at 15-45 min (+10.2 t/h on V1's split,
+-0.7 bounded), S5-5a's ejector temperature, S5-7's stripper bottoms and S5-11's HPCC steam (-1 049
+kg/h on V1's split, +2 847 bounded), LPCC level and 308 — and two into agreement, S5-5b's ejector
+temperature and S5-11's loop pressure. The trips move more: on V1's clamp S5-5a latches every loop trip at
+1 375 s (21.2, 21.8, 21.10, 22.1, 22.2 — the deleted liquor booked as gas), and on V1's split S5-5b's
+vent flood 22.1 latches at 40 s (session 62's) and S5-9's at 2 085 s; built, none of the three, and
+S5-7 gains one at 2 295 s.
+
+## LXXIX.5 The mechanisms the note needs, measured
+
+| mechanism | evidence | wiring |
+|---|---|---|
+| **The LPCC's water into 322E003** | 323E003, 323D001 and PFD 308 carry no species (V1's); 322E003's wash is its design composition, 39.2 % NH3, 39.7 % CO2 and 21.1 % H2O, scaled by 308's mass. FIC-323401's extra 0.46 t/h of ammonia water reaches the HP loop as design carbamate: 308 +0.2 t/h, the reactor's N/C unchanged at the display's 0.001, its H/C +0.0034, the conversion +0.31 points where the note's dilution lowers it; S5-W reads 6 of 17, its N/C, H/C, conversion and stripper-load steps failing on it | **needed** for the LPCC case — species carried through 323E003 and 323D001 into 308 and the scrubber's wash (handoff B-105) |
+| **Low N/C's azeotropic bubble-pressure rise** | present in the thermo: 322E002's melt (its CO2 and water) bubbles at 170 C at 48.1 bar a at N/C 3.1, 58.5 at 2.8, 90.4 at 2.6, 173.6 at 2.4. PT-329201 is the loop's vapour inventory (B-77 (b)) and reads the liquor only as a ceiling, the saturation fraction where the bubble pressure passes the loop's (decisions 97, 135). S5-6b takes the reactor feed's N/C to 2.93 and 322E002's fraction never falls below 0.9999: no climb (PT-329201 +0.44 bar in the first wave, the extra CO2's, -0.11 at 15-45 min). S5-6a cannot reach the regime: the motive cut that would stalls 322F001 | **not shown yet** — measure at N/C 2.6 (the CO2 boundary +20 %) before deciding whether the loop's pressure should answer the liquor's equilibrium below the ceiling (handoff B-106) |
+| **The stripper flooded into its tubes** | S5-5a, LV-322501 at 10 % for 45 min: B-103 holds 64.6 t in the tubes, 7.4 times their 7.66 m3 (8.7 t), past it from about 7.5 minutes; 322R001, which drains into them, falls 39 points to its lip instead of backing up; the split does not see the submerged tubes (TT-322004 -9.6 K on the throttled drain's sump loss, L3-7; the bottoms' NH3 +5.2 % at 15-45 min). V1 deletes the same liquor and books it as gas | **needed** — the held liquor capped at the tubes and the excess held back in 322R001 through HV-322605 (decision 62's class), and whether stripping is lost over the submerged length, a new mechanism (handoff B-104) |
+| **324F003's seal lost: air ingress (Scenarios.md §5.4b)** | re-run in session 63 (S1-5.4b, LIC-324501 to 10 %): LI-324F003 falls to 0.2 % and PT-324203 holds 0.131 bar a; no path admits air through an empty leg (session 59's "unmodelled mechanism") | **needed** for that lesson — an air path through the lost seal into the second stage's vacuum node, on the leg's geometry (handoff B-107) |
+
+## LXXIX.6 Also found, and not done
+
+* **The trend-window test reads the console's own settings.** `tests/hmi/test_main_window.py::
+  test_the_trend_window_opens_once_and_takes_trendable_tags` fails on this machine with and without
+  this session's changes: the window restores the view saved in the user's `QSettings`
+  (``UreaSimulator/OTS``, ``trend/view``), LT-322504 in its first pen. The test needs its own
+  settings scope (handoff A-23).
+* **The file sizes.** `units/synthesis/stripper.py` is 625 lines and `stripper_sump.py` 609, over the
+  600-line target and under the 800-line limit; the shell's relations went to their own module.
+* Not done: B-104 to B-107 (the process engineer's decisions); Case 10 (no lever); Case 6 at N/C 2.6.
+
+# Part LXXX — B-104 to B-107 decided and built; A-23 closed; Scenarios5.md re-run (Phase 7)
+
+Session 64, 2026-10-22. The process engineer decided the four mechanisms session 63 measured as
+missing (handoff B-104 to B-107) and asked for A-23 to be fixed. One question went back first: the
+paste asked TT-322004 to cool "toward the flooded limit" and named no limit; the process engineer
+chose the crystallisation floor, 132.7 C, the floor the sump's heat-loss law already uses. Each
+mechanism is on a harness switch with both-ways tests; the synthesis-loop harness (`run_both`) and
+the stage-2 harnesses run V1's lines.
+
+## LXXX.1 A-23 — the console tests on settings of their own
+
+`tests/hmi/conftest.py` gains an autouse fixture, ``console_settings``: `ureasim.hmi.main_window`'s
+``QSettings`` is replaced, for each test, by an INI file under the test's temporary directory, so no
+test reads the layout or the trend view an operator saved on the machine (``UreaSimulator/OTS``,
+the Windows registry) and none writes one. `test_main_window.py::test_the_trend_window_opens_once_
+and_takes_trendable_tags`, which failed in session 63 on a saved trend view, passes. A test-only
+change.
+
+## LXXX.2 B-104 — 322E001's tubes standing full (decision 140)
+
+B-103 holds a full LT-322501 sump's excess in the tubes above it. Three changes, all in decision
+62's class, the last two the process engineer's law:
+
+* **The ceiling.** The held liquor is capped at the bundle standing full,
+  ``TUBES_FULL_KG = V_tubes . rho_bottom`` = 7.658 m3 x 1 134.64 kg/m3 = 8 688.66 kg
+  (`data.unit_322e001`). Once the tubes hold liquor, the sump publishes what they can take this
+  tick, the drain and their unsubmerged share of the design bottoms,
+
+      take = drain + (1 - M_held / M_tubes) . 130 482          [kg/h]
+
+  and 322R001's discharge through HV-322605 is capped at it, converted on this tick's bottoms per
+  kilogram of the reactor's liquor the stripper took (`engine.plant.synthesis._322r001`): the
+  reactor's outflow eases off as the tubes fill, and full they pass what drains; the reactor keeps
+  the rest and its level rises, and above its full vessel it spills into the off-gas line to 322E003
+  as before. What still arrives past the ceiling — the bottoms already in transit — is handed back
+  to 322R001's holdup (``backup_kgh``). Mass is conserved: the sump's gain, what it handed back and
+  the reactor's gain are what ran in. Two bounds were measured and rejected first: the room left
+  over the bottoms' live transit starves itself (the cut flow lengthens the transit, which tightens
+  the cap: on the loop harness with LV-322501 shut the reactor stopped discharging with the tubes
+  78 % full), and counting what the transit holds fails on the bottoms line's dead time, which
+  re-times its samples as the flow moves and does not conserve what it holds.
+* **The submerged surface.** sigma = clamp(M_held / M_tubes, 0, 1), f_sub = 1 - (1 - 0.30) sigma —
+  322E003's flooded-surface floor (`unit_322e003.COND_CHOKE_MIN`) as ``SUBMERGED_DUTY_FLOOR`` — and
+  B-102's capacity becomes Q_max . f_sub (`stripper_shell.unsubmerged_factor`).
+* **The bottoms.** T_bot' = 132.7 + f_sub (T_bot - 132.7) (`stripper_shell.submerged_bottoms_c`),
+  applied to the stripper's own bottoms temperature, so the hydrolysis, the biuret, LV-322501's
+  vapour pressure and the balance's sensible term all see it; never warming, untouched at f_sub = 1.
+
+The stripper reads the held liquor of the tick before (the declared tear the level already is).
+With the bundle dry f_sub is exactly 1.0 and every term is B-102's to the bit; ``StripperSump
+(tube_ceiling=False)`` is B-103's held liquor without a ceiling, and with ``hold_full=False`` V1's
+clamp.
+
+**Measured on the unit** (the design feed, the bundle a quarter, half and wholly submerged): the shell
+pays its derated capacity, lambda scales the lift, the bottoms cool toward the floor — which itself
+takes some of the duty off the shell, so a full bundle keeps 0.46 of its lift on 0.30 of its capacity.
+
+| sigma | f_sub | lambda | TT-322004 [C] | bottoms NH3 [mass %] |
+|---|---|---|---|---|
+| 0 | 1.00 | 1.0 | 172.00 | 7.931 |
+| 0.25 | 0.825 | 0.8693 | 165.12 | 12.48 |
+| 0.5 | 0.65 | 0.7333 | 158.25 | 16.40 |
+| 1 | 0.30 | 0.4575 | 144.49 | 22.69 |
+
+**Measured on the sump** (LV-322501 at 10 %, the feed capped at the take, one kilogram of bottoms per
+kilogram taken): the tubes fill to their 8 689 kg in about ten minutes, the transit hands 2 505 kg
+back past the ceiling, and full they take exactly the drain, 28.3 t/h.
+
+**Measured on the loop, both ways** (the synthesis harness, LIC-322501 in MAN, LV-322501 46.1 -> 10 % at
+0.5 s, S5-5a's lever): the sump is full at 140.2 s on both sides; from 218.1 s the tubes' take caps
+HV-322605. Ten minutes on the tubes hold 8 392.5 kg (sigma 0.966), the reactor discharges 26.3 t/h
+where V1's discharges its 226.2 and its level has risen from 80 to 85.94 % where V1's stands at 80.34;
+TT-322004 reads 141.57 C against 165.58. V1's loop climbs to 146.67 bar a — its PT-329201 books the
+liquor its clamp deletes as gas, B-103's finding (§LXXIX.2) — where the port's stands at 140.02.
+Nothing arrives past the ceiling.
+
+## LXXX.3 B-105 — 323D001's liquor carried into 322E003 (decision 141)
+
+V1 carries no species through 323E003, 323D001 or PFD 308, and 322E003 washes with PFD 308's design
+carbamate scaled by 308's mass. The port's tank is stirred and carries NH3, CO2, H2O and urea as its
+departure d from PFD 308 (`units/recirc/lp_carbamate_condenser`):
+
+    M dd_k/dt = S_k - L d_k,   S_k = sum_i (m_i - m_i,des) (w_i,k - w_308,k),   w_308,live = w_308 + d
+
+L the liquid entering (the inlets less the vent), stepped backward on the tick's holdup so it holds
+at a heel. Each liquid inlet is at its PFD row (mass per cent, normalised over the four species:
+718B 25.21 / 17.38 / 57.24 / 0.18, 776 29.21 / 23.63 / 47.10 / 0.06, 734 5.23 / 3.71 / 90.24 /
+0.82), and the condensate m_cond = 305 + 797 - 321 at the gas's closure on PFD 308 — PFD 308's
+species less the two liquid inlets' over the design condensate, 31.84 % NH3, 46.42 % CO2, 21.68 %
+H2O, 0.06 % urea — so the design tank is PFD 308 exactly (`data.unit_323e003.W_COND`; the 305 row
+alone does not close the PFD's 308, and 797's inerts leave in 321). Every inlet at its design
+leaves d exactly zero.
+
+The tears carry the composition and TT-323006 to 322E003 a tick late with 308's flow
+(``TearState.w_308``, ``t_308_c``), and the scrubber (`units/synthesis/scrubber`) washes with
+
+    carb_k = WASH_k . r + r . 36 915 . d_k / MW_k        (r = m_308 / 36 835, floored at zero)
+
+and blends TT-322002 by the wash's share of the overflow on its temperature's departure from 74 C,
+T_ov' = T_ov + (m_wash / m_ov) (T_308 - 74), between its two existing rails. The water then reaches
+the HP loop as water: the scrubber's sump liquor dilutes, its bubble pressure falls (B-91's
+saturation reads it), and 322F001's discharge, 322E002 and 322R001 see the H/C.
+``LpCarbamateCondenser(track_species=False)`` is V1's mass-only LPCC on the harnesses.
+
+**The seed.** The LP section's seed is not a perfect fixed point: its inlets drift by parts per
+million, and the tank's departure follows them — 1e-6 in mass fraction after 300 s. Against the
+switch off, the packet's process values differ by at most 4e-5 relative after 300 s. The mechanism
+is continuous, so there is no band to hold; the design call itself is PFD 308 to the bit.
+
+**Measured.** The LPCC alone, FV-323401 wide open (7 015 kg/h of 734, 90 % water): ten minutes on 308
+carries 35.69 % water where PFD 308 has 30.83; after four hours 38.51 %, the stirred mix of what
+enters. The scrubber alone, that diluted wash at 15 % more: its sump liquor's H/C rises from 1.355 to
+1.812 and its N/C from 2.508 to 2.559 (734 is ammonia-rich against 308's carbamate), and it bubbles at
+122.84 bar a where the design carbamate bubbles at 137.67; a wash 10 K cold takes TT-322002 down
+6.41 K. On the loop, both ways (FV-323401 to 100 % at 0.5 s, the same LPCC on both sides): four
+minutes on, 308 carries 33.45 % water, the reactor feed's H/C stands at 0.4142 against V1's 0.4014,
+TT-322002 at 163.43 C against 164.13, the conversion at 53.78 % against 53.96 % and PT-329201 at
+140.7174 bar a against 140.7116.
+
+## LXXX.4 B-106 — the melt's bubble pressure below its azeotrope (decision 142)
+
+The paste's diagnosis is right, and it corrects session 63's handoff text: the saturation fraction
+(decisions 97, 135) reads PI-322E002, `carbamate_condenser.bubble_p_322e002`, the model's own law,
+not the thermo package — and its N/C factor, f_N = 1 + 0.18 (N/C - N/C_anchor), falls with the N/C on
+both sides of the design, so a CO2-rich melt's bubble pressure fell and the fraction stayed at 1.
+
+Below N/C 3.0 (``BUB_AZEOTROPE_NC``) the factor now follows the Extended UNIQUAC model's shape:
+
+    f_N = f_N(3.0) . g(N/C),   g(N/C) = P_EU(w_des(N/C), 170 C) / P_EU(w_des(3.0), 170 C)
+
+the bubble pressure of the design tube-side feed (the stripper's top gas and the ejector's
+discharge) with its ammonia set to the N/C, at the design product temperature, its shape only
+(`low_nc_rise`; the thermo puts the melt's absolute bubble point at 44.4 bar a). The temperature and
+the water stay on the condenser's own Clausius-Clapeyron and K_W terms. At and above 3.0 the law is
+V1's to the bit; at 3.0 continuous.
+
+| N/C | P_EU [bar a] | g | P_bub V1 [bar a] | P_bub port [bar a] | f at 140.7 bar a |
+|---|---|---|---|---|---|
+| 3.10 | 43.87 | — | 144.8 | 144.8 | 0.991 |
+| 3.00 | 44.37 | 1.000 | 142.2 | 142.2 | 1.000 |
+| 2.90 | 47.38 | 1.068 | 139.6 | 151.8 | 0.883 |
+| 2.80 | 53.75 | 1.211 | 137.0 | 172.2 | 0.569 |
+| 2.70 | 64.77 | 1.460 | 134.4 | 207.5 | 0.027 |
+| 2.60 | 82.41 | 1.857 | 131.8 | 264.1 | 0 |
+
+(170 C, the design H/C, the settled melt's anchor N/C 3.0786; the fraction against the design loop.)
+``CondenserHoldup(low_nc_branch=False)`` and ``bubble_p_322e002(low_nc=False)`` are V1's line on the
+harnesses.
+
+**Measured on the loop, both ways** (the CO2 boundary +20 % at 0.5 s, 321P002B held): 4.5 s on, the
+port's melt stands at N/C 2.682 and bubbles at 177.86 bar a, holding half of what it would condense
+(0.502); V1's, condensing everything, falls to N/C 2.512 and 133.02 bar a. 100 s on, the
+port's melt condenses 13.1 t/h where V1's condenses 199.6, and PT-329201 stands at 149.42 bar a against
+141.01; the port's loop reaches trip 22.2's 155 bar a at 161.6 s, where V1's stands at 141.49 at 170 s.
+
+## LXXX.5 B-107 — 324F003's lost seal admits air (decision 143)
+
+LT-324501 reads the barometric leg from 324F003 to the melt pump 335P001 (UD-AU-324-EC-0008). Once
+the level uncovers the seal (`consequence.seal.seal_fraction`, V1's 3 % band), atmospheric air enters
+the separator through the drain's path on the blow-through law of As-Built §XIX.2, on LV-324501A's
+own liquid sizing (`units/evaporation/leg_seal`):
+
+    m_air = m_des . (h / h_des) . Y . sqrt(rho_air . dP_eff / (rho_melt . dP_des)) . (1 - seal)
+
+m_des the design drain, PFD 402's 75 938 kg/h at LIC-324501's 75 % stroke; the loop summary's 1221
+kg/m3 across 6.9 -> 3.7 bar a, dP_des their subtraction (UD-MR-324-EC-0001 rev 1, loop L 324501,
+sheet 2/4); the air PFD 783's at one atmosphere and 32 C, 1.152 kg/m3, gamma 1.40 (F_k 1); dP from
+the atmosphere to PT-324203 of the tick before, choked below 0.30 bar a on x_T 0.70. It reads the
+level and LIC-324501's stroke of the tick before and joins PV-324203's false air into 324E005
+(``SecondEvaporatorResult.air_in_kgh``, the vacuum train's ``false_air2_kgh``); PFD 783 on the
+console stays PV-324203's. At the design stroke a fully lost seal admits 732 kg/h against PFD 783's
+21. ``SecondEvaporator(seal_air=False)`` is V1's sealed leg on the harnesses.
+
+**Measured on the stage** (both ways against V1's transcription, LIC-324501's set point 54.7 -> 10 %,
+S1-5.4b): the loop drains the leg past its set point identically on both sides until LI-324501
+crosses 3 % at 686.6 s. V1's vacuum stays at 0.131 bar a. The port's leg admits up to 625 kg/h,
+PT-324203 peaks at 0.2416 bar a at 838 s, PIC-324203 throttling its bleed to 12.7 kg/h, and the
+melt weakens to 96.71 % urea against PFD 402's 97.71; the level recovers, the seal closes at
+1 053.5 s, and after 25 minutes the vacuum stands at 0.1299 bar a and the melt at 139.03 C.
+
+**Finding: the heel.** Drained to its 1 kg floor with LIC-324501 in MAN at 100 %, the separator's
+vacuum breaks to 0.288 bar a, and the stage's temperature-pressure fixed point (V1's G7 Picard, 20
+iterations) no longer converges: at the floor the held melt has almost no heat capacity, and the
+feed's boil-off switches on and off with the iterate's temperature. TT-324002 falls to 78 C over six
+minutes while the stage passes stage 1's melt unconcentrated; 400 iterations do not converge either
+(residual 162 K). Raised as handoff B-108. The scenarios do not reach the floor (S1-5.4b's level
+turns at 0.47 %).
+
+## LXXX.6 Structure — three modules split out, every file inside 800 lines
+
+The paste asked `stripper.py` and `stripper_sump.py` to stay at or under the 600-line target. Two
+helpers moved out unchanged, and the new seal law went into a module of its own:
+
+| module | lines | what it holds |
+|---|---|---|
+| `units/synthesis/stripper.py` | 573 (625) | the unit; the reactions call `stripper_kinetics` |
+| `units/synthesis/stripper_kinetics.py` | 112 (new) | ``hydrolysis_rate_group``, ``HYDROLYSIS_GROUP_DES``, ``hydrolysis_extent``, ``biuret_extent`` — V1's block, moved |
+| `units/synthesis/stripper_sump.py` | 526 (609) | the sump, with B-104's ceiling |
+| `units/synthesis/stripper_level.py` | 133 (new) | ``BottomLevelLoop``, LIC-322501, moved |
+| `units/synthesis/stripper_shell.py` | 305 (240) | B-104's submergence |
+| `units/evaporation/leg_seal.py` | 63 (new) | B-107's ``seal_air_kgh`` |
+| `units/evaporation/second_evaporator.py` | 589 (571) | the stage, the seal's air into 324E005 |
+| `units/synthesis/carbamate_condenser.py` | 581 (525) | B-106's ``low_nc_rise`` |
+| `units/recirc/lp_carbamate_condenser.py` | 577 (540) | B-105's species step |
+| `units/synthesis/scrubber.py` | 703 (683) | B-105's wash; over the target before this session, under 800 |
+
+The moved code is byte for byte V1's arithmetic: the stripper, sump and condenser equivalence suites
+pass unchanged but for their imports. Each new module has its test file (`tests/units/synthesis/
+test_stripper_kinetics.py`, `test_stripper_level.py`, `tests/units/evaporation/test_leg_seal.py`).
+
+## LXXX.7 Scenarios5.md re-run on B-104 to B-107
+
+Session 65 (the same day) re-ran the survey of §LXXIX.3 on the four mechanisms, with two levers
+changed as the paste asked: the LPCC case (S5-W) takes FIC-323401 to MAN and FV-323401 to 100 %,
+about 7 000 kg/h of 328D003's ammonia water where the set point stopped at 2 000, and a fourteenth
+case, S5-6c, raises the CO2 boundary 20 % on the held pump, B-106's measurement at N/C toward 2.6.
+`run_coupled.EXTRA` samples six more result indicators: 322E002's melt N/C and bubble pressure, the
+tubes' submerged share and what they hand back, the reactor's discharge and 308's water. The first
+run of the day used B-104's first cap (the room over the live transit) and was discarded.
+
+**83 of the 165 claims as claimed**; on the thirteen cases session 63 ran, 74 of 152 again — the same
+total, with sixteen claims moving.
+
+| case | lever | as claimed (session 63) | lambda min | held max [kg] | sigma max | sat min | trips |
+|---|---|---|---|---|---|---|---|
+| S5-W Ammonia water to the LPCC increased | FIC-323401 MAN, FV-323401 49.3 -> 100 % | 10 of 17 (6) | 0.921 | 0 | 0.000 | 0.621 | — |
+| S5-1 Raising the HPCC's LP steam pressure | MASTER-329207 5.01 -> 5.5 bar a | 9 of 12 (9) | 0.959 | 0 | 0.000 | 0.754 | — |
+| S5-2 High N/C excursion above the azeotrope | FFIC-321404 ratio 2.023 -> 2.124 | 4 of 9 (4) | 0.913 | 0 | 0.000 | 0.856 | — |
+| S5-3 Over-stripping: HP stripper steam raised | PIC-329204 19.7 -> 20.5 bar a | 6 of 11 (6) | 1.000 | 0 | 0.000 | 0.987 | — |
+| S5-4 Inert blanketing: the HP scrubber vent throttled | HIC-322604 72 -> 40 % | 2 of 5 (2) | 0.998 | 0 | 0.000 | 1.000 | 22.1 at 40 s |
+| S5-5a HP stripper flooding: the sump flooded | LV-322501 in MAN 46 -> 10 % | 3 of 10 (2) | 0.229 | 6,993 | 0.805 | 0.000 | 21.2 at 480 s, 21.8 at 480 s, 21.10 at 480 s, 22.1 at 480 s, 22.2 at 480 s |
+| S5-5b HP stripper flooding: excessive liquid load | HIC-322605 60 -> 100 % | 2 of 10 (4) | 0.462 | 0 | 0.000 | 0.000 | — |
+| S5-6a Low N/C excursion below the azeotrope: the NH3 pump slowed | SIC-321951 in MAN 83.6 -> 75.2 % | 6 of 13 (8) | 0.252 | 0 | 0.000 | 0.000 | 22.1 at 285 s, 22.2 at 1250 s, 21.2 at 1255 s, 21.8 at 1255 s, 21.10 at 1255 s |
+| S5-6b Low N/C excursion below the azeotrope: more CO2 | CO2 54.62 -> 60.08 t/h, SIC-321951 held | 7 of 13 (9) | 0.283 | 0 | 0.000 | 0.000 | 21.2 at 390 s, 21.8 at 390 s, 21.10 at 390 s, 22.1 at 390 s, 22.2 at 390 s |
+| S5-6c Low N/C excursion below the azeotrope: more CO2, +20 % | CO2 54.62 -> 65.54 t/h, SIC-321951 held | 9 of 13 (new) | 0.305 | 0 | 0.000 | 0.028 | 21.2 at 165 s, 21.8 at 165 s, 21.10 at 165 s, 22.1 at 165 s, 22.2 at 165 s |
+| S5-7 Lowering the HPCC's LP steam pressure | MASTER-329207 5.01 -> 4.5 bar a | 9 of 13 (7) | 0.958 | 0 | 0.000 | 0.795 | — |
+| S5-8 HP scrubber tempered water degraded | TIC-329005 80 -> 86 C | 3 of 10 (3) | 0.998 | 0 | 0.000 | 1.000 | — |
+| S5-9 Opening the reactor's outlet valve | HIC-322605 60 -> 75 % | 4 of 11 (6) | 0.726 | 0 | 0.000 | 0.578 | — |
+| S5-11 Under-stripping: HP stripper steam dropped | PIC-329204 19.7 -> 18.9 bar a | 9 of 18 (8) | 0.941 | 0 | 0.000 | 0.858 | — |
+
+What the mechanisms did:
+
+* **B-105, S5-W: 6 -> 10 of 17.** The ammonia water reaches the loop as water: 308 rises from 30.8
+  % water, the wash dilutes and cools the scrubber's carbamate — TT-322002 -17.1 K and TT-322011
+  -23.6 K in the second wave — the ejector discharge warms 3.1 K, the scrubber level rises 9.1
+  points and the reactor feed's H/C rises 0.138. The conversion does not fall as the note says:
+  it rises 4.2 points over the second wave while the reactor drains 17.5 points of level.
+* **B-104, S5-5a: 2 -> 3 of 10.** The sump fills, the tubes back up to sigma 0.80 (7.0 t), the cap
+  takes HV-322605 from 226 to 104 t/h and the reactor fills to 100 % at 360 s, spilling into the
+  off-gas line: the scrubber level and the ejector temperature surge as claimed (second wave +39.4
+  points, +71 K). With the stripper starved of liquor and its CO2 sweep unchanged, 322E002's melt
+  goes CO2-rich (N/C 2.61), B-106's bubble pressure rises to 194 bar a, the melt condenses 39 % of
+  what it would, and the loop reaches trip 22.2 at 480 s; 21.2, 21.8, 21.10 and 22.1 latch with it.
+  The second wave is the tripped plant's.
+* **B-106, S5-6a/b/c.** The low-N/C cases now climb as claimed: PT-329201 +10.0 bar in S5-6b's first
+  wave and +14.5 in S5-6c's, the melt at N/C 2.56 and 2.54, its saturation fraction to zero and
+  0.03. Each reaches trip 22.2: S5-6c at 165 s, S5-6b at 390 s, S5-6a (the stalled ejector) at
+  1 250 s. Session 63's S5-6b, on the ceiling alone, stood 0.44 bar up and never tripped; its
+  second-wave claims (conversion, TT-322002) now read the tripped plant and fail.
+* **S5-5b and S5-9 lose claims** (4 -> 2, 6 -> 4): HV-322605 opened drains the reactor to its lip.
+  In S5-5b the dumped liquor's top gas takes 322E002's melt to N/C 2.57 in the first minute, its
+  fraction to 0.21, and the loop climbs to 153 bar a by 45 minutes without a trip; in both the
+  second wave's scrubber level and ejector temperature fall where session 63's rose.
+* **S5-7 gains two (7 -> 9)** and no longer trips 22.1 at 2 295 s; **S5-11 one (8 -> 9).**
+
+The claim-by-claim tables:
+
+#### S5-W — Ammonia water to the LPCC increased (10 of 17)
+
+PFD 734, FIC-323401's ammonia water from 328D003 to 323E003: FIC-323401 in MAN, FV-323401 49.3 -> 100 %, 1 534 -> about 7 000 kg/h (its set point stops at 2 000 kg/h); LIC-323502 on SIC-323901 carries the extra liquid to 322E003 as PFD 308, its water with it (B-105).
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 2 | LPCC_3232.E003.carbamate308_th — the LPCC level controller raises the HP carbamate pump | W1 | rises | +3.08 | -9.457 | -12.54 | rises | yes |
+| 2 | SCRUB_322E003.ov_th — absorption in the scrubber improves | W1 | rises | +4.629 | +3.689 | -0.9402 | rises | yes |
+| 2 | SCRUB_322E003.TT_322002 — the scrubber's liquid overflow cools | W1 | falls | -0.7 | -17.11 | -16.41 | falls | yes |
+| 2 | SCRUB_322E003.TT_322011 — the scrubber's gas outlet cools | W1 | falls | -10.7 | -23.55 | -12.85 | falls | yes |
+| 3 | x.p_syn_bara — the synthesis pressure decreases | W1 | falls | +0.0394 | +0.06101 | +0.02161 | rises | NO |
+| 3 | SCRUB_322E003.LT_329501 — the scrubber level rises | W1 | rises | +1.5 | +9.146 | +7.646 | rises | yes |
+| 4 | EJ_322F001.TT_322012 — the ejector temperature increases | W1 | rises | +0.3 | +3.117 | +2.817 | rises | yes |
+| 5 | REACT_322R001.LT_322504 — the reactor level rises | W1 | rises | +0.1 | -17.49 | -17.59 | rises | yes |
+| 5 | REACT_322R001.L_feed — the N/C ratio decreases | W1 | falls | +0 | -0.0001773 | -0.0001773 | no change | NO |
+| 6 | x.reactor_offgas_th — less gas leaves the reactor for the scrubber | W2 | falls | +1.562 | +13.19 | +11.63 | rises | NO |
+| 7 | SCRUB_322E003.LT_329501 — the scrubber level drops back | REV | falls | +1.5 | +9.146 | +7.646 | rises | NO |
+| 7 | SCRUB_322E003.TT_322002 — the scrubber temperatures recede | REV | falls | -0.7 | -17.11 | -16.41 | falls | yes |
+| 8 | REACT_322R001.W_feed — the extra water raises the reactor's H/C | W2 | rises | +0.0209 | +0.1375 | +0.1166 | rises | yes |
+| 8 | REACT_322R001.X_conv — conversion drops after 30-45 min | W2 | falls | -0.74 | +4.214 | +4.954 | rises | NO |
+| 8 | REACT_322R001.TT_322005 — the reactor top temperature drops | W2 | falls | +0 | +0.03019 | +0.03019 | rises | NO |
+| 8 | STRIP_322E001.bot_mass_pct.NH3 — more unconverted carbamate loads the stripper | W2 | rises | -0.708 | -3.909 | -3.201 | falls | NO |
+| 8 | x.p_syn_bara — the synthesis pressure ultimately rebounds | REV | rises | +0.0394 | +0.06101 | +0.02161 | rises | yes |
+
+lambda min 0.9207233816918138, held max 0.0 kg, HPCC saturation min 0.6214977871414291; trips {}; flags {'flags.CARBAMATE_DEPOSITION': 1510.0}
+
+* not modelled: the density analyser's cross-sensitivity to H/C
+
+#### S5-1 — Raising the HPCC's LP steam pressure (9 of 12)
+
+322E002 raises steam into 322D001A/B on the LP header: MASTER-329207 5.01 -> 5.5 bar a.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 1 | HPCC_322E002.liq_th — less stripper gas condenses in the HPCC | W1 | falls | -16.35 | -24.99 | -8.644 | falls | yes |
+| 1 | HPCC_322E002.gas_th — more gas enters the reactor | W1 | rises | +17.35 | +32.29 | +14.94 | rises | yes |
+| 1 | REACT_322R001.TT_322005 — reactor temperatures rise slightly | W1 | rises | +0.1 | +0.07978 | -0.02022 | rises | yes |
+| 1 | x.p_syn_bara — the synthesis pressure climbs | W1 | rises | +0.2032 | +0.1471 | -0.05605 | rises | yes |
+| 1 | x.reactor_offgas_th — more gas leaves the reactor for the scrubber | W1 | rises | +3.322 | +18.17 | +14.84 | rises | yes |
+| 1 | SCRUB_322E003.TT_322011 — the scrubber's gas outlet heats | W1 | rises | +6.8 | +52.31 | +45.51 | rises | yes |
+| 1 | SCRUB_322E003.TT_322002 — the scrubber's overflow heats | W1 | rises | -1.4 | -9.235 | -7.835 | falls | NO |
+| 1 | SCRUB_322E003.LT_329501 — the scrubber level rises | W1 | rises | +1.8 | +5.645 | +3.845 | rises | yes |
+| 1 | EJ_322F001.TT_322012 — the ejector discharge temperature rises | W1 | rises | +0.5 | +3.1 | +2.6 | rises | yes |
+| 1 | HPCC_322E002.liq_th — the HPCC's condensation recovers partway | REV | rises | -16.35 | -24.99 | -8.644 | falls | NO |
+| 1 | x.reactor_offgas_th — the reactor's gas breakthrough subsides | REV | falls | +3.322 | +18.17 | +14.84 | rises | NO |
+| 1 | SCRUB_322E003.LT_329501 — the scrubber settles slightly higher | W2 | rises | +1.8 | +5.645 | +3.845 | rises | yes |
+
+lambda min 0.9588403349695505, held max 0.0 kg, HPCC saturation min 0.7541895025991688; trips {}; flags {}
+
+
+#### S5-2 — High N/C excursion above the azeotrope (4 of 9)
+
+more motive NH3 to 322F001: FFIC-321404's ratio 2.023 -> 2.124 (+5 %), the reactor feed's N/C from 3.07 to about 3.2.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 0 | REACT_322R001.L_feed — the reactor N/C rises above 3.1 | W1 | rises | +0.032 | +0.07556 | +0.04356 | rises | yes |
+| 2 | SCRUB_322E003.LT_329501 — the scrubber level drops at once | W1 | falls | -4.3 | -17.59 | -13.29 | falls | yes |
+| 2 | EJ_322F001.TT_322012 — the ejector discharge cools | W1 | falls | +2.5 | -4.281 | -6.781 | rises | NO |
+| 2 | REACT_322R001.TT_322005 — the reactor temperature drops | W2 | falls | +0.1 | +0.2299 | +0.1299 | rises | NO |
+| 2 | x.p_syn_bara — the synthesis pressure rises sharply | W2 | rises | +0.229 | +0.4245 | +0.1955 | rises | yes |
+| 2 | x.reactor_offgas_th — a large NH3 stream leaves the reactor for the scrubber | W2 | rises | +2.573 | -0.1594 | -2.733 | falls | NO |
+| 2 | SCRUB_322E003.off_th — uncondensed NH3 breaks through the scrubber overhead | W2 | rises | -0.007 | +0.006404 | +0.0134 | rises | yes |
+| 2 | LPCC_3232.E003.carbamate308_th — the LPCC's recycle raises the HP carbamate pump | W2 | rises | +0.03 | -6.152 | -6.182 | falls | NO |
+| 2 | SCRUB_322E003.LT_329501 — the scrubber level is pushed back up | REV | rises | -4.3 | -17.59 | -13.29 | falls | NO |
+
+lambda min 0.9127232775331099, held max 0.0 kg, HPCC saturation min 0.8564984776961594; trips {}; flags {}
+
+
+#### S5-3 — Over-stripping: HP stripper steam raised (6 of 11)
+
+329D005's MP header: PIC-329204 19.7 -> 20.5 bar a.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 3 | STRIP_322E001.TT_322004 — the stripper bottoms temperature rises | W1 | rises | +1 | +1.359 | +0.3593 | rises | yes |
+| 3 | STRIP_322E001.bot_mass_pct.NH3 — stripping efficiency rises | W1 | falls | -0.439 | -0.4395 | -0.0004986 | falls | yes |
+| 3 | STRIP_322E001.top_th — more gas leaves the stripper top for the HPCC | W1 | rises | +1.07 | +0.7484 | -0.3216 | rises | yes |
+| 3 | x.p_syn_bara — the synthesis pressure rises | W1 | rises | +0.03484 | +0.005037 | -0.0298 | rises | yes |
+| 3 | x.reactor_offgas_th — more uncondensed gas passes the reactor to the scrubber | W1 | rises | +0.6885 | +0.6961 | +0.00761 | rises | yes |
+| 3 | LPCC_3232.E003.carbamate308_th — the LPCC level controller throttles the HP carbamate pump | W1 | falls | -0.33 | -1.473 | -1.143 | falls | yes |
+| 3 | SCRUB_322E003.TT_322002 — the scrubber's overflow heats | W1 | rises | -0.5 | -0.2482 | +0.2518 | falls | NO |
+| 3 | SCRUB_322E003.TT_322011 — the scrubber's gas outlet heats | W1 | rises | -3.5 | +1.418 | +4.918 | falls | NO |
+| 3 | SCRUB_322E003.LT_329501 — the scrubber level dips | W1 | falls | +0.3 | -0.5393 | -0.8393 | rises | NO |
+| 3 | SCRUB_322E003.LT_329501 — then rebounds as the reactor gas condenses | REV | rises | +0.3 | -0.5393 | -0.8393 | falls | NO |
+| 3 | x.p_syn_bara — the loop settles at a higher pressure | W2 | rises | +0.03484 | +0.005037 | -0.0298 | no change | NO |
+
+lambda min 1.0, held max 0.0 kg, HPCC saturation min 0.9867230779958559; trips {}; flags {}
+
+
+#### S5-4 — Inert blanketing: the HP scrubber vent throttled (2 of 5)
+
+HV-322604, 322E003's off-gas to 322C001: HIC-322604 72 -> 40 %.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 4 | HPCC_322E002.steam.kgh — the HPCC's LP steam generation drops | W2 | falls | +1075 | +1585 | +509.8 | rises | NO |
+| 4 | x.p_syn_bara — the synthesis pressure rises | W1 | rises | +0.1038 | +0.3333 | +0.2294 | rises | yes |
+| 4 | x.p_syn_bara — and keeps climbing, not self-correcting | REV | rises | +0.1038 | +0.3333 | +0.2294 | rises | yes |
+| 4 | x.reactor_offgas_th — more gas leaves the reactor for the scrubber | W1 | rises | -0.3298 | -1.01 | -0.6798 | falls | NO |
+| 4 | SCRUB_322E003.TT_322011 — the scrubber's gas outlet heats | W1 | rises | -14.2 | -16.05 | -1.848 | falls | NO |
+
+lambda min 0.9977376735486422, held max 0.0 kg, HPCC saturation min 0.9998917861982373; trips {'trip_latched.22_1': 40.0}; flags {'flags.CARBAMATE_DEPOSITION': 5.0}
+
+* not modelled: the inert film's mass-transfer resistance in 322E002 and 322E003 (no blanketing model: the condensers' capacities do not see the inerts)
+* not modelled: a passivation-air surge (no lever: the CO2's air is the boundary's)
+
+#### S5-5a — HP stripper flooding: the sump flooded (3 of 10)
+
+LIC-322501 in MAN, LV-322501 46 -> 10 %: LT-322501 fills, holds its excess back in the tubes (B-103) up to their 8 689 kg standing full, and 322R001 keeps the rest (B-104).
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 5 | STRIP_322E001.TT_322004 — the stripper bottoms temperature plunges | W1 | falls | -11.1 | -12.66 | -1.562 | falls | yes |
+| 5 | STRIP_322E001.bot_mass_pct.NH3 — unstripped carbamate leaves the bottoms | W1 | rises | -4.127 | -7.92 | -3.793 | falls | NO |
+| 5 | RECIRC_323.C003.v305_th — a gas surge leaves the LP decomposer | W1 | rises | -20.12 | -20.73 | -0.612 | falls | NO |
+| 5 | LPCC_3232.E003.P_bara — the LPCC's pressure rises | W2 | rises | -0.99 | -0.8764 | +0.1136 | falls | NO |
+| 5 | LPCC_3232.E003.TT_323006 — and its temperature | W2 | rises | -14.2 | -14.71 | -0.5111 | falls | NO |
+| 5 | LPCC_3232.E003.LI_323502 — and its level | W2 | rises | -8.4 | -1.811 | +6.589 | falls | NO |
+| 5 | LPCC_3232.E003.carbamate308_th — the HP carbamate pump ramps up | W2 | rises | -10.47 | -23.37 | -12.9 | falls | NO |
+| 5 | SCRUB_322E003.LT_329501 — the scrubber level surges | W2 | rises | -2.6 | +39.36 | +41.96 | rises | yes |
+| 5 | EJ_322F001.TT_322012 — the ejector temperature surges | W2 | rises | -1.3 | +71.05 | +72.35 | rises | yes |
+| 5 | REACT_322R001.LT_322504 — the reactor level spikes | W2 | rises | +8.4 | -47.22 | -55.62 | falls | NO |
+
+lambda min 0.22852478342719337, held max 6992.735079659966 kg, HPCC saturation min 0.0; trips {'trip_latched.21_2': 480.0, 'trip_latched.21_8': 480.0, 'trip_latched.21_10': 480.0, 'trip_latched.22_1': 480.0, 'trip_latched.22_2': 480.0}; flags {'flags.RATIO_PV_BAD': 480.0, 'flags.EJECTOR_STALL': 480.0, 'flags.LV322501_EROSION': 1730.0}
+
+* not modelled: the stripper's tube-side pressure drop (no dP transmitter or flooding hydraulics)
+
+#### S5-5b — HP stripper flooding: excessive liquid load (2 of 10)
+
+the reactor's liquor dumped on the stripper: HIC-322605 60 -> 100 %.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 5 | STRIP_322E001.TT_322004 — the stripper bottoms temperature plunges | W1 | falls | +5.2 | +0.9914 | -4.209 | rises | NO |
+| 5 | STRIP_322E001.bot_mass_pct.NH3 — unstripped carbamate leaves the bottoms | W1 | rises | +19.53 | -0.5802 | -20.11 | rises | yes |
+| 5 | RECIRC_323.C003.v305_th — a gas surge leaves the LP decomposer | W1 | rises | +8.56 | -7.155 | -15.72 | rises | yes |
+| 5 | LPCC_3232.E003.P_bara — the LPCC's pressure rises | W2 | rises | +0.64 | -0.3134 | -0.9534 | falls | NO |
+| 5 | LPCC_3232.E003.TT_323006 — and its temperature | W2 | rises | +3.7 | -4.665 | -8.365 | falls | NO |
+| 5 | LPCC_3232.E003.LI_323502 — and its level | W2 | rises | +1.4 | -0.6958 | -2.096 | falls | NO |
+| 5 | LPCC_3232.E003.carbamate308_th — the HP carbamate pump ramps up | W2 | rises | +1.7 | -10.62 | -12.32 | falls | NO |
+| 5 | SCRUB_322E003.LT_329501 — the scrubber level surges | W2 | rises | +12.1 | -17.71 | -29.81 | falls | NO |
+| 5 | EJ_322F001.TT_322012 — the ejector temperature surges | W2 | rises | -6 | -16.01 | -10.01 | falls | NO |
+| 5 | REACT_322R001.LT_322504 — the reactor level spikes | W2 | rises | -43.6 | -43.56 | +0.03795 | falls | NO |
+
+lambda min 0.46210855975144294, held max 0.0 kg, HPCC saturation min 0.0; trips {}; flags {'flags.CARBAMATE_DEPOSITION': 120.0}
+
+* not modelled: the stripper's tube-side pressure drop (no dP transmitter or flooding hydraulics)
+
+#### S5-6a — Low N/C excursion below the azeotrope: the NH3 pump slowed (6 of 13)
+
+the HP ammonia pump slowed: SIC-321951 in MAN, 321P002B 83.6 -> 75.2 % (-10 %), below 322F001's stall at 0.907 of its design motive; FFIC-321404's ratio set point stops at 2.0.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 0 | REACT_322R001.L_feed — the reactor N/C falls below 2.8 | W1 | falls | -0.114 | -0.08255 | +0.03145 | falls | yes |
+| 6 | SCRUB_322E003.LT_329501 — the scrubber level rises at once | W1 | rises | +50 | +50 | +0 | rises | yes |
+| 6 | EJ_322F001.TT_322012 — the ejector discharge heats | W1 | rises | -62.7 | +34.68 | +97.38 | falls | NO |
+| 6 | HPCC_322E002.liq_th — the HPCC's condensation drops | W1 | falls | -61.86 | -168.5 | -106.7 | falls | yes |
+| 6 | x.p_syn_bara — the synthesis pressure climbs sharply | W1 | rises | -0.5786 | +12.03 | +12.6 | falls | NO |
+| 6 | REACT_322R001.TT_322005 — reactor temperatures drop | W1 | falls | -0.3 | +2.51 | +2.81 | falls | yes |
+| 6 | REACT_322R001.X_conv — conversion drops | W1 | falls | -3.15 | -39.3 | -36.15 | falls | yes |
+| 6 | x.reactor_offgas_th — CO2-rich gas breaks through the reactor to the scrubber | W1 | rises | -3.257 | -21.84 | -18.58 | falls | NO |
+| 6 | SCRUB_322E003.TT_322002 — the scrubber heats | W1 | rises | -36.2 | -77.65 | -41.45 | falls | NO |
+| 6 | STRIP_322E001.TT_322004 — the stripper bottoms temperature ticks up | W1 | rises | -0.6 | -25.84 | -25.24 | falls | NO |
+| 6 | STRIP_322E001.TT_322004 — then drops as the low-conversion effluent arrives | REV | falls | -0.6 | -25.84 | -25.24 | falls | yes |
+| 6 | STRIP_322E001.bot_mass_pct.NH3 — carbamate slips through the stripper | W2 | rises | +1.525 | -5.022 | -6.547 | falls | NO |
+| 6 | LPCC_3232.E003.LI_323502 — the LP section floods | W2 | rises | -1.3 | -5.864 | -4.564 | falls | NO |
+
+lambda min 0.25194031252652793, held max 0.0 kg, HPCC saturation min 0.0; trips {'trip_latched.22_1': 285.0, 'trip_latched.22_2': 1250.0, 'trip_latched.21_2': 1255.0, 'trip_latched.21_8': 1255.0, 'trip_latched.21_10': 1255.0}; flags {'flags.EJECTOR_STALL': 10.0, 'flags.CARBAMATE_DEPOSITION': 90.0, 'flags.RATIO_PV_BAD': 1255.0, 'flags.LV322501_EROSION': 1310.0}
+
+
+#### S5-6b — Low N/C excursion below the azeotrope: more CO2 (7 of 13)
+
+the N/C lowered with the motive held: SIC-321951 in MAN at its 83.56 %, the CO2 boundary 54.62 -> 60.08 t/h (+10 %, the instructor's co2_set), the reactor feed's N/C to about 2.8.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 0 | REACT_322R001.L_feed — the reactor N/C falls below 2.8 | W1 | falls | -0.064 | -0.00438 | +0.05962 | falls | yes |
+| 6 | SCRUB_322E003.LT_329501 — the scrubber level rises at once | W1 | rises | +11.1 | +49.07 | +37.97 | rises | yes |
+| 6 | EJ_322F001.TT_322012 — the ejector discharge heats | W1 | rises | +3.4 | +71.14 | +67.74 | rises | yes |
+| 6 | HPCC_322E002.liq_th — the HPCC's condensation drops | W1 | falls | -189.2 | -189.2 | +0.0007756 | falls | yes |
+| 6 | x.p_syn_bara — the synthesis pressure climbs sharply | W1 | rises | +10.01 | +14.43 | +4.42 | rises | yes |
+| 6 | REACT_322R001.TT_322005 — reactor temperatures drop | W1 | falls | +5.2 | -2.091 | -7.291 | rises | NO |
+| 6 | REACT_322R001.X_conv — conversion drops | W1 | falls | +10.1 | -54.18 | -64.28 | rises | NO |
+| 6 | x.reactor_offgas_th — CO2-rich gas breaks through the reactor to the scrubber | W1 | rises | +52.26 | -22.41 | -74.67 | rises | yes |
+| 6 | SCRUB_322E003.TT_322002 — the scrubber heats | W1 | rises | -5.3 | -84.42 | -79.12 | falls | NO |
+| 6 | STRIP_322E001.TT_322004 — the stripper bottoms temperature ticks up | W1 | rises | -1.3 | -38.81 | -37.51 | falls | NO |
+| 6 | STRIP_322E001.TT_322004 — then drops as the low-conversion effluent arrives | REV | falls | -1.3 | -38.81 | -37.51 | falls | yes |
+| 6 | STRIP_322E001.bot_mass_pct.NH3 — carbamate slips through the stripper | W2 | rises | -6.093 | -7.92 | -1.827 | falls | NO |
+| 6 | LPCC_3232.E003.LI_323502 — the LP section floods | W2 | rises | -3.7 | -2.906 | +0.7936 | falls | NO |
+
+lambda min 0.28335363478724773, held max 0.0 kg, HPCC saturation min 0.0; trips {'trip_latched.21_2': 390.0, 'trip_latched.21_8': 390.0, 'trip_latched.21_10': 390.0, 'trip_latched.22_1': 390.0, 'trip_latched.22_2': 390.0}; flags {'flags.CARBAMATE_DEPOSITION': 5.0, 'flags.RATIO_PV_BAD': 390.0, 'flags.EJECTOR_STALL': 390.0, 'flags.LV322501_EROSION': 470.0}
+
+
+#### S5-6c — Low N/C excursion below the azeotrope: more CO2, +20 % (9 of 13)
+
+the N/C lowered with the motive held: SIC-321951 in MAN at its 83.56 %, the CO2 boundary 54.62 -> 65.54 t/h (+20 %, the instructor's co2_set), the reactor feed's N/C toward 2.6 (B-106's measurement).
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 0 | REACT_322R001.L_feed — the reactor N/C falls below 2.8 | W1 | falls | -0.041 | -0.019 | +0.022 | falls | yes |
+| 6 | SCRUB_322E003.LT_329501 — the scrubber level rises at once | W1 | rises | +14.2 | +50 | +35.8 | rises | yes |
+| 6 | EJ_322F001.TT_322012 — the ejector discharge heats | W1 | rises | +48.2 | +71.19 | +22.99 | rises | yes |
+| 6 | HPCC_322E002.liq_th — the HPCC's condensation drops | W1 | falls | -189.3 | -189.2 | +0.04078 | falls | yes |
+| 6 | x.p_syn_bara — the synthesis pressure climbs sharply | W1 | rises | +14.46 | +14.02 | -0.4425 | rises | yes |
+| 6 | REACT_322R001.TT_322005 — reactor temperatures drop | W1 | falls | +7.2 | -3.674 | -10.87 | rises | NO |
+| 6 | REACT_322R001.X_conv — conversion drops | W1 | falls | -54.18 | -54.18 | -0.002853 | falls | yes |
+| 6 | x.reactor_offgas_th — CO2-rich gas breaks through the reactor to the scrubber | W1 | rises | +55.46 | -22.41 | -77.87 | rises | yes |
+| 6 | SCRUB_322E003.TT_322002 — the scrubber heats | W1 | rises | -44.8 | -84.67 | -39.87 | falls | NO |
+| 6 | STRIP_322E001.TT_322004 — the stripper bottoms temperature ticks up | W1 | rises | +11 | -39.13 | -50.13 | rises | yes |
+| 6 | STRIP_322E001.TT_322004 — then drops as the low-conversion effluent arrives | REV | falls | +11 | -39.13 | -50.13 | falls | yes |
+| 6 | STRIP_322E001.bot_mass_pct.NH3 — carbamate slips through the stripper | W2 | rises | +92.07 | -7.92 | -99.99 | falls | NO |
+| 6 | LPCC_3232.E003.LI_323502 — the LP section floods | W2 | rises | -3.5 | -2.44 | +1.06 | falls | NO |
+
+lambda min 0.3048943109504507, held max 0.0 kg, HPCC saturation min 0.027597447570834932; trips {'trip_latched.21_2': 165.0, 'trip_latched.21_8': 165.0, 'trip_latched.21_10': 165.0, 'trip_latched.22_1': 165.0, 'trip_latched.22_2': 165.0}; flags {'flags.CARBAMATE_DEPOSITION': 5.0, 'flags.RATIO_PV_BAD': 165.0, 'flags.EJECTOR_STALL': 165.0, 'flags.LV322501_EROSION': 280.0}
+
+
+#### S5-7 — Lowering the HPCC's LP steam pressure (9 of 13)
+
+MASTER-329207 5.01 -> 4.5 bar a.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 7 | HPCC_322E002.liq_th — the HPCC condenses nearly all the stripper gas | W1 | rises | +15.77 | +5.71 | -10.06 | rises | yes |
+| 7 | x.p_syn_bara — the synthesis pressure drops rapidly | W1 | falls | -0.1944 | -0.1684 | +0.02601 | falls | yes |
+| 7 | REACT_322R001.TT_322008 — the reactor bottom temperature drops | W1 | falls | -1.9 | -3.195 | -1.295 | falls | yes |
+| 7 | REACT_322R001.TT_322005 — and its top | W1 | falls | -1.1 | -1.407 | -0.3072 | falls | yes |
+| 7 | x.reactor_offgas_th — almost no gas leaves the reactor for the scrubber | W1 | falls | +2.768 | +3.637 | +0.8688 | rises | NO |
+| 7 | SCRUB_322E003.TT_322002 — the scrubber cools | W1 | falls | -0.1 | -3.728 | -3.628 | falls | yes |
+| 7 | SCRUB_322E003.LT_329501 — the scrubber level drops | W1 | falls | +0.8 | +3.38 | +2.58 | rises | NO |
+| 7 | EJ_322F001.TT_322012 — the ejector temperature decreases | W1 | falls | +0.3 | +1.795 | +1.495 | rises | NO |
+| 7 | REACT_322R001.X_conv — the colder reactor's conversion drops | W2 | falls | -3.58 | -4.796 | -1.216 | falls | yes |
+| 7 | STRIP_322E001.TT_322004 — the stripper bottoms temperature drops | W2 | falls | -0.1 | +0.03047 | +0.1305 | rises | NO |
+| 7 | STRIP_322E001.bot_mass_pct.NH3 — carbamate slips to the LPCC | W2 | rises | +1.047 | +1.3 | +0.2535 | rises | yes |
+| 7 | LPCC_3232.E003.carbamate308_th — the HP carbamate pump ramps up | W2 | rises | -0.14 | +0.2472 | +0.3872 | rises | yes |
+| 7 | SCRUB_322E003.LT_329501 — the scrubber level is driven back up | REV | rises | +0.8 | +3.38 | +2.58 | rises | yes |
+
+lambda min 0.9582656168463642, held max 0.0 kg, HPCC saturation min 0.7951700302110994; trips {}; flags {}
+
+
+#### S5-8 — HP scrubber tempered water degraded (3 of 10)
+
+TIC-329005 80 -> 86 C.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 8 | SCRUB_322E003.TT_322002 — the scrubber's overflow climbs | W1 | rises | +0.5 | +3.63 | +3.13 | rises | yes |
+| 8 | SCRUB_322E003.TT_322011 — its gas outlet climbs | W1 | rises | -0.7 | -4.976 | -4.276 | falls | NO |
+| 8 | EJ_322F001.TT_322012 — the ejector discharge heats | W1 | rises | -0.1 | -0.2 | -0.1 | falls | NO |
+| 8 | x.p_syn_bara — the synthesis pressure rises | W1 | rises | +0.006918 | +0.05115 | +0.04423 | no change | NO |
+| 8 | SCRUB_322E003.off_th — uncondensed gas breaks through the scrubber overhead | W1 | rises | +0.42 | +1.656 | +1.236 | rises | yes |
+| 8 | LPCC_3232.E003.LI_323502 — the LPCC's level rises | W2 | rises | +0 | -0.09307 | -0.09307 | falls | NO |
+| 8 | LPCC_3232.E003.TT_323006 — and its temperature | W2 | rises | +0 | -0.1956 | -0.1956 | falls | NO |
+| 8 | LPCC_3232.E003.carbamate308_th — the HP carbamate pump raises its flow | W2 | rises | -0.02 | -0.2845 | -0.2645 | falls | NO |
+| 8 | SCRUB_322E003.LT_329501 — the scrubber level rises | W2 | rises | +0.3 | +1.114 | +0.8136 | rises | yes |
+| 8 | SCRUB_322E003.TT_322002 — the scrubber temperatures are pulled partway back | REV | falls | +0.5 | +3.63 | +3.13 | rises | NO |
+
+lambda min 0.9980401518581676, held max 0.0 kg, HPCC saturation min 0.9998917861982373; trips {}; flags {'flags.CARBAMATE_DEPOSITION': 485.0}
+
+
+#### S5-9 — Opening the reactor's outlet valve (4 of 11)
+
+Helwan has no reactor level controller: HV-322605 opened, HIC-322605 60 -> 75 %.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 9 | REACT_322R001.LT_322504 — the reactor level drops | W1 | falls | -43.5 | -43.55 | -0.04654 | falls | yes |
+| 9 | STRIP_322E001.TT_322004 — the stripper bottoms temperature drops | W1 | falls | +8.4 | +0.4787 | -7.921 | rises | NO |
+| 9 | STRIP_322E001.bot_mass_pct.NH3 — stripping efficiency declines | W1 | rises | +10.2 | -0.627 | -10.83 | rises | yes |
+| 9 | REACT_322R001.X_conv — conversion drops (less residence) | W1 | falls | -9.75 | +1.807 | +11.56 | falls | yes |
+| 9 | LPCC_3232.E003.LI_323502 — the LPCC level surges | W2 | rises | +1.9 | -0.9712 | -2.871 | falls | NO |
+| 9 | LPCC_3232.E003.carbamate308_th — the HP carbamate pump ramps up | W2 | rises | +2.44 | -6.657 | -9.097 | falls | NO |
+| 9 | SCRUB_322E003.LT_329501 — the scrubber level rises | W2 | rises | +13.7 | -2.344 | -16.04 | falls | NO |
+| 9 | EJ_322F001.TT_322012 — the ejector temperature rises | W2 | rises | +3.9 | -1.309 | -5.209 | falls | NO |
+| 9 | REACT_322R001.LT_322504 — the reactor level climbs back up | REV | rises | -43.5 | -43.55 | -0.04654 | falls | NO |
+| 9 | REACT_322R001.L_feed — the reactor N/C is diluted | W2 | falls | +0.014 | +0.0001773 | -0.01382 | no change | NO |
+| 9 | REACT_322R001.W_feed — and its H/C raised | W2 | rises | +0.0364 | +0.004621 | -0.03178 | rises | yes |
+
+lambda min 0.7264336192375694, held max 0.0 kg, HPCC saturation min 0.5781574171750403; trips {}; flags {'flags.CARBAMATE_DEPOSITION': 115.0}
+
+
+#### S5-11 — Under-stripping: HP stripper steam dropped (9 of 18)
+
+PIC-329204 19.7 -> 18.9 bar a.
+
+| step | indicator | wave | claimed | W1 (0-5 min) | W2 (15-45 min) | W2 - W1 | measured | agrees |
+|---|---|---|---|---|---|---|---|---|
+| 11 | STRIP_322E001.TT_322004 — the stripper bottoms temperature drops | W1 | falls | -0.9 | -1.289 | -0.3886 | falls | yes |
+| 11 | STRIP_322E001.bot_mass_pct.NH3 — stripping efficiency falls | W1 | rises | +1.561 | +1.81 | +0.2494 | rises | yes |
+| 11 | STRIP_322E001.top_th — much less gas leaves the stripper top | W1 | falls | -5.11 | -6.079 | -0.969 | falls | yes |
+| 11 | x.p_syn_bara — the synthesis pressure drops | W1 | falls | -0.04475 | -0.2129 | -0.1682 | falls | yes |
+| 11 | HPCC_322E002.steam.kgh — the HPCC's LP steam generation falls | W1 | falls | +2294 | -1799 | -4093 | rises | NO |
+| 11 | x.reactor_offgas_th — less gas passes the reactor to the scrubber | W1 | falls | +0.528 | +1.729 | +1.201 | rises | NO |
+| 11 | SCRUB_322E003.TT_322002 — the scrubber's temperatures dip | W1 | falls | +0.1 | -2.595 | -2.695 | rises | NO |
+| 11 | SCRUB_322E003.LT_329501 — and its level | W1 | falls | +0.2 | +2.34 | +2.14 | rises | NO |
+| 11 | LPCC_3232.E003.P_bara — the LPCC's pressure rises | W2 | rises | +0.09 | +0.07557 | -0.01443 | rises | yes |
+| 11 | LPCC_3232.E003.TT_323006 — its temperature | W2 | rises | +0.1 | -0.2637 | -0.3637 | falls | NO |
+| 11 | LPCC_3232.E003.LI_323502 — and its level | W2 | rises | +0 | -0.2111 | -0.2111 | falls | NO |
+| 11 | LPCC_3232.E003.carbamate308_th — the HP carbamate pump ramps up strongly | W2 | rises | +0.05 | +0.9424 | +0.8924 | rises | yes |
+| 11 | SCRUB_322E003.LT_329501 — the scrubber level rises sharply | REV | rises | +0.2 | +2.34 | +2.14 | rises | yes |
+| 11 | EJ_322F001.TT_322012 — the ejector temperature increases | W2 | rises | +0 | +1.302 | +1.302 | rises | yes |
+| 11 | REACT_322R001.LT_322504 — the reactor level rises | W2 | rises | -2.2 | -22.36 | -20.16 | falls | NO |
+| 11 | REACT_322R001.L_feed — the reactor N/C drops | W2 | falls | +0 | +0 | +0 | no change | NO |
+| 11 | REACT_322R001.W_feed — and its H/C rises | W2 | rises | -0.0045 | -0.001447 | +0.003053 | falls | NO |
+| 11 | REACT_322R001.X_conv — conversion falls | W2 | falls | -1.71 | -2.716 | -1.006 | falls | yes |
+
+lambda min 0.9406236575243273, held max 0.0 kg, HPCC saturation min 0.8577505366978901; trips {}; flags {}
+
+
+#### S5-10 — Scenarios5.md §10, cold motive NH3 (HP NH3 preheater fouled): not put
+
+Helwan's loop has no motive-ammonia preheater: 321P002 delivers the NH3 off 321D003 at its pump's discharge temperature, and no console lever moves it
+
+## LXXX.8 The affected deviations re-run
+
+The eight `tests/phase7/deviations.py` cases the four mechanisms reach, on the corrected B-104 cap
+(45 minutes each but S1-5.4b's 15; As-Built §LXXV.3's runner): **16 of 22 claims as claimed**, two
+more than their last runs.
+
+| key | indicator | claimed | last run | session 65 |
+|---|---|---|---|---|
+| S1-1.2 | LT-322504 (end) | falls | -43.5 yes | -43.6 yes |
+|  | P_overflow (end) | falls | +1.5 NO | +11 NO |
+|  | X_conv (end) | falls | +11.36 NO | +8.79 NO |
+|  | bottoms NH3 (end) | rises | -2.22 NO | +0.788 yes |
+|  | 323C003 v305 (end) | rises | -11.47 NO | -3.32 NO |
+| S1-5.4b | LI-324F003 (end) | falls | -54.3 yes | -53.8 yes |
+|  | PT-324203 (peak) | rises | +0 NO | +0.165 yes |
+| S2-1.3 | P_overflow, LT-329501, TT-322002, TT-322011, TT-329125, TT-322012 (end) | -, +, -, -, -, - | 4 of 6 | 4 of 6 (TT-322002 -11.8 where -8.7) |
+| S2-2.2a | LI-322501, bottoms NH3, v305 (end) | +, +, + | 2 of 3 | 2 of 3 (NH3 +0.798 where +0.293) |
+| S2-2.3b | LI-322501 (end), 323D002's product (peak) | +, - | 2 of 2 | 2 of 2 (-47.96 where -79.98 t/h) |
+| S3-1.1a | 308 (end) | rises | +0.48 yes | +0.37 yes |
+| S3-1.1b | 321 (end) | rises | +0.03 yes | +0.03 yes |
+| S3-1.6 | 776, 308 (end) | +, + | 2 of 2 | 2 of 2 |
+
+S1-5.4b now breaks its vacuum as the note says (B-107). S1-1.2 — HV-322605 wide open — drains the
+reactor to its lip as before; the stripper's bottoms now carry more ammonia (+0.79 points, where
+session 61's carried less), and, as in S5-5b (§LXXX.7, the same lever, its melt below N/C 2.6), the
+loop climbs to 152 bar a by the end where it ended 1.5 bar up.
+
+## LXXX.9 Tests
+
+* New unit tests: `tests/units/synthesis/test_stripper_kinetics.py` (3), `test_stripper_level.py` (4),
+  `tests/units/evaporation/test_leg_seal.py` (3); `test_stripper_shell.py` +6 (B-104),
+  `test_stripper_sump.py` +3 (the ceiling, the take, the closed fill), `test_reactor_inventory.py` +1
+  (the cap and the hand-back), `tests/units/recirc/test_lp_carbamate_condenser.py` +1 (308's water),
+  `tests/units/synthesis/test_scrubber.py` +1 (the wash's departures).
+* Both ways against V1: `test_carbamate_condenser_equivalence.py` section 5 (B-106, 16 cases) with
+  every earlier comparison on ``low_nc=False``; `test_second_evaporator_decided_equivalence.py`
+  ``test_the_lost_seal_admits_air_decided_divergence`` (B-107); `test_synthesis_loop_decided_
+  equivalence.py` B-104 (S5-5a's lever, ten minutes), B-105 (FV-323401 wide open, four minutes) and
+  B-106 (the CO2 boundary +20 %, trip 22.2 at 161.6 s). The synthesis harness (`run_both`) runs
+  ``tube_ceiling``, ``low_nc_branch`` and ``track_species`` off; the stage-2 harnesses
+  ``seal_air`` off; the B-103 tests keep ``tube_ceiling`` off, B-103 alone.
+* `tests/hmi/conftest.py` (A-23).
+
+`python -m pytest` — **7 627 collected** (7 584 at session 63), thirteen parallel parts, all green:
+the HMI part on A-23's fixture; the two synthesis-harness parts re-run after the transcription's
+condenser was put on V1's line (`test_synthesis_loop_equivalence._hpcc_port(low_nc=False)` — it had
+picked up B-106's default and parted from the port at tick 6); three engine enumerations extended
+(81 declared tears, ``TEAR_NAMES`` with ``w_308`` and ``t_308_c``, ``LV_324501_DP_DES_BAR`` in
+A-13's audit). `tests/docs` green; pyflakes clean; the headless grep prints nothing.
+
+## LXXX.10 Found, and not done
+
+* **B-108** — stage 2's temperature-pressure fixed point does not converge at its 1 kg heel once the
+  vacuum breaks (§LXXX.5); the process engineer's decision.
+* **B-109** — PT on 322R001 reads 322E002's bubble pressure plus its line's drop
+  (`loop_hydraulics.reactor_bara`, V1's), so with B-106 a CO2-rich melt's reading stands far above
+  the loop's: PI-322E002's melt bubbled at up to 216 bar a in S5-6c against a loop at 151. Display
+  only; the process engineer's decision.
+* **B-110** — 308's composition and temperature reach 322E003 a tick late with its flow, with no line
+  transit (B-21's class); the 308 line's isometrics are not searched.
+* **B-111** — B-106 trips the loop fast: the CO2 boundary +10 % with the pump held reaches 22.2 in
+  6.5 minutes, +20 % in under 3, and S5-5a's flooded stripper in 8, each on the melt's azeotropic
+  rise; for the process engineer to weigh against the plant's own experience before trainees meet it.
+* The seed's LP drift reaching 308's composition (§LXXX.3): continuous, no band, recorded.
+
+# Part LXXXI — B-108 to B-111 decided and built; Scenarios5.md re-run (Phase 7)
+
+Session 66, 2026-10-22. The process engineer decided the four items sessions 64 and 65 raised
+(handoff B-108 to B-111), with a root-cause note on B-111. Its numbers were measured before anything
+was built, and two differ from what the code gives:
+
+* The Extended UNIQUAC bubble pressure of the design melt at N/C 3.0 is 44.37 bar a, not 49.4, so the
+  ratio form of decision 142 multiplied every bar of the model's rise by 144.2 / 44.37 = 3.25, not
+  2.92. The additive form adds 9.38 bar at N/C 2.8 and 38.04 at 2.6 (the note: 9.1 and 41.0).
+* B-109's formula as written, min(P_bub, P_syn) + dP_line, moves the reading at the design. The
+  design melt bubbles at 322E002's 144.2 bar a, which is 3.5 bar above PT-329201, so the cap would bind
+  on every normal tick and shift the design reading from 136.12 to 132.62 bar a. The cap is placed
+  where the model's own saturation fraction finds the melt flashing: PT-329201 plus that 3.5 bar head
+  (§LXXXI.2). That is the decided option's text — "wherever the melt's bubble pressure stands above
+  the loop's" — on the model's definition of the loop's pressure at 322E002.
+
+Each change is on a harness switch with both-ways tests.
+
+## LXXXI.1 B-108 — stage 2's fixed point on its energy balance (decision 144)
+
+V1's G7 sweeps are unchanged: the loop body is moved into a local function (``sweep``), the same
+arithmetic, and repeated until both T and P move less than 1e-12, at most 20 times. Where they do
+not settle, `units/evaporation/stage_fixed_point.bisected_fixed_point` solves the stage's
+temperature on its own energy balance:
+
+    G(T) = T_sweep(T, P(T)) - T = 0,      T in [min(T_feed, T_old), max(T_chest, T_old)]
+
+T_sweep is the temperature one sweep returns from the trial T. P(T) is the vacuum that sweep's
+backward step settles on at that trial temperature: the sweep repeated at T until the pressure
+stops moving, at most 20 times. G is positive at the cold end of the bracket, where the chest and the
+feed heat the melt, and negative at the hot end, where neither does. False position
+(`core.numeric.bracketed_root`, Illinois) finds the root to 1e-12. A bracket with no sign change
+leaves V1's last sweep. The result carries ``bisected``; ``SecondEvaporator(bisect_fixed_point=
+False)`` is V1's on the stage harnesses.
+
+**Measured both ways** (the stage harness: V1's chest valve and species step, B-107's air, LIC-324501
+in MAN at 100 %; V1's own sealed leg never meets this, so V1's side is the port with V1's last sweep):
+
+* The sweeps first miss 1e-12 at 537.1 s, by rounding (residual 1.2e-12), and the two sides part
+  there.
+* The drain reaches the 1 kg floor at 540.4 s, and the vacuum breaks to 0.29 bar a.
+* On V1's last sweep the residual reaches 158 K. TT-324002 wanders between 43.1 and 146.5 C and reads
+  78.16 C after 15 minutes, while the stage passes stage 1's melt at 94.31 %.
+* Bisected, every unconverged tick is bracketed and solved to 1e-12. The heel holds 147.2 C, easing to
+  143.3 C under TIC-324002 (set point 140 C); the melt holds 96.44 to 95.95 %; the vacuum holds 0.304
+  bar a.
+
+On the plant's own valve and species step the heel holds 146.7 C at 570 s and 142.6 C at 870 s, at
+0.305 bar a.
+
+**Structure.** With the fallback `second_evaporator.py` would have been 616 lines. LV-324501's
+selector (``MeltRoute``, ``melt_route`` and the selector's three floors) moved unchanged to
+`units/evaporation/melt_route.py` (96 lines); `uf85_dosing` imports it from there. The stage is now
+552 lines and `stage_fixed_point.py` is 94.
+
+## LXXXI.2 B-109 — PT on 322R001 capped where the melt flashes (decision 145)
+
+`loop_hydraulics.reactor_bara`:
+
+    P_R001 = min(P_bub,E002, P_syn + dP_liq,des) + dP_line
+
+dP_liq,des = 144.2 - 140.7 = 3.5 bar is the design head `liquor_saturation.saturation_fraction` uses,
+the same threshold (`data.unit_322_loop.LIQUOR_DP_DES_BAR`). dP_line is V1's feed-line law,
+unchanged: (P_syn - 144.2) times its density and mass factors. Below the cap the reading is V1's to
+the bit. At the design point the melt stands exactly at the cap; on the design seed the cap trims the
+reading by under 1e-3 bar. ``ReactorInventory(flash_cap=False)`` is V1's on the synthesis harness.
+
+**Measured** on the reactor's feed at the design seed, V1 against the port:
+
+| P_bub [bar a] | PT-329201 [bar a] | V1 [bar a] | port [bar a] |
+|---|---|---|---|
+| 144.2 | 140.7 | 136.12 | 136.12 |
+| 143.0 | 140.7 | 134.92 | 134.92 |
+| 216.0 | 151.0 | 231.70 | 170.20 |
+| 264.33 | 140.7 | 256.25 | 136.12 |
+
+The last row is decision 142's ratio law at N/C 2.6. The third row is S5-6c's melt on its loop: V1's
+line law still adds (151 - 144.2) x 2.31 = 15.7 bar, its differential written on the live loop
+pressure, so the capped reading stands 19 bar above PT-329201. At the design that law reads 136.1 bar a,
+where the PFD puts the reactor's lines at 141.3 (203, 207) and V1's ``REACT_P_BARA`` is 144.9. Raised as
+B-112 (§LXXXI.8); decided and built in session 67 (§LXXXII.1).
+
+## LXXXI.3 B-110 — PFD 308's line from 323P001 to 322E003 (decision 146)
+
+**The data search** (`CLAUDE.md` §4):
+
+* `References\` holds no isometric. Its P&ID scan (`Merged_Searchable_PIDs.pdf`, page 4) shows
+  323P001A / B's discharges, but its text layer does not resolve the line numbers.
+* The vendor archive does. Uhde's isometric index for units 323 and 324, UD-RL-323-AB-0001 (its text
+  layer), maps 80-ACA11-323004-EK19L to UD-RL-100-MB-0015, -323005- to MB-0016 (two sheets), -323006-
+  to MB-0017 and -323008- to MB-0018.
+
+Read from the scans, all as built:
+
+* **323006** (MB-0017, P&ID 103/1) runs from 323P001A/N2 at EL +2716, through its Y-strainer, PI-323252
+  and two angle valves, to a tee at EL +950. It is 9.6 m of "70" high-pressure pipe, 88.9 x 7.1, DIN
+  2462, 1.4466, its bends formed in the pipe.
+* **323005** (MB-0016) is 323P001B's discharge from its N2, the standby's.
+* **323004** (MB-0015, P&ID 102) runs from that tee, 200 mm from each joining line, up to 322E003/N5 at
+  EL +23940. It is 38.4 m, with one high-pressure check valve.
+* **323008** (MB-0018) leaves 323005 and 323006 at EL +1363 and rises to EL +11645, off the flowing
+  path.
+
+The route is 9.6 + 38.4 - 0.2 = 47.8 m at 74.7 mm bore, 0.2095 m3. At PFD 308's 1218 kg/m3 (the
+stream table's density row, ``D001_RHO_KGM3``) it holds 255.2 kg, 24.94 s at the design 36 835 kg/h
+(`data.process_routes`, ``323P001_TO_322E003``).
+
+Not counted are the strainer, the angle and check valves, the tees and the high-pressure threaded
+flanges, so the volume is a lower bound. The main run's coordinates alone, from the pump nozzle to
+the riser's work point, take 9.53 m of 323006's 9.6.
+
+**The law**, B-21's class: 322E003 owns its inlet line (``ScrubberSump.wash_line``,
+``line_state``, ``wash_arrival``) through `liquor_line.receive_liquor`. The carrier is the 308 flow of
+the tick before, the tear; the flow arrives at once, the composition and temperature a line residence
+late. The arrival's departure from PFD 308 is the wash's (B-105, `engine.plant.synthesis_loop.
+_wash_departures`). A settled line hands back what departed, to the bit. ``ScrubberSump(wash_line=
+False)`` is B-105's tear on the synthesis harness.
+
+**Measured.**
+
+* On the unit, a step that departs on one tick arrives 250 ticks later (25.0 s), and 499 ticks later
+  at half the flow.
+* Both ways on the loop: two ports on B-105, FV-323401 in MAN to 100 % at 0.5 s, on the harness's
+  plant without V1's transcription (`test_synthesis_loop_equivalence.harness_plant`).
+  * At 25.5 s TT-322002 has fallen 0.0055 K on the line against 0.0449 on the tear.
+  * Four minutes on, TT-322002 stands at 163.61 C against 163.43, the reactor feed's H/C at 0.4126
+    against 0.4142, the conversion at 53.773 % against 53.782 and PT-329201 at 140.7145 bar a against
+    140.7174.
+
+## LXXXI.4 B-111 — the azeotropic rise added in bar (decision 147)
+
+    f_N = f_N(3.0) + dP_az(N/C) / P_des,      dP_az = P_EU(w_des(N/C), 170 C) - P_EU(w_des(3.0), 170 C)
+
+This is decision 51's class, the additive departure where a ratio would scale a small base. At the
+design temperature and H/C each bar of the model's rise is a bar of PI-322E002; elsewhere the
+condenser's Clausius-Clapeyron and K_W terms scale it as they scale the rest. It is continuous at 3.0
+and V1's to the bit at and above it (`carbamate_condenser.low_nc_rise`, now in bar).
+
+| N/C | P_EU [bar a] | dP_az [bar] | ratio, decision 142 [bar a] | added, decision 147 [bar a] | V1 [bar a] |
+|---|---|---|---|---|---|
+| 2.95 | 45.51 | 1.15 | 145.98 | 143.45 | 141.01 |
+| 2.90 | 47.38 | 3.01 | 151.96 | 145.32 | 139.71 |
+| 2.80 | 53.75 | 9.38 | 172.40 | 151.69 | 137.12 |
+| 2.70 | 64.77 | 20.40 | 207.75 | 162.71 | 134.52 |
+| 2.60 | 82.41 | 38.04 | 264.33 | 180.35 | 131.92 |
+| 2.50 | 109.67 | 65.30 | 351.75 | 207.61 | 129.33 |
+| 2.40 | 151.13 | 106.77 | 484.75 | 249.07 | 126.73 |
+| 2.00 | 674.93 | 630.56 | 2 164.80 | 772.87 | 116.35 |
+| 1.54 | 2 689.05 | 2 644.69 | 8 625.01 | 2 786.99 | 104.41 |
+
+(170 C, the design H/C, V1's default anchor; P_EU(3.0) = 44.37 bar a.)
+
+The additive form takes out the factor of 3.25, not the rise. The model's own bubble pressure passes
+600 bar a by N/C 2.0, so a melt at the ratio band's floor still reads 2 787 bar a. The melt's
+saturation fraction reaches zero 65.1 bar above 322E002's pressure, about N/C 2.49 on the design
+loop, long before that.
+
+**Measured both ways on the loop** (the CO2 boundary +20 % at 0.5 s, 321P002B held):
+
+* 4.5 s on, the port's melt stands at N/C 2.615 and bubbles at 162.97 bar a, holding 72 % of what it
+  would condense (the ratio form gave N/C 2.682, 177.86 bar a and 50 %).
+* By 100 s the melt is at N/C 2.43 and condenses 101.9 t/h (the ratio form: 13.1), and PT-329201 stands
+  at 147.64 bar a (149.42).
+* The loop still reaches trip 22.2, at 192.7 s against the ratio form's 161.6.
+
+V1's side reads the port's LP header and 308 (`run_both`'s inputs), so it moves with the port. It falls
+to N/C 2.515 and 135.09 bar a at 4.5 s and stands at 141.70 bar a at 200 s.
+
+Measured on this case, then, the note's expectation that the additive form stops the fast trips does
+not hold. The melt goes to N/C 2.40 within ten seconds, where the added rise is still 107 bar.
+
+## LXXXI.5 Scenarios5.md re-run on B-108 to B-111
+
+These are the 14 cases of §LXXX.7 on the same levers. `run_coupled.EXTRA` now also samples the reactor's
+PT (B-109) and stage 2's ``bisected`` (B-108).
+
+**82 of the 165 claims as claimed** (83 in session 65). On the thirteen cases session 63 ran, 73 of
+152.
+
+| case | as claimed (s65) | lambda min | held max [kg] | sigma max | sat min | trip 22.2 (s65) | melt N/C min | P_bub max [bar a] | PT-329201 max [bar a] | PT 322R001 max [bar a] |
+|---|---|---|---|---|---|---|---|---|---|---|
+| S5-W | 9 of 17 (10) | 0.934 | 0 | 0 | 0.749 | — | 2.641 | 160.8 | 141.00 | 136.62 |
+| S5-1 | 9 of 12 (9) | 0.959 | 0 | 0 | 0.754 | — | 3.079 | 160.4 | 140.99 | 136.91 |
+| S5-2 | 4 of 9 (4) | 0.912 | 0 | 0 | 0.931 | — | 2.830 | 149.1 | 141.23 | 137.83 |
+| S5-3 | 6 of 11 (6) | 1.000 | 0 | 0 | 0.987 | — | 3.038 | 145.1 | 140.74 | 136.19 |
+| S5-4 | 2 of 5 (2) | 0.998 | 0 | 0 | 1.000 | — (22.1 at 40 s) | 3.009 | 144.2 | 141.16 | 136.12 |
+| S5-5a | 3 of 10 (3) | 0.210 | 7 682 | 0.884 | 0.000 | 575 s (480) | 2.273 | 245.8 | 159.78 | 168.10 |
+| S5-5b | 2 of 10 (2) | 0.499 | 0 | 0 | 0.486 | — | 2.465 | 179.4 | 142.44 | 142.08 |
+| S5-6a | 6 of 13 (6) | 0.216 | 0 | 0 | 0.000 | 1 330 s (1 250) | 2.344 | 224.9 | 154.95 | 165.30 |
+| S5-6b | 7 of 13 (7) | 0.248 | 0 | 0 | 0.000 | 445 s (390) | 2.066 | 458.7 | 155.38 | 183.79 |
+| S5-6c | 9 of 13 (9) | 0.321 | 0 | 0 | 0.000 | 195 s (165) | 2.262 | 246.1 | 156.38 | 178.25 |
+| S5-7 | 9 of 13 (9) | 0.929 | 0 | 0 | 0.806 | — | 2.701 | 156.6 | 140.70 | 136.12 |
+| S5-8 | 3 of 10 (3) | 0.998 | 0 | 0 | 1.000 | — | 3.023 | 144.2 | 140.77 | 136.12 |
+| S5-9 | 4 of 11 (4) | 0.722 | 0 | 0 | 0.724 | — | 2.609 | 162.9 | 141.44 | 138.57 |
+| S5-11 | 9 of 18 (9) | 0.928 | 0 | 0 | 0.890 | — | 2.786 | 151.2 | 140.71 | 136.23 |
+
+(Each trip 22.2 latches 21.2, 21.8, 21.10 and 22.1 with it; S5-6a's 22.1 latches first, at 285 s, as
+in session 65. The control run's PT on 322R001 reads 136.11 to 136.12 bar a.)
+
+What the four did:
+
+* **B-111.** The four tripping cases trip later and no verdict moves:
+  * S5-6c 165 -> 195 s, S5-6b 390 -> 445, S5-5a 480 -> 575, S5-6a 1 250 -> 1 330.
+  * PT-329201's first wave is +6.82 bar in S5-6b, where it was +10.01, and +14.93 in S5-6c (+14.46).
+
+  The melts go to N/C 2.07 to 2.34, well below the 2.6 the note looked at. There the added rise is
+  still 100 to 460 bar, and the saturation fraction is zero in all four. The additive form slows the
+  climb; the trips remain the CO2-rich melt's. The note's other suggestion, damping 322E002's
+  bubble-pressure N/C on its film residence, was not asked for in the session's directive and is not
+  built.
+* **B-110, S5-W: 10 -> 9 of 17.** The loop pressure's late rebound (REV) falls from +0.0216 to
+  +0.0096 bar, inside the claim's tolerance: 308's water now reaches 322E003 25 s later. PT-329201's
+  first wave is +0.026 bar (+0.039) and its second +0.035 (+0.061). The other sixteen claims keep their
+  verdicts.
+* **B-109.** The reactor's PT stands at most 28 bar above PT-329201, 183.8 against 155.4 bar a in
+  S5-6b. Uncapped, it would read that melt's 458.7 bar a plus the line's drop. What remains is V1's
+  feed-line law (B-112).
+* **B-108.** No case drains 324F003 to its heel. Stage 2's sweeps settled on every tick of every run
+  (``bisected`` never set).
+
+## LXXXI.6 The affected deviations re-run
+
+These are the eight `tests/phase7/deviations.py` cases of §LXXX.8. **15 of 22 claims as claimed**, one
+fewer than session 65.
+
+| key | indicator | claimed | session 65 | session 66 |
+|---|---|---|---|---|
+| S1-1.2 | LT-322504 (end) | falls | -43.6 yes | -43.5 yes |
+|  | P_overflow (end) | falls | +11 NO | +0.6 NO |
+|  | X_conv (end) | falls | +8.79 NO | +3.74 NO |
+|  | bottoms NH3 (end) | rises | +0.788 yes | -0.035 NO |
+|  | 323C003 v305 (end) | rises | -3.32 NO | -3.81 NO |
+| S1-5.4b | LI-324F003 (end), PT-324203 (peak) | -, + | 2 of 2 | 2 of 2 (-53.8, +0.165) |
+| S2-1.3 | P_overflow, LT-329501, TT-322002, TT-322011, TT-329125, TT-322012 (end) | -, +, -, -, -, - | 4 of 6 | 4 of 6 (TT-322002 -10.0 where -11.8) |
+| S2-2.2a | LI-322501, bottoms NH3, v305 (end) | +, +, + | 2 of 3 | 2 of 3 |
+| S2-2.3b | LI-322501 (end), 323D002's product (peak) | +, - | 2 of 2 | 2 of 2 (-59.39 where -47.96 t/h) |
+| S3-1.1a | 308 (end) | rises | +0.37 yes | +0.38 yes |
+| S3-1.1b | 321 (end) | rises | +0.03 yes | +0.03 yes |
+| S3-1.6 | 776, 308 (end) | +, + | 2 of 2 | 2 of 2 |
+
+S1-1.2 is HV-322605 wide open, the reactor drained to its lip. Its melt still goes CO2-rich, but on
+the additive rise the loop ends 0.6 bar up where it ended 11 bar up. The stripper's bottoms carry
+0.035 points less ammonia where they carried 0.79 more — a claim session 65 gained on the ratio form
+and this session loses. S1-5.4b does not reach the heel B-108 changes: its level turns at 0.47 %.
+
+## LXXXI.7 Tests
+
+* **New unit tests.**
+  * `tests/units/evaporation/test_stage_fixed_point.py` (2): the root of a ringing sweep, and no sign
+    change leaving the caller its sweep.
+  * `tests/units/evaporation/test_melt_route.py` (3).
+  * `tests/units/synthesis/test_holdups_and_water.py` +1: 308's line, 250 ticks at design and 499 at
+    half the flow.
+  * `test_loop_hydraulics.py` +1: B-109 both ways on four states.
+* **Both ways.**
+  * `test_second_evaporator_decided_equivalence.py` +1: B-108 at the heel, the port with V1's last
+    sweep against the bisected one.
+  * `test_synthesis_loop_decided_equivalence.py` +1: B-110, two ports on B-105 through
+    `test_synthesis_loop_equivalence.harness_plant`, the harness's plant set-up now split out of
+    ``run_both``.
+  * `test_carbamate_condenser_equivalence.py` section 5: the additive rise on four N/C, its rise pinned
+    in bar.
+* **Re-pinned.** The B-106 loop test on the additive form, run 200 s to its trip at 192.7 s.
+* **Harnesses.**
+  * `run_both` runs ``wash_line`` and ``flash_cap`` off.
+  * The stage-2 harnesses (`test_second_evaporator_equivalence`, `test_vacuum_train_decided_equivalence`,
+    the decided ``_both``) run ``bisect_fixed_point`` off.
+* `run_coupled.EXTRA` samples ``x.reactor_pt_bara`` and ``x.stage2_bisected``.
+
+`python -m pytest` — **7 636 collected** (7 627 at session 65; nine new), thirteen parallel parts, all green on their first run, the re-pinned B-106 loop test with them; `tests/docs` green; pyflakes clean; the headless grep prints nothing.
+
+## LXXXI.8 Found, and not done
+
+* **B-112** — PT on 322R001 on V1's feed-line law. It reads 136.1 bar a at the design, where the
+  PFD's reactor lines stand at 141.3, and moves 2.31 bar per bar of PT-329201: up to 28 bar above the
+  loop in S5-6b with B-109's cap. Display only; the process engineer's decision. (Decided (a) and
+  built in session 67, §LXXXII.1.)
+* The note's damping of 322E002's bubble-pressure N/C on its film residence was offered as an
+  alternative for S5-5a ("and/or") and not asked for in the directive; it is not built. S5-5a trips at
+  575 s on the additive rise.
+* B-111's additive form does not bound the model's own rise below N/C 2.4 (§LXXXI.4). The trips are
+  slower, not gone. How fast a trainee should meet trip 22.2 on a low-N/C excursion stays a question
+  for the plant's own trends (the review B-111's option (b) offered).
+
+# Part LXXXII — B-112 decided and built: PT on 322R001 on its feed line's PFD drop (Phase 7)
+
+Session 67, 2026-10-22. The process engineer confirmed session 66's B-108 to B-111 as built and
+decided B-112 option (a), with a root-cause note. The note's numbers were measured before anything was
+built and hold: V1's line factor is 2.308 at the design seed, the reading 136.12 bar a, and 3.31 bar
+per bar of PT-329201 where B-109's cap binds (170.20 bar a on a loop at 151). The factor is two
+mismatches, not one: the mass reference (the seed's 250 639 kg/h feed over the condenser's 189 258 kg/h
+liquid make, squared 1.754) and the density reference (the nominal 990 kg/m3 over the 752.2 the
+urea-solution correlation gives at the feed, 1.316).
+
+## LXXXII.1 B-112 — PT on 322R001 on its feed line's PFD drop (decision 148)
+
+**The data search** (`CLAUDE.md` §4). 322R001 carries no pressure transmitter of its own:
+
+* P&ID 102 (`References/Merged_Searchable_PIDs.pdf` page 3, UD-VT-322-FB-0003, read from the image)
+  draws on the reactor TI-322005 to TI-322008 (N6A to N6D), TI-322009 on the off-gas line at N2,
+  LI-322504 (radiometric, AH / AL) and SV-32251 / SV-32252 on the off-gas line; no PI or PT.
+* Loop summary UD-MR-322-EC-0001 (the vendor archive, index pages 2-3) lists unit 322's pressure loops
+  — P 322201, 322202, 322203, 322210, 322211, 322222, 322224, 322251, 322252, 322254, 322255, 322302,
+  322330 — none on 322R001; its reactor loops are L 322504 and T 322005 to T 322010.
+* The archive's table of contents lists 322R001's documents as mechanical (specification, arrangement,
+  assembly, nozzles, trays; UD-AM-G00-AB-0022 page 887).
+
+The reading is the packet's ``REACT_322R001.P_bara`` and the stream inspector's PFD 207 pressure. No
+screen binds it and no unit reads it.
+
+**The law.** `loop_hydraulics.reactor_bara`:
+
+    P_R001 = min(P_bub,E002, P_syn + dP_liq,des) - dP_feed,des (rho_feed,des / rho_feed) (m_feed / m_feed,des)^2
+
+* dP_feed,des = 144.2 - 141.3 = 2.9 bar (`data.unit_322_loop.REACT_FEED_DP_DES_BAR`): 322E002's
+  outlet on PFD 202 / 205 less the reactor's top on PFD 203 / 207 (`data.unit_322r001.TOP_P_DES_BARA`),
+  written as their subtraction and registered in A-13's audit (`test_check_valve_audit`).
+* rho_feed,des = 752.18 kg/m3 (`REACT_FEED_RHO_DES_LIVE`): V1's urea-solution correlation at the design
+  seed's feed, 1.031e-4 urea by mass (`unit_322r001.FEED_W_UREA_DES`, live-probed at the seed) and
+  322E002's 170.0 C — the stripper's ``OVERFLOW_RHO_DES_LIVE`` precedent.
+* m_feed,des = 250 638.93 kg/h, the seed's feed V1's kinetics were calibrated on
+  (`synthesis_pin.REACT_ANCHOR_M_FEED_KGH`).
+
+At the design seed every factor is exactly 1.0 and the plant's first tick reads 141.3 bar a to the
+bit. Where B-109's cap binds the reading is PT-329201 + 3.5 - 2.9 f: one bar per bar of PT-329201.
+``ReactorInventory(design_drop=False)`` is V1's line on the synthesis harness.
+
+**Measured** on the reactor's feed at the design seed, V1's line against the port's, both with B-109's
+cap:
+
+| P_bub [bar a] | PT-329201 [bar a] | feed | V1's line [bar a] | port [bar a] |
+|---|---|---|---|---|
+| 144.2 | 140.7 | design, 170 C | 136.12 | 141.30 |
+| 143.0 | 140.7 | design, 170 C | 134.92 | 140.10 |
+| 216.0 | 151.0 | design, 170 C | 170.20 | 151.60 |
+| 216.0 | 152.0 | design, 170 C | 173.51 | 152.60 |
+| 144.2 | 140.7 | 80 %, 170 C | 139.03 | 142.34 |
+| 144.2 | 140.7 | design, 160 C | 136.17 | 141.32 |
+
+**The single-case check.** The reading reaches no unit, so the `Scenarios5.md` survey is not re-run;
+S5-6b, the case whose reading stood furthest above the loop in session 66 (§LXXXI.5), was run with its
+control (`python -m tests.phase7.run_coupled OUT S5-6b`):
+
+* Every sampled series but the reactor's PT is identical to session 66's to the bit; trip 22.2 latches
+  at 445 s and the case holds 7 of 13 claims, as before.
+* The control reads 141.30 bar a for 45 minutes on a loop at 140.70, 0.60 above it — the off-gas
+  line's design offset. V1's line read 136.12, 4.58 below the loop.
+* S5-6b's reading peaks at 155.42 bar a on a loop at 154.82 (440 s), at most 0.88 above it. Session 66
+  read 183.79 on a loop at 154.64, 29.15 above.
+
+## LXXXII.2 Tests
+
+* `test_loop_hydraulics.py` +1: B-112 both ways on six states and the one-bar-per-bar slope; B-109's
+  test now on V1's line on both sides.
+* `test_synthesis_loop_decided_equivalence.py` +1: two harness plants with only the line switched, 141.3
+  against 136.12 on the first tick and every other reactor output identical for 5 s.
+* `test_check_valve_audit.py`: ``REACT_FEED_DP_DES_BAR`` registered.
+* `run_both` runs ``design_drop`` off.
+
+`python -m pytest` — **7 638 collected** (7 636 at session 66; two new), thirteen parallel parts, all green on their first run; `tests/docs` green; pyflakes clean; the headless grep prints nothing.
+
+## LXXXII.3 Found, and not done
+
+* About two-thirds of the PFD's 2.9 bar is the reactor's own liquid column, not line friction: its
+  design level of 20 m (`unit_322r001.LEVEL_DES_M`) at PFD 207's 989.8 kg/m3 stands 1.94 bar. The
+  decided law scales the whole 2.9 bar with the feed's flow squared and its density's inverse, as V1's
+  line did; a column's head moves with its density and its level, not with the flow. At 80 % feed the
+  reading is 142.34 bar a, where a drop that was all column would still read 141.3. Display only;
+  recorded.
+* Below B-109's cap the base is the melt's bubble pressure, as in V1, so a subcooled melt reads the
+  reactor below PT-329201 and below its own off-gas line (143.0 bar a on the design loop: 140.10, the
+  off-gas line 141.3). After S5-6b's trip the feed stops, the line's factor goes to zero on both
+  laws, and the reading is the cooling melt's bubble pressure: 95.63 bar a against a loop at 155.06
+  at 770 s, the same on V1's line. Display only; recorded.
+
+The process engineer signed both notes off as built on 2026-10-22: 322R001 carries no transmitter on
+P&ID 102, no screen binds the reading and no unit reads it, so no handoff item (B-113) is raised. A
+floor on the reading after a trip — the base held at PT-329201 plus B-109's 3.5 bar, or the reading
+at PT-329201 plus the off-gas line's 0.6 bar — was offered as an optional display change and not
+taken.

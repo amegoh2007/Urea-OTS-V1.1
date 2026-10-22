@@ -55,6 +55,8 @@ the steam users    every simulated user        the network     ``steam_users_lp_
                                                                ``steam_users_9_kgh`` (B-68, B-73)
 911                328C003's battery steam     FT-329403       ``m_911_kgh``
 M308_KGH           323P001's 308 wash          322E003         ``m_308_kgh``
+(port only)        308's composition and its   322E003         ``w_308``, ``t_308_c``
+                   temperature (B-105)
 (port only)        323E011's envelope          323C005         ``m_e011_over_kgh``,
                    overflow (A-20)                             ``t_e011_over_c``
 (port only)        unit 324's condensers'      328D003 I       ``t_719_c`` ... ``t_759_c``
@@ -93,7 +95,7 @@ from ureasim.data.unit_323c005 import (
     C005_M756_DES_KGH,
     E002_INERT_DES_KMOLH,
 )
-from ureasim.data.unit_323e003 import E003_M308_DES_KGH
+from ureasim.data.unit_323e003 import E003_M308_DES_KGH, E003_T_C, W_308
 from ureasim.data.unit_323e011 import E011_T_C, M718A_DES_KGH, M718B_DES_KGH
 from ureasim.data.unit_324 import E003_T_DES_C, VACUUM_CONDENSERS, W_S402
 from ureasim.data.unit_328d003 import (
@@ -168,6 +170,10 @@ class TearState:
     #: 323P001's carbamate wash, PFD 308, which 322E003 scrubs with on the next tick (V1
     #: ``M308_KGH``; 323E003 steps in section 23, the scrubber in section 5).
     m_308_kgh: float = E003_M308_DES_KGH
+    #: The same wash's composition [mass fractions] and temperature, TT-323006 [deg C] (decided
+    #: 2026-10-22, handoff B-105); PFD 308's at design.
+    w_308: Mapping = field(default_factory=lambda: MappingProxyType(dict(W_308)))
+    t_308_c: float = E003_T_C
     #: A full 323E011 / 323D011 envelope's overflow through PV-323203's vent line to 323C005
     #: [kg/h], and the condensate temperature it leaves at [deg C] (decided 2026-10-03, handoff
     #: A-20); none at design. 323C005 steps before 323E011, so it reads them a tick late.

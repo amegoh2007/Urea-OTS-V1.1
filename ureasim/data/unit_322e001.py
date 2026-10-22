@@ -34,6 +34,7 @@ from ureasim.data.unit_320 import (
     CO2_FEED_MOLFRAC,
     SYN_P_DES_BARA,
 )
+from ureasim.data.unit_322e003 import COND_CHOKE_MIN
 from ureasim.data.unit_322r001 import OVERFLOW_DES_KMOLH, REACTOR_T_DES_C
 from ureasim.thermo.iapws import tsat_c
 from ureasim.thermo.kinetics import (
@@ -159,6 +160,19 @@ FLOOD_GAP_DES_C = T_FLOOD_ANCHOR_C - T_BOTTOM_DES_C
 
 #: TT-323001 design temperature downstream of the LV-322501 flash [deg C]. Source: PFD.
 T_DOWNSTREAM_DES_C = 119.0
+
+# ======================================================================================
+# The shell's duty bound (handoff B-102, decided 2026-10-21)
+# ======================================================================================
+
+#: How far the duty the split asks for may stand above the shell's capacity before the
+#: capacity binds [-], 5e-4 — and the margin it then binds at, Q_max . (1 + band), so the duty
+#: never steps at the band's edge. Not a property of the exchanger: the process engineer's
+#: tolerance, the smallest round band above the unperturbed design seed's own drift, which
+#: was measured at 1.68e-4 of the design duty over an hour (handoff B-94, session 63), so the
+#: seed runs V1's split to the bit. About 20 kW on the 39 400 kW shell.
+#: Source: the process engineer's decision of 2026-10-21 on handoff B-102 (session 63).
+SHELL_DUTY_BAND = 5.0e-4
 
 # ======================================================================================
 # The liquid-side energy balance
@@ -446,6 +460,17 @@ BOTTOMS_TD_DES_S = 60.0
 #: long to deliver its bottoms. Same constraint argument as the CO2 and NH3 feed lines.
 BOTTOMS_LINE_M3 = (BOTTOMS_DES_KGH / 3600.0 * BOTTOMS_TD_DES_S) / RHO_BOTTOM
 
+#: The liquor the tube bundle holds standing full [kg], 8 689: the bundle's liquid volume at the
+#: bottoms' density. The ceiling on what a full LT-322501 sump holds back in the tubes above it;
+#: past it 322R001 keeps the excess (decided 2026-10-22, handoff B-104).
+TUBES_FULL_KG = V_TUBES_M3 * RHO_BOTTOM
+
+#: What a fully submerged bundle still transfers, as a fraction of its shell's capacity [-],
+#: 0.30: 322E003's flooded-surface floor (`unit_322e003.COND_CHOKE_MIN`, V1's
+#: SCRUB_COND_CHOKE_MIN), the same law on the same kind of surface. Source: the process
+#: engineer's decision of 2026-10-22 on handoff B-104.
+SUBMERGED_DUTY_FLOOR = COND_CHOKE_MIN
+
 #: LIC-322501's tuning [% output per % level, s]. DIRECT acting on a fail-closed, air-to-open
 #: valve, which is correct negative feedback: level up, output up, valve opens, drain up, level
 #: down. Source: the plant DCS's tuning table, `References/Master_PID_Tuning_Constants.md`, read
@@ -539,7 +564,7 @@ __all__ = [
     "STEAM_DES_KGH", "STEAM_P_DES_BARA", "STEAM_T_DES_C", "DUTY_DES_KW",
     "P_DES_BARA", "DP_TO_LOOP_DES_BAR",
     "T_TOPGAS_DES_C", "T_BOTTOM_DES_C", "T_FLOOD_ANCHOR_C", "FLOOD_GAP_DES_C",
-    "T_DOWNSTREAM_DES_C",
+    "T_DOWNSTREAM_DES_C", "SHELL_DUTY_BAND",
     "CP_BOTTOM", "CP_GAS", "DT_STEAM_DES_C",
     "N_TUBES", "TUBE_OD_M", "TUBE_WALL_M", "TUBE_ID_M", "TUBE_L_EFF_M",
     "SURFACE_DES_M2", "RHO_GAS_DES", "RHO_LIQ_IN_DES",
@@ -554,6 +579,7 @@ __all__ = [
     "V_TUBES_M3", "SUMP_AREA_M2", "LEVEL_SPAN_M", "V_SUMP_M3",
     "LEVEL_SP_DES_PCT", "V_LIQ_DES_M3", "VDOT_DES_M3H", "HYDROLYSIS_T_DES_C",
     "BOTTOMS_DES_KGH", "RHO_BOTTOM", "BOTTOMS_TD_DES_S", "BOTTOMS_LINE_M3",
+    "TUBES_FULL_KG", "SUBMERGED_DUTY_FLOOR",
     "LIC_322501_KC", "LIC_322501_TI", "LIC_322501_TD_S", "LIC_322501_TF_S",
     "LV_322501_KVS", "LV_322501_OPEN_DES_PCT", "LV_322501_DP_DES_BAR", "LV_322501_FL",
     "LV_322501_PV_CONVAL_BARA", "LV_322501_T_CONVAL_C",

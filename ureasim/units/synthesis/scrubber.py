@@ -115,6 +115,7 @@ from ureasim.data.unit_322e003 import (
     VENT_INERTS,
     VENT_Y_DES,
     VENT_Y_MAX,
+    WASH_KGH_DES,
     WASH_KMOLH_DES,
 )
 from ureasim.data.unit_322e002 import (
@@ -395,7 +396,8 @@ def scrubber_322e003(offgas_feed_kmolh: dict, co2_scale: float, t_ccw_in_c: floa
                      choke_level_pct: float = None, spindle_phi: float = 1.0,
                      cool_frac: float = 1.0, wash_ratio: float = None,
                      sump_room_kgh: float = None,
-                     capacity_frac: float = None) -> ScrubberResult:
+                     capacity_frac: float = None, wash_dw: dict = None,
+                     wash_dt_c: float = 0.0) -> ScrubberResult:
     """Solve 322E003 for one tick.
 
     Parameters
@@ -434,6 +436,10 @@ def scrubber_322e003(offgas_feed_kmolh: dict, co2_scale: float, t_ccw_in_c: floa
         The shell's capacity over its demand [-] (`condensation_capacity`). Below 1 the duty the
         water takes, and TT-329125 with it, is that fraction of the demand (decided 2026-10-17,
         B-99 (b1)). None, V1's, publishes the demand whatever the water can take.
+    wash_dw, wash_dt_c
+        The wash's composition and temperature as 323D001 delivers them, each as its departure
+        from PFD 308 [mass fractions], [K] (decided 2026-10-22, handoff B-105). None and 0.0,
+        V1's, wash with PFD 308's design carbamate at its 74 C.
 
     Every optional argument is at its design value when omitted, and every term it drives is
     written as a deviation that is exactly zero there — so the design call reproduces the
@@ -463,6 +469,11 @@ def scrubber_322e003(offgas_feed_kmolh: dict, co2_scale: float, t_ccw_in_c: floa
     # the pump was not sending.
     wash = s if wash_ratio is None else wash_ratio
     carb = {k: WASH_KMOLH_DES.get(k, 0.0) * wash for k in MW_COMP}
+    if wash_dw:
+        # 323D001's liquor off PFD 308's composition (B-105): each species' departure on the
+        # delivered wash, so ammonia water added to the LPCC reaches the loop as water.
+        for k, dw in wash_dw.items():
+            carb[k] = max(carb[k] + wash * WASH_KGH_DES * dw / MW_COMP[k], 0.0)
     feed = {k: offgas_feed_kmolh.get(k, 0.0) + carb[k] for k in MW_COMP}
 
     # ---- the vent, and the overflow by difference -----------------------------------------
@@ -597,6 +608,15 @@ def scrubber_322e003(offgas_feed_kmolh: dict, co2_scale: float, t_ccw_in_c: floa
     # the cooling water — the overflow cannot be colder than what is cooling it.
     t_overflow_c = min(max(t_overflow_cond - OVERFLOW_T_VENT_GAIN * theta_dev, t_ccw_in_c),
                        T_PROC_C)
+
+    # The wash at its live temperature (B-105): 323D001's liquor off its design 74 C moves the
+    # bottom carbamate by the wash's share of the overflow, a mass blend on the departure. Zero
+    # at the design wash, so the pin holds.
+    if wash_dt_c != 0.0:
+        m_ov_wash = sum(overflow[k] * MW_COMP[k] for k in MW_COMP)
+        if m_ov_wash > 0.0:
+            w_wash = sum(carb[k] * MW_COMP[k] for k in MW_COMP) / m_ov_wash
+            t_overflow_c = min(max(t_overflow_c + w_wash * wash_dt_c, t_ccw_in_c), T_PROC_C)
 
     # Entrained hot reactor melt lifts the bottom temperature, as an enthalpy mass-blend over
     # the post-carryover overflow. Zero weight below the flood lip, so the pin holds.

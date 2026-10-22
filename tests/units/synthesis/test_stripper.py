@@ -32,11 +32,8 @@ from ureasim.data import unit_322e001 as d
 from ureasim.data.unit_321 import CO2_DES_KGH
 from ureasim.data.unit_322r001 import REACTOR_FEED_HC_DES, REACTOR_FEED_NC_DES
 from ureasim.thermo import iapws
-from ureasim.units.synthesis.stripper import (
-    HYDROLYSIS_GROUP_DES,
-    hydrolysis_rate_group,
-    stripper_322e001,
-)
+from ureasim.units.synthesis.stripper import DUTY_RAW_DES_KW, stripper_322e001
+from ureasim.units.synthesis.stripper_kinetics import HYDROLYSIS_GROUP_DES, hydrolysis_rate_group
 
 CO2_DES_TH = CO2_DES_KGH / 1000.0
 
@@ -263,16 +260,27 @@ def test_a_composition_choke_pushes_volatiles_overhead_rather_than_cutting_the_s
     This is the counter-intuitive one and it is why the penalty is not simply a multiplier on
     the split. A solution that is hard to strip THERMALLY does not quietly keep its volatiles:
     it breaks them through to the overhead, and the condenser downstream has to take them.
+
+    That is the split's own response, so it is asserted on the unbounded split. The breakthrough
+    costs duty, and at the design temperatures the shell can give only its design duty: bounded
+    (B-102, decided 2026-10-21), the lift is scaled back to what the shell pays for.
     """
     design = stripper_322e001(CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA)
     rich = stripper_322e001(CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA,
-                            feed_nc=REACTOR_FEED_NC_DES + 0.2)
+                            feed_nc=REACTOR_FEED_NC_DES + 0.2, shell_bound=False)
     assert rich.g_nc < 1.0
     assert rich.slip > 0.0
     assert rich.eta_t < design.eta_t                    # the REPORTED efficiency falls
     # ...and yet more NH3 and CO2 leave overhead, not less.
     assert rich.top_kmolh["NH3"] > design.top_kmolh["NH3"]
     assert rich.top_kmolh["CO2"] > design.top_kmolh["CO2"]
+    # The breakthrough asks more of the shell than it can give at the design LMTD.
+    assert rich.duty_raw_kw > DUTY_RAW_DES_KW * (1.0 + d.SHELL_DUTY_BAND)
+    bounded = stripper_322e001(CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA,
+                               feed_nc=REACTOR_FEED_NC_DES + 0.2)
+    assert bounded.shell_capacity_ratio == 1.0 and bounded.shell_lambda < 1.0
+    assert bounded.duty_raw_kw == pytest.approx(DUTY_RAW_DES_KW * (1.0 + d.SHELL_DUTY_BAND),
+                                                rel=1e-12)
 
 
 def test_the_two_composition_penalties_have_a_floor():

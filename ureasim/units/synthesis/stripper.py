@@ -31,7 +31,11 @@ So the calibration is the anchor and everything in this module is a DEPARTURE fr
 * the composition response is a penalty on the REACTOR's feed ratios, which drives volatile
   breakthrough rather than cutting the thermal split;
 * the hydraulic response is a flooding limit from the licensor tube geometry;
-* the two reactions are on real second-order rate laws, anchored on the PFD extents.
+* the two reactions are on real second-order rate laws, anchored on the PFD extents;
+* the shell's capacity bounds the split's duty at the live steam's LMTD (decided 2026-10-21,
+  handoff B-102; `stripper_shell`), where V1 books whatever the split asks of the MP header;
+* tubes standing full above a full sump derate that capacity and cool the bottoms (decided
+  2026-10-22, handoff B-104; `stripper_shell`).
 
 Every one of those is exactly 1.0, or exactly 0.0, at the design state — several of them
 structurally rather than by tuning — so the licensor's balance is reproduced bit-exact.
@@ -59,15 +63,8 @@ from ureasim.core.stream import MW_COMP
 from ureasim.data.unit_320 import CO2_DES_KMOLH, CO2_FEED_MOLFRAC
 from ureasim.data.unit_321 import CO2_DES_KGH
 from ureasim.data.unit_322e001 import (
-    BIURET_EA_JMOL,
-    BIURET_R_GAS_J,
-    BIURET_T_DES_K,
     CP_BOTTOM,
-    CP_GAS,
     DH_CARBAMATE_JMOL,
-    DH_H2O_VAP_JMOL,
-    DH_HYDROLYSIS_JMOL,
-    DH_NH3_DESORB_JMOL,
     DT_STEAM_DES_C,
     ETA_CO2_HI,
     ETA_CO2_INTERCEPT,
@@ -83,19 +80,18 @@ from ureasim.data.unit_322e001 import (
     FEED_DES_KGH,
     FEED_HC_DES,
     FEED_NC_DES,
-    FEED_UREA_DES_KMOLH,
     FLOOD_ETA_FLOOR,
     FLOOD_GAP_DES_C,
     FLOOD_KGH_PER_TUBE,
     FLOOD_T_RAMP_K,
     FRAC_TOP_DES,
     FRAC_TOP_MAX,
-    HYDROLYSIS_T_DES_C,
     LEVEL_SP_DES_PCT,
     MOD_CEILING,
     N_TUBES,
     P_DES_BARA,
     RHO_LIQ_IN_DES,
+    SHELL_DUTY_BAND,
     SLIP_GAIN,
     STEAM_T_DES_C,
     STRIPCOOL_MAX_C,
@@ -103,61 +99,21 @@ from ureasim.data.unit_322e001 import (
     T_BOTTOM_DES_C,
     T_TOPGAS_DES_C,
     T_TOP_LOAD_K,
-    V_LIQ_DES_M3,
     V_SUMP_M3,
     V_TUBES_M3,
-    VDOT_DES_M3H,
-    XI_BIURET_DES,
-    XI_HYDROLYSIS_DES,
 )
-from ureasim.data.unit_322e001 import FEED_DES_KMOLH as _FEED_DES_KMOLH
 from ureasim.data.unit_322r001 import REACTOR_FEED_HC_DES, REACTOR_FEED_NC_DES
-from ureasim.thermo.kinetics import urea_hydrolysis_k_m3_kmol_h
 from ureasim.thermo.service import ratio_shift_frac
 from ureasim.units.synthesis.hp_split import hp_k_ratio
-
-
-# ======================================================================================
-# The hydrolysis rate group
-# ======================================================================================
-
-def hydrolysis_rate_group(t_c: float, urea_kmolh: float, h2o_kmolh: float,
-                          vdot_m3h: float, v_liq_m3: float) -> float:
-    """Second-order Inoue-Otsuka group ``k(T) . C_urea . C_H2O . V_liq`` [kmol/h].
-
-    Process utility
-    ---------------
-    This is the part of the stripper's urea loss that CAN be predicted from first principles:
-    how the extent moves with temperature, with how concentrated the melt is, and with how
-    much liquid is being held. It is used as a RATIO against its own design value, so the
-    units and any common factor cancel and only that movement survives.
-
-    Why a ratio and not an absolute extent
-    ---------------------------------------
-    Evaluated at this stripper's own design state the law returns about 12 kmol/h over the
-    whole bundle, or 17.5 kmol/h with the sump flooded as well, against a PFD extent of 88.1.
-    It would need a liquid fraction of 7.3 where the physical maximum is 1. The PFD constant
-    therefore is not urea hydrolysis alone — it almost certainly lumps carbamate
-    decomposition, which is what the stripper is for — so predicting it from a hydrolysis rate
-    law would be fitting a rate constant to a different reaction. The PFD extent stays the
-    anchor and this supplies the departure.
-
-    Concentrations are per unit of VOLUMETRIC throughput, which is the falling film's own
-    basis. A zero or negative throughput returns 0.0 rather than dividing: an empty tube
-    hydrolyses nothing.
-    """
-    if vdot_m3h <= 1e-9 or v_liq_m3 <= 0.0:
-        return 0.0
-    c_urea = max(urea_kmolh, 0.0) / vdot_m3h
-    c_h2o = max(h2o_kmolh, 0.0) / vdot_m3h
-    return urea_hydrolysis_k_m3_kmol_h(t_c) * c_urea * c_h2o * v_liq_m3
-
-
-#: The rate group at the design state [kmol/h] — the denominator that makes the departure
-#: exactly 1.0 there. Derived from the design constants, never entered.
-HYDROLYSIS_GROUP_DES = hydrolysis_rate_group(
-    HYDROLYSIS_T_DES_C, _FEED_DES_KMOLH["Urea"], _FEED_DES_KMOLH["H2O"],
-    VDOT_DES_M3H, V_LIQ_DES_M3)
+from ureasim.units.synthesis.stripper_kinetics import biuret_extent, hydrolysis_extent
+from ureasim.units.synthesis.stripper_shell import (
+    bounded_split,
+    enthalpy_balance,
+    shell_capacity_ratio,
+    submerged_bottoms_c,
+    submerged_fraction,
+    unsubmerged_factor,
+)
 
 
 # ======================================================================================
@@ -239,6 +195,19 @@ class StripperResult:
     n_co2_desorbed: float
     n_nh3_free: float
 
+    # ---- the shell's duty bound (handoff B-102) ---------------------------------------
+    #: The duty the shell can transfer over its design duty, Q_max / Q_des [-]: the live steam's
+    #: LMTD over the design's (`stripper_shell.shell_capacity_ratio`), times the unsubmerged
+    #: factor (B-104). 1.0 at the design steam with the bundle running dry.
+    shell_capacity_ratio: float = 1.0
+    #: The balance the calibrated split asks for, before the bound [kW]; ``duty_raw_kw`` is
+    #: what the shell pays. The two are equal wherever the bound does not bind.
+    duty_demand_raw_kw: float = 0.0
+    #: The fraction of the lift beyond the sweep the shell can pay for [-]. 1.0 unbound.
+    shell_lambda: float = 1.0
+    #: The share of the bundle standing full of liquor [-] (B-104). 0.0 running dry.
+    submerged_frac: float = 0.0
+
 
 # ======================================================================================
 # The unit
@@ -247,7 +216,8 @@ class StripperResult:
 def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
                      overflow_kmolh: dict = None, feed_nc: float = None,
                      feed_hc: float = None, t_feed_c: float = None,
-                     level_pct: float = LEVEL_SP_DES_PCT) -> StripperResult:
+                     level_pct: float = LEVEL_SP_DES_PCT,
+                     shell_bound: bool = True, held_kg: float = 0.0) -> StripperResult:
     """Evaluate the HP stripper for one set of inlet conditions.
 
     Parameters
@@ -268,6 +238,13 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
     level_pct
         Live LT-322501 sump level [%], which sets the liquid holdup the rate laws integrate
         over. A real state, not a constant.
+    shell_bound
+        The split's duty bounded by what the shell can transfer (decided 2026-10-21, handoff
+        B-102; section 6). False is V1's unbounded split, which the equivalence harness keeps.
+    held_kg
+        The liquor a full LT-322501 sump holds back in the tubes above it [kg], one tick old
+        (B-103): the share of the bundle standing full derates the shell and cools TT-322004
+        (decided 2026-10-22, handoff B-104). Zero, the default, is a bundle running dry.
 
     This function is PURE: it reads nothing and writes nothing. The sump inventory, the level
     controller and the drain valve are dynamics and live in :mod:`.stripper_sump`.
@@ -388,6 +365,10 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
     # TT-322004. Steam heat plus the larger of the load swing and the flood rise (B-9) plus
     # the sweep endotherm, and never above the condensing shell.
     t_bot_c = min(T_BOTTOM_DES_C + 0.7 * d_t_steam + dt_bot + dt_strip, t_steam_c)
+    # Tubes standing full above a full sump strip no film, and the bottoms cool toward the
+    # crystallisation floor by the share still running (decided 2026-10-22, handoff B-104).
+    f_sub = unsubmerged_factor(held_kg)
+    t_bot_c = submerged_bottoms_c(t_bot_c, f_sub)
     t_bot_k = t_bot_c + 273.15
 
     # TT-322013. The load swing reaches the overhead ATTENUATED because it is a liquid-side
@@ -396,28 +377,13 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
     t_top_c = min(T_TOPGAS_DES_C + 0.6 * d_t_steam + T_TOP_LOAD_K * dt_bot + dt_strip,
                   t_steam_c)
 
-    # --- urea hydrolysis, anchored extent times the rate-law departure -----------------
-    # The holdup tracks the LIVE sump level, so a level or throughput excursion moves the
-    # extent. The extent can never exceed either reagent that is actually present.
+    # --- urea hydrolysis and biuret, anchored extents times the rate laws' departures ----
+    # Over the LIVE sump level's holdup (`stripper_kinetics`), each capped by its reagents.
     vdot_m3h = max(feed_kgh / RHO_LIQ_IN_DES, 1e-9)
     v_liq_m3 = V_TUBES_M3 + V_SUMP_M3 * clamp(level_pct / 100.0, 0.0, 1.0)
-    group = hydrolysis_rate_group(t_bot_c, feed["Urea"], feed["H2O"], vdot_m3h, v_liq_m3)
-    xi_hyd_raw = XI_HYDROLYSIS_DES * (group / HYDROLYSIS_GROUP_DES
-                                      if HYDROLYSIS_GROUP_DES > 0.0 else 1.0)
-    xi_hyd = max(min(xi_hyd_raw, feed["Urea"], feed["H2O"]), 0.0)
+    xi_hyd = hydrolysis_extent(t_bot_c, feed["Urea"], feed["H2O"], vdot_m3h, v_liq_m3)
     urea_after_hyd = max(feed["Urea"] - xi_hyd, 0.0)
-
-    # --- biuret formation, 2 Urea -> Biuret + NH3 --------------------------------------
-    # SECOND order in urea, because that is the stoichiometry, and integrated over the same
-    # live liquid volume. A deep turndown — more urea-rich melt sitting longer — raises it,
-    # which is exactly what happens on the plant and is why biuret is a turndown problem.
-    # The extent can never consume more than the urea left after hydrolysis, at 2 per biuret.
-    xi_biu_raw = (XI_BIURET_DES
-                  * math.exp((BIURET_EA_JMOL / BIURET_R_GAS_J)
-                             * (1.0 / BIURET_T_DES_K - 1.0 / t_bot_k))
-                  * (feed["Urea"] / FEED_UREA_DES_KMOLH) ** 2
-                  * (VDOT_DES_M3H / vdot_m3h) * (v_liq_m3 / V_LIQ_DES_M3))
-    xi_biu = max(min(xi_biu_raw, 0.5 * urea_after_hyd), 0.0)
+    xi_biu = biuret_extent(t_bot_k, feed["Urea"], vdot_m3h, v_liq_m3, urea_after_hyd)
 
     # --- what is available to split, after the reactions --------------------------------
     avail = dict(feed)
@@ -497,7 +463,36 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
         bot[k] = avail[k] * (1.0 - f)
 
     # ==================================================================================
-    # 5. Stream totals and intensive properties
+    # 5. The per-species enthalpy balance — what the MP header actually has to pay for
+    # ==================================================================================
+    # Carbamate, free NH3, water, hydrolysis and the sensible heat of both products, each net
+    # of the sweep gas (`stripper_shell.enthalpy_balance`, V1's block term for term).
+    balance = enthalpy_balance(top, bot, co2_kmolh, xi_hyd, t_bot_c, t_top_c, t_feed_c)
+    demand_raw_kw = balance.total_kw
+
+    # ==================================================================================
+    # 6. The shell's duty bound (decided 2026-10-21, handoff B-102)
+    # ==================================================================================
+    # The calibrated split asks the balance above of the MP header; the shell can give at most
+    # its design duty scaled by the LMTD of the live steam against the tube side's design
+    # profile, over the design's (`stripper_shell`). Past that,
+    # with the band's margin, the lift beyond the sweep is scaled back until the balance meets
+    # the capacity, and what is not lifted stays in the bottoms to LV-322501. The ratio is
+    # exactly 1.0 at design and the band holds the seed's own drift, so the design point and
+    # the unperturbed plant run V1's split to the bit. ``shell_bound=False`` is V1's split.
+    # Tubes standing full transfer less, to 322E003's flooded-surface floor (B-104).
+    capacity = shell_capacity_ratio(t_steam_c) * f_sub
+    lam = 1.0
+    if shell_bound:
+        cap_raw_kw = DUTY_RAW_DES_KW * capacity * (1.0 + SHELL_DUTY_BAND)
+        if demand_raw_kw > cap_raw_kw:
+            lam, top, bot = bounded_split(top, bot, co2_kmolh, xi_hyd, t_bot_c, t_top_c,
+                                          t_feed_c, cap_raw_kw)
+            balance = enthalpy_balance(top, bot, co2_kmolh, xi_hyd, t_bot_c, t_top_c,
+                                       t_feed_c)
+
+    # ==================================================================================
+    # 7. Stream totals and intensive properties
     # ==================================================================================
     top_kgh_by_species = {k: top[k] * MW_COMP[k] for k in MW_COMP}
     bot_kgh_by_species = {k: bot[k] * MW_COMP[k] for k in MW_COMP}
@@ -505,31 +500,6 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
     top_n = sum(top.values())
     bot_m = sum(bot_kgh_by_species.values())
     bot_n = sum(bot.values())
-
-    # ==================================================================================
-    # 6. The per-species enthalpy balance — what the MP header actually has to pay for
-    # ==================================================================================
-    # Five terms, every constant sourced. Unlike a feed-proportional stand-in this responds to
-    # COMPOSITION: a feed richer in carbamate costs more steam at the same tonnage.
-    #
-    #   q_carb  carbamate dissociation, the dominant sink, about 58 % of the design duty
-    #   q_nh3   desorption of the NH3 that was not carbamate-bound (supercritical: no latent)
-    #   q_h2o   the small water fraction that vaporises overhead, about 7 %
-    #   q_hyd   urea hydrolysis, liquid step only — NEGATIVE, it gives a little heat back
-    #   q_sens  sensible heat of the two products relative to the feed temperature
-    #
-    # Each term subtracts the sweep gas, which arrives already hot and already gaseous and so
-    # is not something this unit has to pay to liberate. The NH3 pairing is 2:1 because that
-    # is the carbamate stoichiometry.
-    n_co2_desorb = max(top["CO2"] - co2_kmolh["CO2"], 0.0)
-    n_nh3_free = max(top["NH3"] - co2_kmolh["NH3"] - 2.0 * n_co2_desorb, 0.0)
-    q_carb_kw = n_co2_desorb * DH_CARBAMATE_JMOL / 3600.0
-    q_nh3_kw = n_nh3_free * DH_NH3_DESORB_JMOL / 3600.0
-    q_h2o_kw = max(top["H2O"] - co2_kmolh["H2O"], 0.0) * DH_H2O_VAP_JMOL / 3600.0
-    q_hyd_kw = xi_hyd * DH_HYDROLYSIS_JMOL / 3600.0
-    q_sens_kw = (bot_m * CP_BOTTOM * (t_bot_c - t_feed_c)
-                 + top_m * CP_GAS * (t_top_c - t_feed_c)) / 3600.0
-    duty_raw_kw = q_carb_kw + q_nh3_kw + q_h2o_kw + q_hyd_kw + q_sens_kw
 
     return StripperResult(
         feed_kmolh=feed, co2_feed_kmolh=co2_kmolh, top_kmolh=top, bot_kmolh=bot,
@@ -547,9 +517,12 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
         dt_load=dt_load, dt_bot=dt_bot, dt_strip=dt_strip, r_gl=r_gl, feed_kgh=feed_kgh,
         flood_frac=flood_frac, flood_excess=flood_excess, g_flood=g_flood,
         dt_flood=dt_flood, flood_kgh_per_tube=feed_kgh / N_TUBES,
-        duty_raw_kw=duty_raw_kw, q_carbamate_kw=q_carb_kw, q_nh3_kw=q_nh3_kw,
-        q_h2o_kw=q_h2o_kw, q_hydrolysis_kw=q_hyd_kw, q_sensible_kw=q_sens_kw,
-        n_co2_desorbed=n_co2_desorb, n_nh3_free=n_nh3_free,
+        duty_raw_kw=balance.total_kw, q_carbamate_kw=balance.q_carbamate_kw,
+        q_nh3_kw=balance.q_nh3_kw, q_h2o_kw=balance.q_h2o_kw,
+        q_hydrolysis_kw=balance.q_hydrolysis_kw, q_sensible_kw=balance.q_sensible_kw,
+        n_co2_desorbed=balance.n_co2_desorbed, n_nh3_free=balance.n_nh3_free,
+        shell_capacity_ratio=capacity, duty_demand_raw_kw=demand_raw_kw, shell_lambda=lam,
+        submerged_frac=submerged_fraction(held_kg),
     )
 
 
@@ -559,8 +532,10 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
 # Evaluating the unit at its own design condition is how the downstream anchors are obtained,
 # rather than entering them as literals that could drift from the model that produces them.
 
-#: The whole design evaluation, kept so a test can assert against every field of it.
-_DESIGN = stripper_322e001(CO2_DES_KGH / 1000.0, STEAM_T_DES_C, P_DES_BARA)
+#: The whole design evaluation, kept so a test can assert against every field of it. Unbounded:
+#: it is what defines the bound's own anchor, `DUTY_RAW_DES_KW` (and at design the bound is
+#: inert, its capacity ratio exactly 1.0).
+_DESIGN = stripper_322e001(CO2_DES_KGH / 1000.0, STEAM_T_DES_C, P_DES_BARA, shell_bound=False)
 
 #: Design top-gas vector [kmol/h] — 322E002's design feed.
 TOP_DES_KMOLH = _DESIGN.top_kmolh
@@ -587,8 +562,6 @@ DUTY_RAW_DES_KW = _DESIGN.duty_raw_kw
 
 
 __all__ = [
-    "hydrolysis_rate_group",
-    "HYDROLYSIS_GROUP_DES",
     "StripperResult",
     "stripper_322e001",
     "TOP_DES_KMOLH",

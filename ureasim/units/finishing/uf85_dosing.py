@@ -20,7 +20,7 @@ Equations (V1's ``step_uf85_cascade``):
 
 the master tracking the achieved ratio while its slave is out of cascade (`control.ratio`). The
 delivered UF85 joins the forward melt at LV-324501's selector, ``uf_ratio = m_uf / m_402``
-(`second_evaporator.melt_route`): 609 = 402G + 697, at the sensible-heat-weighted temperature.
+(`melt_route.melt_route`): 609 = 402G + 697, at the sensible-heat-weighted temperature.
 
 Where this unit departs from V1 — decided 2026-10-16 (`project.md` decision 123)
 -----------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ from ureasim.data.unit_335 import (
     UF85_DES_KGH,
     UF_RATIO_DES,
 )
-from ureasim.units.evaporation.second_evaporator import MeltRoute, melt_route
+from ureasim.units.evaporation.melt_route import MeltRoute, melt_route
 
 #: kg/h per t/h: FIC-335405 runs in t/h, as V1's loop does.
 KG_PER_T = 1000.0

@@ -38,6 +38,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ureasim.control.controller import Controller
+from ureasim.core.stream import MW_COMP
 from ureasim.data import unit_321 as d321
 from ureasim.data.unit_322e001 import DUTY_DES_KW as STRIP_DUTY_DES_KW
 from ureasim.data.unit_322e002 import LATENT_4BAR
@@ -58,7 +59,8 @@ from ureasim.units.synthesis.loop_hydraulics import (
 )
 from ureasim.units.synthesis.reactor_inventory import ReactorInventory
 from ureasim.units.synthesis.stripper import DUTY_RAW_DES_KW, StripperResult, stripper_322e001
-from ureasim.units.synthesis.stripper_sump import BottomLevelLoop, StripperSump, StripperSumpResult
+from ureasim.units.synthesis.stripper_level import BottomLevelLoop
+from ureasim.units.synthesis.stripper_sump import StripperSump, StripperSumpResult
 from ureasim.data.unit_322e003 import LEVEL_NLL_PCT as SCRUB_LEVEL_NLL_PCT
 
 __all__ = ["StripperStep", "CondenserStep", "design_feed_station", "units", "steps", "tears",
@@ -80,6 +82,9 @@ class StripperStep:
     duty_kw: float
     #: The tube side's pressure this tick [bar a].
     p_tube_bara: float
+    #: The reactor's liquor the stripper took this tick [kg/h], 322R001's discharge of the tick
+    #: before: with the bottoms it made, what turns the tubes' room into HV-322605's cap (B-104).
+    liquor_in_kgh: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -177,15 +182,21 @@ def _322e001(plant, a, dt):
     t_feed = stripper_feed_t_c(a["t_overflow_c"])
     overflow = dict(a["overflow_kmolh"])
     p_tube = stripper_tube_bara(a["p_syn_bara"], overflow, t_feed)
+    # The split's duty bounded by the shell's capacity (B-102, decided 2026-10-21), and by the
+    # share of its tubes standing full above a full sump, of the tick before (B-104, decided
+    # 2026-10-22); the sump's switches keep V1's unbounded split.
+    sump_state = plant.units["322E001"]
     strip = stripper_322e001(a["co2_feed_th"], a["t_steam_c"], p_tube, overflow_kmolh=overflow,
                              feed_nc=a["feed_nc"], feed_hc=a["feed_hc"], t_feed_c=t_feed,
-                             level_pct=plant.units["322E001"].level_pct)
+                             level_pct=sump_state.level_pct, shell_bound=sump_state.shell_bound,
+                             held_kg=sump_state.held_kg if sump_state.tube_ceiling else 0.0)
     sump = plant.units["322E001"].step(
         *plant.loops["322E001"], strip.bot_kgh, strip.t_bot, strip.t_steam, strip.top_kmolh,
         strip.top_mw, a["p_syn_bara"], strip.bot_mass_pct, dt)
     duty_ratio = max(strip.duty_raw_kw / DUTY_RAW_DES_KW, 0.0)
     return StripperStep(stripper=strip, sump=sump, strip_kgh=STRIP_DES_KGH * duty_ratio,
-                        duty_kw=STRIP_DUTY_DES_KW * duty_ratio, p_tube_bara=p_tube)
+                        duty_kw=STRIP_DUTY_DES_KW * duty_ratio, p_tube_bara=p_tube,
+                        liquor_in_kgh=sum(overflow.get(k, 0.0) * MW_COMP[k] for k in MW_COMP))
 
 
 def _322e002(plant, a, dt):
@@ -198,9 +209,15 @@ def _322e002(plant, a, dt):
 
 
 def _322r001(plant, a, dt):
+    # 322E001's tubes standing full take only what they pass (B-104, decided 2026-10-22): HV-322605
+    # discharges at most the bottoms they can take this tick, on this tick's bottoms per kilogram
+    # of the reactor's liquor the stripper took.
+    take, bot = a["strip_take_kgh"], a["strip_bot_kgh"]
+    cap = take * a["strip_liquor_kgh"] / bot if (take is not None and bot > 1e-9) else None
     return plant.units["322R001"].step(
         a["hpcc"], a["co2_feed_th"], a["ratio_pv"], a["hic_322605_pct"], a["hic_322602_pct"],
-        a["suction_kgh"], a["p_syn_bara"], dt, sump_holdup_kg=a["scrub_holdup_kg"])
+        a["suction_kgh"], a["p_syn_bara"], dt, sump_holdup_kg=a["scrub_holdup_kg"],
+        m_out_cap_kgh=cap, backup_kgh=a["strip_backup_kgh"])
 
 
 def steps() -> dict:
@@ -240,7 +257,11 @@ def steps() -> dict:
             "ratio_pv": Result("321", "ratio_pv"),
             "hic_322605_pct": Operator("HIC-322605"), "hic_322602_pct": Operator("HIC-322602"),
             "suction_kgh": Result("322F001", "suction_kgh"),
-            "scrub_holdup_kg": State("322E003", "holdup_kg"), "p_syn_bara": p_syn}, _322r001),
+            "scrub_holdup_kg": State("322E003", "holdup_kg"), "p_syn_bara": p_syn,
+            "strip_take_kgh": Result("322E001", "sump.take_kgh"),
+            "strip_backup_kgh": Result("322E001", "sump.backup_kgh"),
+            "strip_bot_kgh": Result("322E001", "stripper.bot_kgh"),
+            "strip_liquor_kgh": Result("322E001", "liquor_in_kgh")}, _322r001),
     }
 
 

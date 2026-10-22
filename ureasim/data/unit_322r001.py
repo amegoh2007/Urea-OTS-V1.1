@@ -148,6 +148,13 @@ P_DES_BARA = 144.9
 #: Off-gas line pressure to 322E003 [bar a]. Source: PFD, V1 `main.py` REACT_OFFGAS_P_BARA.
 OFFGAS_P_DES_BARA = 141.3
 
+#: The reactor's top at design [bar a]: PFD 207's overflow leaves 322R001 at 141.3, as PFD 203's
+#: off-gas does — what the published PT on 322R001 reads at design (handoff B-112, decided
+#: 2026-10-22). 322R001 carries no pressure transmitter of its own: P&ID 102 (UD-VT-322-FB-0003)
+#: draws only TI-322005 to TI-322009, LI-322504 and SV-32251/32252 on it, and loop summary
+#: UD-MR-322-EC-0001 lists no pressure loop on it. Source: PFD stream 207.
+TOP_P_DES_BARA = 141.3
+
 #: TT-322014 design overflow temperature [deg C]. The same value as the bulk temperature
 #: above, restated under the tag the operator actually reads.
 OVERFLOW_T_DES_C = REACTOR_T_DES_C
@@ -181,6 +188,12 @@ OFFGAS_RHO = 113.30
 #: REACT_OVERFLOW_RHO_DES_LIVE.
 _OVERFLOW_W_UREA_DES = OVERFLOW_DES_KMOLH["Urea"] * MW_COMP["Urea"] / OVERFLOW_DES_KGH
 OVERFLOW_RHO_DES_LIVE = urea_soln_rho(_OVERFLOW_W_UREA_DES, OVERFLOW_T_DES_C, OVERFLOW_RHO)
+
+#: The urea mass fraction of 322R001's feed at the design seed [-], about 1.03e-4: the 0.430 kmol/h
+#: of urea 322F001's suction brings in 250 639 kg/h. Live-probed at the seed, as
+#: `REACTOR_FEED_NC_DES` is: the feed is assembled from several live streams. The datum of the feed
+#: line's design density (`unit_322_loop.REACT_FEED_RHO_DES_LIVE`, handoff B-112).
+FEED_W_UREA_DES = 0.00010309850703342811
 
 #: Design volumetric throughput [m3/h], about 228.5. The residence-time basis: overflow mass
 #: over the nominal solution density. Source: V1 `main.py` _react_vdot_m3h.
@@ -397,6 +410,7 @@ __all__ = [
     "X_INF",
     "P_DES_BARA",
     "OFFGAS_P_DES_BARA",
+    "TOP_P_DES_BARA",
     "OVERFLOW_T_DES_C",
     "OFFGAS_T_DES_C",
     "OFFGAS_GAMMA",
@@ -404,6 +418,7 @@ __all__ = [
     "OVERFLOW_RHO",
     "OFFGAS_RHO",
     "OVERFLOW_RHO_DES_LIVE",
+    "FEED_W_UREA_DES",
     "VDOT_DES_M3H",
     "ID_MM",
     "LIQ_H_MM",

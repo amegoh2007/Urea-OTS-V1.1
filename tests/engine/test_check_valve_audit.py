@@ -25,7 +25,7 @@ import pathlib
 import re
 
 from ureasim.data import unit_320, unit_322_loop, unit_322e001, unit_322e002
-from ureasim.data import unit_328c002, unit_328c004
+from ureasim.data import unit_324, unit_328c002, unit_328c004
 from ureasim.data.design_point import R323_FEED_DES_KGH
 from ureasim.data.unit_321 import CO2_DES_KGH
 from ureasim.engine.plant import build_plant
@@ -44,6 +44,8 @@ DIFFERENTIALS = {
     "LEAK_DP_DES_BAR": (unit_322e002, unit_322e002.SYN_P_DES_BARA, unit_322e002.P_LP_BARA),
     "unit_322_loop.LIQUOR_DP_DES_BAR": (unit_322_loop, unit_322_loop.HPCC_P_DES_BARA,
                                         unit_322_loop.SYN_P_DES_BARA),
+    "REACT_FEED_DP_DES_BAR": (unit_322_loop, unit_322_loop.HPCC_P_DES_BARA,
+                              unit_322_loop.REACT_TOP_P_DES_BARA),
     "C002_DP_COL_BAR": (unit_328c002, iapws.psat_bara(unit_328c002.C002_T_BOT_C),
                         unit_328c002.C002_P_TOP_BARA),
     "C004_DP_COL_BAR": (unit_328c004, iapws.psat_bara(unit_328c004.C004_T_C),
@@ -53,6 +55,8 @@ DIFFERENTIALS = {
                                    scrubber.SYN_P_DES_BARA),
     "LV_322501_DP_ANCHOR_BAR": (stripper_sump, stripper_sump.SYN_P_DES_BARA,
                                 stripper_sump.LV_322501_P_DOWN_BARA),
+    "LV_324501_DP_DES_BAR": (unit_324, unit_324.LV_324501_P_UP_BARA,
+                             unit_324.LV_324501_P_DOWN_BARA),
 }
 
 #: The names that carry ``DP`` and are no anchored law's design differential, and why.

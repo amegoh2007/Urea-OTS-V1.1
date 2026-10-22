@@ -245,6 +245,41 @@ TIC_323013_TI_S = 100.0
 TIC_323013_SP_LO_C = 45.0
 TIC_323013_SP_HI_C = TW_RET_T_C
 
+# ======================================================================================
+# The liquor's composition (handoff B-105, decided 2026-10-22)
+# ======================================================================================
+
+#: The species 323D001's liquor carries: the LP carbamate's condensables. The inerts 797 brings
+#: leave in the vent, 321, and are not the tank's.
+LIQUOR_SPECIES = ("NH3", "CO2", "H2O", "Urea")
+
+
+def _mass_fractions(mass_pct: dict) -> dict:
+    """A PFD liquid row's mass per cent over the liquor's species, as fractions summing to 1."""
+    total = sum(mass_pct[k] for k in LIQUOR_SPECIES)
+    return {k: mass_pct[k] / total for k in LIQUOR_SPECIES}
+
+
+#: PFD 308, what 323P001 returns to the HP synthesis [mass fractions]: 30.61 % NH3, 38.49 % CO2,
+#: 30.83 % H2O, 0.07 % urea (the PFD's liquid rows are mass per cent, `unit_322e003.WASH_MASSPCT`).
+W_308 = _mass_fractions({"NH3": 30.61, "CO2": 38.49, "H2O": 30.83, "Urea": 0.07})
+
+#: The liquid inlets' PFD rows [mass fractions]: 718B from 323D011 (25.21 / 17.38 / 57.24 / 0.18,
+#: 100.01 as printed), 776 from 328D001 (29.21 / 23.63 / 47.10 / 0.06) and 734, 328D003's ammonia
+#: water (5.23 / 3.71 / 90.24 / 0.82). Source: the PFD's stream table.
+W_718B = _mass_fractions({"NH3": 25.21, "CO2": 17.38, "H2O": 57.24, "Urea": 0.18})
+W_776 = _mass_fractions({"NH3": 29.21, "CO2": 23.63, "H2O": 47.10, "Urea": 0.06})
+W_734 = _mass_fractions({"NH3": 5.23, "CO2": 3.71, "H2O": 90.24, "Urea": 0.82})
+
+#: What 323E003 condenses out of its gas at design [mass fractions], by closure: PFD 308's species
+#: less the two liquid inlets', over the design condensate, so the design tank is PFD 308 exactly
+#: (about 31.8 % NH3, 46.4 % CO2, 21.7 % H2O). The 305 row alone does not close the PFD's 308 on
+#: the PFD's liquid rows, and 797's inerts leave in the vent.
+W_COND = _mass_fractions({
+    k: (E003_M308_DES_KGH * W_308[k] - E003_M718B_DES_KGH * W_718B[k]
+        - E003_M776_DES_KGH * W_776[k]) / E003_M_COND_DES_KGH * 100.0
+    for k in LIQUOR_SPECIES})
+
 __all__ = [
     "E003_M305_DES_KGH", "E003_M718B_DES_KGH", "E003_M776_DES_KGH", "E003_M797_DES_KGH",
     "E003_T797_C", "E003_M734_DES_KGH", "E003_T734_C",
@@ -261,4 +296,5 @@ __all__ = [
     "SIC_323901_KC", "SIC_323901_TI_S",
     "TIC_323013_KC_TABLE", "TT_323013_SPAN_C", "TIC_323013_KC", "TIC_323013_TI_S",
     "TIC_323013_SP_LO_C", "TIC_323013_SP_HI_C",
+    "LIQUOR_SPECIES", "W_308", "W_718B", "W_776", "W_734", "W_COND",
 ]

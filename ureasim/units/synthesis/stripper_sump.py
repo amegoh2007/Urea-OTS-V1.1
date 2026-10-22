@@ -8,9 +8,10 @@ everything the stripper makes leaves the synthesis loop through the one valve at
 of it. That valve, LV-322501, lets 140 bar a of hot urea liquor down to the 4 bar a LP
 recirculation section, which is the largest single pressure letdown on the plant.
 
-Six pieces of behaviour follow, and this module is all six:
+Eight pieces of behaviour follow, and this module is all eight:
 
-1. **LIC-322501**, a direct-acting velocity-form PID on the level, on the plant DCS's tuning.
+1. **LIC-322501**, a direct-acting velocity-form PID on the level, on the plant DCS's tuning
+   (`stripper_level`).
 2. **The LV-322501 letdown law**, driven by the LIVE synthesis pressure rather than a frozen
    design differential.
 3. **The mushy-zone restriction**, which throttles the drain as the bottoms cool toward the
@@ -19,6 +20,13 @@ Six pieces of behaviour follow, and this module is all six:
    nozzle uncovers.
 5. **The bottoms transit**, a flow-dependent dead time between the tube exit and the sump.
 6. **The sump energy balance**, which turns the film temperature into what TT-322004 reads.
+7. **The full sump's excess**, held back in the tubes above it and run down as the sump makes
+   room (decided 2026-10-21, handoff B-103, decision 62's class), where V1 clamps the level at
+   100 % and deletes it.
+8. **The tubes' ceiling** (decided 2026-10-22, handoff B-104): the tubes hold at most their
+   standing-full 8 689 kg. Once they hold liquor they take the drain and their unsubmerged share
+   of the design bottoms, which caps 322R001's discharge through HV-322605, and anything still
+   arriving past the ceiling is handed back to 322R001, which keeps it.
 
 Why the sump is a separate module from the stripper
 ----------------------------------------------------
@@ -54,7 +62,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from ureasim.control.process_loop import pv_ok
 from ureasim.core.numeric import clamp
 from ureasim.core.signal import dead_time, first_order_lag
 from ureasim.core.transport import line_residence_time_s
@@ -66,10 +73,6 @@ from ureasim.data.unit_322e001 import (
     BOTTOMS_LINE_M3,
     LEVEL_SP_DES_PCT,
     LEVEL_SPAN_M,
-    LIC_322501_KC,
-    LIC_322501_TD_S,
-    LIC_322501_TF_S,
-    LIC_322501_TI,
     LV_322501_FL,
     LV_322501_OPEN_DES_PCT,
     LV_322501_P_DOWN_BARA,
@@ -85,6 +88,7 @@ from ureasim.data.unit_322e001 import (
     T_DOWNSTREAM_DES_C,
     T_STRIPPER_TAU_S,
     TT_323001_GAIN,
+    TUBES_FULL_KG,
 )
 from ureasim.data.unit_323 import W_S208
 from ureasim.thermo import iapws, real_gas, service
@@ -97,6 +101,7 @@ from ureasim.units.consequence.seal import (
     seal_fraction,
 )
 from ureasim.units.synthesis.stripper import stripper_322e001
+from ureasim.units.synthesis.stripper_level import BottomLevelLoop
 
 #: FIFO keys in the sump's own dead-time and lag stores.
 BOTTOMS_LINE_KEY = "322E001_BOT_KGH_LAG"
@@ -166,113 +171,6 @@ LV_322501_PV_DES_BARA = bottoms_pv_bara(_BOTTOMS_DES.bot_mass_pct, _BOTTOMS_DES.
 #: A cold, empty stripper has no composition to take one from, and a zero would divide.
 #: Source: V1 `main.py`, the ``strip["top_MW"] or 30.0`` fallback.
 TOP_GAS_MW_FALLBACK = 30.0
-
-
-# ======================================================================================
-# LIC-322501
-# ======================================================================================
-
-@dataclass
-class BottomLevelLoop:
-    """LIC-322501 — the bottom-solution level controller, in V1's form on the DCS's tuning.
-
-    Process utility
-    ---------------
-    Direct acting on a fail-closed, air-to-open valve, which is correct negative feedback:
-    the level rises, the output rises, LV-322501 opens, the drain rises and the level comes
-    back. On a trip the air fails and the valve shuts, keeping the loop's inventory inside
-    the loop rather than dumping 140 bar a of liquor into the LP section.
-
-    Why it is proportional-dominant
-    --------------------------------
-    A level is an INTEGRATING process: the valve sets a flow, and a flow accumulates into a
-    level. An integral-dominant controller on an integrating process is two integrators in
-    series, and the loop limit-cycles.
-
-    The tuning is the plant DCS's (decided 2026-10-08): gain 0.20, TI 280 s, and a 1.0 s
-    derivative behind a 1.0 s filter, where V1 runs 2.5 and 90 s with none. The plant's loop is
-    the slower one, and the trainee sees its latency.
-
-    Why this is not a `control.process_loop.ProcessLoop`
-    ----------------------------------------------------
-    Because the proportional term acts on the ERROR, not on the PV:
-
-        du = Kc . [ (e_k - e_{k-1}) + (dt/Ti) . e_k ] ,   e = PV - SP
-
-    With a constant set point those are the same expression — ``e_k - e_{k-1}`` reduces to
-    ``PV_k - PV_{k-1}`` and the whole thing is a direct-acting I-PD. They separate the moment
-    an operator moves the set point: this form gives a proportional KICK out of the valve of
-    ``-Kc . delta_SP``, and an I-PD form gives none. That kick is real DCS behaviour for this
-    configuration and it is part of what a trainee is being taught, so the form is preserved.
-    LIC-322501 is the only loop in V1 written this way.
-
-    The derivative is on the measurement, filtered, by `ProcessLoop`'s own law: a set-point move
-    kicks the proportional term only.
-
-        du = Kc . [ (e_k - e_{k-1}) + (dt/Ti) . e_k + (G_k - G_{k-1}) ]
-        G_k = Tf/(Tf+dt) . G_{k-1} + Td/(Tf+dt) . (L_k - L_{k-1})        [direct acting]
-
-    Bad-PV handling, and the contrast with PIC-322203
-    --------------------------------------------------
-    On a non-finite level or set point this loop holds the last good error and skips the
-    increment, so ``e_prev`` is re-assigned its own value and the output is genuinely frozen.
-    That is what "freeze last good" means and it is implemented correctly here.
-
-    V1's inline PIC-322203 carries the same comment and does NOT do this: it advances its
-    history past the bad sample, so a single NaN latches the vent wide open one tick later.
-    The rewrite installs PIC-322203 as a `ProcessLoop` instead, by the process engineer's
-    decision (As-Built §XVII.5), so both loops now freeze on a bad sample.
-    """
-
-    #: Valve demand to LV-322501 [%].
-    op: float = LV_322501_OPEN_DES_PCT
-    #: Set point [% of level span].
-    sp: float = LEVEL_SP_DES_PCT
-    #: Measured level [%], written at the END of the previous tick from the settled level.
-    pv: float = LEVEL_SP_DES_PCT
-    #: Last good error [%], seeded at zero so the first design tick gives du = 0 exactly.
-    e_prev: float = 0.0
-    #: Last good level [%] — None until the first sample, which then takes no derivative — and
-    #: the derivative's filtered state [%], so the first tick's derivative is exactly zero.
-    level_prev: float | None = None
-    d_filt: float = 0.0
-    #: AUTO or MAN.
-    mode: str = "AUTO"
-    #: Whether the measurement or the set point is unusable.
-    pv_bad: bool = False
-
-    def step(self, level_pct: float, dt: float) -> float:
-        """Advance one tick on the level at the TOP of the tick and return the stroke [%].
-
-        The level passed in is the state before this tick's mass balance, which is the same
-        tear convention every other loop in the flowsheet uses: a controller acts on what the
-        transmitter had time to report, not on the result of its own action.
-        """
-        self.pv_bad = not pv_ok(level_pct, self.sp)
-        if self.pv_bad:
-            # Hold the last good error. The assignment below is then a no-op, which is what
-            # actually freezes the output — see the class docstring.
-            error = self.e_prev
-        else:
-            error = level_pct - self.sp          # DIRECT acting: level above SP opens the valve
-            if self.mode == "AUTO":
-                # The filtered derivative on the level, its sign the loop's (direct acting).
-                prev = level_pct if self.level_prev is None else self.level_prev
-                g_k = (LIC_322501_TF_S / (LIC_322501_TF_S + dt)) * self.d_filt + (
-                    LIC_322501_TD_S / (LIC_322501_TF_S + dt)) * (level_pct - prev)
-                derivative = g_k - self.d_filt
-                self.d_filt = g_k
-                self.op = clamp(
-                    self.op + LIC_322501_KC * ((error - self.e_prev)
-                                               + (dt / LIC_322501_TI) * error + derivative),
-                    0.0, 100.0)
-            self.level_prev = level_pct          # the history stays current in MAN
-        self.e_prev = error                      # tracked for a bumpless MAN -> AUTO transfer
-        return clamp(self.op, 0.0, 100.0)
-
-    def publish(self, level_pct: float) -> None:
-        """Write this tick's settled level as the faceplate PV for the next one."""
-        self.pv = level_pct
 
 
 # ======================================================================================
@@ -428,8 +326,17 @@ class StripperSumpResult:
     lv_erosion: bool
 
     # ---- the holdup ------------------------------------------------------------------------
-    #: What the sump between LT-322501's taps gained this tick [kg/h] (B-77 (b)).
+    #: What the sump between LT-322501's taps and the liquor held back above it gained this tick
+    #: [kg/h] (B-77 (b), B-103).
     dm_kgh: float = 0.0
+    #: The liquor held back in the tubes above a full sump [kg] (B-103). 0.0 below full.
+    held_kg: float = 0.0
+    #: What the tubes, standing full, handed back to 322R001 this tick [kg/h] (B-104).
+    backup_kgh: float = 0.0
+    #: The bottoms the tubes can take this tick [kg/h]: the drain and their unsubmerged share of
+    #: the design bottoms, once they hold liquor (B-104); None while they hold none, and without
+    #: the ceiling, V1's and B-103's.
+    take_kgh: float | None = None
 
 
 #: LT-322501's sump over its span [kg]: the bottom head's cross-section over the transmitter's
@@ -451,6 +358,19 @@ class StripperSump:
     line_state: dict = field(default_factory=dict)
     #: First-order lag state for the published TT-322004.
     lag_state: dict = field(default_factory=dict)
+    #: The liquor held back in the tubes above a full sump [kg] (handoff B-103).
+    held_kg: float = 0.0
+    #: A full sump's excess held back in the tubes above it and run down as the sump makes room
+    #: (decided 2026-10-21, handoff B-103, decision 62's class); False is V1's clamp, which
+    #: deletes it and which the equivalence harness keeps.
+    hold_full: bool = True
+    #: 322E001's split bounded by its shell's duty (decided 2026-10-21, handoff B-102), read by
+    #: the engine's stripper step; False is V1's unbounded split, which the harness keeps.
+    shell_bound: bool = True
+    #: The held liquor capped at the tubes standing full, 322R001 keeping the rest, and the
+    #: submerged share derating the shell (decided 2026-10-22, handoff B-104); False is B-103's
+    #: held liquor without a ceiling, and with ``hold_full`` False V1's clamp.
+    tube_ceiling: bool = True
 
     def step(self, lic: BottomLevelLoop, bottoms_kgh: float, t_bot_c: float,
              t_steam_c: float, top_kmolh: dict, top_mw: float,
@@ -536,11 +456,31 @@ class StripperSump:
         # The empty-sump guard that used to clip the drain to the inflow is gone too: the seal
         # ramp above takes the liquid to zero as the level reaches the nozzle, and what the
         # valve passes past that point is the blow-through gas, which leaves the loop as gas.
-        level_0 = self.level_pct
-        self.level_pct = clamp(
-            self.level_pct + (bottoms_in - drain) / 3600.0 * dt / SUMP_SPAN_KG * 100.0,
-            0.0, 100.0)
+        #
+        # B-103 (decided 2026-10-21, decision 62's class): what a full sump cannot take is held
+        # back in the tubes above it, the vessel that drains into it, and runs down first as the
+        # sump makes room — V1 clamps the level at 100 % and deletes it (``main.py`` 7657). The
+        # held liquor adds exactly 0.0 while there is none, so a sump below full is V1's to the bit.
+        level_0, held_0 = self.level_pct, self.held_kg
+        level = self.level_pct + (bottoms_in - drain) / 3600.0 * dt / SUMP_SPAN_KG * 100.0
+        if self.hold_full:
+            level += self.held_kg / SUMP_SPAN_KG * 100.0
+            self.held_kg = max(level - 100.0, 0.0) / 100.0 * SUMP_SPAN_KG
+        self.level_pct = clamp(level, 0.0, 100.0)
         lic.publish(self.level_pct)
+
+        # ----- B-104, the tubes' ceiling --------------------------------------------------------
+        # The tubes hold at most their standing-full mass (decided 2026-10-22). Once they hold any
+        # liquor they take the drain and their unsubmerged share of the design bottoms, so 322R001's
+        # discharge through HV-322605 on the next tick eases off as they fill and, full, passes what
+        # drains; what still arrives past the ceiling is handed back to 322R001.
+        backup_kgh, take_kgh = 0.0, None
+        if self.hold_full and self.tube_ceiling:
+            if self.held_kg > TUBES_FULL_KG:
+                backup_kgh = (self.held_kg - TUBES_FULL_KG) * (3600.0 / dt)
+                self.held_kg = TUBES_FULL_KG
+            if self.held_kg > 0.0:
+                take_kgh = drain + (1.0 - self.held_kg / TUBES_FULL_KG) * BOTTOMS_DES_KGH
 
         # ----- L3-7, the sump energy balance ---------------------------------------------------
         t_out = sump_outlet_temperature_c(t_bot_c, t_steam_c, drain)
@@ -567,7 +507,9 @@ class StripperSump:
             dp_lv_bar=dp_lv_bar,
             solidification=bool(mushy < 1.0),
             lv_erosion=bool(blowthrough > 0.0),
-            dm_kgh=(self.level_pct - level_0) / 100.0 * SUMP_SPAN_KG * (3600.0 / dt),
+            dm_kgh=((self.level_pct - level_0) / 100.0 * SUMP_SPAN_KG
+                    + (self.held_kg - held_0)) * (3600.0 / dt),
+            held_kg=self.held_kg, backup_kgh=backup_kgh, take_kgh=take_kgh,
         )
 
 
@@ -577,7 +519,6 @@ __all__ = [
     "TT_322004_KEY",
     "LV_322501_DP_ANCHOR_BAR",
     "TOP_GAS_MW_FALLBACK",
-    "BottomLevelLoop",
     "letdown_kgh", "bottoms_pv_bara", "LV_322501_PV_SCALE", "LV_322501_PV_DES_BARA",
     "sump_outlet_temperature_c",
     "StripperSumpResult",

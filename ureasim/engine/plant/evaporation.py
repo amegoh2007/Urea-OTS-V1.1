@@ -105,7 +105,7 @@ def steps() -> dict:
             "vap1_kgh": Result(e001, "m_vap_kgh"), "boil1_kgh": Result(e001, "m_boil_kgh"),
             "vap2_kgh": Result(e003, "m_vap_kgh"), "boil2_kgh": Result(e003, "m_boil_kgh"),
             "false_air1_kgh": Result(e001, "false_air_kgh"),
-            "false_air2_kgh": Result(e003, "false_air_kgh"),
+            "false_air2_kgh": Result(e003, "air_in_kgh"),
             "m_924_kgh": Result(MOTIVE, "m_924_kgh"), "m_927_kgh": Result(MOTIVE, "m_927_kgh"),
             "m_929_kgh": Result(MOTIVE, "m_929_kgh"),
             "p_324e002_bara": Result(e001, "p_bara"),

@@ -30,7 +30,13 @@ Handoff B-9, decided 2026-10-07
 -------------------------------
 The port's two flood rises share one ceiling, ``max(dT_bot, dT_flood)``, where V1 adds them.
 The ``v1`` fixture is V1's stripper with that one statement switched (`b9_switch`), every other
-line V1's own; ``v1_verbatim`` is V1 untouched, and the last section asserts both sides.
+line V1's own; ``v1_verbatim`` is V1 untouched, and section 4 asserts both sides.
+
+Handoff B-102, decided 2026-10-21
+---------------------------------
+The port bounds the split's duty by what the shell can transfer at the live steam's LMTD against
+the tube side's design profile (`stripper_shell`); V1 books whatever the split asks of the header.
+Sections 1 to 3 run the port with ``shell_bound=False``, V1's split; section 5 asserts both sides.
 """
 
 from __future__ import annotations
@@ -47,13 +53,12 @@ from ureasim.thermo.kinetics import urea_hydrolysis_k_m3_kmol_h
 from ureasim.thermo.service import ratio_shift_frac
 from ureasim.units.synthesis.stripper import (
     DUTY_RAW_DES_KW,
-    HYDROLYSIS_GROUP_DES,
     TOP_DES_CO2_FREE_KMOLH,
     TOP_DES_KMOLH_TOTAL,
     TOP_DES_NH3_KMOLH,
-    hydrolysis_rate_group,
     stripper_322e001,
 )
+from ureasim.units.synthesis.stripper_kinetics import HYDROLYSIS_GROUP_DES, hydrolysis_rate_group
 from tests.equivalence import b9_switch
 from tests.equivalence.v1_loader import lift, load, v1_available, v1_service
 
@@ -134,7 +139,7 @@ def assert_same(v1_result: dict, result, where: str) -> None:
 
 
 def run_both(v1, co2_th, t_steam_c, p_bara, overflow_kmolh=None, nc=None, hc=None,
-             t_feed=None, level=None):
+             t_feed=None, level=None, shell_bound=False):
     """Drive both implementations with one set of inputs."""
     kwargs_v1 = {}
     kwargs_new = {}
@@ -153,6 +158,9 @@ def run_both(v1, co2_th, t_steam_c, p_bara, overflow_kmolh=None, nc=None, hc=Non
     if level is not None:
         kwargs_v1["strip_level_pct"] = level
         kwargs_new["level_pct"] = level
+    # V1's unbounded split: the shell's duty bound (B-102, decided 2026-10-21) is asserted both
+    # ways in the last section.
+    kwargs_new["shell_bound"] = shell_bound
     return (v1["stripper_322e001"](co2_th, t_steam_c, p_bara, **kwargs_v1),
             stripper_322e001(co2_th, t_steam_c, p_bara, **kwargs_new))
 
@@ -373,7 +381,8 @@ def test_below_the_flooding_limit_the_switch_is_inert(v1, v1_verbatim):
         overflow = {k: v * scale for k, v in d.FEED_207_KMOLH.items()}
         a = v1_verbatim["stripper_322e001"](CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA,
                                            overflow_kmolh=overflow)
-        b = stripper_322e001(CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA, overflow_kmolh=overflow)
+        b = stripper_322e001(CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA, overflow_kmolh=overflow,
+                             shell_bound=False)
         assert b.dt_flood == 0.0
         assert_same(a, b, f"overflow x{scale}")
 
@@ -401,3 +410,82 @@ def test_a_flooded_stripper_tends_to_its_liquor_decided_divergence(
     assert b.dt_bot == pytest.approx(max(steam, flood), abs=0.01)
     assert a["T_bot"] == pytest.approx(v1_bot, abs=0.01)
     assert b.t_bot == pytest.approx(port_bot, abs=0.01)
+
+
+# ======================================================================================
+# 5. The decided divergence: the shell's duty bound (handoff B-102, 2026-10-21), both sides
+# ======================================================================================
+# Every quantity the split does not move — the temperatures, the reactions, the efficiencies,
+# the slip — is V1's either way; the bound only moves what is lifted overhead beyond the sweep
+# into the bottoms, and only where the split asks more than the shell can give.
+
+#: The fields the bound never moves: everything evaluated before the split.
+PRE_SPLIT = ("T_top", "T_bot", "T_feed", "T_steam", "xi_hyd", "xi_biu", "eta_T", "eta_T_steam",
+             "g_NC", "g_HC", "g_T", "slip", "L_strip", "W_strip", "dT_load", "dT_bot",
+             "dT_strip", "r_GL", "m_feed_kgh", "flood_frac", "flood_x", "g_flood", "dT_flood",
+             "flood_kgh_tube", "q_hyd_kw")
+
+
+@pytest.mark.parametrize("case", [
+    {}, {"co2_th": 0.0}, {"co2_th": 40.0}, {"co2_th": 80.0}, {"p_mp": 22.0}, {"p_mp": 25.0},
+    {"p_bara": 150.0}, {"scale": 0.4}, {"scale": 0.7}, {"nc": 2.6, "hc": 0.30},
+    {"t_feed": 195.0, "level": 100.0}, {"empty": True},
+])
+def test_where_the_shell_can_pay_the_bound_is_inert(v1, case):
+    """The split asks no more than the shell gives at the live steam — the design, a turndown, a
+    lean sweep, a raised header: the bounded port is V1's split to the bit, lambda exactly 1."""
+    co2_th, t_steam, p_bara, kwargs = _case_inputs(v1, case)
+    a, b = run_both(v1, co2_th, t_steam, p_bara, shell_bound=True, **kwargs)
+    assert b.shell_lambda == 1.0 and b.duty_raw_kw == b.duty_demand_raw_kw
+    assert_same(a, b, f"inert {case}")
+
+
+@pytest.mark.parametrize("case, capacity, lam", [
+    ({"scale": 1.3}, 1.0, 0.743091),
+    ({"scale": 1.6}, 1.0, 0.638686),
+    ({"p_mp": 16.0}, 0.665816, 0.792258),
+    ({"p_mp": 12.0}, 0.169525, 0.373300),
+    ({"nc": 3.4}, 1.0, 0.799296),
+    ({"hc": 0.55}, 1.0, 0.812858),
+    ({"t_feed": 150.0, "level": 50.0}, 1.0, 0.841177),
+    ({"combined": True}, 0.0, 0.317678),
+])
+def test_past_the_shells_capacity_the_lift_stays_in_the_bottoms_decided_divergence(
+        v1, case, capacity, lam):
+    """B-102. The split asks more than the shell can give: V1 books it all on the header; the
+    port scales the lift beyond the sweep by lambda until the balance meets Q_max . (1 + band),
+    and what is not lifted leaves in the bottoms. Everything before the split is V1's, and every
+    species' total is V1's: the bound moves mass, it makes none."""
+    co2_th, t_steam, p_bara, kwargs = _case_inputs(v1, case)
+    a, b = run_both(v1, co2_th, t_steam, p_bara, shell_bound=True, **kwargs)
+    cap_kw = DUTY_RAW_DES_KW * b.shell_capacity_ratio * (1.0 + d.SHELL_DUTY_BAND)
+    if capacity:
+        assert b.shell_capacity_ratio == pytest.approx(capacity, abs=1e-6)
+    assert b.duty_demand_raw_kw == a["duty_raw_kw"] > cap_kw
+    assert b.duty_raw_kw == pytest.approx(cap_kw, rel=1e-9)
+    assert b.shell_lambda == pytest.approx(lam, abs=1e-6)
+    for key in PRE_SPLIT:
+        assert a[key] == getattr(b, SCALARS[key]), key
+    for k in MW_COMP:
+        assert a["top_kmolh"][k] + a["bot_kmolh"][k] == pytest.approx(
+            b.top_kmolh[k] + b.bot_kmolh[k], rel=1e-12, abs=1e-9), k
+        if k not in ("NH3", "CO2", "H2O"):
+            assert (a["top_kmolh"][k], a["bot_kmolh"][k]) == (b.top_kmolh[k], b.bot_kmolh[k])
+    for k in ("NH3", "CO2"):
+        assert b.top_kmolh[k] < a["top_kmolh"][k] and b.bot_kmolh[k] > a["bot_kmolh"][k], k
+
+
+def _case_inputs(v1, case: dict):
+    """One sweep point of sections 2 and 5 as (CO2 t/h, shell T, tube P, the other inputs)."""
+    if case.get("empty"):
+        return 0.0, d.STEAM_T_DES_C, d.P_DES_BARA, {
+            "overflow_kmolh": {k: 0.0 for k in d.FEED_207_KMOLH}}
+    if case.get("combined"):
+        return 30.0, v1["tsat_steam"](14.0), 132.0, {
+            "overflow_kmolh": {k: v * 1.45 for k, v in d.FEED_207_KMOLH.items()},
+            "nc": 3.6, "hc": 0.52, "t_feed": 190.0, "level": 95.0}
+    t_steam = v1["tsat_steam"](case["p_mp"]) if "p_mp" in case else d.STEAM_T_DES_C
+    kwargs = {k: case[k] for k in ("nc", "hc", "t_feed", "level") if k in case}
+    if "scale" in case:
+        kwargs["overflow_kmolh"] = {k: v * case["scale"] for k, v in d.FEED_207_KMOLH.items()}
+    return case.get("co2_th", CO2_DES_TH), t_steam, case.get("p_bara", d.P_DES_BARA), kwargs

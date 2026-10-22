@@ -83,6 +83,8 @@ TEAR_WRITES = {
     "steam_users_9_kgh": Result(USERS, "users_9_kgh"),
     "m_911_kgh": Result(USERS, "m_911_kgh"),
     "m_308_kgh": Result("323E003", "m_308_kgh"),
+    "w_308": Result("323E003", "w_308"),
+    "t_308_c": Result("323E003", "t_c"),
     "m_e011_over_kgh": Result("323E011", "m_overflow_kgh"),
     "t_e011_over_c": Result("323E011", "t_c"),
     "t_719_c": Result(TRAIN, "nodes.324E002.hot_out_c"),

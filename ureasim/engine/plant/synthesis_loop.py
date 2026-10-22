@@ -10,7 +10,9 @@ and 21.10, as AC4 executes them, and 22.2) and section 37's loop pressure:
 step       what it is                                                 the tick before it reads
 =========  =========================================================  ===========================
 322E003    FIC-329409 and TIC-329005 (`ccw_loop`), the scrubber on    PT-329201; 323P001's 308
-           the reactor's off-gas and carryover, its sump              wash (``TearState``); the
+           the reactor's off-gas and carryover, its sump              wash, its composition and
+                                                                      temperature (B-105,
+                                                                      ``TearState``); the
                                                                       backlog PT-329201
                                                                       recondensed (B-76); its
                                                                       sump liquor's bubble
@@ -54,7 +56,7 @@ from ureasim.data.unit_322_loop import (
     TRIP_22_2_RESET_BARA,
 )
 from ureasim.data.unit_322r001 import C_ATOMS, N_ATOMS, NC_SPAN_MAX
-from ureasim.data.unit_323e003 import E003_M308_DES_KGH
+from ureasim.data.unit_323e003 import E003_M308_DES_KGH, E003_T_C, W_308
 from ureasim.engine.schedule import DeclaredTear, Operator, Result, State, Step, Tear
 from ureasim.units.synthesis.ccw_loop import CcwLoop, CcwResult
 from ureasim.units.synthesis.ejector import spindle_phi
@@ -172,6 +174,16 @@ def units() -> tuple[dict, dict]:
             {"322E003": (CcwLoop(),)})
 
 
+def _wash_departures(plant, a, dt) -> dict:
+    """The wash's composition and temperature as 323D001 delivered them on the tick before, each
+    as its departure from PFD 308 (decided 2026-10-22, handoff B-105), a line residence after they
+    left 323P001 (handoff B-110); none where the LPCC carries no species, V1's."""
+    if not plant.units["323E003"].track_species:
+        return {}
+    t_c, w = plant.units["322E003"].wash_arrival(a["m_308_kgh"], a["t_308_c"], a["w_308"], dt)
+    return {"wash_dw": {k: w[k] - W_308[k] for k in W_308}, "wash_dt_c": t_c - E003_T_C}
+
+
 def _322e003(plant, a, dt):
     sump, (ccw,) = plant.units["322E003"], plant.loops["322E003"]
     react = a["reaction"]
@@ -198,7 +210,8 @@ def _322e003(plant, a, dt):
         t_carry_c=a["t_overflow_c"], choke_level_pct=sump.level_pct,
         spindle_phi=max(spindle_phi(a["hic_322602_pct"]), 1e-6), cool_frac=cool,
         wash_ratio=a["m_308_kgh"] / E003_M308_DES_KGH, sump_room_kgh=room,
-        capacity_frac=rho_cond if sump.effectiveness_capacity else None)
+        capacity_frac=rho_cond if sump.effectiveness_capacity else None,
+        **_wash_departures(plant, a, dt))
     # The overflow and off-gas lines ride the live loop pressure: PT-329201 sits on the overflow line,
     # where the scrubber's own result carries the two lines' design pins (V1 `main.py` 8105-8106).
     sc = replace(sc, p_overflow_bara=p, p_offgas_bara=p)
@@ -266,7 +279,8 @@ def steps() -> dict:
             "pulse_kgh": Result("322R001", "m_fwd_kgh"),
             "recond_kgh": State("PT-329201", "m_recond_kgh"),
             "hic_322604_pct": Operator("HIC-322604"), "hic_322602_pct": Operator("HIC-322602"),
-            "m_308_kgh": Tear("m_308_kgh"), "p_syn_bara": p_syn}, _322e003),
+            "m_308_kgh": Tear("m_308_kgh"), "w_308": Tear("w_308"),
+            "t_308_c": Tear("t_308_c"), "p_syn_bara": p_syn}, _322e003),
         "HV-322604": Step("HV-322604", "inert purge to 322C001", "322", 5, {
             "scrubber": Result("322E003", "scrubber"), "hic_322604_pct": Operator("HIC-322604"),
             "p_syn_bara": p_syn, "p_c001_bara": State("322C001", "p_bara")}, _hv322604),
@@ -328,6 +342,10 @@ def tears() -> tuple[DeclaredTear, ...]:
                      "trip 22.2 reads PT-329201 before section 37 integrates it"),
         DeclaredTear(Tear("m_308_kgh"), "322E003",
                      "322E003 washes with 323P001's 308 of the tick before (V1 M308_KGH)"),
+        DeclaredTear(Tear("w_308"), "322E003",
+                     "the wash's composition as 323D001 left it on the tick before (B-105)"),
+        DeclaredTear(Tear("t_308_c"), "322E003",
+                     "the wash's temperature as 323D001 left it on the tick before (B-105)"),
         DeclaredTear(State("PT-329201", "m_recond_kgh"), "322E003",
                      "the backlog PT-329201 recondensed at the foot of the tick before returns to "
                      "322E003's sump (handoff B-76)"),

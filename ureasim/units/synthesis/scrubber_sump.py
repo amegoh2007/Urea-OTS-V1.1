@@ -25,6 +25,10 @@ A sump that has emptied gives the ejector at most what runs in. Its holdup is he
 and full; what the full sump cannot hold is held back in the scrubber above it and runs down as
 the sump makes room — a flooding sump already chokes the scrubber's condensation through its level.
 
+322E003 also owns its wash's inlet line, PFD 308 from 323P001 (decided 2026-10-22, handoff B-110):
+the flow arrives at once, the liquor's composition and temperature a line residence late
+(`wash_arrival`, B-21's class, on the line's isometrics).
+
 Decided by the process engineer on 2026-10-03 (handoff B-76, B-78 items 1 to 3): V1 deletes what
 recondenses from the loop's backlog, the full sump's excess and what the mushy zone holds back of
 the overflow, and draws the forward-carbamate pulse from nowhere. Here each reaches an inventory.
@@ -46,7 +50,10 @@ from ureasim.data.unit_322e003 import (
     OVERFLOW_T_CRYST_C,
 )
 from ureasim.data.unit_322f001 import CARBAMATE_FRAC
+from ureasim.data.unit_323e003 import E003_T_C, W_308
+from ureasim.thermo.empirical import urea_soln_cp
 from ureasim.units.consequence.crystallisation import mushy_flow_factor
+from ureasim.units.recirc.liquor_line import receive_liquor
 from ureasim.units.synthesis.scrubber import (
     liquor_bubble_p_bara,
     lt_329501_indication,
@@ -54,7 +61,12 @@ from ureasim.units.synthesis.scrubber import (
     lt_329501_swell,
 )
 
-__all__ = ["ScrubberSumpResult", "ScrubberSump"]
+__all__ = ["WASH_ROUTE", "WASH_CP_DES", "ScrubberSumpResult", "ScrubberSump"]
+
+#: PFD 308's line from 323P001 to 322E003/N5 (`data.process_routes`), and the wash's design
+#: specific heat [kJ/(kg K)], the anchor its packet's cp departs from (`liquor_line.stream_cp`).
+WASH_ROUTE = "323P001_TO_322E003"
+WASH_CP_DES = urea_soln_cp(W_308["Urea"], E003_T_C)
 
 
 @dataclass(frozen=True)
@@ -105,6 +117,31 @@ class ScrubberSump:
     #: 322E003's capacity on its shell's effectiveness and its duty capped at it (decided
     #: 2026-10-17, handoff B-99 (b1)); False is V1's linear flow law, which the harness keeps.
     effectiveness_capacity: bool = True
+    #: PFD 308's line from 323P001, the inlet 322E003 owns (decided 2026-10-22, handoff B-110),
+    #: and its state; False is the wash a tick late with no transit, which the harnesses keep.
+    wash_line: bool = True
+    line_state: dict = field(default_factory=dict)
+
+    def wash_arrival(self, m_308_kgh: float, t_308_c: float, w_308: dict,
+                     dt: float) -> tuple[float, dict]:
+        """PFD 308 as it reaches 322E003/N5: its temperature [deg C] and mass fractions [-].
+
+        Process utility
+        ---------------
+        The weak carbamate 323P001 pumps up to the scrubber's wash is the liquor 323D001 held a line
+        residence ago: 48 m of high-pressure pipe, about 25 s at the design 36.8 t/h, longer as
+        the pump slows. Its flow reaches the scrubber at once, a liquid-full line (B-21's class);
+        a change in 323D001's water or temperature reaches the wash and the reactor's feed only
+        after the line has turned over. A settled line hands back what departed, to the bit.
+
+        Source: handoff B-110 (decision 74's and B-21's classes), the line on its isometrics
+        (`data.process_routes`, ``323P001_TO_322E003``).
+        """
+        if not self.wash_line:
+            return t_308_c, w_308
+        arrived = receive_liquor(self.line_state, WASH_ROUTE, m_308_kgh, t_308_c, dict(w_308),
+                                 WASH_CP_DES, dt)
+        return arrived.t_c, arrived.w
 
     def step(self, overflow_kmolh: dict, t_overflow_c: float, suction_kgh: float,
              cool_frac: float, sim_t_s: float, dt: float, recond_kgh: float = 0.0,

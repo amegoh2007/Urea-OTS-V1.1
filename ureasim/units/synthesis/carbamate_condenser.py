@@ -79,6 +79,7 @@ from ureasim.core.numeric import clamp
 from ureasim.core.stream import MW_COMP
 from ureasim.data.unit_320 import SYN_P_DES_BARA
 from ureasim.data.unit_322e002 import (
+    BUB_AZEOTROPE_NC,
     BUB_DHVAP_JMOL,
     BUB_KN,
     BUB_KW,
@@ -98,6 +99,7 @@ from ureasim.data.unit_322e002 import (
     TAU_FILL_MIN,
 )
 from ureasim.data.unit_322r001 import REACTOR_FEED_HC_DES, REACTOR_FEED_NC_DES
+from ureasim.thermo.vle import bubble_p_bara
 from ureasim.units.synthesis.ejector import DESIGN as _EJECTOR_DES
 from ureasim.units.synthesis.stripper import TOP_DES_KMOLH, TOP_DES_T_C
 
@@ -212,24 +214,76 @@ def hpcc_flash_split(feed_kmolh: dict, t_c: float, p_loop_bara: float) -> dict:
 # The melt bubble pressure
 # ======================================================================================
 
+#: The tube-side feed at design [kmol/h] — the stripper's top gas and the ejector's discharge —
+#: and the species of its liquor the low-N/C rise is read on (handoff B-106).
+_FEED_DES_KMOLH = {k: TOP_DES_KMOLH.get(k, 0.0) + _EJECTOR_DES.comp_kgh.get(k, 0.0) / MW_COMP[k]
+                   for k in MW_COMP}
+_MELT_SPECIES = ("NH3", "CO2", "H2O", "Urea", "Biuret")
+
+
+def _melt_at_nc(nc: float) -> dict:
+    """The design melt's mass fractions with its ammonia set to the N/C ``nc`` [-]."""
+    n = dict(_FEED_DES_KMOLH)
+    n["NH3"] = nc * n["CO2"]
+    m = {k: n[k] * MW_COMP[k] for k in _MELT_SPECIES if n.get(k, 0.0) > 0.0}
+    total = sum(m.values())
+    return {k: v / total for k, v in m.items()}
+
+
+#: The Extended UNIQUAC bubble pressure of the design melt at N/C 3.0 and 170 C [bar a], 44.37 —
+#: the reference the low-N/C rise is a departure from, so it is exactly 0 at the branch.
+_P_EU_AZEOTROPE_BARA = bubble_p_bara(_melt_at_nc(BUB_AZEOTROPE_NC), T_PROD_DES_C)
+
+
+def low_nc_rise(nc: float) -> float:
+    """How far the melt's bubble pressure has risen below N/C 3.0, above its value there [bar].
+
+    Process utility
+    ---------------
+    A melt short of ammonia sits on the ammonia-poor side of the NH3-CO2 azeotrope: its free CO2
+    is no longer held as carbamate, and its bubble pressure climbs steeply as the N/C falls —
+    the low-N/C excursion that drives a synthesis loop's pressure up (handoff B-106, decided
+    2026-10-22). The model's calibrated K_N line cannot show it, because it falls with the N/C
+    on both sides of the design.
+
+    Equation
+    --------
+        dP_az(N/C) = P_EU(w_des(N/C), 170 C) - P_EU(w_des(3.0), 170 C)
+
+    the Extended UNIQUAC bubble pressure (`thermo.vle.bubble_p_bara`) of the design melt with its
+    ammonia set to the N/C, at the design product temperature, as its departure from the branch
+    in bar (decision 51's class; decided 2026-10-22, handoff B-111). The model puts the melt's
+    absolute bubble point at 44.37 bar a, a third of the plant's 144.2: a ratio on that base
+    multiplied every bar of the rise by 3.25, so the rise is added, not multiplied. The temperature
+    and the water stay on the condenser's own law. 0 at 3.0; 9.38 bar at 2.8, 38.04 at 2.6.
+    """
+    return bubble_p_bara(_melt_at_nc(nc), T_PROD_DES_C) - _P_EU_AZEOTROPE_BARA
+
+
 def bubble_p_322e002(t_c: float, nc: float, hc: float,
-                     nc_anchor: float = REACTOR_FEED_NC_DES) -> float:
+                     nc_anchor: float = REACTOR_FEED_NC_DES, low_nc: bool = True) -> float:
     """Bubble-point pressure of the combined carbamate melt [bar a] — PI-322E002.
 
     Process utility
     ---------------
-    What pressure this melt would sit at if it were left to its own devices. It is TELEMETRY:
-    the operator reads it beside the measured loop pressure, and the gap between the two says
-    whether the loop is holding the melt down or the melt is holding the loop up. It does not
-    enter the pressure target, so it adds no loop.
+    What pressure this melt would sit at if it were left to its own devices. The operator reads
+    it beside the measured loop pressure, and the gap between the two says whether the loop is
+    holding the melt down or the melt is holding the loop up; since B-91 it also sets how much of
+    the volatiles the melt can still condense (`liquor_saturation.saturation_fraction`).
 
     Equation
     --------
         P = P_des . exp[(dHvap/R)(1/T_des - 1/T)] . max(fN, 0) . max(fW, 0)
-        fN = 1 + K_N (N/C - N/C_anchor)        free-ammonia volatility lift
+        fN = 1 + K_N (N/C - N/C_anchor)        free-ammonia volatility lift, N/C >= 3.0
+        fN = fN(3.0) + dP_az(N/C) / P_des      the azeotropic rise below it (`low_nc_rise`)
         fW = 1 + K_W (H/C - H/C_des)           water dilution
 
-    Monotone in all three: dP/dT > 0, dP/d(N/C) > 0, dP/d(H/C) < 0.
+    Below N/C 3.0 the factor follows the Extended UNIQUAC rise toward the azeotrope (decided
+    2026-10-22, handoff B-106), added as its departure in bar (handoff B-111), so at the design
+    temperature and water each bar of the model's rise is a bar of PI-322E002; continuous at 3.0;
+    ``low_nc=False`` is V1's line on both sides,
+    which the equivalence harnesses keep. dP/dT > 0 and dP/d(H/C) < 0 everywhere; dP/d(N/C) > 0
+    above 3.0 and < 0 below it.
 
     The N/C anchor
     --------------
@@ -248,6 +302,8 @@ def bubble_p_322e002(t_c: float, nc: float, hc: float,
     """
     cc = math.exp((BUB_DHVAP_JMOL / FLASH_R_GAS_J) * (1.0 / FLASH_T0_K - 1.0 / (t_c + 273.15)))
     f_n = 1.0 + BUB_KN * (nc - nc_anchor)
+    if low_nc and nc < BUB_AZEOTROPE_NC:
+        f_n = (1.0 + BUB_KN * (BUB_AZEOTROPE_NC - nc_anchor)) + low_nc_rise(nc) / P_DES_BARA
     f_w = 1.0 + BUB_KW * (hc - REACTOR_FEED_HC_DES)
     return P_DES_BARA * cc * max(f_n, 0.0) * max(f_w, 0.0)
 
@@ -325,7 +381,7 @@ def carbamate_condenser_322e002(gas_feed_kmolh: dict, gas_feed_t_c: float,
                                 dt: float = 0.0,
                                 ua_kjhk=_PINNED,
                                 nc_anchor: float = REACTOR_FEED_NC_DES,
-                                sat_frac: float = 1.0) -> CondenserResult:
+                                sat_frac: float = 1.0, low_nc: bool = True) -> CondenserResult:
     """Evaluate the HP carbamate condenser for one tick.
 
     Parameters
@@ -355,6 +411,9 @@ def carbamate_condenser_322e002(gas_feed_kmolh: dict, gas_feed_t_c: float,
     sat_frac
         The melt's saturation fraction [-] (`liquor_saturation.saturation_fraction`): the share of
         the condensing volatiles it can hold at the loop's pressure, 1 by default.
+    low_nc
+        The melt's bubble pressure rising toward its azeotrope below N/C 3.0 (decided
+        2026-10-22, handoff B-106); False is V1's K_N line, which the harnesses keep.
     """
     # ----- 1. the combined tube-side feed ---------------------------------------------------
     feed = {k: gas_feed_kmolh.get(k, 0.0) + liq_feed_kgh.get(k, 0.0) / MW_COMP[k]
@@ -452,7 +511,7 @@ def carbamate_condenser_322e002(gas_feed_kmolh: dict, gas_feed_t_c: float,
                      BUB_RATIO_LO_FRAC * REACTOR_FEED_HC_DES,
                      BUB_RATIO_HI_FRAC * REACTOR_FEED_HC_DES)
                if co2 > 1e-9 else REACTOR_FEED_HC_DES)
-    p_bub = bubble_p_322e002(t_prod, melt_nc, melt_hc, nc_anchor)
+    p_bub = bubble_p_322e002(t_prod, melt_nc, melt_hc, nc_anchor, low_nc)
 
     return CondenserResult(
         phi_gas=phi_gas, phi_film=phi_film, phi_eq=phi_eq,
