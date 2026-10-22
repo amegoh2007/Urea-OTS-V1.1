@@ -18,8 +18,11 @@ Decided classes applied at the port (§5 rule 7, As-Built Part LIV)
 * **Decision 108's class** (decided 2026-10-15): PV-329204, PV-329207A and PV-329207B on Metso's
   Neldisc trims (`ureasim.data.control_valves`, sheets 28-30), each on its printed points and its
   normal case's xT — PV-329204 and PV-329207B from the strokes where they pass PFD 902 and 932,
-  PV-329207A, shut at design, on its full-stroke capacity on its normal case. PV-329207C, HV-329601
-  and HV-329602 are on no sheet in the archive and keep V1's law; the harness keeps V1's for all.
+  PV-329207A, shut at design, on its full-stroke capacity on its normal case; the harness keeps
+  V1's for all.
+* **Decision 150** (decided 2026-10-22): HV-329601 and PV-329207C on Flowserve's Mark One sheets
+  (Pos. 65, 76) and HV-329602 on Fisher's (UD-MR-G00-DZ-0014, item 025), found in session 69, each
+  on its full-stroke capacity on its normal case; the harness keeps V1's law for them too.
 * **§4's order** for the four butterflies V1 gives literal coefficients no document carries
   (HV-329601 its own sizing of PV-329204, PV-329207A 3.0, PV-329207C and HV-329602 2.0): each
   wide open passes its loop summary's maximum case. HV-329601 on V1's coefficient vented 288 t/h
@@ -61,11 +64,14 @@ from ureasim.data.control_valves import (
     PV_329204,
     PV_329205A,
     PV_329205B,
+    HV_329601,
     PV_329207A,
     PV_329207B,
+    PV_329207C,
     design_stroke_pct,
     full_stroke_m3h,
 )
+from ureasim.data.control_valves_fisher import HV_329602
 from ureasim.data.relief_devices import RELIEF_DEVICES, RELIEF_SIZING
 from ureasim.data.unit_329 import (
     M_913_DES_KGH,
@@ -210,6 +216,27 @@ PV205B_P1_DES_BARA = PV_329205B.normal_case.p1_bara
 PV205B_P2_DES_BARA = PV_329205B.normal_case.p2_bara
 PV205B_XT = PV_329205B.normal_case.xt
 
+#: HV-329601, PV-329207C and HV-329602 on their vendor sheets (decided 2026-10-22, decision 150;
+#: decision 23's class), all three shut at design, so each is anchored on its full-stroke capacity
+#: on its normal case, as PV-329205B is: HV-329601's Flowserve Mark One (Pos. 65), equal percentage,
+#: 16 151 kg/h from 19.9 to 1.5 bar a, its xT from the sheet's choke drop; PV-329207C's Mark One
+#: MegaStream (Pos. 76), linear, 34 882 kg/h from 22.0 to 4.4 bar a; HV-329602's Fisher globe
+#: (UD-MR-G00-DZ-0014, item 025), linear, 39 233 kg/h on the same case, xT 0.532. They replace the
+#: loop summaries' maximum cases at full stroke (K_HV601, K_963, K_HV602), which the sheets size
+#: at 82 %, 84 % and 87 % open; the harness keeps those for V1's.
+HV601_FULL_KGS = full_stroke_m3h(HV_329601) * HV_329601.normal_case.rho / 3600.0
+HV601_FULL_P1_BARA = HV_329601.normal_case.p1_bara
+HV601_FULL_P2_BARA = HV_329601.normal_case.p2_bara
+HV601_XT = HV_329601.normal_case.xt
+PV207C_FULL_KGS = full_stroke_m3h(PV_329207C) * PV_329207C.normal_case.rho / 3600.0
+PV207C_P1_DES_BARA = PV_329207C.normal_case.p1_bara
+PV207C_P2_DES_BARA = PV_329207C.normal_case.p2_bara
+PV207C_XT = PV_329207C.normal_case.xt
+HV602_FULL_KGS = full_stroke_m3h(HV_329602) * HV_329602.normal_case.rho / 3600.0
+HV602_P1_DES_BARA = HV_329602.normal_case.p1_bara
+HV602_P2_DES_BARA = HV_329602.normal_case.p2_bara
+HV602_XT = HV_329602.normal_case.xt
+
 #: The three level valves' design strokes [%], flows [kg/s] and FL. LV-329502 passes 904 on
 #: Valtek's modified equal percentage (86.87 %), LV-329503 913 linear (58.88 %), LV-329504 916
 #: modified equal percentage (48.26 %). V1: linear from 50 %.
@@ -304,7 +331,10 @@ __all__ = [
     "PV207A_FULL_KGS", "PV207A_P1_DES_BARA", "PV207A_P2_DES_BARA", "PV207A_XT", "PV207B_OP_DES_PCT",
     "PV207B_XT",
     "M_903_DES_KGS", "DS9_DES_KGS", "PV205A_OP_DES_PCT", "PV205A_XT", "PV205B_FULL_KGS", "PV205B_P1_DES_BARA",
-    "PV205B_P2_DES_BARA", "PV205B_XT", "M_502_DES_KGS", "M_503_DES_KGS", "M_504_DES_KGS",
+    "PV205B_P2_DES_BARA", "PV205B_XT", "HV601_FULL_KGS", "HV601_FULL_P1_BARA",
+    "HV601_FULL_P2_BARA", "HV601_XT", "PV207C_FULL_KGS", "PV207C_P1_DES_BARA", "PV207C_P2_DES_BARA",
+    "PV207C_XT", "HV602_FULL_KGS", "HV602_P1_DES_BARA", "HV602_P2_DES_BARA", "HV602_XT",
+    "M_502_DES_KGS", "M_503_DES_KGS", "M_504_DES_KGS",
     "LV502_OP_DES_PCT", "LV503_OP_DES_PCT", "LV504_OP_DES_PCT", "LV502_FL", "LV503_FL",
     "LV504_FL", "PT_329204_SPAN_BAR", "PT_329207_SPAN_BAR", "PIC_329204_KC_TABLE",
     "PIC_329204_TI_S", "PIC_329204_KC", "PIC_329204_KI", "PIC_329204_I_AUTHORITY_PCT",

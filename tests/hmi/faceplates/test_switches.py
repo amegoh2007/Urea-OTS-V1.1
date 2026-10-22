@@ -47,7 +47,7 @@ def test_the_keyswitch_and_the_route(bridge):
     key.turn(False)
     route = RouteFaceplate(bridge, {"t": "ind", "tag": "LV-324501B", "route": "B"})
     route.show()
-    assert route.fields["A"].text() == "75.0"
+    assert route.fields["A"].text() == "75.3"      # LV-324501A at its 75.35 % (decision 150)
     route.route("B")
     assert bridge.sent == [{"type": "keyswitch_set", "id": "HS-322915", "on": True},
                            {"type": "keyswitch_set", "id": "HS-322915", "on": False},

@@ -30,7 +30,9 @@ another unit and applied here under §5 rule 7.
     seeded into V1's controller dicts;
   * "relief" — SV32852 lifts at its set pressure and vents the head space to its reseat
     pressure (handoff B-47, decided 2026-09-30); V1 relieves nothing. The law is written below
-    from Uhde's and Sempell's sheets, on V1's own ``vessel_dpdt`` and IAPWS-IF97.
+    from Uhde's and Sempell's sheets, on V1's own ``vessel_dpdt`` and IAPWS-IF97;
+  * "lv504" — LV-328504 on Fisher's trim (decision 150): equal percentage, FL 0.819, from its
+    design stroke, seeded into LIC-328504, on V1's own ``valve_liquid_anchored``.
 
 Every scenario runs the port against the switched transcription; those where E021, the heel and
 the overflow never act also run on V1's own lines for those three; and each departure runs both
@@ -41,12 +43,14 @@ V1's 328C002 in V1's order: 746 same-tick, 748 a tear.
 
 from __future__ import annotations
 
+import math
 from types import SimpleNamespace
 
 import pytest
 
 from ureasim.core.flowsheet import Connection, CyclicFlowsheetError, Flowsheet, Tear, Unit
 from ureasim.data import control_valves as cvd
+from ureasim.data import control_valves_fisher as fv
 from ureasim.data import desorption_train as t
 from ureasim.data import unit_328c003 as c
 from ureasim.units.desorption import first_desorber as fd
@@ -81,10 +85,10 @@ c002_v1 = c002_eq.v1
 
 DT = 0.1
 
-ALL = frozenset({"vapour", "E021", "heel", "overflow", "valve", "gains", "relief"})
+ALL = frozenset({"vapour", "E021", "heel", "overflow", "valve", "gains", "relief", "lv504"})
 V1_VERBATIM = frozenset()
-#: The two seeded classes alone.
-SEEDED = frozenset({"valve", "gains"})
+#: The seeded classes alone.
+SEEDED = frozenset({"valve", "gains", "lv504"})
 #: The seeded classes on decision 24's books: V1's lines for the exchanger and the two limits.
 #: The liquid's books differ from V1's in every transient, so the inert scenarios run on them.
 ON_BOOKS = SEEDED | {"vapour", "relief"}
@@ -103,6 +107,12 @@ def _sv32852(g) -> dr.Valve:
 #: PV-328203 as decided, re-derived from the vendor catalogue: design stroke [%], xT.
 DECIDED_PV203_OP = dv.design_stroke_pct(cvd.PV_328203, t.C003_M748_DES_KGH)
 DECIDED_PV203_XT = cvd.PV_328203.cases[cvd.PV_328203.normal].xt
+#: LV-328504 as decided (decision 150), re-derived from Fisher's sheet: design stroke [%] and FL.
+DECIDED_LV504_OP = dv.design_stroke_pct(fv.LV_328504, t.C003_M747_DES_KGH)
+DECIDED_LV504_FL = 0.819
+#: The stroke at which LV-328504 passes 80 % of its design flow at design pressures — 52.10 % on
+#: the 50:1 equal percentage, where V1's linear trim passes it at 40 %.
+LV504_AT_80_PCT = DECIDED_LV504_OP + 100.0 * math.log(0.8) / math.log(50.0)
 #: The two gains as decided, written from their sources: the table on PT-328203's 40 bar and on
 #: FT-329402's 1800 kg/h.
 DECIDED_PIC203_KC = 1.5 * 100.0 / 40.0
@@ -154,6 +164,8 @@ def _v1_state(v1, decided=ALL):
                     "op_lo": 0.0, "op_hi": 100.0, "sp_lo": 0.0, "sp_hi": 30.0}
     if "valve" in decided:
         s.PIC_328203["op"] = DECIDED_PV203_OP
+    if "lv504" in decided:
+        s.LIC_328504["op"] = DECIDED_LV504_OP
     if "gains" in decided:
         s.PIC_328203["Kc"] = DECIDED_PIC203_KC
         s.FIC_329402["Kc"] = DECIDED_FIC402_KC
@@ -199,11 +211,14 @@ def _v1_c003(v1, s, m_743, dt, decided=ALL):
     lic504_op = g["_ctrl_ipd"](s.LIC_328504, lvl_c003, dt)
     _h_c003 = s.a328_c003_M / (g["R328_C003_RHO_746_KGM3"] * g["R328_C003_AREA_M2"])
     _p1_504 = s.a328_c003_P + g["R328_C003_RHO_746_KGM3"] * 9.80665 * _h_c003 / 1.0e5
+    op_des, char, fl = g["R328_LV504_OP_DES"], g["R328_LV_CHAR"], g["hydraulics"].FL_GLOBE
+    if "lv504" in decided:  # ---- LV-328504 on Fisher's trim (the port's valve) ----
+        op_des, char, fl = DECIDED_LV504_OP, "equal_pct", DECIDED_LV504_FL
     m_747 = g["hydraulics"].valve_liquid_anchored(
         g["R328_C003_M747_DES"], lic504_op / 100.0, _p1_504, s.a328_c004_P,
-        g["R328_C003_RHO_746_KGM3"], g["R328_LV504_OP_DES"] / 100.0,
+        g["R328_C003_RHO_746_KGM3"], op_des / 100.0,
         g["R328_C003_P_BARA"] + g["R328_C003_HEAD_DES"], g["R328_C004_P_BARA"],
-        g["R328_C003_RHO_746_KGM3"], characteristic=g["R328_LV_CHAR"],
+        g["R328_C003_RHO_746_KGM3"], characteristic=char, fl=fl,
         pv_bara=g["liquor_pv_bara"](s.w_328c003, s.tlag.get("T_749", g["R328_C004_T749"])),
         pv_des_bara=g["R328_LV504_PV_DES"])
     lost = False
@@ -329,8 +344,7 @@ def _assert_tick(a: dict, b: hy.HydrolyserResult, s, col, loops, label):
     (c, "C003_HEAD_DES_BAR", "R328_C003_HEAD_DES"), (c, "M911_DH_KJKG", "R328_C003_M911_DH"),
     (c, "C003_TAU_DES_S", "R328_AI701_TAU_S"), (c, "HYDROLYSIS_DH_KJMOL", "R328_HYD_DH_KJMOL"),
     (c, "E021_EPS_T", "R328_E021_EPS_T"), (c, "E021_LOSS_DT_KGKH", "R328_E021_LOSS_DT"),
-    (c, "MW748_DES", "R328_M748_MW_DES"), (c, "LV504_OP_DES_PCT", "R328_LV504_OP_DES"),
-    (c, "LV504_CHAR", "R328_LV_CHAR"), (c, "LV504_PV_DES_BARA", "R328_LV504_PV_DES"),
+    (c, "MW748_DES", "R328_M748_MW_DES"), (c, "LV504_PV_DES_BARA", "R328_LV504_PV_DES"),
     (t, "C004_T_C", "R328_C004_T"), (t, "C004_T749_C", "R328_C004_T749"),
     (t, "C004_P_BARA", "R328_C004_P_BARA"),
     (hy, "HYD_GAS_MW", "R328_HYD_GAS_MW"), (hy, "C003_X_DES", "R328_C003_X_DES"),
@@ -380,6 +394,11 @@ def test_the_state_and_the_controllers_are_seeded_as_v1_seeds_them(v1):
                                   loop.sp_lo, loop.sp_hi), v1_name
     s0 = _v1_state(v1, V1_VERBATIM)
     assert (s0.PIC_328203["op"], s0.PIC_328203["Kc"], s0.FIC_329402["Kc"]) == (50.0, 1.5, 0.4)
+    assert s0.LIC_328504["op"] == 50.0
+    assert (v1["R328_LV504_OP_DES"], v1["R328_LV_CHAR"]) == (50.0, "linear")
+    assert (c.LV504_OP_DES_PCT, c.LV504_CHAR, c.LV504_FL) == (
+        pytest.approx(DECIDED_LV504_OP, rel=1e-12), "equal_pct", DECIDED_LV504_FL)
+    assert DECIDED_LV504_OP == pytest.approx(57.802, abs=1e-3)
     assert (DECIDED_PV203_OP, DECIDED_PIC203_KC, DECIDED_FIC402_KC) == (
         pytest.approx(70.5615, abs=1e-4), 3.75, pytest.approx(0.02222, abs=1e-5))
 
@@ -544,10 +563,10 @@ def _c003_books(p_bara, t_c, m_kg, y):
 
 
 @pytest.mark.parametrize("name, before, v1_made, v1_t, v1_p, p", [
-    ("PV-328203 in MAN at 20 %", _manual("PIC_328203", "pic_328203", 20.0), 505.10, 203.091,
-     36.096, 23.893),
-    ("PV-328203 shut", _manual("PIC_328203", "pic_328203", 0.0), 812.04, 205.109, 42.315, 23.786),
-    ("PIC-328203 to 17.5 bar a", _set_point("PIC_328203", "pic_328203", 17.5), 14.43, 200.077,
+    ("PV-328203 in MAN at 20 %", _manual("PIC_328203", "pic_328203", 20.0), 500.25, 203.019,
+     37.954, 23.180),
+    ("PV-328203 shut", _manual("PIC_328203", "pic_328203", 0.0), 812.03, 205.022, 44.933, 23.330),
+    ("PIC-328203 to 17.5 bar a", _set_point("PIC_328203", "pic_328203", 17.5), 12.82, 200.068,
      17.501, 17.503),
 ])
 def test_the_liquid_pays_what_boils_decided_divergence(v1, name, before, v1_made, v1_t, v1_p, p):
@@ -556,8 +575,8 @@ def test_the_liquid_pays_what_boils_decided_divergence(v1, name, before, v1_made
     valve holds back is made, and boiled for nothing. The books — the liquid plus the head
     space's vapour, read off the pressure state at the molar mass each tick ran on, against what
     crossed the boundary — are kept on both sides for an hour at 0.5 s. With the valve at 20 % V1
-    makes 505 kg, exactly its integral of generation less overhead, and runs 3.1 K hot on the
-    latent heat it never charged; shut, 812 kg and 5.1 K; a set point 0.7 bar up, 14 kg. The
+    makes 500 kg, exactly its integral of generation less overhead, and runs 3.0 K hot on the
+    latent heat it never charged; shut, 812 kg and 5.0 K; a set point 0.7 bar up, 13 kg. The
     port's books — SV32852's vent among what crosses the boundary (B-47) — close within 50 g
     and the column holds 200 C, its pressure rising on the vapour it now keeps until SV32852 holds
     it between 21.71 and 24.01 bar a. V1 runs without the relief here, as it is."""
@@ -635,29 +654,29 @@ def _both(v1, script, ticks, dt, before, v1_decided):
 
 def test_sv32852_relieves_the_shut_overhead_decided_divergence(v1):
     """B-47, decided 2026-09-30. PV-328203 shut. V1 relieves nothing: on the liquid's decided
-    books it stands at 53.07 bar a an hour on, past the column's 28.5 bar a design. The port's
+    books it stands at 57.32 bar a an hour on, past the column's 28.5 bar a design. The port's
     column reaches SV32852's set, 24.01 bar a, at 459 s; the valve lifts, vents the head space at
-    27 t/h for 5 s down to its reseat pressure, 21.71 bar a, and reseats — and the cycle repeats
-    every 165.5 s, 19 lifts in the hour, venting 670 kg: what the column generated and could not
-    pass. They part on the tick the valve lifts, and the liquid's books close on both sides."""
+    27 t/h for 5 s down to its reseat pressure, 21.71 bar a, and reseats — and the cycle repeats,
+    20 lifts in the hour, venting 694 kg: what the column generated and could not pass. They part on the tick the valve lifts, and the liquid's books close on both sides."""
     r = _both(v1, lambda k: _design(), 7200, 0.5, _manual("PIC_328203", "pic_328203", 0.0),
               ALL - {"relief"})
     assert r.parted == r.first["relief"] == 918
-    assert r.s.a328_c003_P == pytest.approx(53.068, abs=1e-3)
-    assert r.p_hi == pytest.approx(24.0165, abs=1e-4) and r.p_hi < c.SV32852_SET_BARA + 0.01
+    assert r.s.a328_c003_P == pytest.approx(57.317, abs=1e-3)
+    assert r.p_hi == pytest.approx(24.0173, abs=1e-4) and r.p_hi < c.SV32852_SET_BARA + 0.01
     assert r.p_lo == pytest.approx(c.SV32852_RESEAT_BARA, abs=1e-9)
-    assert r.lifts == 19 and r.vented == pytest.approx(669.63, abs=0.01)
+    assert r.lifts == 20 and r.vented == pytest.approx(693.71, abs=0.01)
     assert abs(r.made_v1) < 1e-6 and abs(r.made) < 1e-6
 
 
 def test_328e021_never_makes_heat_decided_divergence(v1):
-    """Decision 14. LV-328504 held at 40 %: 747 falls below 85 % of the feed and 328E021
-    pinches on the first tick. V1 heats 746 to 190 C whatever the hot side gave — its 749
+    """Decision 14. LV-328504 held where it passes 80 % of its design flow (52.10 % on Fisher's
+    trim, decision 150; V1's 40 %): 747 falls below 85 % of the feed and 328E021 pinches on the
+    first tick. V1 heats 746 to 190 C whatever the hot side gave — its 749
     clamped at 139 C, the cold side taking 36 000 kg.K/h more than the hot side gave, some 43 kW
     made — and holds 200 C and 0.73 ppm. The port's feed takes what the hot side gave: 188.06 C
     an hour on, the column 1.03 K colder and its condensate at 1.16 ppm."""
-    r = _both(v1, lambda k: _design(), 7200, 0.5, _manual("LIC_328504", "lic_328504", 40.0),
-              ALL - {"E021"})
+    r = _both(v1, lambda k: _design(), 7200, 0.5,
+              _manual("LIC_328504", "lic_328504", LV504_AT_80_PCT), ALL - {"E021"})
     a, b, s, col = r.a, r.b, r.s, r.col
     assert r.parted == r.first["pinched"] == 0
     assert a["pinched"] and a["746T"] == pytest.approx(190.0, abs=1e-9)
@@ -675,16 +694,16 @@ def test_328e021_never_makes_heat_decided_divergence(v1):
 
 
 def test_lv_328504_at_the_heel_decided_divergence(v1):
-    """Decision 11. LV-328504 held wide open drains 56 t/h against 35 t/h arriving: the column
-    reaches its heel at 5252.5 s. V1's letdown goes on passing 56 t/h and its 1 kg floor makes
-    the difference — 33.9 t of liquid in the three hours; the port's passes what arrives less
+    """Decision 11. LV-328504 held wide open drains 101 t/h on Fisher's trim (decision 150) against
+    35 t/h arriving: the column reaches its heel at 1628.5 s. V1's letdown goes on passing 101 t/h
+    and its 1 kg floor makes the difference — 171.1 t of liquid in the three hours; the port's passes what arrives less
     what boils, flagged, and makes none."""
     r = _both(v1, lambda k: _design(), 21600, 0.5, _manual("LIC_328504", "lic_328504", 100.0),
               ALL - {"heel"})
     a, b = r.a, r.b
-    assert r.parted == r.first["lost"] == 10505
-    assert r.made_v1 == pytest.approx(33899.7, abs=0.1) and abs(r.made) < 1e-6
-    assert a["747"] == pytest.approx(56092.2, abs=0.1)
+    assert r.parted == r.first["lost"] == 3257
+    assert r.made_v1 == pytest.approx(171084.7, abs=0.1) and abs(r.made) < 1e-6
+    assert a["747"] == pytest.approx(100572.5, abs=0.1)
     assert b.drain_lost and b.m_747_kgh == pytest.approx(
         t.C003_M746_DES_KGH + b.m_911_kgh - b.gen_748_kgh, rel=1e-9)
 
@@ -716,10 +735,27 @@ def test_pv_328203_on_its_vendor_trim_decided_divergence(v1):
                                            pytest.approx(159.7, abs=0.1))
     r = _both(v1, lambda k: _design(), 1200, 0.5, _manual("PIC_328203", "pic_328203", 20.0),
               ALL - {"valve"})
-    assert (r.s.a328_c003_P, r.col.p_bara) == (pytest.approx(21.781, abs=1e-3),
-                                               pytest.approx(23.821, abs=1e-3))
+    assert (r.s.a328_c003_P, r.col.p_bara) == (pytest.approx(21.787, abs=1e-3),
+                                               pytest.approx(23.830, abs=1e-3))
     assert (r.a["748"], r.b.m_748_kgh) == (pytest.approx(420.9, abs=0.1),
                                            pytest.approx(226.3, abs=0.1))
+
+
+def test_lv_328504_on_fishers_trim_decided_divergence(v1):
+    """Decision 150. LV-328504 on Fisher's equal percentage from 57.80 % on FL 0.819; V1's linear
+    from 50 % on FL 0.90. Both pass 747's 34 062 kg/h at their design strokes: on the seed tick the
+    flows agree to the bit, the strokes differ. 746 cut a fifth: an hour on V1 has drawn its level
+    down to 45.00 % passing 28 046 kg/h; the port, its trim's gain lower at design, to 46.48 %
+    passing 26 182."""
+    r = _both(v1, lambda k: _design(), 1, 0.5, None, ALL - {"lv504"})
+    assert r.parted == 0
+    assert r.a["747"] == r.b.m_747_kgh == t.C003_M747_DES_KGH
+    assert (r.a["lic"], r.b.lic_op_pct) == (50.0, pytest.approx(DECIDED_LV504_OP, abs=1e-9))
+    r = _both(v1, _step(10, m746=0.8 * t.C003_M746_DES_KGH), 7200, 0.5, None, ALL - {"lv504"})
+    assert (r.a["747"], r.b.m_747_kgh) == (pytest.approx(28046.4, abs=0.1),
+                                           pytest.approx(26181.8, abs=0.1))
+    assert (r.a["LI_328504"], r.b.level_pct) == (pytest.approx(45.00, abs=0.01),
+                                                 pytest.approx(46.48, abs=0.01))
 
 
 @pytest.mark.parametrize("name, before, field, v1_end, end", [

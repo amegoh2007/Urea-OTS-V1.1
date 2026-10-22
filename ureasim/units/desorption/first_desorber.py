@@ -117,6 +117,11 @@ on the drum's, the hydrolyser's and 328C004's temperatures of the tick before (a
 after this unit). At the design seed each is V1's to the bit; ``live_inlets=False`` is V1's, which
 the plant-level harness keeps.
 
+A seventh, decided 2026-10-22 (decision 150, decision 23's class): **LV-328503 on Fisher's trim**
+(UD-MR-G00-DZ-0014, item 022) — equal percentage, rated Cv 82.2, FL 0.819, from 56.95 %, where its
+rated Cv passes PFD 743 on the normal case; V1 runs it linear from 50 % on the IEC FL 0.90, the
+sheet not having been found. Exactly PFD 743 at the design stroke either way.
+
 The boundaries this unit reads, and when
 ----------------------------------------
   * 738 and its temperature, from 328E007 — this tick's (`DesorberHeatExchangerResult`);
@@ -183,6 +188,7 @@ from ureasim.data.unit_328c002 import (
     LIC_328503_SP_PCT,
     LIC_328503_TI_S,
     LV503_CHARACTERISTIC,
+    LV503_FL,
     LV503_OP_DES_PCT,
     LV503_P1_DES_BARA,
     LV503_PV_DES_BARA,
@@ -333,11 +339,12 @@ class FirstDesorber:
               + C002_RHO_KGM3 * G_ACC * (head_m + P006_Z_DROP_M) / PA_PER_BAR
               + P006_DP_PUMP_BAR)
         # The liquor reaches the valve at the bottoms' temperature: 328E021 heats it downstream
-        # (decided divergence, handoff B-43; V1 reads 328E021's cold outlet).
+        # (decided divergence, handoff B-43; V1 reads 328E021's cold outlet). The valve runs
+        # Fisher's equal-percentage trim and FL (decision 150; V1 linear from 50 %).
         m_743 = valve_liquid_anchored(
             C002_M743_DES_KGH, lic_op / 100.0, p1, p_c003_bara, C002_RHO_KGM3,
             LV503_OP_DES_PCT / 100.0, LV503_P1_DES_BARA, C003_P_BARA, C002_RHO_KGM3,
-            characteristic=LV503_CHARACTERISTIC,
+            characteristic=LV503_CHARACTERISTIC, fl=LV503_FL,
             pv_bara=liquor_pv_bara(self.w, t_pre), pv_des_bara=LV503_PV_DES_BARA)
 
         # ----- the duty and the boil-up: energy-limited, anchored on the design duty. A

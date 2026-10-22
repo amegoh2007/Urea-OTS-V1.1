@@ -55,8 +55,8 @@ def test_the_design_point_is_the_pfds():
 
 
 @pytest.mark.parametrize("m750, p, t_c, m737", [
-    (1.2 * t.C002_M750_DES_KGH, 3.86920, 142.5464, 7875.09),
-    (0.8 * t.C002_M750_DES_KGH, 3.19050, 135.7874, 5404.96),
+    (1.2 * t.C002_M750_DES_KGH, 3.86916, 142.5460, 7874.97),
+    (0.8 * t.C002_M750_DES_KGH, 3.19024, 135.7846, 5405.33),
 ])
 def test_the_stripping_vapour_sets_the_pressure_and_the_temperature(m750, p, t_c, m737):
     """750 a fifth up or down: the duty moves the boil-up, the boil-up the pressure, the
@@ -77,8 +77,8 @@ def test_the_stripping_vapour_lost_the_column_cools_to_its_feeds():
     _, out, made = _run(3000, dict(m748=0.0, m750=0.0))
     r = out[-1]
     assert r.m_737_kgh == 0.0 and abs(r.q_kw) < 0.6
-    assert r.p_bara == pytest.approx(1.48248, abs=1e-5)
-    assert r.t_c == pytest.approx(111.2776, abs=1e-4)
+    assert r.p_bara == pytest.approx(1.48257, abs=1e-5)
+    assert r.t_c == pytest.approx(111.2794, abs=1e-4)
     t_mix = ((t.C002_M738_DES_KGH * t.C002_T738_DES_C + t.C002_M775_DES_KGH * t.D001_T_C)
              / (t.C002_M738_DES_KGH + t.C002_M775_DES_KGH))
     assert r.t_c == pytest.approx(t_mix, abs=0.02)
@@ -89,29 +89,31 @@ def test_every_inlet_lost_the_column_stands_hot_and_full_of_its_liquid():
     _, out, made = _run(3000, dict(m738=0.0, m748=0.0, m750=0.0, m775=0.0))
     r = out[-1]
     assert (r.m_737_kgh, r.m_743_kgh) == (0.0, 0.0)
-    assert r.m_kg == pytest.approx(950.12, abs=0.01) and r.t_c == pytest.approx(126.933, abs=1e-3)
+    assert r.m_kg == pytest.approx(918.15, abs=0.01) and r.t_c == pytest.approx(126.826, abs=1e-3)
     assert abs(made) < 1e-9
 
 
 def test_lv_328503_holds_the_level_when_328c004s_overhead_is_halved():
     """750 halved: the column strips far less — its bottoms carry 5.4 % NH3 ten minutes on — and
     LV-328503, choking on the bottoms' own bubble pressure at 139 C, still passes them: the level
-    holds 50 %. On V1's choke at 328E021's outlet, 190 C, the valve is wide open passing 14.4 t/h
-    and the level through 148 % (decided 2026-09-30, handoff B-43)."""
+    holds 50 %, the valve at 57.98 % on Fisher's trim (decision 150). On V1's choke at 328E021's
+    outlet, 190 C, the valve is wide open and the level through 145 % (decided 2026-09-30, handoff
+    B-43)."""
     col, out, _ = _run(6000, dict(m750=0.5 * t.C002_M750_DES_KGH))
     r = out[-1]
     assert r.level_pct == pytest.approx(50.00, abs=0.01)
-    assert r.m_743_kgh == pytest.approx(33720.2, abs=0.1) and r.lic_op_pct < 53.0
-    assert col.w["NH3"] == pytest.approx(0.05440, abs=1e-5)
+    assert r.m_743_kgh == pytest.approx(33635.2, abs=0.1)
+    assert r.lic_op_pct == pytest.approx(57.98, abs=0.01)
+    assert col.w["NH3"] == pytest.approx(0.05423, abs=1e-5)
 
 
 def test_328p006_at_the_heel_delivers_what_the_column_holds():
-    """Decision 11. LV-328503 held wide open draws some 67 t/h against 33.8 t/h of liquid: the
-    pump reaches the heel at 169.7 s, and from then on delivers only what arrives less what
+    """Decision 11. LV-328503 held wide open, on Fisher's equal percentage (decision 150), draws
+    several times the 33.8 t/h of liquid: the pump reaches the heel at 38.6 s, and from then on delivers only what arrives less what
     boils, flagged, making no liquid."""
     col, out, made = _run(6000, man=100.0)
     first = next(k for k, r in enumerate(out) if r.suction_lost)
-    assert first * DT == pytest.approx(169.7, abs=1e-9)
+    assert first * DT == pytest.approx(38.6, abs=1e-9)
     assert all(r.suction_lost for r in out[first:])
     assert col.m_kg == pytest.approx(c.C002_M_FLOOR_KG, abs=1e-6)
     assert out[-1].m_743_kgh == pytest.approx(out[-1].in_kgh - out[-1].gen_kgh, rel=1e-9)
@@ -119,16 +121,16 @@ def test_328p006_at_the_heel_delivers_what_the_column_holds():
 
 
 def test_a_full_shell_overflows():
-    """Decision 11. LV-328503 held at 20 %: the shell fills at 20 t/h and is full at 1881.6 s;
-    from then on the column holds 11 988 kg and 19.5 t/h leaves as the overflow, the books
-    closed."""
+    """Decision 11. LV-328503 held at 20 %, on Fisher's equal percentage (decision 150): the shell
+    fills at 25 t/h and is full at 1462.4 s; from then on the column holds 11 988 kg and 25.4 t/h
+    leaves as the overflow, the books closed to 1e-8 kg over the 2000 s."""
     col, out, made = _run(20000, man=20.0)
     first = next(k for k, r in enumerate(out) if r.m_overflow_kgh > 0.0)
-    assert first * DT == pytest.approx(1881.6, abs=1e-9)
+    assert first * DT == pytest.approx(1462.4, abs=1e-9)
     assert col.m_kg == c.C002_FULL_KG == pytest.approx(11987.77, abs=0.01)
-    assert out[-1].m_overflow_kgh == pytest.approx(19542.0, abs=0.1)
+    assert out[-1].m_overflow_kgh == pytest.approx(25386.5, abs=0.1)
     assert out[-1].level_pct == pytest.approx(377.40, abs=0.01)
-    assert abs(made) < 1e-9
+    assert abs(made) < 1e-8
 
 
 def test_sv32850_and_sv32851_hold_a_blocked_column():
@@ -147,9 +149,9 @@ def test_sv32850_and_sv32851_hold_a_blocked_column():
     lifts = [k for k in range(1, len(out))
              if out[k].relief_lifted and not out[k - 1].relief_lifted]
     assert lifts[0] == 119 and out[118].p_bara >= c.SV32850_SET_BARA
-    assert out[119].m_relief_kgh == pytest.approx(51918.15, abs=0.01)
+    assert out[119].m_relief_kgh == pytest.approx(51916.11, abs=0.01)
     assert (lifts[-1] - lifts[-2]) * DT == pytest.approx(2.7, abs=1e-9)
     assert min(r.p_bara for r in out[119:]) == pytest.approx(c.SV32850_RESEAT_BARA, abs=1e-9)
     assert out[-1].m_737_kgh == 0.0
-    assert sum(r.m_relief_kgh for r in out) * DT / 3600.0 == pytest.approx(816.60, abs=0.01)
+    assert sum(r.m_relief_kgh for r in out) * DT / 3600.0 == pytest.approx(816.56, abs=0.01)
 

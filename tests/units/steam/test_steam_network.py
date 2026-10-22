@@ -68,31 +68,31 @@ def test_the_lp_header_answers_its_users():
     """B-68: 324E001's chest 10 t/h up. The header falls to 4.84 bar a in 4.5 s; PV-329207B cuts
     the turbine's export to 10.4 t/h and PV-329207C admits 3.1 t/h of supply steam by 30 s; in five
     minutes the header is back at 4.92 bar a, B carrying the load at 30.4 % on its Neldisc
-    (decided 2026-10-15; 25.6 % on V1's valve)."""
+    (decided 2026-10-15; 25.6 % on V1's valve), C on its Mark One (decision 150)."""
     up = dict(D.users_lp_kgh)
     up["919"] += 10000.0
     _, out = _run(3000, lambda k: replace(D, users_lp_kgh=up) if k >= 5 else D)
     assert out[50].p_lp_bara == pytest.approx(4.8393, abs=1e-4)
     r = out[300]
     assert (r.p_lp_bara, r.flows_kgh["932"], r.flows_kgh["963"]) == (
-        pytest.approx(4.8094, abs=1e-4), pytest.approx(10365.2, abs=0.1),
-        pytest.approx(3114.1, abs=0.1))
+        pytest.approx(4.8091, abs=1e-4), pytest.approx(10355.6, abs=0.1),
+        pytest.approx(3106.0, abs=0.1))
     r = out[2999]
     assert (r.p_lp_bara, r.strokes_pct["PV-329207B"]) == (pytest.approx(4.9237, abs=1e-4),
-                                                          pytest.approx(30.367, abs=1e-3))
+                                                          pytest.approx(30.352, abs=1e-3))
 
 
 def test_nothing_holds_the_lp_header_up():
     """B-70: 322E002's raising lost with the users at their design draws. PV-329207C wide open
-    admits 39.6 t/h, short of the 52 t/h the users take: the header falls through V1's 3.5 bar a
-    floor at 14 s and to 2.11 bar a in five minutes; 322D001's level rises, LV-329504 still making
+    admits 39.4 t/h on its Mark One (decision 150), short of the 52 t/h the users take: the header
+    falls through V1's 3.5 bar a floor at 13.5 s and to 1.96 bar a in five minutes; 322D001's level rises, LV-329504 still making
     up."""
     _, out = _run(3000, lambda k: replace(D, raise_kgh=0.0) if k >= 5 else D)
-    assert next(k for k in range(3000) if out[k].p_lp_bara < 3.5) == 139
+    assert next(k for k in range(3000) if out[k].p_lp_bara < 3.5) == 135
     r = out[2999]
-    assert (r.p_lp_bara, r.flows_kgh["963"]) == (pytest.approx(2.1070, abs=1e-4),
-                                                 pytest.approx(39599.2, abs=0.1))
-    assert r.levels_pct["LIC-329504"] == pytest.approx(65.483, abs=1e-3)
+    assert (r.p_lp_bara, r.flows_kgh["963"]) == (pytest.approx(1.9553, abs=1e-4),
+                                                 pytest.approx(39370.7, abs=0.1))
+    assert r.levels_pct["LIC-329504"] == pytest.approx(65.462, abs=1e-3)
 
 
 def test_a_drum_drains_to_its_heel_not_past_it():
@@ -126,18 +126,18 @@ def test_a_full_drum_overflows():
 
 def test_trip_21_2():
     """The stripper stops on trip 21.2: PIC-329204's set point to 10 bar g; HV-329601 forced open
-    at once, venting 9.2 t/h, the operator blocked; 329D005 at 17.4 bar a after 30 s (18.4 on
-    V1's PV-329204; the Neldisc, decided 2026-10-15, shuts it faster), 13.0 after five minutes,
-    HV-329601 then shut and the operator's again."""
+    at once, venting 15.9 t/h on its Mark One (decision 150), the operator blocked; 329D005 at
+    16.8 bar a after 30 s (the Neldisc on PV-329204, decided 2026-10-15, shuts it faster than V1's
+    valve), 13.0 after five minutes, HV-329601 then shut and the operator's again."""
     net, out = _run(3000, lambda k: replace(D, strip_kgh=0.0) if k >= 5 else D, trip_at=5)
     r = out[6]
     assert (r.strokes_pct["HV-329601"], r.hv_329601_blocked) == (100.0, True)
-    assert r.flows_kgh["HV-329601"] == pytest.approx(9189.2, abs=0.1)
+    assert r.flows_kgh["HV-329601"] == pytest.approx(15934.8, abs=0.1)
     assert net.pic_329204.sp_bara == pytest.approx(11.01325, abs=1e-12)    # 10 bar g (B-6)
-    assert out[300].p_hp_bara == pytest.approx(17.4122, abs=1e-4)
+    assert out[300].p_hp_bara == pytest.approx(16.7586, abs=1e-4)
     r = out[2999]
     assert (r.p_hp_bara, r.strokes_pct["HV-329601"], r.hv_329601_blocked) == (
-        pytest.approx(13.0019, abs=1e-4), 0.0, False)
+        pytest.approx(13.0102, abs=1e-4), 0.0, False)
 
 
 def test_sv32952_relieves_329d009():
@@ -217,18 +217,19 @@ def test_a_lost_raising_starves_the_users_b73():
     """B-73, decided 2026-10-02. 322E002's raising lost: with every user at its design draw the
     header fell through 3.5 bar a in 14 s to 2.11 bar a in five minutes. On their valves the
     users draw less as it falls — the motive steam with it, FV-329401 opening against it — so it
-    bottoms at 3.66 bar a and is at 3.96 bar a in five minutes, the motive at 79 % of design,
-    FV-329401 at 57.0 % on its Neldisc passing 4292 kg/h (decided 2026-10-15; on V1's valves 4.09
-    bar a, FV-329401 at 83 % passing 4119). One minimum, no ringing."""
+    bottoms at 3.65 bar a and is at 3.95 bar a in five minutes, the motive at 79 % of design,
+    FV-329401 at 58.9 % on its Neldisc passing 4029 kg/h (decided 2026-10-15; PV-329207C on its
+    Mark One, decision 150; on V1's valves 4.09 bar a, FV-329401 at 83 % passing 4119). One
+    minimum, no ringing."""
     out = _run_b73(3005, raise_at=5)
     p = [r.p_lp_bara for r, _, _, _ in out]
-    assert (min(p), p[145], p[-1]) == (pytest.approx(3.6590, abs=1e-4),
-                                       pytest.approx(3.6752, abs=1e-4),
-                                       pytest.approx(3.9625, abs=1e-4))
+    assert (min(p), p[145], p[-1]) == (pytest.approx(3.6524, abs=1e-4),
+                                       pytest.approx(3.6694, abs=1e-4),
+                                       pytest.approx(3.9541, abs=1e-4))
     _, lp, _, op = out[-1]
     assert (lp["924"], lp["927"], lp["931"], op) == (
-        pytest.approx(309.4, abs=0.1), pytest.approx(967.8, abs=0.1),
-        pytest.approx(4292.1, abs=0.1), pytest.approx(56.95, abs=0.01))
+        pytest.approx(308.7, abs=0.1), pytest.approx(965.8, abs=0.1),
+        pytest.approx(4029.2, abs=0.1), pytest.approx(58.88, abs=0.01))
     assert _reversals(p, 1e-6) == 1
 
 

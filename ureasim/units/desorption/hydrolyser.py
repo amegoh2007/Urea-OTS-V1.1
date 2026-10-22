@@ -72,6 +72,9 @@ process engineer decided on another unit, applied here under §5 rule 7.
     0-40 bar, where V1 runs 1.50; 0.0222 %/(kg/h) on FT-329402's 0-1800 kg/h, where V1 runs 0.40.
   * **PV-328203 runs its vendor trim** (decision 23): Valtek's modified equal percentage from
     70.56 %, xT 0.8047, where V1 runs it linear from 50 % on the IEC 0.75.
+  * **LV-328504 runs Fisher's trim** (decision 150, 2026-10-22; decision 23's class): equal
+    percentage, rated Cv 82.2, FL 0.819, from the stroke where its rated Cv passes 747 on the
+    normal case (UD-MR-G00-DZ-0014, item 023), where V1 runs it linear from 50 % on FL 0.90.
   * **LV-328504 cannot drain an empty column** (decision 11, the class of B-29). V1 lets the
     letdown pass its pressure-driven flow whatever the column holds and its 1 kg floor makes up
     the difference. Here 747 is capped at the liquid above a 1 kg heel plus what arrives on the
@@ -148,6 +151,7 @@ from ureasim.data.unit_328c003 import (
     LIC_328504_KC,
     LIC_328504_TI_S,
     LV504_CHAR,
+    LV504_FL,
     LV504_OP_DES_PCT,
     LV504_P1_DES_BARA,
     LV504_PV_DES_BARA,
@@ -440,7 +444,7 @@ class Hydrolyser:
         m_747 = valve_liquid_anchored(
             C003_M747_DES_KGH, lic_op / 100.0, p1, p_c004_bara, C003_RHO_KGM3,
             LV504_OP_DES_PCT / 100.0, LV504_P1_DES_BARA, C004_P_BARA, C003_RHO_KGM3,
-            characteristic=LV504_CHAR, pv_bara=liquor_pv_bara(self.w, self.t_749_c),
+            characteristic=LV504_CHAR, fl=LV504_FL, pv_bara=liquor_pv_bara(self.w, self.t_749_c),
             pv_des_bara=LV504_PV_DES_BARA)
         # The letdown drains only the liquid above the heel plus what arrives, net of what
         # boils (decisions 11, 24). Inert at every normal state.

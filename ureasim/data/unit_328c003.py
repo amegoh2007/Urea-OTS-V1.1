@@ -38,6 +38,7 @@ import math
 
 from ureasim.core.units_of_measure import G_ACC, PA_PER_BAR, R_GAS_J
 from ureasim.data.control_valves import PV_328203, design_stroke_pct
+from ureasim.data.control_valves_fisher import LV_328504
 from ureasim.data.desorption_train import (
     C002_T748_C,
     C002_T_BOT_C,
@@ -169,10 +170,13 @@ PV328203_XT = PV_328203.normal_case.xt
 # LV-328504, the bottoms letdown to 328C004
 # ======================================================================================
 
-#: LV-328504's design stroke [%] and trim. No vendor set lists it, so V1's linear trim stands.
-#: Source: V1 `main.py` R328_LV504_OP_DES, R328_LV_CHAR.
-LV504_OP_DES_PCT = 50.0
-LV504_CHAR = "linear"
+#: LV-328504 on Fisher's trim (decided 2026-10-22, decision 150; decision 23's class): equal
+#: percentage, rated Cv 82.2, FL 0.819, its design stroke where the rated Cv passes 747 on the
+#: normal case (UD-MR-G00-DZ-0014, item 023, found in session 69). V1 runs it linear from 50 %
+#: (`main.py` R328_LV504_OP_DES, R328_LV_CHAR), no vendor set having been found.
+LV504_OP_DES_PCT = design_stroke_pct(LV_328504, C003_M747_DES_KGH)
+LV504_CHAR = LV_328504.characteristic
+LV504_FL = LV_328504.normal_case.fl
 
 #: The liquor's bubble pressure at the valve's design inlet [bar a], 5.06: 749 at 148 C, after
 #: 328E021's hot side. Source: V1 `main.py` R328_LV504_PV_DES.
@@ -255,7 +259,7 @@ __all__ = [
     "M911_DH_KJKG", "LAM748_BASE_KJKG", "C003_TAU_DES_S", "HYDROLYSIS_DH_KJMOL",
     "E021_EPS_T", "E021_LOSS_DT_KGKH", "E021_HOT_FLOW_FLOOR_KGH",
     "MW748_DES", "PV328203_CHAR", "PV328203_OP_DES_PCT", "PV328203_XT",
-    "LV504_OP_DES_PCT", "LV504_CHAR", "LV504_PV_DES_BARA", "LV504_P1_DES_BARA",
+    "LV504_OP_DES_PCT", "LV504_CHAR", "LV504_FL", "LV504_PV_DES_BARA", "LV504_P1_DES_BARA",
     "PT_328203_SPAN_BAR", "PIC_328203_KC_TABLE", "PIC_328203_KC", "PIC_328203_TI_S",
     "PIC_328203_SP_LO_BARA", "PIC_328203_SP_HI_BARA", "FT_329402_SPAN_KGH",
     "FIC_329402_KC_TABLE", "FIC_329402_KC", "FIC_329402_TI_S", "FIC_329402_OP_DES_PCT",

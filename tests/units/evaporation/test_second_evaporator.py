@@ -40,13 +40,13 @@ def _run(n, feed=d.P1_DES_KGH, p_mp=P_MP_BARA, p335=d.PIC_335201_DES_BARG):
 
 def test_the_design_seed_holds():
     """An hour at design on 324F004's design-anchored map: the melt at 140 C, PT-324203 at
-    0.131 bar a to 1e-14 (324E005's condenser falsi reaches the last bits), PV-324203 at its 92.03 %, LV-324501 at 75 %, PFD 709's 2738 kg/h
+    0.131 bar a to 1e-14 (324E005's condenser falsi reaches the last bits), PV-324203 at its 92.03 %, LV-324501A at its 75.35 % (decision 150), PFD 709's 2738 kg/h
     boiled, PFD 402 at 97.71 %, 3741 kg/h of 9-bar steam; the fixed point in one iteration."""
     unit, loops, r = _run(36000)
     assert r.t_c == 140.0
     assert r.p_bara == pytest.approx(0.131, abs=1e-14)
     assert loops.vacuum.op == pytest.approx(d.PV_324203_OP_DES_PCT, abs=1e-9)
-    assert loops.level.op == 75.0 and unit.m_kg == pytest.approx(d.F003_M_DES_KG, rel=1e-12)
+    assert loops.level.op == d.LV_324501A_OP_DES_PCT and unit.m_kg == pytest.approx(d.F003_M_DES_KG, rel=1e-12)
     assert r.m_vap_kgh == pytest.approx(d.V2_DES_KGH, rel=1e-12) and r.m_boil_kgh == 0.0
     assert r.w_melt == pytest.approx(0.9771, abs=1e-12)
     assert r.steam_kgh == pytest.approx(3741.02, abs=0.01)
@@ -75,10 +75,11 @@ def test_a_lost_header_dilutes_the_melt():
 
 def test_a_lost_feed_boils_the_held_melt_b62():
     """Handoff B-62, decided 2026-10-01. Stage 1's leg stops. The chest's duty, no longer spent on
-    the feed, boils the held melt — 608 kg/h after a minute, the melt at 151.6 C and 98.14 %,
+    the feed, boils the held melt — 616 kg/h after a minute, the melt at 151.4 C and 98.13 %,
     holding at its own boiling point as it concentrates. LIC-324501 shuts the drain as the level
-    falls and holds 775 kg; the chest fills toward the 9-bar header (PV-329212 on its vendor
-    trim), and at 172.7 C the melt's equilibrium at the vacuum is 98.61 % and it boils no more."""
+    falls and holds 1285 kg (LV-324501A's equal percentage, decision 150); the chest fills toward
+    the 9-bar header (PV-329212 on its vendor trim), and at 170.6 C the melt's equilibrium at the
+    vacuum is 98.57 % and it boils no more."""
     unit, loops = se.SecondEvaporator(), se.SecondEvaporatorLoops()
     for k in range(6000):
         feed = 0.0 if k >= 5 else d.P1_DES_KGH
@@ -86,22 +87,25 @@ def test_a_lost_feed_boils_the_held_melt_b62():
                       d.PIC_335201_DES_BARG, 0.1)
         if k == 600:
             assert (r.t_c, r.m_boil_kgh, unit.w["Urea"]) == (
-                pytest.approx(151.6075, abs=1e-4), pytest.approx(607.74, abs=0.01),
-                pytest.approx(0.98140, abs=1e-5))
+                pytest.approx(151.3824, abs=1e-4), pytest.approx(616.02, abs=0.01),
+                pytest.approx(0.98133, abs=1e-5))
         assert r.converged
-    assert r.m_402_kgh == 0.0 and unit.m_kg == pytest.approx(774.71, abs=0.01)
+    assert r.m_402_kgh == 0.0 and unit.m_kg == pytest.approx(1285.04, abs=0.01)
     assert r.m_vap_kgh == 0.0 == r.m_boil_kgh
-    assert r.t_c == pytest.approx(172.736, abs=1e-3)
-    assert unit.w["Urea"] == pytest.approx(0.98605, abs=1e-5)
+    assert r.t_c == pytest.approx(170.600, abs=1e-3)
+    assert unit.w["Urea"] == pytest.approx(0.98571, abs=1e-5)
 
 
 def test_the_335_header_backing_up_sends_the_melt_to_323d002():
     """PIC-335201 above its 3.8 bar g relief setting: LIC-324501's stroke goes to LV-324501B and
-    the whole drain, the raw melt at 140 C, returns to 323D002; nothing goes forward."""
+    the whole drain, the raw melt at 140 C, returns to 323D002; nothing goes forward. On its sheet
+    (decision 150) LV-324501B passes 95.7 t/h at the stroke, its 5.1 bar to 323D002 against A's
+    3.2; V1's span law passed the design drain on either valve."""
     _, _, r = _run(10, p335=4.0)
-    assert r.recycle_selected and (r.lv_a_pct, r.lv_b_pct) == (0.0, 75.0)
+    assert r.recycle_selected and (r.lv_a_pct, r.lv_b_pct) == (0.0, pytest.approx(75.286,
+                                                                                  abs=1e-3))
     assert (r.route.route, r.route.forward_kgh) == ("B", 0.0)
-    assert r.route.recycle_kgh == pytest.approx(d.P2_DES_KGH, rel=1e-12)
+    assert r.route.recycle_kgh == r.m_402_kgh == pytest.approx(95657.2, abs=0.1)
     assert r.route.recycle_t_c == 140.0
     assert sum(r.route.recycle_w.values()) == pytest.approx(1.0, abs=1e-12)
 
@@ -135,22 +139,24 @@ def test_a_feed_pump_trip_sends_stage_2_the_melt_its_leg_drains_b63():
     drains the melt it holds — 71.5 t/h at 96.05 % urea after 30 s, B-62 boiling it. Stage 2 takes
     the feed at the leg's strength and finishes it: 1265 kg/h of the feed's water and 662 of its
     own holdup's boil off, the melt at 141.9 C and 97.79 % (the chests on their vendor trims). The leg runs dry onto stage 1's heel
-    at 350 s; stage 2 boils its last, LIC-324501 shuts LV-324501 at 15 %, and the melt holds
-    1041 kg at 98.41 % urea and 162.08 C, the chest isolated at its saturation. The melt never
+    at 350 s; stage 2 boils its last, LIC-324501 shuts LV-324501A at 638 s with the level at 21.6 %
+    (its equal percentage passing little at low stroke, decision 150), and the melt holds 1496 kg
+    at 98.40 % urea and 161.75 C, the chest isolated at its saturation. The melt never
     falls below its 140 C design, where V1 — the strength stage 1 made, 0 — boiled the whole leg
     as water to -83 C in a minute."""
-    run = _chain(6005, cut_at=5)
+    run = _chain(12005, cut_at=5)
     r1, r2 = run[300]
     assert r1.w_melt == 0.0 and r1.w["Urea"] == pytest.approx(0.96054, abs=1e-5)
     assert r1.m_401_kgh == pytest.approx(71534.39, abs=0.01)
     assert r2.feed_urea_kgh == pytest.approx(68718.27, abs=0.01)
-    assert (r2.m_vap_kgh, r2.m_boil_kgh) == (pytest.approx(1265.13, abs=0.01),
-                                             pytest.approx(662.14, abs=0.01))
-    assert (r2.t_c, r2.w_melt) == (pytest.approx(141.8970, abs=1e-4),
+    assert (r2.m_vap_kgh, r2.m_boil_kgh) == (pytest.approx(1265.12, abs=0.01),
+                                             pytest.approx(662.16, abs=0.01))
+    assert (r2.t_c, r2.w_melt) == (pytest.approx(141.8967, abs=1e-4),
                                    pytest.approx(0.97793, abs=1e-5))
     assert all(r.converged and r.t_c >= 140.0 for _, r in run)
-    r1, r2 = run[6004]
+    assert next(k for k in range(400, 12005) if run[k][1].m_402_kgh == 0.0) == 6376
+    r1, r2 = run[12004]
     assert r1.m_401_kgh == 0.0 and r2.m_402_kgh == 0.0 and r2.m_vap_kgh == 0.0 == r2.m_boil_kgh
-    assert (r2.m_kg, r2.w["Urea"], r2.t_c) == (pytest.approx(1040.54, abs=0.01),
-                                               pytest.approx(0.98411, abs=1e-5),
-                                               pytest.approx(162.0812, abs=1e-4))
+    assert (r2.m_kg, r2.w["Urea"], r2.t_c) == (pytest.approx(1496.41, abs=0.01),
+                                               pytest.approx(0.98404, abs=1e-5),
+                                               pytest.approx(161.7534, abs=1e-4))

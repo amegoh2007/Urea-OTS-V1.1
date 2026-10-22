@@ -401,7 +401,12 @@ none of them is optional:
    published reading with no transmitter of its own on its PFD's design pressure, its line's design
    differential the subtraction of the PFD's two design pressures and its flow and density factors
    normalised on the design seed, where V1 wrote the differential on the live loop pressure
-   (decision 148, decision 70's and A-13's classes); and
+   (decision 148, decision 70's and A-13's classes); a vendor sheet sized on a density that is not
+   its fluid's taken to the fluid's density, a trim passing m = Kv sqrt(rho dP) — the Kv a mass flow
+   needs scaling as m / sqrt(rho), the mass a stroke passes as sqrt(rho) (decision 150, decision
+   23's class); an exchanger whose coolant flow a PFD fixes running on that flow, its UA
+   back-solved so the design point holds and the datasheet's kept as margin (decision 151, decision
+   36's class); and
    no approximation of
    the physics bought for a pacing target (decision 88). A
    new mechanism still goes to the process engineer, with both sides measured.

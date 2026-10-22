@@ -8,10 +8,10 @@ built, B-18, B-37 and B-20 decided and closed, trip 21.2's hand switches and AI-
 screens, the plant DCS's readback applied — the cold start reaches 79.7 bar a in 16 000 s, still
 short of the start-up band (session 50); B-94 closed on PFD 734's departure form, the steady state
 3080 of 3188, 322E003 on its own liquor and a full sump, 323P008's trip from AC4 PC23, B-95 closed
-as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68)
+as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `D:\Work\Urea Simulation` (V1 — reference only, never edited from here)
-**Last updated:** 2026-10-22 (session 68)
+**Last updated:** 2026-10-22 (session 69)
 
 ---
 
@@ -787,6 +787,11 @@ steam system (`steam/`).
 - [x] As-Built §LXXXII.3's two display-only notes signed off as built, no B-113 (session 67)
 - [x] Sessions 62 to 67 committed (session 67)
 - [x] Session 68 committed (session 68); the repository has no remote, so nothing is pushed
+- [x] The open data gaps searched again in `D:/Work/Urea Simulation`, `D:/Work/Urea Simulation
+      Docs` and the vendor archive; LV-328503, LV-328504, HV-329602 and the 323D001 vent on
+      Fisher's sheets, HV-329601, PV-329207C and LV-324501A / B on Flowserve's, each wired with
+      both sides tested (decision 150); 322E006 on PFD 28's 14 t/h, its UA re-anchored (decision
+      151); four data-gap rows closed, 15 open (session 69, As-Built Part LXXXIV)
 
 ---
 
@@ -4732,6 +4737,53 @@ single console (a pasted directive, confirmed in chat). Built as directed (As-Bu
 
 `handoff.md`'s Sections A, B and C stay empty; the open data gaps are the only open items.
 
+### Session 69 — the data gaps searched again; seven valves on their vendor sheets
+
+The process engineer asked for every open data gap to be searched again in `D:/Work/Urea
+Simulation` and `D:/Work/Urea Simulation Docs` with their subfolders, then in the vendor archive
+(`/soft-copy-search`), and confirmed the two changes that followed (decisions 150 and 151). A pasted
+review of session 68 came with the request; it raised nothing to act on. As-Built Part LXXXIV:
+
+* **The search.** 486 documents in the two folders were text-extracted and searched (`References/`
+  included), the 73 DCS faceplate photographs and the June 2025 trend photographs read. The
+  folders hold no file newer than 2026-10-16 but `References/scenarios/Scenarios5.md`; the AI reports in `Urea Simulation Docs/Data` were
+  checked against the archive's pages (memory `external-archive-reports`). What closed the gaps was
+  in the archive: **Fisher's control-valve file, UD-MR-G00-DZ-0014** (Emerson, never read: TV-323013
+  — the 323D001 vent the port calls PV-323202 — LV-328503, LV-328504 and HV-329602), and pages of
+  **Flowserve's summary of items** earlier sessions had not reached (Pos. 65 HV 329601, Pos. 76
+  PV 329207C, Pos. 148-149 LV 324501A / B), whose calculation sheets are the same PDF pages of -003.
+  **PFD 28** (cooling water) gives 322E006's water, streams 1010 / 1011, where the handoff had found
+  no stream.
+* **The valves (decision 150).** Catalogued in `data/control_valves.py` (the Flowserve four) and
+  the new `data/control_valves_fisher.py`, and wired on decision 23's class, each on its sheet's
+  named curve: LV-328503 equal percentage from 56.95 % (V1 linear 50 %), LV-328504 from 57.80 %
+  (50 %), PV-323202 linear from 36.45 % (25 %), FL 0.819 on the two letdowns; HV-329601,
+  PV-329207C and HV-329602 on their full-stroke capacities on their normal cases (V1's law on the
+  loop summaries' maximum cases at full stroke); LV-324501A from 75.35 % (V1's span law 75 %) and
+  LV-324501B on its full stroke, both on the sheets' Kv taken to the melt's 1221 kg/m3 — the sheets
+  size on SG 0.751 — and the lost-seal air (decision 143) on A's trim. Each equivalence harness
+  switches the valve (`valve`, `lv504`, `vent`, `vendor_globes`, `vendor_drain`) and each valve
+  runs both ways.
+* **322E006 (decision 151).** The plates run on PFD 28's 14 t/h; the UA is back-solved so the
+  PFD's 744 still leaves at 40 C, 20.448 kW/K against the datasheet's 30.776, kept as margin.
+* **What moved.** The design point nowhere; off design, every test that quotes a transient through
+  these valves was re-measured and its docstring restated (the first desorber, the hydrolyser, the
+  LPCC, the steam network's trip 21.2 and LP header, stage 2's drain and leg, the vacuum train).
+  Three scenarios were restated where a held stroke meant "at design" or "80 % of design" on V1's
+  linear trim (PV-323202 held at its design stroke, LV-328504 at the stroke passing 80 %). The
+  synthesis-loop harness runs the whole plant, so its decided tests moved in the fourth digit,
+  but one: in B-104's scenario the reactor's discharge at ten minutes went from 26.3 to 37.7 t/h,
+  traced by reverting each change in turn to PV-323202's anchor alone (323D001 1.5 mbar apart;
+  LV-322501's drain at 10 % is that scenario's most sensitive quantity).
+* **Not closed.** The other 15 rows: no Körting or 322F001 curve, no 322E001 thermal rating, no
+  Neldisc curve (Uhde's specification names "equal percentage", no table), no DCS database values
+  for the hystereses, AC4's limits or the eight untuned loops, no LT-324501 / LT-329505 tap
+  elevations, no AI-329701 configuration, no 324F003 trend, and no trip 22.2 in any logic file.
+
+`python -m pytest` — **7 475 collected** (7 454 at session 68: 21 more — the new sheets' catalogue, the Fisher module's own test and each valve's both-ways tests), thirteen parallel parts. The first run failed 33 tests, every one a measured value or a held stroke the new valves and water move (the desorbers' unit tests 15, the synthesis loop's decided harness 14, the vacuum condenser's trip, a faceplate's displayed 75.3 % and the catalogue's two); each was re-measured, its docstring restated, B-104's large move traced, and those files re-run green; `tests/docs` green; pyflakes clean; the headless grep prints nothing.
+
+`handoff.md`'s Sections A, B and C stay empty; 15 open data gaps remain.
+
 ## 5. Design decisions on record
 
 1. **PyQt6, not PyQt5.** Qt6 is current, has proper high-DPI scaling for the 1366×720 stage,
@@ -5408,3 +5460,20 @@ single console (a pasted directive, confirmed in chat). Built as directed (As-Bu
      malfunctions, the battery-limit `co2_set` and exercise save and restore stay in the
      Instructor menu's panel, executed without a role gate. The server refuses a `hello` from any
      address but the engine's own machine; the protocol version is 2.
+150. **Seven control valves on the vendor sheets found in session 69** (2026-10-22, decision 23's
+     class, confirmed by the process engineer): LV-328503, LV-328504, HV-329602 and the 323D001
+     vent (TV-323013 on the sheet, the port's PV-323202) on Fisher's UD-MR-G00-DZ-0014; HV-329601,
+     PV-329207C and LV-324501A / B on Flowserve's Pos. 65, 76, 148 and 149 — each on its sheet's
+     named curve (the port's equal percentage on the IEC 50:1, its linear), its design stroke where
+     its rated capacity passes the design flow on its normal case, a valve shut at design on its
+     full-stroke capacity there, FL or xT from the sheet (the Mark Ones' xT from their printed
+     choke drop). The travels the sheets print sit off the named curves (two to twenty points) and
+     are recorded, not run. LV-324501A / B's sheets size the melt on SG 0.751: their capacities are
+     taken to the melt's 1221 kg/m3 on m = Kv sqrt(rho dP) — the Kv a mass flow needs scales as
+     m / sqrt(rho), the mass a stroke passes as sqrt(rho), 1.275 times the sheet's — which puts A's
+     design stroke at 75.35 % and B's full stroke at 251.5 t/h (197.3 t/h at the sheet's density).
+     V1's laws stay on each harness's switch.
+151. **322E006 on PFD 28's cooling water** (2026-10-22, decision 36's class, confirmed by the
+     process engineer): 14 t/h (streams 1010 / 1011) where the port back-solved 10 374 kg/h on the
+     datasheet UA for want of a document; the UA is back-solved instead, 20.448 kW/K, so 755 holds
+     the PFD's 40 C, and the datasheet's 30.776 kW/K stays the rated surface's margin.

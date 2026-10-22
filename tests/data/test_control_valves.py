@@ -13,11 +13,16 @@ import pytest
 
 from ureasim.control.valve import MOD_EQUAL_PCT_RANGE, cv_fraction, stroke_for_cv_fraction
 from ureasim.data import control_valves as cvd
-from ureasim.data import unit_320, unit_323, unit_323e011, unit_328c003, unit_328d003
+from ureasim.data import control_valves_fisher as fv
+from ureasim.data import (unit_320, unit_323, unit_323e003, unit_323e011, unit_324, unit_328c002,
+                          unit_328c003, unit_328d003)
 from ureasim.data.design_point import R323_M314_DES, R323_M319_DES, R323_M324_DES
 
 MODIFIED = [v for v in cvd.VENDOR_VALVES.values() if v.characteristic == "mod_equal_pct"]
-LINEAR = [v for v in cvd.VENDOR_VALVES.values() if v.characteristic == "linear"]
+#: The Valtek V726 linear trims; PV-329207C's Mark One MegaStream, linear too, is with the sheets
+#: found in session 69 below.
+LINEAR = [v for v in cvd.VENDOR_VALVES.values()
+          if v.characteristic == "linear" and v.tag != "PV-329207C"]
 
 
 def test_the_catalogue():
@@ -27,10 +32,12 @@ def test_the_catalogue():
     and two motive valves added in session 33, unit 329's four in session 37). Every normal case
     prints its stroke but LV-329503's, LV-329504's and LV-329505's, whose capacities are printed on
     the maximum case only."""
-    assert len(cvd.VENDOR_VALVES) == 42      # 37 + Metso's items 19-23 (read 2026-10-16)
+    assert len(cvd.VENDOR_VALVES) == 46      # 42 + Flowserve's Pos. 65, 76, 148, 149 (session 69)
     assert (len(MODIFIED), len(LINEAR)) == (24, 3)
     assert sum(len(v.cases) for v in MODIFIED) == 67
-    assert cvd.VENDOR_VALVES["PV-322203"].characteristic == "equal_pct"
+    assert {t for t, v in cvd.VENDOR_VALVES.items() if v.characteristic == "equal_pct"} == {
+        "PV-322203", "HV-329601", "LV-324501A", "LV-324501B"}
+    assert set(fv.FISHER_VALVES) == {"LV-328503", "LV-328504", "HV-329602", "PV-323202"}
     unprinted = {v.tag for v in MODIFIED + LINEAR if v.normal_case.stroke_pct is None}
     assert unprinted == {"LV-329503", "LV-329504", "LV-329505"}
 
@@ -81,15 +88,19 @@ def test_the_stroke_inverse_round_trips(h):
     ("unit_323.LV505_OP_DES_PCT", 67.735), ("unit_323.FV401_OP_DES_PCT", 72.359),
     ("unit_320.PV_322203_OP_DES_PCT", 79.330),
     ("unit_328c003.PV328203_OP_DES_PCT", 70.562),
+    ("unit_328c002.LV503_OP_DES_PCT", 56.946), ("unit_328c003.LV504_OP_DES_PCT", 57.802),
+    ("unit_323e003.E003_PV_OP_DES_PCT", 36.446), ("unit_324.LV_324501A_OP_DES_PCT", 75.347),
 ])
 def test_the_design_strokes(name, stroke):
     """Each ported vendor valve's design stroke, where its rated capacity passes its design
     flow on its normal case (V1: 50 % each, and 100 % for PV-322203). FV-328402's on 735 since
-    B-39 (decided 2026-10-09; 58.791 on 744)."""
+    B-39 (decided 2026-10-09; 58.791 on 744). The four found in session 69 (decision 150): V1's
+    50, 50, 25 and 75 %; LV-324501A's on its sheet's Kv taken to the melt's 1221 kg/m3."""
     module, const = name.split(".")
     assert getattr({"unit_328d003": unit_328d003, "unit_323e011": unit_323e011,
                     "unit_323": unit_323, "unit_320": unit_320,
-                    "unit_328c003": unit_328c003}[module], const) == \
+                    "unit_328c003": unit_328c003, "unit_328c002": unit_328c002,
+                    "unit_323e003": unit_323e003, "unit_324": unit_324}[module], const) == \
         pytest.approx(stroke, abs=1e-3)
 
 
@@ -234,3 +245,26 @@ def test_lv_329505s_unprinted_capacities_are_iec_60534s():
     assert v.cases[2].capacity == 46.57
     from ureasim.data.unit_324 import LV_329505_VENDOR_OP_DES_PCT
     assert LV_329505_VENDOR_OP_DES_PCT == pytest.approx(62.194, abs=1e-3)
+
+
+#: The sheets found in session 69 and how far their printed travels sit from the port's named
+#: curves [points of stroke, printed less the curve's], case by case (decision 150).
+SESSION_69 = {
+    "HV-329601": (-9.33, -8.25, -4.97), "PV-329207C": (-6.73, -7.34, -5.47),
+    "LV-324501A": (-1.63, -1.34, 0.0), "LV-324501B": (1.30, -1.38, -1.92),
+    "LV-328503": (-4.96, -4.79, -4.33), "LV-328504": (-4.57, -4.66, -4.82),
+    "HV-329602": (3.98, -2.98, -2.88), "PV-323202": (-2.27, -19.84, -6.61),
+}
+
+
+@pytest.mark.parametrize("tag", list(SESSION_69))
+def test_the_session_69_sheets_print_their_travels_off_the_named_curves(tag):
+    """Decision 150: each sheet names its curve, equal percentage or linear, and the port runs its
+    own law of that name (50:1 for the equal percentage); the travels the vendors print sit off it —
+    Flowserve's 0310 within two points, Fisher's letdowns five below, the Mark Ones five to nine,
+    TV-323013's Whisper I cage (the port's PV-323202) twenty below at its normal case. LV-324501A's
+    maximum case needs more than its Kvs and is printed wide open."""
+    v = {**cvd.VENDOR_VALVES, **fv.FISHER_VALVES}[tag]
+    for c, dev in zip(v.cases, SESSION_69[tag]):
+        h = 100.0 * stroke_for_cv_fraction(min(c.capacity / v.rated, 1.0), v.characteristic)
+        assert c.stroke_pct - h == pytest.approx(dev, abs=0.005), (tag, c)

@@ -71,13 +71,18 @@ E006_UA_KW_K = E006_Q_DS_KW / E006_LMTD_DS_K
 #: The cooling-water supply temperature [deg C]: the DDS's 30.00 C inlet.
 E006_T_CW_SUPPLY_C = E006_T_CW_IN_DS_C
 
+#: The design cooling-water flow [kg/h]: PFD 28 (Cooling Water, Urea Unit, 1750 MTPD), streams 1010
+#: and 1011 at 322E006, 14 t/h from 30 C at 3.6 bar a to 40 C at 2.2 bar a, its duty flag 0.16 MW
+#: (UD-VT-329-FB-0004, read 2026-10-22). Decided 2026-10-22 (decision 151): the plates run on it.
+E006_M_CW_PFD_KGH = 14000.0
+
 #: The design point: PFD 744 in, 31 478 kg/h at compartment I's 44 C, and PFD 755 out at 40 C.
 E006_M744_DES_KGH = M744_DES_KGH
 E006_T744_DES_C = D003_TI_C
 E006_T755_DES_C = C001_T_755_C
 
 __all__ = [
-    "E006_AREA_M2", "E006_Q_DS_KW", "E006_T_HOT_IN_DS_C", "E006_T_HOT_OUT_DS_C",
+    "E006_M_CW_PFD_KGH", "E006_AREA_M2", "E006_Q_DS_KW", "E006_T_HOT_IN_DS_C", "E006_T_HOT_OUT_DS_C",
     "E006_T_CW_IN_DS_C", "E006_T_CW_OUT_DS_C", "E006_M_HOT_DS_KGH", "E006_M_CW_DS_KGH",
     "E006_CP_HOT", "E006_CP_CW", "E006_LMTD_DS_K", "E006_UA_KW_K", "E006_T_CW_SUPPLY_C",
     "E006_M744_DES_KGH", "E006_T744_DES_C", "E006_T755_DES_C",

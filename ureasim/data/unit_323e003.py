@@ -27,6 +27,8 @@ Sources
 
 from __future__ import annotations
 
+from ureasim.data.control_valves import design_stroke_pct
+from ureasim.data.control_valves_fisher import PV_323202
 from ureasim.data.unit_323 import E003_P_DES_BARA, M305_DES_KGH
 from ureasim.data.unit_323e011 import (
     CP_LP_CARBAMATE,
@@ -121,8 +123,11 @@ TW_SUP_FLOOR_C = 20.0
 #: setpoint of 3.2 bar a" (the datasheet narrative). PFD 308 and 321 at 3.2.
 D001_P_BARA = E003_P_DES_BARA
 
-#: PV-323202's design stroke [%]. Source: V1 `main.py` R3232_E003_PV_OP_DES.
-E003_PV_OP_DES_PCT = 25.0
+#: PV-323202's design stroke [%]: Fisher's sheet (UD-MR-G00-DZ-0014, item 021, tagged TV-323013
+#: as on P&ID 103/1; its cases the loop summary P 323202's) — a linear Whisper I trim, rated Cv
+#: 99.1 — passes PFD 321 on its normal case at 36.45 % (decided 2026-10-22, decision 150; decision
+#: 23's class). PIC-323202 is seeded there. V1 runs it linear from 25 % (R3232_E003_PV_OP_DES).
+E003_PV_OP_DES_PCT = design_stroke_pct(PV_323202, E003_M321_DES_KGH)
 
 #: 323D001 nominal volume [m3] (datasheet: ID 2178 mm, T-T 2350 mm, 11.10 m3) and the
 #: carbamate density [kg/m3], PFD 308. The full holdup is their product, 13 520 kg.

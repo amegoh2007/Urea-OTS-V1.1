@@ -84,9 +84,10 @@ def test_the_design_point_holds_to_the_bit():
 # ======================================================================================
 
 def test_the_dew_point_takes_the_extra_gas():
-    """305 up 10 % with PV-323202 held at 25 %: 2456 kg/h more gas, and the node settles at
+    """305 up 10 % with PV-323202 held at its design stroke, 36.45 % on Fisher's sheet (decision
+    150): 2456 kg/h more gas, and the node settles at
     3.372 bar a, where the higher dew point condenses 2402 kg/h of it — the vent takes 54."""
-    r, at, _, _ = _run(3600.0, gas=_step(1.1), pic_man=25.0, trace=(20.0,))
+    r, at, _, _ = _run(3600.0, gas=_step(1.1), pic_man=e3.E003_PV_OP_DES_PCT, trace=(20.0,))
     assert at[20.0].p_bara == pytest.approx(3.3389, abs=1e-4)
     assert r.p_bara == pytest.approx(3.3717, abs=1e-4)
     extra = r.env_in_kgh - e3.E003_M305_DES_KGH - e3.E003_M797_DES_KGH
@@ -94,12 +95,13 @@ def test_the_dew_point_takes_the_extra_gas():
 
 
 def test_pic_323202_on_its_span_gain():
-    """The same load in AUTO, on 20 %/bar and 100 s: 3.349 bar a after a minute, 3.306 after
-    ten, 3.215 after the hour with PV-323202 at 68 % (V1's 5.0 %/bar and 40 s: 3.234)."""
+    """The same load in AUTO, on 20 %/bar and 100 s: 3.353 bar a after a minute, 3.323 after
+    ten, 3.230 after the hour with PV-323202 at 92.7 % (V1's 5.0 %/bar and 40 s: 3.255; both on
+    Fisher's design stroke, decision 150)."""
     r, at, _, _ = _run(3600.0, gas=_step(1.1), trace=(60.0, 600.0))
-    assert (at[60.0].p_bara, at[600.0].p_bara) == pytest.approx((3.3489, 3.3065), abs=1e-4)
-    assert r.p_bara == pytest.approx(3.2145, abs=1e-4)
-    assert r.pic_op_pct == pytest.approx(68.01, abs=0.01)
+    assert (at[60.0].p_bara, at[600.0].p_bara) == pytest.approx((3.3533, 3.3227), abs=1e-4)
+    assert r.p_bara == pytest.approx(3.2299, abs=1e-4)
+    assert r.pic_op_pct == pytest.approx(92.72, abs=0.01)
 
 
 # ======================================================================================
@@ -107,13 +109,13 @@ def test_pic_323202_on_its_span_gain():
 # ======================================================================================
 
 def test_surplus_cooling_draws_the_node_down_to_where_the_capacity_meets_the_load():
-    """TIC-323013 set to 45 C: the capacity passes the gas at 440 s and PIC-323202 shuts
+    """TIC-323013 set to 45 C: the capacity passes the gas at 553 s and PIC-323202 shuts
     PV-323202 five seconds later. The condenser keeps drawing on the envelope's gas, and the
-    node follows the cooling water down — 2.746 bar a at 600 s, 2.458 an hour on, 0.74 below
+    node follows the cooling water down — 2.745 bar a at 600 s, 2.458 an hour on, 0.74 below
     the set point, with the capacity on the load. V1's cap froze it at 2.725 (on V1's tuning)."""
     r, at, first, created = _run(3600.0, tic_sp=45.0, trace=(600.0,))
-    assert (first["cap binds"], first["vent shut"]) == (440.0, 445.0)
-    assert at[600.0].p_bara == pytest.approx(2.7455, abs=1e-4)
+    assert (first["cap binds"], first["vent shut"]) == (553.0, 558.0)
+    assert at[600.0].p_bara == pytest.approx(2.7452, abs=1e-4)
     assert r.p_bara == pytest.approx(2.4576, abs=1e-4)
     assert (r.pic_op_pct, r.m_321_kgh, r.env_cond_kgh) == (0.0, 0.0, r.capacity_kgh)
     assert r.capacity_kgh - r.env_in_kgh == pytest.approx(0.0, abs=0.2)
@@ -122,19 +124,19 @@ def test_surplus_cooling_draws_the_node_down_to_where_the_capacity_meets_the_loa
 
 def test_less_cooling_lifts_the_node_until_the_vent_is_wide_open():
     """TIC-323013 set to 65 C: the dew point carries the node up, PV-323202 is wide open within
-    half an hour, and the node is still climbing at 3.835 bar a an hour on."""
+    half an hour, and the node is still climbing at 3.980 bar a an hour on."""
     r, at, _, _ = _run(3600.0, tic_sp=65.0, trace=(1800.0,))
     assert at[1800.0].pic_op_pct == 100.0
-    assert r.p_bara == pytest.approx(3.8353, abs=1e-4) and r.p_bara > at[1800.0].p_bara
+    assert r.p_bara == pytest.approx(3.9799, abs=1e-4) and r.p_bara > at[1800.0].p_bara
 
 
 def test_the_gas_gone_takes_the_node_to_the_recycle_s_dew_point():
     """The 305 overhead gone — a stripper trip: only the 797 recycle arrives, the capacity
-    passes it at once, the vent shuts at 23 s, and the node falls until the dew point has
+    passes it at once, the vent shuts at 57 s, and the node falls until the dew point has
     closed on the water far enough to condense just the recycle — 1.867 bar a within five
     minutes. V1's cap left it standing at 2.364 (on the decided tuning)."""
     r, at, first, _ = _run(3600.0, gas=_step(0.0), trace=(300.0,))
-    assert (first["cap binds"], first["vent shut"]) == (11.0, 23.0)
+    assert (first["cap binds"], first["vent shut"]) == (11.0, 57.0)
     assert at[300.0].p_bara == pytest.approx(1.8672, abs=1e-4)
     assert r.p_bara == pytest.approx(1.8672, abs=1e-4)
     assert r.env_in_kgh == e3.E003_M797_DES_KGH

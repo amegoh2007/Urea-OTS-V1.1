@@ -39,12 +39,15 @@ from dataclasses import dataclass
 from ureasim.core.packet import normalise_solution_mass_fraction as _w_norm
 from ureasim.core.stream import MW_COMP
 from ureasim.data.control_valves import (
+    LV_324501A,
+    LV_324501B,
     PV_324202,
     PV_324203,
     PV_329203,
     LV_329505,
     PV_329212,
     design_stroke_pct,
+    full_stroke_m3h,
 )
 from ureasim.data.design_point import R324_FEED_DES, R324_W_IN
 from ureasim.data.unit_323 import F010_T_SP_C, MEVAP_DES_KGH, W_S317
@@ -530,11 +533,10 @@ PV_324203_OP_DES_PCT = design_stroke_pct(PV_324203, F003_FA_DES_KGH)
 #: (``VACUUM_CONDENSERS["324E005"]["inlet_kgh"]``).
 E005_INLET_DES_KGH = VACUUM_CONDENSERS["324E005"].inlet_kgh
 
-#: LIC-324501's drain: LV-324501A's design stroke [%] and full-open capacity [kg/h] (V1
-#: ``R324_LIC501_OP_DES``, ``R324_LVA_SPAN``), linear as V1 has it: the loop summary gives LV-324501A's
-#: cases (8.0 / 70.5 / 82.0 m3/h at 1221 kg/m3, 6.9 -> 3.7 bar a, fail closed) but no vendor
-#: sizing sheet is in the archive (Flowserve's summary of items lists no LV-324501; handoff Open data
-#: gaps).
+#: LIC-324501's drain on V1's law: LV-324501A's design stroke [%] and full-open capacity [kg/h] (V1
+#: ``R324_LIC501_OP_DES``, ``R324_LVA_SPAN``), linear, both valves alike — which the equivalence
+#: harness keeps. The port runs the vendor sheets below (decision 150); the loop summary gives
+#: LV-324501A's cases (8.0 / 70.5 / 82.0 m3/h at 1221 kg/m3, 6.9 -> 3.7 bar a, fail closed).
 LIC_324501_OP_DES_PCT = 75.0
 LV_324501_SPAN_KGH = P2_DES_KGH / (LIC_324501_OP_DES_PCT / 100.0)
 
@@ -547,6 +549,20 @@ LV_324501_P_UP_BARA = 6.9
 LV_324501_P_DOWN_BARA = 3.7
 LV_324501_DP_DES_BAR = LV_324501_P_UP_BARA - LV_324501_P_DOWN_BARA
 LV_324501_RHO_KGM3 = 1221.0
+
+#: LV-324501A and LV-324501B on Flowserve's 0310 sheets (decided 2026-10-22, decision 150;
+#: decision 23's class; Pos. 148 and 149, found in session 69): angle valves, Kvs 100, equal
+#: percentage 50:1. The sheets size the melt on SG 0.751, not its 1221 kg/m3; a trim passes
+#: m = Kv sqrt(rho dP), so at the melt's density the printed normal Kv passes the case's 70.5 m3/h
+#: times sqrt(0.751 . 1221) / 1000 in t/h. LV-324501A's design stroke is where its rated Kv passes
+#: the design drain on that corrected case, 75.35 % (V1's linear 75 %); LV-324501B, shut at design,
+#: on its full-stroke capacity on its own normal case so corrected, 251.5 t/h over 6.9 -> 1.8 bar a.
+#: V1's linear span law has no pressure in it, and the trims keep that form.
+LV_324501A_OP_DES_PCT = design_stroke_pct(
+    LV_324501A, P2_DES_KGH * math.sqrt(LV_324501A.normal_case.rho / LV_324501_RHO_KGM3))
+LV_324501B_FULL_KGH = full_stroke_m3h(LV_324501B) * math.sqrt(
+    LV_324501B.normal_case.rho * LV_324501_RHO_KGM3)
+LV_324501_CHAR = LV_324501A.characteristic
 
 #: The atmospheric air a lost seal admits: PFD 783's air at its 32 C [deg C], and its ratio of
 #: specific heats [-], 1.40 — air is the reference gas the trim's terminal pressure-drop ratio is
@@ -619,6 +635,7 @@ __all__ = [
     "F003_M_FULL_KG", "F003_M_FLOOR_KG", "F003_FA_DES_KGH", "PV_324203_OP_DES_PCT",
     "E005_INLET_DES_KGH", "LIC_324501_OP_DES_PCT", "LV_324501_SPAN_KGH", "PIC_335201_RELIEF_BARG",
     "LV_324501_P_UP_BARA", "LV_324501_P_DOWN_BARA", "LV_324501_DP_DES_BAR", "LV_324501_RHO_KGM3",
+    "LV_324501A_OP_DES_PCT", "LV_324501B_FULL_KGH", "LV_324501_CHAR",
     "SEAL_AIR_T_C", "SEAL_AIR_GAMMA",
     "PIC_335201_DES_BARG", "E003_LIQUOR", "F003_P_MIN_BARA", "F003_P_MAX_BARA",
     "TT_324002_SPAN_C", "PT_329212_SPAN_BAR", "PT_324203_SPAN_BAR", "TIC_324002_KC",

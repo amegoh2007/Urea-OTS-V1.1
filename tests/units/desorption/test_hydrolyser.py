@@ -10,6 +10,8 @@ the heel and the full shell overflowing — with the liquid's books closed on wh
 
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from ureasim.data import desorption_train as t
@@ -62,34 +64,34 @@ def test_the_design_point_is_the_pfds():
 
 def test_the_mp_steam_lost_the_column_cools_and_the_urea_slips():
     """FIC-329402 shut: nothing carries the reaction's heat, the column cools to 185.9 C in an
-    hour and the condensate carries 77 ppm of urea."""
+    hour and the condensate carries 77.6 ppm of urea."""
     _, out, made = _run(7200, man={"fic_329402": 0.0})
     r = out[-1]
     assert r.m_911_kgh == 0.0
-    assert (r.t_c, r.urea_747_ppm) == (pytest.approx(185.909, abs=1e-3),
-                                       pytest.approx(77.006, abs=1e-3))
+    assert (r.t_c, r.urea_747_ppm) == (pytest.approx(185.915, abs=1e-3),
+                                       pytest.approx(77.645, abs=1e-3))
     assert abs(made) < 1e-6
 
 
 def test_a_heavier_feed_shortens_the_residence():
-    """746 a fifth up: less residence, a colder column — 197.41 C an hour on — and 7.66 ppm."""
+    """746 a fifth up: less residence, a colder column — 197.38 C an hour on — and 7.16 ppm."""
     _, out, made = _run(7200, over=dict(m746=1.2 * t.C003_M746_DES_KGH))
     r = out[-1]
-    assert (r.t_c, r.urea_747_ppm) == (pytest.approx(197.412, abs=1e-3),
-                                       pytest.approx(7.658, abs=1e-3))
+    assert (r.t_c, r.urea_747_ppm) == (pytest.approx(197.383, abs=1e-3),
+                                       pytest.approx(7.155, abs=1e-3))
     assert abs(made) < 1e-6
 
 
 def test_twice_the_urea_is_mostly_destroyed():
     """746 carrying twice the urea: the extent doubles, the endotherm cools the column to 195.2 C,
-    and 10.0 ppm slips."""
+    and 10.1 ppm slips."""
     rich = dict(t.W_S743)
     rich["Urea"] = 2.0 * t.W_S743["Urea"]
     rich["H2O"] = t.W_S743["H2O"] - t.W_S743["Urea"]
     _, out, made = _run(7200, over=dict(w746=rich))
     r = out[-1]
-    assert (r.t_c, r.urea_747_ppm, r.xi_kmolh) == (pytest.approx(195.156, abs=1e-3),
-                                                   pytest.approx(10.031, abs=1e-3),
+    assert (r.t_c, r.urea_747_ppm, r.xi_kmolh) == (pytest.approx(195.161, abs=1e-3),
+                                                   pytest.approx(10.062, abs=1e-3),
                                                    pytest.approx(8.5412, abs=1e-4))
     assert abs(made) < 1e-6
 
@@ -97,18 +99,18 @@ def test_twice_the_urea_is_mostly_destroyed():
 def test_a_throttled_overhead_raises_the_pressure_not_the_temperature():
     """Decision 24. PV-328203 held at 20 %: the column generates 812 kg/h and the valve passes
     less; the liquid loses and pays for the 812, the rest stays in the head space — the pressure
-    rises while the temperature holds 200 C, until SV32852 lifts at 24.01 bar a, 619.5 s on
-    (B-47). From there the valve holds the column between 21.71 and 24.01 bar a, lifting every
-    226 s and venting 454 kg in the hour. (Unrelieved, 40.6 bar a in the hour; V1 charged the
+    rises while the temperature holds 200 C, until SV32852 lifts at 24.01 bar a, 618.5 s on
+    (B-47). From there the valve holds the column between 21.71 and 24.01 bar a, venting 482 kg
+    in the hour (LV-328504 on Fisher's trim, decision 150). (Unrelieved, 40.6 bar a in the hour; V1 charged the
     liquid only what the valve passed, made 505 kg and ran 3.1 K hot.)"""
     _, out, made = _run(7200, man={"pic_328203": 20.0})
     r = out[-1]
     assert r.gen_748_kgh == pytest.approx(t.C003_M748_DES_KGH, rel=1e-9)
     first = next(k for k, x in enumerate(out) if x.relief_lifted)
-    assert first * DT == 619.5
+    assert first * DT == 618.5
     assert max(x.p_bara for x in out) < c.SV32852_SET_BARA + 0.01
     assert min(x.p_bara for x in out[first:]) == pytest.approx(c.SV32852_RESEAT_BARA, abs=1e-9)
-    assert sum(x.m_relief_kgh for x in out) * DT / 3600.0 == pytest.approx(454.22, abs=0.01)
+    assert sum(x.m_relief_kgh for x in out) * DT / 3600.0 == pytest.approx(481.97, abs=0.01)
     assert r.t_c == pytest.approx(200.0, abs=1e-6)
     assert abs(made) < 1e-6
 
@@ -116,23 +118,25 @@ def test_a_throttled_overhead_raises_the_pressure_not_the_temperature():
 def test_sv32852_lifts_at_its_set_pressure_and_reseats_at_its_blowdown():
     """B-47. PV-328203 shut: the column reaches SV32852's set, 24.01 bar a, at 459 s. The valve
     lifts and vents the head space at its certified capacity carried to the column's vapour —
-    27 136 kg/h at 24.01 bar a, falling with the pressure — and reseats at 21.71 bar a, 10 % of
-    the set pressure below it; the cycle repeats every 165.5 s while the overhead stays shut."""
+    27 142 kg/h at 24.01 bar a, falling with the pressure — and reseats at 21.71 bar a, 10 % of
+    the set pressure below it; the cycle repeats every 152.5 s while the overhead stays shut."""
     _, out, _ = _run(7200, man={"pic_328203": 0.0})
     lifts = [k for k in range(1, len(out))
              if out[k].relief_lifted and not out[k - 1].relief_lifted]
-    assert lifts[0] * DT == 459.0 and len(lifts) == 19
-    assert (lifts[-1] - lifts[-2]) * DT == 165.5
+    assert lifts[0] * DT == 459.0 and len(lifts) == 20
+    assert (lifts[-1] - lifts[-2]) * DT == 152.5
     assert out[lifts[0] - 1].p_bara >= c.SV32852_SET_BARA
-    assert out[lifts[0]].m_relief_kgh == pytest.approx(27135.98, abs=0.01)
+    assert out[lifts[0]].m_relief_kgh == pytest.approx(27141.85, abs=0.01)
     assert all(x.m_relief_kgh == 0.0 for x in out if not x.relief_lifted)
-    assert sum(x.m_relief_kgh for x in out) * DT / 3600.0 == pytest.approx(669.63, abs=0.01)
+    assert sum(x.m_relief_kgh for x in out) * DT / 3600.0 == pytest.approx(693.71, abs=0.01)
 
 
 def test_328e021_gives_the_feed_what_its_hot_side_gave():
-    """Decision 14. LV-328504 held at 40 %: 747 is too little to heat 746 to 190 C; the feed takes
+    """Decision 14. LV-328504 held where it passes 80 % of its design flow (52.10 % on Fisher's
+    trim, decision 150; 40 % on V1's line): 747 is too little to heat 746 to 190 C; the feed takes
     what the hot side gave, 188.06 C an hour on, pinched, and the column runs 1.03 K cold."""
-    _, out, made = _run(7200, man={"lic_328504": 40.0})
+    _, out, made = _run(7200, man={"lic_328504": c.LV504_OP_DES_PCT
+                                    + 100.0 * math.log(0.8) / math.log(50.0)})
     r = out[-1]
     assert r.e021_pinched and r.t_749_c == t.C002_T_BOT_C
     assert (r.t_746_c, r.t_c, r.urea_747_ppm) == (pytest.approx(188.061, abs=1e-3),
@@ -142,12 +146,13 @@ def test_328e021_gives_the_feed_what_its_hot_side_gave():
 
 
 def test_lv_328504_at_the_heel_passes_what_arrives():
-    """Decision 11. LV-328504 held wide open: the column reaches its heel at 5252.5 s, and from
+    """Decision 11. LV-328504 held wide open on Fisher's equal percentage (decision 150): the
+    column reaches its heel at 1628.5 s, and from
     then on 747 is what arrives less what boils — the PFD's 34 062 kg/h — flagged, making no
     liquid."""
     col, out, made = _run(21600, man={"lic_328504": 100.0})
     first = next(k for k, r in enumerate(out) if r.drain_lost)
-    assert first * DT == pytest.approx(5252.5, abs=1e-9)
+    assert first * DT == pytest.approx(1628.5, abs=1e-9)
     assert all(r.drain_lost for r in out[first:])
     assert col.m_kg == pytest.approx(c.C003_M_FLOOR_KG, abs=1e-6)
     assert out[-1].m_747_kgh == pytest.approx(t.C003_M747_DES_KGH, rel=1e-9)

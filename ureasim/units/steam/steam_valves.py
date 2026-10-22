@@ -18,7 +18,10 @@ The eleven valves of the steam network:
     Since 2026-10-15 (decision 108's class) PV-329204, PV-329207A and PV-329207B run Metso's
     Neldisc trims instead — the same law, anchored on each valve's design flow at its design stroke
     on its printed points and its normal case's xT (`pv_329204_kgs`, `pv_329207a_kgs`,
-    `pv_329207b_kgs`); the other three are on no sheet in the archive and keep V1's.
+    `pv_329207b_kgs`). Since 2026-10-22 (decision 150) the other three run the vendor sheets found
+    in session 69 — they are globes, not butterflies: HV-329601 and PV-329207C Flowserve Mark Ones,
+    HV-329602 a Fisher — each anchored on its full-stroke capacity on its normal case
+    (`hv_329601_kgs`, `pv_329207c_kgs`, `hv_329602_kgs`).
 
   * **the globes** (decision 23, §5 rule 7) — PV-329205A (supply -> 329D009) and PV-329205B
     (329D009 -> LP header) on Flowserve's modified equal-percentage trims and xT; LV-329502
@@ -44,6 +47,7 @@ from ureasim.control.valve import (
     valve_liquid_anchored,
 )
 from ureasim.data.control_valves import (
+    HV_329601,
     LV_329502,
     LV_329503,
     LV_329504,
@@ -52,7 +56,9 @@ from ureasim.data.control_valves import (
     PV_329205B,
     PV_329207A,
     PV_329207B,
+    PV_329207C,
 )
+from ureasim.data.control_valves_fisher import HV_329602
 from ureasim.data.unit_329 import (
     P_916_BARA,
     P_ATM_VENT_BARA,
@@ -68,6 +74,14 @@ from ureasim.data.unit_329 import (
     T_916_C,
 )
 from ureasim.data.unit_329_network import (
+    HV601_FULL_KGS,
+    HV601_FULL_P1_BARA,
+    HV601_FULL_P2_BARA,
+    HV601_XT,
+    HV602_FULL_KGS,
+    HV602_P1_DES_BARA,
+    HV602_P2_DES_BARA,
+    HV602_XT,
     LV502_FL,
     LV502_OP_DES_PCT,
     LV503_FL,
@@ -92,6 +106,10 @@ from ureasim.data.unit_329_network import (
     PV207A_XT,
     PV207B_OP_DES_PCT,
     PV207B_XT,
+    PV207C_FULL_KGS,
+    PV207C_P1_DES_BARA,
+    PV207C_P2_DES_BARA,
+    PV207C_XT,
 )
 from ureasim.thermo.iapws import psat_bara, tsat_c
 from ureasim.thermo.water_steam import rho_drum_liquid_kgm3
@@ -179,6 +197,56 @@ def pv_329207b_kgs(opening_pct: float, p_lp_bara: float) -> float:
         characteristic=PV_329207B.characteristic, xt=PV207B_XT)
 
 
+def hv_329601_kgs(opening_pct: float, p_hp_bara: float) -> float:
+    """HV-329601's vent from 329D005 to the 329D010 silencer [kg/s], on Flowserve's Mark One sheet
+    (decided 2026-10-22, decision 150).
+
+    Process utility
+    ---------------
+    329D005's blow-off, shut at design: trip 21.2 forces it open to bring the HP saturator, and
+    322E001's shell with it, down fast. Equal percentage, Kv 64, anchored on its full stroke on
+    its normal case — 16 151 kg/h from 19.9 bar a, choked against the silencer.
+    """
+    return valve_gas_anchored(
+        HV601_FULL_KGS, _clamp_pct(opening_pct) / 100.0, p_hp_bara, P_ATM_VENT_BARA,
+        tsat_c(max(p_hp_bara, 1e-6)) + 273.15, 1.0, HV601_FULL_P1_BARA, HV601_FULL_P2_BARA,
+        tsat_c(HV601_FULL_P1_BARA) + 273.15, STEAM_MW, STEAM_GAMMA,
+        characteristic=HV_329601.characteristic, xt=HV601_XT)
+
+
+def pv_329207c_kgs(opening_pct: float, p_lp_bara: float) -> float:
+    """PV-329207C's admission from the supply to the LP header [kg/s], PFD 963, on Flowserve's Mark
+    One MegaStream sheet (decided 2026-10-22, decision 150).
+
+    Process utility
+    ---------------
+    The trio's bottom leg, shut at design: it makes up the header from the 25 bar a supply when
+    the header falls below its set point. Linear, Kv 172, anchored on its full stroke on its
+    normal case — 34 882 kg/h from 22.0 to 4.4 bar a.
+    """
+    return valve_gas_anchored(
+        PV207C_FULL_KGS, _clamp_pct(opening_pct) / 100.0, P_SUP_BARA, p_lp_bara,
+        tsat_c(P_SUP_BARA) + 273.15, 1.0, PV207C_P1_DES_BARA, PV207C_P2_DES_BARA,
+        tsat_c(PV207C_P1_DES_BARA) + 273.15, STEAM_MW, STEAM_GAMMA,
+        characteristic=PV_329207C.characteristic, xt=PV207C_XT)
+
+
+def hv_329602_kgs(opening_pct: float, p_lp_bara: float) -> float:
+    """HV-329602's admission from the supply to the LP header [kg/s], beside PV-329207C, on Fisher's
+    sheet (decided 2026-10-22, decision 150).
+
+    Process utility
+    ---------------
+    The make-up's hand valve, shut at design. Linear, Cv 228, xT 0.532, anchored on its full stroke
+    on its normal case — 39 233 kg/h from 22.0 to 4.4 bar a.
+    """
+    return valve_gas_anchored(
+        HV602_FULL_KGS, _clamp_pct(opening_pct) / 100.0, P_SUP_BARA, p_lp_bara,
+        tsat_c(P_SUP_BARA) + 273.15, 1.0, HV602_P1_DES_BARA, HV602_P2_DES_BARA,
+        tsat_c(HV602_P1_DES_BARA) + 273.15, STEAM_MW, STEAM_GAMMA,
+        characteristic=HV_329602.characteristic, xt=HV602_XT)
+
+
 def pv_329205a_kgs(opening_pct: float, p_sup_bara: float, p_9_bara: float) -> float:
     """PV-329205A's superheated steam into 329D009 [kg/s], on its vendor trim.
 
@@ -256,6 +324,7 @@ def lv_329504_kgs(opening_pct: float, p_lp_bara: float) -> float:
 
 __all__ = [
     "PV_916_BARA", "steam_valve_kgs", "pv_329204_kgs", "pv_329207a_kgs", "pv_329207b_kgs",
+    "hv_329601_kgs", "pv_329207c_kgs", "hv_329602_kgs",
     "pv_329205a_kgs", "pv_329205b_kgs", "lv_329502_kgs",
     "lv_329503_kgs", "lv_329504_kgs",
 ]

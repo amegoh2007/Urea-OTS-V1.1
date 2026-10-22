@@ -99,6 +99,7 @@ Design basis: `References/Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md
 - Part LXXXI — B-108 to B-111 decided and built; Scenarios5.md re-run (Phase 7)
 - Part LXXXII — B-112 decided and built: PT on 322R001 on its feed line's PFD drop (Phase 7)
 - Part LXXXIII — Single-console conversion (Phase 6 / Phase 7)
+- Part LXXXIV — The data gaps searched again; seven valves on their vendor sheets (Phase 7)
 
 ---
 
@@ -1695,6 +1696,13 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 327 | Scenarios5.md re-run on B-108 to B-111 | — | `run_coupled.EXTRA` (``x.reactor_pt_bara``, ``x.stage2_bisected``) | **measured** 2026-10-22: 14 cases, 82 of 165 (83); S5-6c, S5-6b, S5-5a and S5-6a trip 22.2 30 to 95 s later on the additive rise; eight deviations, 15 of 22 (§LXXXI.5-6) |
 | 328 | PT on 322R001 on its feed line's PFD drop (decision 148) | V1's ``p_syn - 144.2`` line, 136.12 bar a at the design | `units/synthesis/loop_hydraulics` ``reactor_bara(design_drop=)``; `units/synthesis/reactor_inventory` ``ReactorInventory.design_drop``; `data/unit_322_loop` ``REACT_FEED_DP_DES_BAR``, ``REACT_FEED_RHO_DES_LIVE``; `data/unit_322r001` ``TOP_P_DES_BARA``, ``FEED_W_UREA_DES`` | **`[DECIDED DIVERGENCE]`** 2026-10-22 (handoff B-112 (a)): 2.9 = 144.2 - 141.3 (A-13) at the seed's feed density and mass, 141.3 bar a at the design to the bit, 1.0 bar per bar of PT-329201 under B-109's cap; display only; both ways (§LXXXII.1) |
 | 329 | The single-console conversion (decision 149) | any number of browsers, no roles | `run.py`; `net/protocol.py`; `net/server.py`; `hmi/bridge.py`; `hmi/main_window.py`; `hmi/instructor/panel.py`; `data/faceplates.py` ``CO2_DEMAND_MAX_FRAC`` | **rewrite's**, decided 2026-10-22, superseding decisions 72, 124 and 125: one engine and one console on one machine, the server on `127.0.0.1` refusing any other address; no role, token, roster or section assignment; protocol version 2; the engine's process refusals, back-pressure, the 5 s watchdog and history kept; ``co2_set`` on the instructor's panel (§LXXXIII) |
+| 330 | LV-328503 on Fisher's trim (decision 150) | linear from 50 %, the IEC FL 0.90 (no sheet found) | `data/control_valves_fisher` ``LV_328503``; `data/unit_328c002` ``LV503_OP_DES_PCT``, ``LV503_CHARACTERISTIC``, ``LV503_FL``; `units/desorption/first_desorber` | **`[DECIDED DIVERGENCE]`** 2026-10-22: equal percentage (50:1), rated Cv 82.2, FL 0.819, from 56.95 %; PFD 743 exact at the design stroke on both; the harness's ``valve`` switch, both ways in `test_lv_328503_on_fishers_trim_decided_divergence` (§LXXXIV.2) |
+| 331 | LV-328504 on Fisher's trim (decision 150) | linear from 50 %, FL 0.90 | `data/control_valves_fisher` ``LV_328504``; `data/unit_328c003` ``LV504_*``; `units/desorption/hydrolyser` | **`[DECIDED DIVERGENCE]`** 2026-10-22: equal percentage, Cv 82.2, FL 0.819, from 57.80 %; the harness's ``lv504`` switch, both ways in `test_lv_328504_on_fishers_trim_decided_divergence` (§LXXXIV.2) |
+| 332 | PV-323202, the 323D001 vent, on Fisher's TV-323013 sheet (decision 150) | V1's square-root line from 25 % | `data/control_valves_fisher` ``PV_323202``; `data/unit_323e003` ``E003_PV_OP_DES_PCT``; `units/recirc/lp_carbamate_condenser` ``vent_valve_kgh`` | **`[DECIDED DIVERGENCE]`** 2026-10-22: the same linear law from 36.45 %, where the Whisper I trim's Cv 99.1 passes PFD 321 on the normal case; the harness's ``vent`` keyword, both ways in `test_pv_323202_on_fishers_anchor_decided_divergence` (§LXXXIV.2) |
+| 333 | HV-329601, PV-329207C and HV-329602 on their sheets (decision 150) | V1's anchored law, the loop summaries' maximum cases at full stroke | `data/unit_329_network` ``HV601_*``, ``PV207C_*``, ``HV602_*``; `units/steam/steam_valves` ``hv_329601_kgs``, ``pv_329207c_kgs``, ``hv_329602_kgs``; `steam_network.SteamNetwork.vendor_globes` | **`[DECIDED DIVERGENCE]`** 2026-10-22: Flowserve Mark One (equal percentage, Kv 64; linear MegaStream, Kv 172) and Fisher (linear, Cv 228), each on its full-stroke capacity on its normal case: 16 151, 34 882 and 39 233 kg/h; ``v1_butterflies()`` keeps V1's law for the harness; both sides in `tests/units/steam/test_steam_valves.py` (§LXXXIV.3) |
+| 334 | LV-324501A / B on Flowserve's 0310 sheets (decision 150) | V1's span law, linear from 75 %, the same on both valves | `data/unit_324` ``LV_324501A_OP_DES_PCT``, ``LV_324501B_FULL_KGH``, ``LV_324501_CHAR``; `units/evaporation/second_evaporator` ``vendor_drain``, ``lic_324501(vendor=)``; `units/evaporation/leg_seal` ``seal_air_kgh(vendor=)`` | **`[DECIDED DIVERGENCE]`** 2026-10-22: equal percentage 50:1, Kvs 100; the sheets' SG 0.751 taken to the melt's 1221 kg/m3: A from 75.35 %, B on its full stroke, 251.5 t/h; both ways in `test_lv_324501_on_flowserves_sheets_decided_divergence` (§LXXXIV.4) |
+| 335 | 322E006 on PFD 28's cooling water (decision 151) | V1 fixes 755 at 40 C; the port back-solved 10 374 kg/h on the datasheet UA | `data/unit_322e006` ``E006_M_CW_PFD_KGH``; `units/absorption/feed_cooler` ``E006_UA_DES_KW_K``, ``feed_cooler_322e006(ua_kw_k=)`` | **`[DECIDED DIVERGENCE]`** 2026-10-22: 14 t/h, the UA back-solved to 20.448 kW/K so 755 holds 40.0 C, the datasheet's 30.776 kept as margin (§LXXXIV.5) |
+| 336 | The open data gaps searched again (session 69) | — | `handoff.md` Open data gaps | **recorded** 2026-10-22: both user folders (486 documents) and the archive; four rows closed (rows 330-335), 15 open (§LXXXIV.1, §LXXXIV.6) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -17081,3 +17089,118 @@ packet's ``CO2_FEED.raw_th`` shown beside it. The process screens still send it 
   console's name in the audit line): renaming them changes no behaviour.
 * Register row 291 (a refused console no longer retried) is kept, not retired: its fix still
   answers a refused `hello`.
+
+# Part LXXXIV — The data gaps searched again; seven valves on their vendor sheets (Phase 7)
+
+Session 69, 2026-10-22. The process engineer asked for every open data gap to be searched again in
+`D:/Work/Urea Simulation` and `D:/Work/Urea Simulation Docs` and their subfolders, and then in the
+vendor archive. Four of the 19 rows closed; the process engineer confirmed the two changes they
+carried, seven valves on their vendor sheets (`project.md` decision 150) and 322E006 on PFD 28's
+cooling water (decision 151).
+
+## LXXXIV.1 The search
+
+* **The two folders.** Every PDF, Word, PowerPoint, Excel, Markdown and text file under both
+  folders, the V1 code trees aside, was text-extracted (486 documents with text) and searched for
+  each row's tags and terms; the scanned PDFs were rendered and read where a lead pointed to them.
+  No file there is newer than 2026-10-16 but `References/scenarios/Scenarios5.md`. The
+  `Urea Simulation Docs/Data` reports and `Urea Simulation Missing Data Research.pdf` (worked in
+  session 58) were checked against the archive's own pages, never taken as sources. The 73
+  faceplate photographs of 10 July 2026 (one controller each) and the June 2025 trend photographs
+  (synthesis tags only) were read.
+* **The leads that closed rows** were in the archive, found through the folders' reports and the
+  archive's TOC: Fisher's control-valve file **UD-MR-G00-DZ-0014** (Emerson, quote 097L057181,
+  23 March 2005; never read before) — its valve specifications (-001) and sizing calculations (-002)
+  carry TV-323013, LV-328503, LV-328504, FV-329402 and HV-329602 as items 021-025, PDF pages 19-23;
+  and **Flowserve's summary of items** (UD-MR-G00-DZ-0048-001), whose printed pages 4 and 8 (PDF
+  pages 5 and 9) list HV 329601 (Pos. 65), PV 329207C (Pos. 76) and LV 324501A twice (Pos. 148, 149; the second
+  sheet tagged LV 324501B), with calculation sheets on the same pages of -003. Earlier sessions
+  had read Pos. 46-64 and 66-75; the handoff recorded these four as on no sheet.
+* **PFD 28** (Cooling Water, Urea Unit, 1750 MTPD; UD-VT-329-FB-0004) draws 322E006 between
+  streams 1010 and 1011: 14 t/h from 30 C at 3.6 bar a to 40 C at 2.2 bar a, its duty flag 0.16.
+  The handoff had read only the process PFDs for it.
+* **TV-323013 is the port's PV-323202.** Fisher's TV-323013 is a DN 80 ET globe on "carbonate
+  gas", 600 / 1200.2 / 4000 Nm3/h from 5.0 / 3.2 / 3.2 bar a — the loop summary P 323202's cases
+  for the 323D001 vent (§XXXIII.5, handoff B-36's table: P&ID 103/1 tags the vent TV-323013).
+  The Metso tempered-water butterflies P&ID 103/1 tags PV-323202A / B stay as catalogued.
+
+## LXXXIV.2 The desorbers' letdowns and the LPCC vent
+
+Each runs its sheet's named curve on the port's laws (`control.valve.cv_fraction`: the equal
+percentage on the IEC representative 50:1, as CCI's PV-322203; the line), its design stroke where
+its rated Cv passes the design flow on its normal case (`control_valves.design_stroke_pct`):
+
+| valve | sheet | port | V1 |
+|---|---|---|---|
+| LV-328503 | EWT DN 100 x 50, equal %, Cv 82.2, FL 0.819, 138 C, SG 0.933 | 56.95 %, FL 0.819 | linear 50 %, FL 0.90 |
+| LV-328504 | the same body, trim 29, 147 C, SG 0.925 | 57.80 %, FL 0.819 | linear 50 %, FL 0.90 |
+| PV-323202 | ET DN 80, Whisper I, linear, Cv 99.1, SG 0.909 to air | 36.45 % on V1's square-root line | 25 % |
+
+At the design stroke each passes its design flow to the bit. Off design the equal-percentage trims'
+lower gain per per cent of stroke shows: the feed to 328C002 cut 30 %, LIC-328503 is at 47.85 %
+passing 23 879 kg/h ten minutes on where V1's is at 34.35 % passing 23 416; 746 cut a fifth, the
+hydrolyser holds 46.48 % passing 26 182 kg/h an hour on, V1's 45.00 % and 28 046; the LPCC's gas up
+10 % on V1's tuning, 323D001 holds 3.2554 bar a with the vent at 82.19 % (V1's 3.2340 at 62.45 %).
+On the lower FL, V1's 190 C choke on LV-328503 (B-43) binds from the first tick of the transients
+it used to reach only later; B-43's switch now runs with the valve's in the harness's inert set.
+
+The vent's anchor reaches the synthesis loop through the recirculation section. In B-104's scenario
+(LV-322501 held at 10 %, the tubes standing full) the reactor discharges 37.7 t/h ten minutes on,
+against 26.3 t/h with PV-323202 on V1's 25 % anchor, all else equal — 323D001 differing by 1.5
+mbar: LV-322501's drain at 10 % is that scenario's most sensitive quantity (measured by reverting
+each session-69 change in turn; the other five move it by under 3 kg/h).
+
+## LXXXIV.3 The steam network's three
+
+HV-329601 (Mark One, equal percentage, Kv 64, "with throttle disc in sandwich design"),
+PV-329207C (Mark One MegaStream, two stages, linear, Kv 172) and HV-329602 (Fisher ED, Whisper III,
+linear, Cv 228, xT 0.532) are all shut at design, so each is anchored on its full-stroke capacity on
+its normal case (`valve_gas_anchored`, as PV-329205B): 16 151 kg/h from 19.9 to 1.5 bar a,
+34 882 and 39 233 kg/h from 22.0 to 4.4. The Mark One sheets print no xT; each case's xT is
+calculated from its printed choke drop, dP_choke / (F_gamma P1) on F_gamma 1.30 / 1.40 (0.816 and
+0.547 on the normal cases). The loop summaries' maximum cases they replace (8000 kg/h at 17.0 bar a,
+32 000 at 20 → 7.0, wide open by §4's order) are what the sheets size at 82, 84 and 87 % open.
+`SteamNetwork.vendor_globes` switches them; ``v1_butterflies()`` keeps V1's law for the harness. On
+trip 21.2 HV-329601 now vents 15.9 t/h wide open (9.2 on the loop summary's case), 329D005 at
+16.76 bar a after 30 s; with 322E002's raising lost the LP header falls to 1.96 bar a in five
+minutes (2.11), PV-329207C wide open admitting 39.4 t/h choked from the 25 bar a supply.
+
+## LXXXIV.4 LV-324501A / B and the leg's seal
+
+Flowserve's 0310 angle valves (DN 100, Kvs 100, equal percentage, rangeability 50:1 printed): A to
+the granulation header, fail closed, quick closing under 3 s; B the recycle to 323D002, fail open.
+The sheets size the melt on SG 0.751, viscosity 2.219 cP and vapour pressure 0.130 bar a; the loop
+summary L 324501 and PFD 402 put it at 1221 kg/m3. A trim passes m = Kv sqrt(rho dP), so each
+printed Kv is taken to the melt by sqrt(0.751 . 1221): A's design stroke, where its rated Kv passes
+the design drain on that corrected normal case, is 75.35 % (V1's span law: 75 %); B, shut at
+design, is anchored on its full stroke on its own corrected normal case, 251.5 t/h over
+6.9 → 1.8 bar a. V1's span law carries no pressure, and the trims keep that form:
+
+    m_402 = m_des . phi_A(h) / phi_A(h_des)          (A routed)
+    m_402 = m_B,full . phi_B(h)                       (B routed, PIC-335201 above 3.8 bar g)
+
+`SecondEvaporator.vendor_drain` switches them and ``lic_324501(vendor=)`` seeds LIC-324501 on the
+stroke; the lost seal's air (decision 143) is LV-324501A's trim ratio on the same curve. With the
+335 header backing up, B passes 95.7 t/h at the stroke where V1's law passed the design drain; on a
+feed-pump trip LIC-324501 closes the drain at 638 s with the level at 21.6 % and the melt holds
+1496 kg (V1's line: 15 %, 1041 kg).
+
+## LXXXIV.5 322E006 on PFD 28's water
+
+The session-31 port back-solved the cooling water, 10 374 kg/h, on the datasheet UA because no
+document fixed it. PFD 28 does: 14 t/h. On the datasheet's 30.776 kW/K that water brings PFD 744 to
+39.23 C, so the UA is the quantity back-solved now (`feed_cooler._design_ua_kw_k`): 20.448 kW/K,
+two-thirds of the datasheet's, which stays the rated surface's margin (decision 44's class). The
+design point is the PFD's to the bit, the water returning at 39.05 C against PFD 28's rounded 40;
+off design 755 answers less to the water (39.43 C at 1.5 times the flow, 42.47 C at a quarter).
+
+## LXXXIV.6 What stays open, and the checks
+
+The 15 rows left need what neither folder nor the archive holds: Körting's and 322F001's curves,
+322E001's thermal rating, a Neldisc curve (Uhde's specification UD-MR-G00-EC-0022 names "equal
+percentage", no table), the DCS database's hystereses, AC4 limits and the eight untuned loops' rows,
+LT-324501's and LT-329505's lower tap elevations (Uhde's DP-transmitter specifications list only the
+steam drums' transmitters), AI-329701's configured range (the analyser data sheets are parts lists),
+a 324F003 trend, a urea-melt Henry constant, 322C001's head volume and trip 22.2 in any logic file.
+
+`python -m pytest` — **7 475 collected** (7 454 at session 68: 21 more — the new sheets' catalogue, the Fisher module's own test and each valve's both-ways tests), thirteen parallel parts. The first run failed 33 tests, every one a measured value or a held stroke the new valves and water move (the desorbers' unit tests 15, the synthesis loop's decided harness 14, the vacuum condenser's trip, a faceplate's displayed 75.3 % and the catalogue's two); each was re-measured, its docstring restated, B-104's large move traced, and those files re-run green; `tests/docs` green; pyflakes clean; the headless grep prints nothing.

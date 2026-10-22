@@ -43,6 +43,7 @@ import math
 
 import pytest
 
+from ureasim.data import control_valves_fisher as fv
 from ureasim.data import unit_323 as d
 from ureasim.data import unit_323e003 as e3
 from ureasim.data import unit_323e011 as e
@@ -56,6 +57,7 @@ from ureasim.units.recirc import lp_carbamate_condenser as lp
 from ureasim.units.recirc import pre_evaporator as pe
 from ureasim.units.recirc import rectifying_column as rc
 from ureasim.units.recirc import solution_tank as st
+from tests.equivalence import decided_valves as dv
 from tests.equivalence import routes_switch
 from tests.equivalence import test_flash_condenser_equivalence as stage9
 from tests.equivalence import test_flash_tank_equivalence as stage2
@@ -93,17 +95,22 @@ def v1():
     return ns
 
 
-def _v1_state(v1):
+
+#: PV-323202 as decided (decision 150), re-derived from Fisher's sheet: the linear trim's design
+#: stroke [%] where its rated Cv passes PFD 321 on the normal case.
+DECIDED_PV202_OP = dv.design_stroke_pct(fv.PV_323202, e3.E003_M321_DES_KGH)
+
+def _v1_state(v1, vent: bool = True):
     """The V1 plant-state fields stages 1 to 4, 8 and 9 read and write, seeded as
     `State.__init__` seeds them (stages 1 to 4 and 9 from their own tests, the LPCC from
-    ``main.py`` 6887-6948)."""
+    ``main.py`` 6887-6948); `vent` seeds PIC-323202 on PV-323202's decided stroke."""
     g = v1
     s = stage9._v1_state(v1)
     s.r3232_e003_T = g["R3232_E003_T"]
     s.r3232_d001_M = g["R3232_D001_M_DES"]
     s.r3232_d001_P = g["R3232_D001_P_BARA"]
     P = g["R3232_D001_P_BARA"]
-    s.PIC_323202 = {"mode": "AUTO", "op": g["R3232_E003_PV_OP_DES"],
+    s.PIC_323202 = {"mode": "AUTO", "op": DECIDED_PV202_OP if vent else g["R3232_E003_PV_OP_DES"],
                     "sp": P, "pv": P, "pv1": P, "pv2": P,
                     "Kc": 5.0, "Ti": 40.0, "Td": 0.0, "act": -1.0,
                     "op_lo": 0.0, "op_hi": 100.0, "sp_lo": 2.0, "sp_hi": 5.0}
@@ -122,21 +129,24 @@ def _v1_state(v1):
 
 
 def _v1_stage8(v1, s, m_305, m718B_prev, m_776, m_flash_gas, m_pool_vap, blow_322501_kgh,
-               blow_323501_kgh, dt, decided: bool = True):
+               blow_323501_kgh, dt, decided: bool = True, vent: bool = True):
     """V1 `main.py` 9513-9578, stage 8, TRANSCRIBED line for line.
 
     With `decided` (the default), V1's two lines the process engineer decided against on
     2026-09-27 are replaced by the decided relations — the capacity uncapped (B-34) and the
     heel cap on 323P001 in place of the floor guard (B-35) — so every scenario still compares
     the rest of V1's statements with the port tick for tick. ``decided=False`` runs V1's own
-    lines; the tests of those two decisions use it to assert both sides."""
+    lines; the tests of those two decisions use it to assert both sides. `vent` (the default)
+    anchors PV-323202's line on its decided design stroke (decision 150), V1's own line from
+    Fisher's 36.45 % in place of 25 %."""
     g = v1
     clamp, _lag1, _ctrl_ipd = g["clamp"], g["_lag1"], g["_ctrl_ipd"]
     Te003 = s.r3232_e003_T
     in_e003 = m_305 + m718B_prev + m_776 + g["R3232_M797_DES"]
     pic202_op = _ctrl_ipd(s.PIC_323202, s.r3232_d001_P, dt)
     dP_v202 = max(s.r3232_d001_P - s.r3232_e011_P, 0.0)
-    m_321 = (g["R3232_E003_M321_DES"] * (pic202_op / g["R3232_E003_PV_OP_DES"])
+    pv202_op_des = DECIDED_PV202_OP if vent else g["R3232_E003_PV_OP_DES"]
+    m_321 = (g["R3232_E003_M321_DES"] * (pic202_op / pv202_op_des)
              * math.sqrt(dP_v202 / (g["R3232_D001_P_BARA"] - g["R3232_E011_P_BARA"])))
     lvl_d001_323 = s.r3232_d001_M / g["R3232_D001_M_DES"] * g["R3232_D001_LVL_SP"]
     lic502_op = _ctrl_ipd(s.LIC_323502, lvl_d001_323, dt)
@@ -256,7 +266,7 @@ def _loops(v1_gain: bool = True):
     ("E003_T718B_C", "R3232_E011_T"), ("TW_SUP_T_C", "R3232_TW_SUP_T"),
     ("TW_RET_T_C", "R3232_TW_RET_T"), ("TV13_DES_PCT", "R3232_TV13_DES_PCT"),
     ("TW_TAU_S", "R3232_TW_TAU_S"), ("D001_P_BARA", "R3232_D001_P_BARA"),
-    ("E003_PV_OP_DES_PCT", "R3232_E003_PV_OP_DES"), ("D001_M_FULL_KG", "R3232_D001_M_FULL"),
+    ("D001_M_FULL_KG", "R3232_D001_M_FULL"),
     ("D001_LVL_SP_PCT", "R3232_D001_LVL_SP"), ("D001_M_DES_KG", "R3232_D001_M_DES"),
     ("E003_Q_DES_KW", "R3232_E003_Q_DES_KW"), ("E003_UA_KW", "R3232_E003_UA_KW"),
     ("D001_VOL_M3", "R3232_ENV_GAS_V_M3"), ("ENV_GAS_RHO_DES_KGM3", "R3232_ENV_GAS_RHO_DES"),
@@ -273,11 +283,27 @@ def test_design_basis(v1, ours, theirs):
     (25.0, 1.0, 1.13), (25.0, 1.13, 1.13), (100.0, 4.1, 0.1), (10.0, 3.0, 1.8),
 ])
 def test_pv_323202s_law(v1, stroke, p, p_e011):
+    """V1's line, anchored on the decided design stroke (decision 150)."""
     g = v1
-    theirs = (g["R3232_E003_M321_DES"] * (stroke / g["R3232_E003_PV_OP_DES"])
+    theirs = (g["R3232_E003_M321_DES"] * (stroke / DECIDED_PV202_OP)
               * math.sqrt(max(p - p_e011, 0.0) / (g["R3232_D001_P_BARA"]
                                                   - g["R3232_E011_P_BARA"])))
-    assert lp.vent_valve_kgh(stroke, p, p_e011) == theirs
+    assert lp.vent_valve_kgh(stroke, p, p_e011) == pytest.approx(theirs, rel=1e-14)
+
+
+def test_pv_323202_on_fishers_sheet_decided(v1):
+    """Decision 150: V1 anchors PV-323202's linear line at 25 %; Fisher's sheet (item 021, the
+    loop summary P 323202's cases, tagged TV-323013) puts the design at 36.45 %, where the rated
+    Cv 99.1 passes PFD 321 on the normal case. The trim is linear on both sides, so only the anchor
+    moves: at design both pass PFD 321, and wide open the port passes 2.74 times it where V1's 4.0."""
+    assert v1["R3232_E003_PV_OP_DES"] == 25.0
+    assert e3.E003_PV_OP_DES_PCT == pytest.approx(DECIDED_PV202_OP, rel=1e-12)
+    assert DECIDED_PV202_OP == pytest.approx(36.446, abs=1e-3)
+    p, p11 = e3.D001_P_BARA, e.E011_P_BARA
+    assert lp.vent_valve_kgh(e3.E003_PV_OP_DES_PCT, p, p11) == pytest.approx(
+        e3.E003_M321_DES_KGH, rel=1e-12)
+    assert lp.vent_valve_kgh(100.0, p, p11) / e3.E003_M321_DES_KGH == pytest.approx(2.744,
+                                                                                    abs=1e-3)
 
 
 @pytest.mark.parametrize("stroke", [0.0, 12.5, 50.0, 77.7, 100.0, -20.0, 400.0])
@@ -470,6 +496,33 @@ def test_the_decided_tuning_is_inert_on_the_set_point(v1):
     _run(v1, lambda k: _design(), 600, v1_gain=False)
 
 
+def test_pv_323202_on_fishers_anchor_decided_divergence(v1):
+    """Decision 150, both sides, PIC-323202 on V1's 5.0 %/bar and 40 s on both so the valve is the
+    only difference: V1's vent linear from 25 %, the port's from Fisher's 36.45 %. Both pass PFD
+    321 on the seed tick, the strokes differing. The gas up 10 %: an hour on, V1's node holds
+    3.2340 bar a with the vent at 62.45 % passing 3332 kg/h; the port's, whose vent passes less
+    per per cent of stroke, holds 3.2554 with it at 82.19 % passing 3023 — the dew point
+    condensing the rest."""
+    s = _v1_state(v1, vent=False)
+    lpcc, loops = lp.LpCarbamateCondenser(), _loops(v1_gain=True)
+    for k in range(7200):
+        x = _gas(1.1 if k >= 10 else 1.0)
+        s.r3232_e011_P = x["p_e011"]
+        a = _v1_stage8(v1, s, x["m305"], x["m718b"], x["m776"], x["flash"], x["pool"],
+                       x["b322501"], x["b323501"], 0.5, vent=False)
+        b = lpcc.step(*loops, x["m305"], x["flash"], x["pool"], x["b322501"], x["b323501"],
+                      x["m718b"], x["m776"], x["p_e011"], 0.5)
+        if k == 0:
+            assert a["m321"] == b.m_321_kgh == pytest.approx(e3.E003_M321_DES_KGH, rel=1e-12)
+            assert (a["pic"], b.pic_op_pct) == (25.0, pytest.approx(DECIDED_PV202_OP, rel=1e-12))
+    assert (s.r3232_d001_P, lpcc.p_bara) == (pytest.approx(3.2340, abs=1e-4),
+                                             pytest.approx(3.2554, abs=1e-4))
+    assert (a["pic"], b.pic_op_pct) == (pytest.approx(62.45, abs=0.01),
+                                        pytest.approx(82.19, abs=0.01))
+    assert (a["m321"], b.m_321_kgh) == (pytest.approx(3331.6, abs=0.1),
+                                        pytest.approx(3023.2, abs=0.1))
+
+
 def test_pic_323202_on_its_transmitter_span_decided_divergence(v1):
     """B-32. The gas up 10 %: bit-exact until PIC-323202 first sees the node off its set point,
     then V1's 5.0 %/bar and 40 s and the port's 20 %/bar and 100 s part. An hour on, the dew
@@ -490,8 +543,8 @@ def test_pic_323202_on_its_transmitter_span_decided_divergence(v1):
         if parted is None:
             _assert_tick(a, b, s, lpcc, loops, f"tick {k}")
     assert parted == 11
-    assert s.r3232_d001_P == pytest.approx(3.2340, abs=1e-4)
-    assert lpcc.p_bara == pytest.approx(3.2145, abs=1e-4)
+    assert s.r3232_d001_P == pytest.approx(3.2554, abs=1e-4)
+    assert lpcc.p_bara == pytest.approx(3.2298, abs=1e-4)
     assert b.m_321_kgh > a["m321"]
 
 
@@ -537,7 +590,7 @@ UNCAPPED = {
 def test_the_uncapped_condensation_decided_divergence(v1, name):
     """B-34. Bit-exact until V1's capacity first outruns the gas that arrives, where V1 caps it
     and the port does not. Under surplus cooling V1's node then stands still once PV-323202 has
-    shut, at 2.725 bar a with 6119 kg/h of capacity unused an hour on; the port's falls to
+    shut, at 2.658 bar a with 4623 kg/h of capacity unused an hour on; the port's falls to
     2.458, where the capacity meets the load. After a cut in the gas the two meet again: V1's
     node creeps back as the water warms, to the port's 2.797 bar a (30 % down) and 1.867
     (gone)."""
@@ -549,10 +602,10 @@ def test_the_uncapped_condensation_decided_divergence(v1, name):
     assert a0["env_cond"] == a0["env_in"] < a0["cap"] == b0.capacity_kgh == b0.env_cond_kgh
     a, _, _, _, b = after[-1]
     if name == "TIC-323013 at 45 C":
-        assert parted == 635
+        assert parted == 796
         assert (a["pic"], b.pic_op_pct) == (0.0, 0.0)
-        assert s.r3232_d001_P == pytest.approx(2.7252, abs=1e-4)
-        assert a["cap"] - a["env_in"] == pytest.approx(6119.4, abs=0.1)
+        assert s.r3232_d001_P == pytest.approx(2.6577, abs=1e-4)
+        assert a["cap"] - a["env_in"] == pytest.approx(4623.2, abs=0.1)
         assert lpcc.p_bara == pytest.approx(2.4576, abs=1e-4)
         assert b.capacity_kgh == pytest.approx(b.env_in_kgh, abs=0.2)
     else:
@@ -689,7 +742,7 @@ def test_pfd_734_decided_divergence(v1):
     """B-37 and B-94, decided 2026-10-10 and 2026-10-14: V1's 323E003 takes no PFD 734; the port's
     takes FIC-323401's ammonia water as its departure from the PFD's 1534 kg/h, which the PFD's
     323E003 balance closes without. At the design flow the port is V1's on every tick; at 2000
-    kg/h, after half an hour, 323P001 returns 37 292.4 kg/h against V1's 36 835.2 and the tank
+    kg/h, after half an hour, 323P001 returns 37 292.0 kg/h against V1's 36 835.2 and the tank
     closes on the five inlets, so the ammonia water reaches the synthesis instead of leaving the
     plant."""
     s = _v1_state(v1)
@@ -715,7 +768,7 @@ def test_pfd_734_decided_divergence(v1):
             (b.in_kgh - b.m_321_kgh - b.m_308_kgh) / 3600.0, abs=1e-9)
     assert a["m308"] == pytest.approx(e3.E003_M308_DES_KGH, rel=1e-12)
     assert s.r3232_d001_M == pytest.approx(e3.D001_M_DES_KG, rel=1e-12)
-    assert b.m_308_kgh == pytest.approx(37292.4, abs=0.1)
+    assert b.m_308_kgh == pytest.approx(37292.0, abs=0.1)
     assert b.in_kgh - a["in"] == pytest.approx(466.0, abs=1e-6)
 
 
@@ -731,9 +784,9 @@ def test_the_inlets_at_their_producers_temperatures_decided_divergence(v1):
     328D001's and 322C001's live temperatures, each as its departure from its producer's design;
     V1 at 119, 45, 61 and 46 C whatever they do. With every producer on its design the port is
     V1's on every tick, and so it is with every producer 5 K hot on V1's switch. Live, the first
-    tick parts 0.0075 K hotter; after half an hour the shell stands at 74.179 C against V1's 74 C,
-    the duty at 14 131.7 kW against 14 000, the node at 3.2022 bar a and 323P001 returning
-    36 790.0 kg/h against 36 835.2."""
+    tick parts 0.0075 K hotter; after half an hour the shell stands at 74.185 C against V1's 74 C,
+    the duty at 14 136.3 kW against 14 000, the node at 3.2029 bar a and 323P001 returning
+    36 800.5 kg/h against 36 835.2."""
     x = _design()
     for kw, live in ((B31_DES, True), (B31_HOT, False)):
         s = _v1_state(v1)
@@ -758,5 +811,5 @@ def test_the_inlets_at_their_producers_temperatures_decided_divergence(v1):
     assert first == pytest.approx(0.007460, abs=1e-6)
     assert (s.r3232_e003_T, s.r3232_d001_P, a["Q"]) == (74.0, 3.2, 14000.0)
     assert (lpcc.t_c, lpcc.p_bara, b.q_kw, b.m_308_kgh) == (
-        pytest.approx(74.1788, abs=1e-4), pytest.approx(3.20224, abs=1e-5),
-        pytest.approx(14131.7, abs=0.1), pytest.approx(36789.95, abs=0.01))
+        pytest.approx(74.1850, abs=1e-4), pytest.approx(3.20286, abs=1e-5),
+        pytest.approx(14136.3, abs=0.1), pytest.approx(36800.50, abs=0.01))

@@ -27,17 +27,19 @@ v1 = h.v1
 
 
 def _both(v1, script, n, off, sp=None, setup=None, vendor_trim=False, seal_air=False,
-          bisect=False):
+          bisect=False, vendor_drain=False):
     """V1's transcription without the departure `off`, and the port, side by side; returns the
     tick each side's state was first not ``==`` the other's, and per tick (V1, port) records. The
     port runs V1's linear chest valve unless ``vendor_trim`` (PV-329212's own test), V1's sealed
-    leg unless ``seal_air`` (B-107's own test) and V1's last sweep unless ``bisect`` (B-108's)."""
+    leg unless ``seal_air`` (B-107's own test), V1's last sweep unless ``bisect`` (B-108's) and
+    V1's span law on LV-324501 unless ``vendor_drain`` (decision 150's)."""
     dec = h.ALL - {off}
     s = h._v1_state(v1, dec)
     chest = h.se.PV_329212_CHEST if vendor_trim else h.se.V1_CHEST
     unit, loops = (h.se.SecondEvaporator(chest=chest, backward_species=False, seal_air=seal_air,
-                                         bisect_fixed_point=bisect),
-                   h.se.SecondEvaporatorLoops(pic=h.se.pic_329212(chest)))
+                                         bisect_fixed_point=bisect, vendor_drain=vendor_drain),
+                   h.se.SecondEvaporatorLoops(pic=h.se.pic_329212(chest),
+                                              level=h.se.lic_324501(vendor=vendor_drain)))
     if setup:
         setup(s, loops)
     parted, hist = None, []
@@ -200,6 +202,19 @@ def test_the_drain_above_its_heel_decided_divergence(v1):
     assert sum(r["made"] for r in hist) == pytest.approx(4651.013, abs=1e-3)
 
 
+def test_lv_324501_on_flowserves_sheets_decided_divergence(v1):
+    """Decision 150: LV-324501A on Flowserve's equal percentage from 75.35 %, where V1's span law
+    runs the drain linear from 75 %. Both drain the design melt to the bit on the seed tick; stage
+    1's feed cut a fifth from 0.5 s, they part on the tick LIC-324501 first moves. Five minutes on,
+    V1's drain passes 60.7 t/h and its separator holds 3189 kg; the port's trim, its gain lower at
+    the design stroke, passes 57.7 t/h and holds 3571 kg."""
+    parted, hist = _both(v1, h._step(v1, 5, m=0.8 * d.P1_DES_KGH), 3001, None, vendor_drain=True)
+    assert hist[0]["leg"] == (d.P2_DES_KGH, pytest.approx(d.P2_DES_KGH, rel=1e-12))
+    assert parted == 6
+    assert hist[3000]["leg"] == (pytest.approx(60742.6, abs=0.1), pytest.approx(57669.0, abs=0.1))
+    assert hist[3000]["M"] == (pytest.approx(3189.09, abs=0.01), pytest.approx(3570.75, abs=0.01))
+
+
 def test_pv_329212_on_its_vendor_trim_decided_divergence(v1):
     """Decision 23's class, decided 2026-10-14: PV-329212 on Metso's DN 80 balanced Neldisc, its
     printed capacities as its curve, from its 54.68 % design stroke and the normal case's xT 0.57,
@@ -252,8 +267,9 @@ def test_the_fixed_point_on_the_energy_balance_at_the_heel_decided_divergence():
     sides = []
     for bisect in (False, True):
         unit = h.se.SecondEvaporator(chest=h.se.V1_CHEST, backward_species=False, seal_air=True,
-                                     bisect_fixed_point=bisect)
-        loops = h.se.SecondEvaporatorLoops(pic=h.se.pic_329212(h.se.V1_CHEST))
+                                     bisect_fixed_point=bisect, vendor_drain=False)
+        loops = h.se.SecondEvaporatorLoops(pic=h.se.pic_329212(h.se.V1_CHEST),
+                                           level=h.se.lic_324501(vendor=False))
         loops.level.mode, loops.level.op = "MAN", 100.0
         sides.append((unit, loops))
     hist, parted = [], None

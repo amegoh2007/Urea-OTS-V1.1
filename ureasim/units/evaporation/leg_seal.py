@@ -18,9 +18,12 @@ PFD 783 for the air; `data.unit_324`.
 
 from __future__ import annotations
 
+from ureasim.control.valve import cv_fraction
 from ureasim.core.units_of_measure import ATM_BARA
 from ureasim.data.unit_324 import (
     LIC_324501_OP_DES_PCT,
+    LV_324501A_OP_DES_PCT,
+    LV_324501_CHAR,
     LV_324501_DP_DES_BAR,
     LV_324501_RHO_KGM3,
     P2_DES_KGH,
@@ -37,7 +40,8 @@ __all__ = ["SEAL_AIR_RHO_KGM3", "seal_air_kgh"]
 SEAL_AIR_RHO_KGM3 = gas_density_ideal(ATM_BARA, SEAL_AIR_T_C, VAC_AIR_MW)
 
 
-def seal_air_kgh(level_pct: float, stroke_pct: float, p_bara: float) -> float:
+def seal_air_kgh(level_pct: float, stroke_pct: float, p_bara: float,
+                 vendor: bool = True) -> float:
     """The atmospheric air 324F003's lost barometric seal admits [kg/h] (handoff B-107).
 
     Process utility
@@ -51,13 +55,20 @@ def seal_air_kgh(level_pct: float, stroke_pct: float, p_bara: float) -> float:
     --------
     The drain's trim passing gas instead of melt, on its own liquid sizing (`consequence.seal`):
 
-        m_air = m_des . (h / h_des) . Y . sqrt(rho_air . dP_eff / (rho_melt . dP_des)) . (1 - seal)
+        m_air = m_des . (phi(h) / phi(h_des)) . Y . sqrt(rho_air . dP_eff / (rho_melt . dP_des))
+                . (1 - seal)
 
-    m_des the design drain at LIC-324501's 75 % stroke, the loop summary's 1221 kg/m3 and
-    6.9 -> 3.7 bar a, the air at the atmosphere and PFD 783's 32 C, dP from the atmosphere to
+    phi LV-324501A's equal-percentage trim on Flowserve's sheet and h_des its 75.35 % (decision
+    150); ``vendor`` False is V1's linear h / 75. m_des the design drain at the design stroke, the
+    loop summary's 1221 kg/m3 and 6.9 -> 3.7 bar a, the air at the atmosphere and PFD 783's 32 C, dP from the atmosphere to
     PT-324203, choked below 0.30 bar a (x_T 0.70, F_k 1 for air): about 730 kg/h at the design
     stroke on a fully lost seal, against PFD 783's 21. Exactly zero while the seal holds.
     """
+    if vendor:
+        trim = (cv_fraction(stroke_pct / 100.0, LV_324501_CHAR)
+                / cv_fraction(LV_324501A_OP_DES_PCT / 100.0, LV_324501_CHAR))
+    else:
+        trim = stroke_pct / LIC_324501_OP_DES_PCT
     return blowthrough_kgh(P2_DES_KGH, LV_324501_RHO_KGM3, LV_324501_DP_DES_BAR,
-                           stroke_pct / LIC_324501_OP_DES_PCT, SEAL_AIR_RHO_KGM3, ATM_BARA,
+                           trim, SEAL_AIR_RHO_KGM3, ATM_BARA,
                            ATM_BARA - p_bara, seal_fraction(level_pct), gamma=SEAL_AIR_GAMMA)

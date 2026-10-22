@@ -232,11 +232,13 @@ def vent_valve_kgh(stroke_pct: float, p_node_bara: float, p_e011_bara: float) ->
 
     Equation
     --------
-        m_321 = 1323 (h / 25) sqrt( max(P - P_E011, 0) / (3.2 - 1.13) )
+        m_321 = 1323 (h / h_des) sqrt( max(P - P_E011, 0) / (3.2 - 1.13) )
 
-    Exactly PFD 321 at the design stroke and the two design pressures; no flow backwards.
+    Exactly PFD 321 at the design stroke and the two design pressures; no flow backwards. The trim
+    is Fisher's linear Whisper I and h_des its 36.45 %, where its rated Cv passes PFD 321 on its
+    normal case (decided 2026-10-22, decision 150); V1 runs the same line from 25 %.
 
-    Source: V1 `main.py` step_sim, ``m_321``.
+    Source: V1 `main.py` step_sim, ``m_321``; Fisher UD-MR-G00-DZ-0014, item 021.
     """
     dp = max(p_node_bara - p_e011_bara, 0.0)
     return (E003_M321_DES_KGH * (stroke_pct / E003_PV_OP_DES_PCT)

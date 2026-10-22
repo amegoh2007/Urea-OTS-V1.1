@@ -58,6 +58,8 @@ from ureasim.data.desorption_train import (
     TRAY_WEIR_M,
     W_S743,
 )
+from ureasim.data.control_valves import design_stroke_pct
+from ureasim.data.control_valves_fisher import LV_328503
 from ureasim.data.relief_devices import RELIEF_DEVICES, RELIEF_SIZING
 from ureasim.thermo import iapws
 from ureasim.thermo.ammonia_water import desorber_stage, liquor_pv_bara, vapour_molar_mass
@@ -154,13 +156,16 @@ C002_H_DES_M = C002_M_DES_KG / (C002_RHO_KGM3 * C002_AREA_M2)
 P006_Z_DROP_M = ((P006_SUCT_DES_BARA - C002_P_TOP_BARA) * PA_PER_BAR
                  / (C002_RHO_KGM3 * G_ACC)) - C002_H_DES_M
 
-#: LV-328503's design inlet pressure [bar a], 24.4, and design stroke [%].
+#: LV-328503's design inlet pressure [bar a], 24.4.
 LV503_P1_DES_BARA = P006_SUCT_DES_BARA + P006_DP_PUMP_BAR
-LV503_OP_DES_PCT = 50.0
 
-#: The trim [-]: linear. No control-valve datasheet exists for LV-328503, and linear keeps the
-#: gain basis LIC-328503 was tuned against.
-LV503_CHARACTERISTIC = "linear"
+#: LV-328503 on Fisher's trim (decided 2026-10-22, decision 150; decision 23's class): equal
+#: percentage, rated Cv 82.2, FL 0.819, its design stroke where the rated Cv passes PFD 743 on the
+#: normal case, 56.95 %. V1 runs it linear from 50 % ("no control-valve datasheet exists"); Fisher's
+#: sheet was found in session 69 (`data.control_valves_fisher`). LIC-328503 is seeded there.
+LV503_OP_DES_PCT = design_stroke_pct(LV_328503, C002_M743_DES_KGH)
+LV503_CHARACTERISTIC = LV_328503.characteristic
+LV503_FL = LV_328503.normal_case.fl
 
 #: The liquor's design temperature at the valve [deg C] — the bottoms', 139 C: 328P006 lifts it
 #: from the sump to LV-328503, and 328E021 heats it only downstream — and its bubble pressure
@@ -219,7 +224,7 @@ __all__ = [
     "C002_DP_COL_BAR", "C002_AREA_M2", "C002_LAM748_KJKG", "C002_LAM750_KJKG",
     "C002_SENS_DES_KW", "C002_Q_DES_KW", "C002_MW737_DES",
     "P006_SUCT_DES_BARA", "P006_DP_PUMP_BAR", "C002_H_DES_M", "P006_Z_DROP_M",
-    "LV503_P1_DES_BARA", "LV503_OP_DES_PCT", "LV503_CHARACTERISTIC", "LV503_T_IN_DES_C",
+    "LV503_P1_DES_BARA", "LV503_OP_DES_PCT", "LV503_CHARACTERISTIC", "LV503_FL", "LV503_T_IN_DES_C",
     "LV503_PV_DES_BARA", "LIC_328503_KC", "LIC_328503_TI_S", "LIC_328503_SP_PCT",
     "C002_STAGE", "SV32850_SET_BARA", "SV32850_RESEAT_BARA", "SV32850_CAP_KGH",
     "SV32850_P_REL_BARA", "SV32850_T_REL_K", "SV32850_MW_REL", "SV32850_Z_REL", "SV32850_K",

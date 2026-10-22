@@ -137,6 +137,8 @@ from ureasim.units.steam.header_control import (
 )
 from ureasim.units.steam.steam_valves import (
     lv_329502_kgs,
+    hv_329601_kgs,
+    hv_329602_kgs,
     lv_329503_kgs,
     lv_329504_kgs,
     pv_329204_kgs,
@@ -144,6 +146,7 @@ from ureasim.units.steam.steam_valves import (
     pv_329205b_kgs,
     pv_329207a_kgs,
     pv_329207b_kgs,
+    pv_329207c_kgs,
     steam_valve_kgs,
 )
 
@@ -275,6 +278,26 @@ class SteamNetwork:
     #: PV-329204, PV-329207A and PV-329207B on Metso's trims (decision 108's class, decided
     #: 2026-10-15); False is V1's anchored law, which ``v1_butterflies()`` gives the harness.
     vendor_butterflies: bool = True
+    #: HV-329601, PV-329207C and HV-329602 on their vendor sheets (decided 2026-10-22, decision
+    #: 150); False is V1's anchored law on the loop summaries' maximum cases, as the harness runs.
+    vendor_globes: bool = True
+
+    def _m_601(self, op_pct: float, p_hp_bara: float) -> float:
+        """HV-329601's vent [kg/s] at a 329D005 pressure."""
+        if self.vendor_globes:
+            return hv_329601_kgs(op_pct, p_hp_bara)
+        return steam_valve_kgs(K_HV601, op_pct, p_hp_bara, P_ATM_VENT_BARA, HV601_P1_DES_BARA,
+                               HV601_P2_DES_BARA)
+
+    def _m_963(self, op_207c_pct: float, p_lp_bara: float) -> float:
+        """PV-329207C's and HV-329602's admission to the LP header [kg/s] at its pressure."""
+        if self.vendor_globes:
+            return (pv_329207c_kgs(op_207c_pct, p_lp_bara)
+                    + hv_329602_kgs(self.hv_329602_pct, p_lp_bara))
+        return (steam_valve_kgs(K_963, op_207c_pct, P_SUP_BARA, p_lp_bara, P963_P1_DES_BARA,
+                                P963_P2_DES_BARA)
+                + steam_valve_kgs(K_HV602, self.hv_329602_pct, P_SUP_BARA, p_lp_bara,
+                                  P963_P1_DES_BARA, P963_P2_DES_BARA))
 
     def _m_902(self, op_pct: float, p_hp_bara: float) -> float:
         """PV-329204's supply [kg/s] at a 329D005 pressure."""
@@ -324,8 +347,7 @@ class SteamNetwork:
         op_204 = self.pic_329204.step(p_hp, trip_21_2, dt)
         m_902 = self._m_902(op_204, p_hp)
         op_601 = self.hv_329601.step(p_hp, trip_21_2, dt)
-        m_601 = steam_valve_kgs(K_HV601, op_601, p_hp, P_ATM_VENT_BARA, HV601_P1_DES_BARA,
-                                HV601_P2_DES_BARA)
+        m_601 = self._m_601(op_601, p_hp)
         ds_5 = m_902 * superheat_water_ratio(H_902_KJKG, p_hp)
         f_5 = _cap(self.m_d005_kg, strip, ds_5 + m_502, dt)
         ds_5, m_502 = ds_5 * f_5, m_502 * f_5
@@ -342,10 +364,7 @@ class SteamNetwork:
         op_207a, op_207b, op_207c = self.pic_329207.step(p_lp, dt)
         m_207a = self._m_207a(op_207a, p_lp)
         m_932 = self._m_932(op_207b, p_lp)
-        m_963 = (steam_valve_kgs(K_963, op_207c, P_SUP_BARA, p_lp, P963_P1_DES_BARA,
-                                 P963_P2_DES_BARA)
-                 + steam_valve_kgs(K_HV602, self.hv_329602_pct, P_SUP_BARA, p_lp,
-                                   P963_P1_DES_BARA, P963_P2_DES_BARA))
+        m_963 = self._m_963(op_207c, p_lp)
 
         def ds_lp_at(p, m_963_p):
             return m_963_p * superheat_water_ratio(H_963_KJKG, p)
@@ -376,8 +395,7 @@ class SteamNetwork:
         def res_hp_at(p):
             m = self._m_902(op_204, p)
             return (m + m * superheat_water_ratio(H_902_KJKG, p) * f_5 - strip
-                    - steam_valve_kgs(K_HV601, op_601, p, P_ATM_VENT_BARA, HV601_P1_DES_BARA,
-                                      HV601_P2_DES_BARA))
+                    - self._m_601(op_601, p))
 
         def res_9_at(p):
             m = pv_329205a_kgs(op_205a, P_SUP_BARA, p)
@@ -387,10 +405,7 @@ class SteamNetwork:
         def res_lp_at(p):
             p9 = self.p_9_bara              # V1 steps the three in turn: 329D009's new pressure
             m_960_p = pv_329205b_kgs(op_205b, p9, p)
-            m_963_p = (steam_valve_kgs(K_963, op_207c, P_SUP_BARA, p, P963_P1_DES_BARA,
-                                       P963_P2_DES_BARA)
-                       + steam_valve_kgs(K_HV602, self.hv_329602_pct, P_SUP_BARA, p,
-                                         P963_P1_DES_BARA, P963_P2_DES_BARA))
+            m_963_p = self._m_963(op_207c, p)
             m_917_p = (users_lp
                        + self._m_207a(op_207a, p)
                        + self._m_932(op_207b, p)
@@ -461,8 +476,9 @@ class SteamNetwork:
 
 def v1_butterflies() -> dict:
     """The network's fields as V1 runs PV-329204, PV-329207A and PV-329207B — its anchored law and
-    its seeds — for the equivalence harness: ``SteamNetwork(**v1_butterflies())``."""
-    return {"vendor_butterflies": False, "pic_329204": v1_pic_329204(),
+    its seeds — and HV-329601, PV-329207C and HV-329602 on its law, for the equivalence harness:
+    ``SteamNetwork(**v1_butterflies())``."""
+    return {"vendor_butterflies": False, "vendor_globes": False, "pic_329204": v1_pic_329204(),
             "pic_329207": v1_pic_329207()}
 
 

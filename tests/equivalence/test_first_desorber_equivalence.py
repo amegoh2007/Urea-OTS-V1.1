@@ -54,6 +54,8 @@ from ureasim.thermo.urea_liquor import SOLUTION_SPECIES
 from ureasim.units.desorption import first_desorber as fd
 from tests.equivalence import test_ammonia_water_tank_equivalence as tank_eq
 from tests.equivalence import decided_relief as dr
+from tests.equivalence import decided_valves as dv
+from ureasim.data import control_valves_fisher as fv
 from tests.equivalence import test_feed_effluent_interchanger_equivalence as e007_eq
 from tests.equivalence.v1_loader import lift, load, v1_available, v1_service
 
@@ -91,15 +93,21 @@ e007_v1 = e007_eq.v1
 
 DT = 0.1
 
-#: The five departures the transcription can switch on: decision 24, B-42, B-43, and decision
-#: 11's two limits.
-ALL = frozenset({"vapour", "B-42", "B-43", "heel", "overflow", "relief"})
+#: The departures the transcription can switch on: decision 24, B-42, B-43, decision 11's two
+#: limits, B-47's relief and "valve", LV-328503 on Fisher's trim (decision 150).
+ALL = frozenset({"vapour", "B-42", "B-43", "heel", "overflow", "relief", "valve"})
 V1_VERBATIM = frozenset()
-#: Decision 24 alone: V1's lines for the other four. The liquid's books differ from V1's in every
-#: transient, so the inert scenarios run on it.
-VAPOUR = frozenset({"vapour", "relief"})
+#: Decision 24: V1's lines for B-42 and decision 11's two limits. The liquid's books differ from
+#: V1's in every transient, so the inert scenarios run on it — and on the valve, which every
+#: transient moves, and on B-43, whose 190 C choke binds V1's line on Fisher's lower FL.
+VAPOUR = frozenset({"vapour", "relief", "valve", "B-43"})
 #: The three process-engineer decisions on both sides, so a limit's test sees only its own line.
-DECIDED_2026_09_30 = frozenset({"vapour", "B-42", "B-43", "relief"})
+DECIDED_2026_09_30 = frozenset({"vapour", "B-42", "B-43", "relief", "valve"})
+
+#: LV-328503 as decided (decision 150), re-derived from Fisher's sheet: its design stroke [%] on
+#: the IEC 50:1 equal percentage, its trim and FL.
+DECIDED_LV503_OP = dv.design_stroke_pct(fv.LV_328503, t.C002_M743_DES_KGH)
+DECIDED_LV503_FL = 0.819
 
 #: SV32850 and SV32851 as decided (B-47), written from their sheets: set 5.0 bar g on 1.010 bar a
 #: (Uhde UD-RL-328-EC-0001, -0002), reseating 10 % of set below; each 25 000 kg/h of gas, M 18.0
@@ -123,9 +131,10 @@ def v1(e007_v1):
     return ns
 
 
-def _v1_state(v1):
+def _v1_state(v1, decided=ALL):
     """The V1 plant-state fields 328C002 reads and writes, seeded as `State.__init__` seeds them
-    (``main.py`` 6639-6640, 6841-6843, 6849-6852, 6859-6869, 7089-7092)."""
+    (``main.py`` 6639-6640, 6841-6843, 6849-6852, 6859-6869, 7089-7092); "valve" in `decided`
+    seeds LIC-328503 on the decided stroke."""
     g = v1
     s = tank_eq._v1_state(v1)
     s.y_328_737 = dict(g["DES_C002"]["y"])
@@ -143,6 +152,8 @@ def _v1_state(v1):
     s.LIC_328503 = {"mode": "AUTO", "op": 50.0, "sp": 50.0, "pv": 50.0, "pv1": 50.0, "pv2": 50.0,
                     "Kc": 1.5, "Ti": 180.0, "Td": 0.0, "act": -1.0,
                     "op_lo": 0.0, "op_hi": 100.0, "sp_lo": 0.0, "sp_hi": 100.0}
+    if "valve" in decided:
+        s.LIC_328503["op"] = DECIDED_LV503_OP
     return s
 
 
@@ -171,10 +182,13 @@ def _v1_c002(v1, s, m_738, T_738, dt, decided=ALL):
     if "B-43" in decided:  # ---- the liquor at the valve is the bottoms (the port's lines) ----
         pv = g["liquor_pv_bara"](s.w_328c002, s.a328_c002_T)
         pv_des = g["liquor_pv_bara"](g["W_S743"], g["R328_C002_T_BOT_BOT"])
+    op_des, char, fl = g["R328_LV503_OP_DES"], g["R328_LV_CHAR"], hydraulics.FL_GLOBE
+    if "valve" in decided:  # ---- LV-328503 on Fisher's trim (the port's valve) ----
+        op_des, char, fl = DECIDED_LV503_OP, "equal_pct", DECIDED_LV503_FL
     m_743 = hydraulics.valve_liquid_anchored(
         g["R328_C002_M743_DES"], lic503_op / 100.0, _p1_503, s.a328_c003_P, g["R328_C002_RHO"],
-        g["R328_LV503_OP_DES"] / 100.0, g["R328_LV503_P1_DES"], g["R328_C003_P_BARA"],
-        g["R328_C002_RHO"], characteristic=g["R328_LV_CHAR"], pv_bara=pv, pv_des_bara=pv_des)
+        op_des / 100.0, g["R328_LV503_P1_DES"], g["R328_C003_P_BARA"],
+        g["R328_C002_RHO"], characteristic=char, fl=fl, pv_bara=pv, pv_des_bara=pv_des)
     sens_c002 = ((m_738 * (T_738 - Tc002)
                   + m775_prev * (g["R328_D001_T"] - Tc002)
                   + m748_prev * (g["R328_C002_T_BOT748"] - Tc002)
@@ -297,10 +311,20 @@ def _assert_tick(a: dict, b: fd.FirstDesorberResult, s, col, lic, label):
     (c, "P006_SUCT_DES_BARA", "R328_P006_SUCT_DES_BARA"),
     (c, "P006_DP_PUMP_BAR", "R328_P006_DP_PUMP_BAR"), (c, "C002_H_DES_M", "R328_C002_H_DES_M"),
     (c, "P006_Z_DROP_M", "R328_P006_Z_DROP_M"), (c, "LV503_P1_DES_BARA", "R328_LV503_P1_DES"),
-    (c, "LV503_OP_DES_PCT", "R328_LV503_OP_DES"), (c, "LV503_CHARACTERISTIC", "R328_LV_CHAR"),
 ])
 def test_design_basis(v1, module, ours, theirs):
     assert getattr(module, ours) == v1[theirs]
+
+
+def test_lv_328503_on_fishers_trim_decided(v1):
+    """Decision 150: V1 runs LV-328503 linear from 50 % on the IEC globe FL 0.90, having no sheet;
+    the port runs Fisher's (UD-MR-G00-DZ-0014, item 022): equal percentage, Cv 82.2, FL 0.819,
+    from 56.95 %, where the rated Cv passes PFD 743 on the normal case."""
+    assert (v1["R328_LV503_OP_DES"], v1["R328_LV_CHAR"], v1["hydraulics"].FL_GLOBE) == (
+        50.0, "linear", 0.90)
+    assert (c.LV503_OP_DES_PCT, c.LV503_CHARACTERISTIC, c.LV503_FL) == (
+        pytest.approx(DECIDED_LV503_OP, rel=1e-12), "equal_pct", DECIDED_LV503_FL)
+    assert c.LV503_OP_DES_PCT == pytest.approx(56.946, abs=1e-3)
 
 
 def test_the_chokes_anchor_is_the_bottoms_decided(v1):
@@ -378,7 +402,9 @@ def _port(col, lic, x, dt):
 
 def _run(v1, script, ticks: int, before=None, decided=ALL):
     """Drive the column alone through `script(k)`, comparing everything every tick."""
-    s, col, lic = _v1_state(v1), fd.FirstDesorber(), fd.lic_328503()
+    if "valve" not in decided:
+        raise ValueError("the port runs LV-328503 on Fisher's trim; run V1's in its divergence")
+    s, col, lic = _v1_state(v1, decided), fd.FirstDesorber(), fd.lic_328503()
     if before:
         before(s, col, lic)
     b = None
@@ -566,7 +592,8 @@ def test_the_full_shell_the_port_against_its_transcription(v1):
 
 def test_the_full_shell_decided_divergence(v1):
     """V1's column goes on filling past its 12.85 m3 shell; the port's holds 11 988 kg and lets
-    the rest go overhead as the overflow — bit-exact until the shell is full, at 1881.6 s, and
+    the rest go overhead as the overflow — bit-exact until the shell is full, at 1462.4 s (LV-328503
+    held at 20 % on Fisher's equal percentage, decision 150), and
     on every tick after it the port's books close while V1 holds more than the shell.
     Decision 24, B-42 and B-43 stand on both sides."""
     s, col, lic = _v1_state(v1), fd.FirstDesorber(), fd.lic_328503()
@@ -586,7 +613,7 @@ def test_the_full_shell_decided_divergence(v1):
         booked = col.m_kg - pre - (b.in_kgh - b.gen_kgh - b.m_743_kgh
                                    - b.m_overflow_kgh) * DT / 3600.0
         assert abs(booked) < 1e-9
-    assert parted * DT == pytest.approx(1881.6, abs=1e-9)
+    assert parted * DT == pytest.approx(1462.4, abs=1e-9)
     assert s.a328_c002_M / (c.C002_RHO_KGM3 * c.C002_VOL_M3) > 1.03
 
 
@@ -596,7 +623,7 @@ def test_the_full_shell_decided_divergence(v1):
 
 def _both(v1, script, ticks, v1_decided):
     """V1 with `v1_decided` against the port: the tick they part, then both sides at the end."""
-    s, col, lic = _v1_state(v1), fd.FirstDesorber(), fd.lic_328503()
+    s, col, lic = _v1_state(v1, v1_decided), fd.FirstDesorber(), fd.lic_328503()
     parted = a = b = None
     for k in range(ticks):
         x = script(k)
@@ -611,41 +638,66 @@ def _both(v1, script, ticks, v1_decided):
     return parted, s, a, b
 
 
+def test_lv_328503_on_fishers_trim_decided_divergence(v1):
+    """Decision 150, both sides: V1's LV-328503 linear from 50 % on FL 0.90, the port's on Fisher's
+    equal percentage from 56.95 % on FL 0.819. Both pass PFD 743 at their design strokes, so on the
+    seed tick the flows agree to the bit and only the strokes differ. The feed cut 30 %: ten
+    minutes on, V1's LIC-328503 has closed to 34.35 % passing 23 416 kg/h, the port's to 47.85 %
+    passing 23 879 kg/h — the equal-percentage trim's lower gain at design closes it further for
+    the same flow — and the levels stand at 50.12 and 50.08 %."""
+    s, col, lic = _v1_state(v1, ALL - {"valve"}), fd.FirstDesorber(), fd.lic_328503()
+    script = _step(10, m738=0.7 * t.C002_M738_DES_KGH)
+    for k in range(6000):
+        x = script(k)
+        _feed(s, x)
+        a = _v1_c002(v1, s, x["m738"], x["t738"], DT, decided=ALL - {"valve"})
+        b = _port(col, lic, x, DT)
+        if k == 0:
+            assert a["743"] == b.m_743_kgh == pytest.approx(c.C002_M743_DES_KGH, rel=1e-9)
+            assert (a["lic"], b.lic_op_pct) == (50.0, pytest.approx(DECIDED_LV503_OP, abs=1e-9))
+    assert (a["lic"], b.lic_op_pct) == (pytest.approx(34.35, abs=0.01),
+                                        pytest.approx(47.85, abs=0.01))
+    assert (a["743"], b.m_743_kgh) == (pytest.approx(23416.4, abs=0.1),
+                                       pytest.approx(23879.4, abs=0.1))
+    assert (a["LI_328503"], b.level_pct) == (pytest.approx(50.12, abs=0.01),
+                                             pytest.approx(50.08, abs=0.01))
+
+
 def test_a_negative_duty_decided_divergence(v1):
     """B-42. 748 and 750 stopped at 1 s: the columns part on that tick, the net duty going
-    negative. Five minutes on, V1 has clamped its boil-up at zero and holds 128.87 C at 328D001's
-    pressure, discarding 636.7 kW; the port has condensed its vapour down to 1.482 bar a and its
+    negative. Five minutes on, V1 has clamped its boil-up at zero and holds 128.86 C at 328D001's
+    pressure, discarding 636.4 kW; the port has condensed its vapour down to 1.482 bar a and its
     bottoms to 111.28 C — the two liquid feeds' mixing temperature, 111.29 C — its duty within
     0.6 kW of zero."""
     parted, s, a, b = _both(v1, _step(10, m748=0.0, m750=0.0), 3000,
                             ALL - {"B-42"})
     assert parted == 10
-    assert a["gen"] == 0.0 and a["q"] == pytest.approx(-636.69, abs=0.01)
-    assert (s.a328_c002_T, s.a328_c002_P) == (pytest.approx(128.8691, abs=1e-4),
-                                              pytest.approx(2.59853, abs=1e-5))
-    assert (b.t_c, b.p_bara) == (pytest.approx(111.2776, abs=1e-4),
-                                 pytest.approx(1.48248, abs=1e-5))
+    assert a["gen"] == 0.0 and a["q"] == pytest.approx(-636.44, abs=0.01)
+    assert (s.a328_c002_T, s.a328_c002_P) == (pytest.approx(128.8623, abs=1e-4),
+                                              pytest.approx(2.59800, abs=1e-5))
+    assert (b.t_c, b.p_bara) == (pytest.approx(111.2794, abs=1e-4),
+                                 pytest.approx(1.48257, abs=1e-5))
     assert abs(b.q_kw) < 0.6
 
 
 @pytest.mark.parametrize("name, script, ticks, parts, v1_level, level", [
-    ("750 halved", _step(10, m750=0.5 * t.C002_M750_DES_KGH), 6000, 72, 148.36, 49.99),
-    ("the reflux doubled", _step(10, m775=2.0 * t.C002_M775_DES_KGH), 3000, 1006, 51.49, 50.89),
+    ("750 halved", _step(10, m750=0.5 * t.C002_M750_DES_KGH), 6000, 1, 145.40, 50.01),
+    ("the reflux doubled", _step(10, m775=2.0 * t.C002_M775_DES_KGH), 3000, 1, 51.31, 50.27),
 ])
 def test_the_choke_at_the_bottoms_decided_divergence(v1, name, script, ticks, parts, v1_level,
                                                      level):
     """B-43. V1's choke at 190 C binds as the bottoms' ammonia rises; the port's, at the bottoms'
-    139 C, does not. 750 halved: parted at 7.2 s, and ten minutes on V1's LV-328503 is wide open
-    passing 14.4 t/h while its level climbs through 148 %; the port's holds 50 %. The reflux
-    doubled: parted at 100.6 s, and V1 carries a level 0.6 points higher. Decision 24 stands on
-    both sides."""
+    139 C, does not. On Fisher's FL 0.819 (decision 150) V1's choke binds from the first tick.
+    750 halved: ten minutes on V1's LV-328503 is wide open passing 14.9 t/h while its level climbs
+    through 145 %; the port's holds 50 %. The reflux doubled: V1 carries a level 1.0 point
+    higher. Decision 24 and the valve stand on both sides."""
     parted, s, a, b = _both(v1, script, ticks, ALL - {"B-43"})
     assert parted == parts
     assert (a["LI_328503"], b.level_pct) == (pytest.approx(v1_level, abs=0.01),
                                              pytest.approx(level, abs=0.01))
     if name == "750 halved":
-        assert a["lic"] == 100.0 and a["743"] == pytest.approx(14433.6, abs=0.1)
-        assert b.m_743_kgh == pytest.approx(33720.2, abs=0.1)
+        assert a["lic"] == 100.0 and a["743"] == pytest.approx(14870.2, abs=0.1)
+        assert b.m_743_kgh == pytest.approx(33635.2, abs=0.1)
 
 
 def test_sv32850_relieves_a_blocked_overhead_decided_divergence(v1):
@@ -675,9 +727,9 @@ def test_sv32850_relieves_a_blocked_overhead_decided_divergence(v1):
     assert parted == 119
     assert (s.a328_c002_P, s.a328_c002_T) == (pytest.approx(7.1351, abs=1e-4),
                                               pytest.approx(165.804, abs=1e-3))
-    assert p_hi == pytest.approx(6.0267, abs=1e-4) and p_hi < c.SV32850_SET_BARA + 0.02
+    assert p_hi == pytest.approx(6.0265, abs=1e-4) and p_hi < c.SV32850_SET_BARA + 0.02
     assert (lifts, col.t_c) == (218, pytest.approx(158.395, abs=1e-3))
-    assert vented == pytest.approx(816.60, abs=0.01)
+    assert vented == pytest.approx(816.56, abs=0.01)
     assert b.gen_kgh == pytest.approx(4962.0, abs=0.1)
 
 
@@ -714,8 +766,8 @@ def _made(pre, m_kg, p_bara, t_c, vol_m3, rho_kgm3, net_kgh, dt):
 
 
 @pytest.mark.parametrize("name, script, v1_made", [
-    ("the stripping vapour lost", _step(10, m748=0.0, m750=0.0), -16.23),
-    ("328D001 1 bar higher", _step(10, pd001=t.D001_P_BARA + 1.0), 4.52),
+    ("the stripping vapour lost", _step(10, m748=0.0, m750=0.0), -16.16),
+    ("328D001 1 bar higher", _step(10, pd001=t.D001_P_BARA + 1.0), 4.49),
 ])
 def test_the_liquid_pays_what_boils_decided_divergence(v1, name, script, v1_made):
     """Decision 24. V1's liquid loses what the overhead line passes, while the pressure integral
@@ -760,7 +812,7 @@ def test_the_inlets_at_their_producers_temperatures_decided_divergence(v1):
     boil-up. With every producer on its design the port is V1's on every tick, and so it is with
     every producer 5 K hot on V1's switch. Live, the first tick's duty is 51.78 kW higher and its
     boil-up 99.18 kg/h; after ten minutes the column stands at 139.224 C and 3.5225 bar a against
-    V1's 139.0 C and 3.5 bar a, its overhead 6744.7 kg/h against 6665.0."""
+    V1's 139.0 C and 3.5 bar a, its overhead 6744.6 kg/h against 6665.0."""
     def run(kw, live, ticks, check):
         s, col, lic = _v1_state(v1), fd.FirstDesorber(live_inlets=live), fd.lic_328503()
         first = None
@@ -783,4 +835,4 @@ def test_the_inlets_at_their_producers_temperatures_decided_divergence(v1):
         pytest.approx(139.0, abs=1e-6), pytest.approx(3.5, abs=1e-6), pytest.approx(6665.0, abs=1e-4))
     assert (col.t_c, col.p_bara, b.m_737_kgh) == (
         pytest.approx(139.2244, abs=1e-4), pytest.approx(3.52248, abs=1e-5),
-        pytest.approx(6744.66, abs=0.01))
+        pytest.approx(6744.64, abs=0.01))

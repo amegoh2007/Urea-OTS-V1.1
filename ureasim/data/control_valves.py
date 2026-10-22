@@ -23,10 +23,11 @@ Sources
 -------
 * Flowserve, "Control Valves", Uhde order STAN 0522419-0 (the vendor archive, scanned, read
   from the page images): the summary of items, UD-MR-G00-DZ-0048-001; the data sheets, -002;
-  the calculation sheets, -003 — one page per position, PDF pages 46 to 64 for the positions
-  below, giving Kvs, plug code (the sixth letter the characteristic: G modified equal
-  percentage, L linear) and, per case, the pressures, temperature, flow, density, the
-  calculated Kv, the stroke, and FL (liquid) or xT (gas).
+  the calculation sheets, -003 — one page per position, PDF pages 46 to 76 and 148-149 for the
+  positions below, giving Kvs, plug code (the sixth letter the characteristic: G modified equal
+  percentage, L linear, R equal percentage) and, per case, the pressures, temperature, flow,
+  density, the calculated Kv, the stroke, and FL (liquid) or xT (gas).
+* Fisher's sheets (Emerson, UD-MR-G00-DZ-0014) are catalogued in `control_valves_fisher`.
 * CCI, Control Valve Data Sheet PV 322203, item 17, UD-MR-G00-DZ-0009-004 sheet 6 (scanned):
   a Drag 28-stage angle valve, rated Cv/Kv 32/27, equal percentage, fail open; normal and
   maximum cases; no FL, xT or stroke printed.
@@ -343,6 +344,62 @@ LV_329503 = VendorValve(
     1, _flowserve(69))
 
 # ======================================================================================
+# The Mark One and 0310 sheets found in session 69 (Pos. 65, 76, 148, 149)
+# ======================================================================================
+
+# Flowserve's summary of items lists HV 329601 (Pos. 65), PV 329207C (Pos. 76) and LV 324501A twice
+# (Pos. 148 and 149, the second sheet tagged LV 324501B); their calculation sheets are pages 65, 76,
+# 148 and 149 of -003 (read from the scans 2026-10-22). Each names its curve "Equal Percent" or
+# "Linear" (plug codes ...RG and ...LG): the trims run the port's equal-percentage law on the IEC
+# representative 50:1, which LV-324501A / B's sheets print as their rangeability, and its linear law.
+# The two Mark One steam sheets print no xT; their choke drop is printed, and each case's xT below is
+# CALCULATED from it, xT = dP_choke / (F_gamma P1), F_gamma = 1.30 / 1.40 on the port's steam.
+_F_GAMMA_STEAM = 1.30 / 1.40
+
+
+def _xt_steam(dp_choke_bar: float, p1_bara: float) -> float:
+    """A Mark One sheet's xT, from its printed choke drop on steam."""
+    return dp_choke_bar / (_F_GAMMA_STEAM * p1_bara)
+
+
+#: HV-329601, 329D005's vent to the 329D010 silencer: a DN 80 Mark One globe, Kv 64, equal
+#: percentage, fail closed, "with throttle disc in sandwich design"; steam, the mass flow with a
+#: unit density as for the motive valves.
+HV_329601 = VendorValve(
+    "HV-329601", 64.0, "equal_pct", "gas", (
+        SizingCase(25.0, 1.5, 225.0, 1500.0, 1.0, 4.715, 24.0, xt=_xt_steam(19.126, 25.0)),
+        SizingCase(19.9, 1.5, 213.0, 1500.0, 1.0, 5.944, 31.0, xt=_xt_steam(15.086, 19.9)),
+        SizingCase(17.1, 1.5, 205.0, 8000.0, 1.0, 38.442, 82.0, xt=_xt_steam(12.021, 17.1))),
+    1, _flowserve(65))
+
+#: PV-329207C, the supply to the LP header: a DN 150 two-stage Mark One MegaStream globe, Kv 172,
+#: linear, fail closed.
+PV_329207C = VendorValve(
+    "PV-329207C", 172.0, "linear", "gas", (
+        SizingCase(27.0, 3.0, 400.0, 5000.0, 1.0, 25.331, 8.0, xt=_xt_steam(9.747, 27.0)),
+        SizingCase(22.0, 4.4, 330.0, 20000.0, 1.0, 98.618, 50.0, xt=_xt_steam(11.171, 22.0)),
+        SizingCase(20.0, 7.0, 330.0, 32000.0, 1.0, 153.897, 84.0, xt=_xt_steam(13.080, 20.0))),
+    1, _flowserve(76))
+
+#: LV-324501A (to the granulation's melt header, fail closed, quick closing under 3 s) and
+#: LV-324501B (the recycle to 323D002, fail open): DN 100 0310 angle valves, Kvs 100, equal
+#: percentage 50:1, urea solution at 140 C on the sheets' SG 0.751 — which is not the melt's
+#: 1221 kg/m3 (loop summary L 324501); the sheets' FL is not printed.
+LV_324501A = VendorValve(
+    "LV-324501A", 100.0, "equal_pct", "liquid", (
+        SizingCase(8.0, 3.6, 140.0, 8.0, 751.0, 3.278, 11.0),
+        SizingCase(6.9, 3.7, 140.0, 70.5, 751.0, 33.889, 71.0),
+        SizingCase(4.9, 4.7, 140.0, 82.0, 751.0, 158.332, 100.0)),
+    1, _flowserve(148))
+
+LV_324501B = VendorValve(
+    "LV-324501B", 100.0, "equal_pct", "liquid", (
+        SizingCase(8.0, 1.0, 140.0, 8.0, 751.0, 2.599, 8.0),
+        SizingCase(6.9, 1.8, 140.0, 70.5, 751.0, 26.839, 65.0),
+        SizingCase(4.8, 2.0, 140.0, 82.0, 751.0, 42.150, 76.0)),
+    1, _flowserve(149))
+
+# ======================================================================================
 # CCI's Drag valve
 # ======================================================================================
 
@@ -543,7 +600,7 @@ VENDOR_VALVES = {v.tag: v for v in (
     LV_328501, PV_322203, PV_324202, PV_324203, HV_329605, HV_329606, LV_329502, LV_329503,
     LV_329504, PV_329205A, PV_329205B, PV_329203, PV_329212, FV_329401, PV_329202, PV_329204,
     PV_329207A, PV_329207B, PV_329208, LV_329505, FV_329409, HV_323605, PV_323203, PV_323202A,
-    PV_323202B, TV_328002)}
+    PV_323202B, TV_328002, HV_329601, PV_329207C, LV_324501A, LV_324501B)}
 
 __all__ = [
     "NORMAL_MOLAR_VOLUME_M3_KMOL", "MW_CO2", "SizingCase", "VendorValve", "design_stroke_pct",
@@ -554,5 +611,6 @@ __all__ = [
     "HV_329605", "HV_329606", "LV_329502", "LV_329503", "LV_329504", "PV_329205A",
     "PV_329205B", "PV_329203", "PV_329212", "FV_329401", "PV_329202", "PV_329204", "PV_329207A",
     "PV_329207B", "PV_329208", "LV_329505", "FV_329409", "HV_323605", "PV_323203", "PV_323202A",
-    "PV_323202B", "TV_328002", "VENDOR_VALVES",
+    "PV_323202B", "TV_328002", "HV_329601", "PV_329207C", "LV_324501A", "LV_324501B",
+    "VENDOR_VALVES",
 ]

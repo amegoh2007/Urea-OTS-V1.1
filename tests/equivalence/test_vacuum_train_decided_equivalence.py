@@ -56,8 +56,8 @@ def _v1_tear_trip(v1, n: int, cut_at: int) -> list:
     l1 = fe.FirstEvaporatorLoops(pic=fe.pic_329203(fe.V1_CHEST),
                                  trap=fe.lic_329505(fe.V1_TRAP_OP_DES_PCT))
     u2 = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False, seal_air=False,
-                             bisect_fixed_point=False)
-    l2 = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST))
+                             bisect_fixed_point=False, vendor_drain=False)
+    l2 = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST), level=se.lic_324501(vendor=False))
     tv2 = design_specs()["324E002"].t_v_solved_des
     tv5 = design_specs()["324E005"].t_v_solved_des
     out = []
@@ -88,8 +88,9 @@ def test_the_cold_ends_lagged_on_their_water_decided_divergence(v1):
     sends up to 8.5 t/h to atmosphere. The port: the cold ends lag on their tubes' water (324E002
     11.54 s, 324E005 7.67 s, 324E006 3.12 s), and nothing pulses — not the boil-off, stage 2's
     vacuum, 324E006's shell, PFD 709 nor stage 1's boil-off. Stage 2's boil-off climbs from 110
-    kg/h two seconds in to 1099 at thirty and 1240 at a minute (PV-329203 and PV-329212 on their
-    vendor trims, decided 2026-10-14); 722 stays at the PFD's 31 kg/h;
+    kg/h two seconds in to 1099 at thirty and 1242 at a minute (PV-329203 and PV-329212 on their
+    vendor trims, decided 2026-10-14; LV-324501A on its, decision 150); 722 stays at the PFD's
+    31 kg/h;
     the melt never falls below its 140 C design."""
     theirs = _v1_tear_trip(v1, 1200, 5)
     b2 = [r2.m_boil_kgh for _, r2, _ in theirs]
@@ -104,7 +105,7 @@ def test_the_cold_ends_lagged_on_their_water_decided_divergence(v1):
     assert _pulses([tr.p_324e006_bara for _, _, tr in mine], 1e-5) == 0
     assert _pulses([tr.streams_kgh["709"] for _, _, tr in mine], 50.0) == 0
     assert _pulses([r1.m_boil_kgh for r1, _, _ in mine], 50.0) == 0
-    assert [round(b2[k], 1) for k in (26, 300, 600)] == [109.6, 1099.2, 1240.5]
+    assert [round(b2[k], 1) for k in (26, 300, 600)] == [109.6, 1099.3, 1241.8]
     assert max(tr.streams_kgh["722"] for _, _, tr in mine[:700]) == pytest.approx(31.000,
                                                                                   abs=1e-3)
     assert min(r2.t_c for _, r2, _ in mine) >= 140.0

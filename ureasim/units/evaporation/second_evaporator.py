@@ -116,8 +116,12 @@ from ureasim.data.unit_324 import (
     LIC_324501_KC,
     LIC_324501_OP_DES_PCT,
     LIC_324501_TI_S,
+    LV_324501A_OP_DES_PCT,
+    LV_324501B_FULL_KGH,
+    LV_324501_CHAR,
     LV_324501_SPAN_KGH,
     MELT_A_UREA_WATER_K,
+    P2_DES_KGH,
     PIC_324203_KC,
     PIC_324203_TI_S,
     PIC_329212_KC,
@@ -205,12 +209,13 @@ def pic_324203() -> ProcessLoop:
         op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=1.0)
 
 
-def lic_324501() -> ProcessLoop:
+def lic_324501(vendor: bool = True) -> ProcessLoop:
     """LIC-324501, the melt level: direct acting, its output the stroke [%] the route selector
-    hands to LV-324501A or LV-324501B."""
+    hands to LV-324501A or LV-324501B; seeded at LV-324501A's design stroke on its vendor trim
+    (decision 150), or V1's 75 % with ``vendor`` False."""
     return ProcessLoop(
         tag="LIC-324501", Kc=LIC_324501_KC, Ti=LIC_324501_TI_S, Td=-1.0, act=-1.0,
-        op=LIC_324501_OP_DES_PCT, sp=F003_LEVEL_SP_PCT,
+        op=LV_324501A_OP_DES_PCT if vendor else LIC_324501_OP_DES_PCT, sp=F003_LEVEL_SP_PCT,
         pv=F003_LEVEL_SP_PCT, pv1=F003_LEVEL_SP_PCT, pv2=F003_LEVEL_SP_PCT,
         op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=100.0)
 
@@ -363,6 +368,9 @@ class SecondEvaporator:
     #: The temperature on the energy balance where the sweeps never settle (decided 2026-10-22,
     #: handoff B-108); False is V1's last sweep, which the equivalence harnesses keep.
     bisect_fixed_point: bool = True
+    #: LV-324501A / B on Flowserve's sheets (decided 2026-10-22, decision 150); False is V1's
+    #: linear span law, which the equivalence harness runs.
+    vendor_drain: bool = True
 
     def step(self, loops: SecondEvaporatorLoops, feed_kgh: float, feed_t_c: float,
              feed_w: dict, p_mp_bara: float, p_motive_bara: float, p_discharge_bara: float,
@@ -418,7 +426,8 @@ class SecondEvaporator:
         fa = false_air_kgh(loops.vacuum.op)
         # The lost seal's air (B-107) on the level and LIC-324501's stroke of the tick before,
         # against the vacuum it enters; it reaches 324E005 with the false air.
-        air = (seal_air_kgh(self.m_kg / F003_M_FULL_KG * 100.0, loops.level.op, self.p_bara)
+        air = (seal_air_kgh(self.m_kg / F003_M_FULL_KG * 100.0, loops.level.op, self.p_bara,
+                            vendor=self.vendor_drain)
                if self.seal_air else 0.0)
         air_in = fa + air
         vac_op = loops.vacuum.step(self.p_bara, dt)
@@ -513,7 +522,13 @@ class SecondEvaporator:
         routed_op = clamp(level_op, 0.0, 100.0)
         recycle = p_335201_barg > PIC_335201_RELIEF_BARG
         lv_a, lv_b = (0.0, routed_op) if recycle else (routed_op, 0.0)
-        m_402 = routed_op / 100.0 * LV_324501_SPAN_KGH
+        if not self.vendor_drain:
+            m_402 = routed_op / 100.0 * LV_324501_SPAN_KGH
+        elif recycle:   # LV-324501B, shut at design, on its full stroke
+            m_402 = LV_324501B_FULL_KGH * cv_fraction(routed_op / 100.0, LV_324501_CHAR)
+        else:           # LV-324501A, anchored on the design drain at its design stroke
+            m_402 = P2_DES_KGH * (cv_fraction(routed_op / 100.0, LV_324501_CHAR)
+                                  / cv_fraction(LV_324501A_OP_DES_PCT / 100.0, LV_324501_CHAR))
         # The drain takes only the melt above the 1 kg floor (decision 11's class).
         m_402_avail = (max(m_pre - F003_M_FLOOR_KG, 0.0) / max(dt, DT_FLOOR_S) * 3600.0
                        + feed_kgh - m_vap - m_boil)

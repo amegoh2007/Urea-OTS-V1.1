@@ -58,6 +58,23 @@ def test_the_butterflies_on_their_loop_summaries():
                               n.P207A_P2_DES_BARA) * 3600.0 == pytest.approx(83432.75, abs=0.01)
 
 
+def test_the_three_vendor_globes_on_their_sheets():
+    """Decision 150, both sides. Wide open each passes its full-stroke capacity on its normal case:
+    HV-329601 16 151 kg/h from 19.9 to 1.5 bar a, PV-329207C 34 882 and HV-329602 39 233 from 22.0
+    to 4.4. At its sheet's maximum case HV-329601 at 82 % passes 6917 kg/h from 17.1 bar a where the
+    sheet sizes 8000 (its travels sit off the 50:1 curve); V1's law, on the loop summary's maximum
+    case at full stroke, 8000 wide open from 17.0. Into the design LP header from the 25 bar a
+    supply PV-329207C wide open passes 39 371 kg/h, V1's law 39 599."""
+    assert sv.hv_329601_kgs(100.0, 19.9) * 3600.0 == pytest.approx(16150.74, abs=0.01)
+    assert n.PV207C_FULL_KGS * 3600.0 == pytest.approx(34882.07, abs=0.01)
+    assert n.HV602_FULL_KGS * 3600.0 == pytest.approx(39233.23, abs=0.01)
+    assert sv.hv_329601_kgs(82.0, 17.1) * 3600.0 == pytest.approx(6916.99, abs=0.01)
+    assert sv.hv_329601_kgs(0.0, 19.7) == sv.pv_329207c_kgs(0.0, 5.0) == 0.0
+    assert sv.pv_329207c_kgs(100.0, 5.01325) * 3600.0 == pytest.approx(39370.66, abs=0.01)
+    assert sv.steam_valve_kgs(n.K_963, 100.0, 25.0, 5.01325, n.P963_P1_DES_BARA,
+                              n.P963_P2_DES_BARA) * 3600.0 == pytest.approx(39599.21, abs=0.01)
+
+
 def test_pv_329204_passes_pfd_902_at_its_seed():
     """Decision 47: 57 989 kg/h at 50 %, 25 -> 19.7 bar a."""
     assert sv.steam_valve_kgs(n.K_902, 50.0, 25.0, 19.7, 25.0, 19.7) * 3600.0 == pytest.approx(

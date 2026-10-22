@@ -215,19 +215,20 @@ def test_a_lost_324e006_breaks_stage_2s_vacuum_b66():
     assert shell.index(1.0) == 29
     _, r2, tr = run[50]
     # 0.151936 before the held melt's boil was bounded at the melt model's 99 C window (Phase 7,
-    # As-Built §LXII.4): the implicit pressure step's deep trial vacuums boil a little less.
-    assert r2.p_bara == pytest.approx(0.151562, abs=1e-6)
+    # As-Built §LXII.4): the implicit pressure step's deep trial vacuums boil a little less;
+    # 0.151562 before LV-324501A took its equal-percentage sheet (decision 150).
+    assert r2.p_bara == pytest.approx(0.151977, abs=1e-6)
     r1, r2, tr = run[-1]
     assert r2.p_bara == pytest.approx(0.258704, abs=1e-6)
-    assert r2.t_c == pytest.approx(143.966, abs=1e-3)
-    assert (r2.vacuum_op_pct, r2.false_air_kgh) == (pytest.approx(73.414, abs=1e-3),
-                                                    pytest.approx(12.0272, abs=1e-3))
+    assert r2.t_c == pytest.approx(143.968, abs=1e-3)
+    assert (r2.vacuum_op_pct, r2.false_air_kgh) == (pytest.approx(73.409, abs=1e-3),
+                                                    pytest.approx(12.0252, abs=1e-3))
     _, p_crit = em.interpolated("324F004", r2.p_bara, 4.1)
     assert p_crit == pytest.approx(0.5404, abs=1e-4)
     assert em.unchoked_fraction(tr.p_324e006_bara, p_crit) == pytest.approx(0.0136, abs=1e-4)
     s = tr.streams_kgh
-    assert (s["712"], s["721"], s["722"]) == (pytest.approx(17.270, abs=1e-3), 0.0,
-                                              pytest.approx(1127.976, abs=1e-3))
+    assert (s["712"], s["721"], s["722"]) == (pytest.approx(17.267, abs=1e-3), 0.0,
+                                              pytest.approx(1127.974, abs=1e-3))
     assert r1.p_bara == pytest.approx(0.33, abs=1e-6)
     assert _pulses([r2.p_bara for _, r2, _ in run], 1e-5) == 0
     assert _pulses(shell, 1e-5) == 0

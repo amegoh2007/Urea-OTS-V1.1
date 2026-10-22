@@ -388,10 +388,12 @@ def port_step(unit, loops, x):
 def _run(v1, script, n_ticks, decided=ALL, check=True, setup=None):
     """Drive V1's transcription and the port side by side; `script(k)` gives tick k's inputs."""
     s = _v1_state(v1, decided)
-    # V1's linear chest valve: PV-329212's vendor trim is proved in its decided test.
+    # V1's linear chest valve and drain: PV-329212's and LV-324501's vendor trims are proved in
+    # their decided tests.
     unit = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False, seal_air=False,
-                               bisect_fixed_point=False)
-    loops = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST))
+                               bisect_fixed_point=False, vendor_drain=False)
+    loops = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST),
+                                     level=se.lic_324501(vendor=False))
     if setup:
         setup(s, loops)
     b = None
@@ -467,10 +469,12 @@ def test_a_feed_loss_with_the_drain_wide_open_stops_at_the_heel(v1):
 def test_set_point_steps_are_v1s(v1):
     """TIC-324002 to 142 C and PIC-324203 to 0.12 bar a at tick 5, 3000 ticks."""
     s = _v1_state(v1)
-    # V1's linear chest valve: PV-329212's vendor trim is proved in its decided test.
+    # V1's linear chest valve and drain: PV-329212's and LV-324501's vendor trims are proved in
+    # their decided tests.
     unit = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False, seal_air=False,
-                               bisect_fixed_point=False)
-    loops = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST))
+                               bisect_fixed_point=False, vendor_drain=False)
+    loops = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST),
+                                     level=se.lic_324501(vendor=False))
     for k in range(3000):
         if k == 5:
             for c, loop, sp in ((s.TIC_324002, loops.tic, 142.0),
