@@ -8,10 +8,10 @@ built, B-18, B-37 and B-20 decided and closed, trip 21.2's hand switches and AI-
 screens, the plant DCS's readback applied — the cold start reaches 79.7 bar a in 16 000 s, still
 short of the start-up band (session 50); B-94 closed on PFD 734's departure form, the steady state
 3080 of 3188, 322E003 on its own liquor and a full sump, 323P008's trip from AC4 PC23, B-95 closed
-as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70)
+as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70); an external report on five data-gap rows audited against the code, 322C001's head volume and the urea-melt Henry constant closed (decision 153, session 71)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `D:\Work\Urea Simulation` (V1 — reference only, never edited from here)
-**Last updated:** 2026-10-23 (session 70)
+**Last updated:** 2026-10-23 (session 71)
 
 ---
 
@@ -799,6 +799,10 @@ steam system (`steam/`).
       `unit_323`, `unit_324`, `scrubber`, `engine/command` and `condensing_letdown` split along
       their seams, the lines moved verbatim and every moved name re-exported; a test file for each
       new module (session 70, decision 152, As-Built Part LXXXV)
+- [x] An external report on five data-gap rows audited against the code and the archives;
+      322C001's bottom head volume and the urea-melt Henry constant closed, the Neldisc row
+      kept linear and annotated; 13 data gaps open (session 71, decision 153, As-Built Part
+      LXXXVI)
 
 ---
 
@@ -4826,6 +4830,40 @@ change to the physics (decision 152, As-Built Part LXXXV):
 
 `handoff.md`'s Sections A, B and C stay empty; 15 open data gaps remain.
 
+### Session 71 — an external report on five data-gap rows; two closed
+
+The process engineer pasted an audit of five open data-gap rows (the urea-melt Henry constants,
+322F001's geometry and curves, 322C001's bottom head volume, Körting's ejector curves, the Neldisc
+characteristic above the last printed travel) and attached the report behind it. Each of its
+numbers was re-measured from the code and each document it cites looked for by name (As-Built Part
+LXXXVI):
+
+* **Verified.** The melt refit (-85.3 K; gamma_H2O 0.79 / 0.70 on the PFD against the literature
+  parameters' 0.52 / 0.48; the one-row fits -71.66 / -98.92 K); 322F001's back-solve (16.721 mm,
+  50.228 mm, b 0.11082, shutoff 5.1058 bar, stall 0.90697); the vacuum train (PV-324202 61.07 %,
+  PV-324203 92.03 %, HV-329605 69.06 %, HV-329606 80.16 %, 324F004's and 324F005's throats);
+  322C001's head (0.10292 m3 at s 14.0 mm, 0.10266 at 14.4; 0.1298 Di^3 1.2 % under; the C(s/Da)
+  correlation 0.10292 / 0.10267). Two attributions corrected: 132.7 C is
+  `unit_322e001.T_CRYSTALLISATION_C`, not decision 140; the head volume is computed in
+  `data/unit_322c001.py`, which `core/vessel_geometry.py` reuses.
+* **Not verified.** The Neldisc deviations: the report evaluated the chord in the bulletin's own
+  normalised space, as if each sheet's last point lay on the bulletin's curve; the sheets print up
+  to 30 % less (FV-329401 0.228 of rated at 52.9 % against 0.326). On the sheets' own points the
+  chord departs from the rescaled bulletin by +13.4 % (PV-323203 at 60 %) to -4.7 % (HV-323605 at
+  90 %), not +8.4 % to -3.14 %; every design stroke lies below its last printed travel. The
+  bulletins (2SL120EN, 2LW22EN, 2LBF20EN) are in no archive. The report's statement that no
+  pure-melt Henry constant can exist is uncited. Its ejector table swaps two vendor duties
+  (324F002's is Körting's 94 kg/h at 0.20 bar a, 324F005's Uhde's 84 at 0.33) and gives two break
+  pressures the model does not have: at the design suction and motive, `ejector_map`'s critical
+  back pressures are 1.305 bar a (324F002), 0.369 (324F004, not 1.34) and 1.105 (324F005, not
+  2.39).
+* **Decided** (decision 153): 322C001's head volume closed; the Henry constant closed as a
+  quantity no source holds; the Neldisc row annotated and kept linear. The 322F001 and Körting
+  rows unchanged.
+
+No code changed; `tests/docs` green. `handoff.md`'s Sections A, B and C stay empty; 13 open data
+gaps remain.
+
 ## 5. Design decisions on record
 
 1. **PyQt6, not PyQt5.** Qt6 is current, has proper high-DPI scaling for the 1366×720 stage,
@@ -5530,3 +5568,12 @@ change to the physics (decision 152, As-Built Part LXXXV):
      saturation into `thermo.carbamate_solid`. The lines move verbatim; the module a name left
      re-exports it, so no caller changed an import; each new module imports nothing from the one
      it left; each has its own test file.
+153. **Two data-gap rows closed** (2026-10-23, session 71, the process engineer, on an external
+     report audited against the code): 322C001's bottom head volume, 0.1029 m3 — the arrangement
+     drawing's Da 950 and R 760 on DIN 28013's proportions, the exact torispherical integral, which
+     two correlations confirm within 1.2 % — is the vessel's geometry, as decision 138 built
+     323F004's heads, not a missing datum; the NH3 / CO2 Henry constant on a urea-melt basis is
+     closed as a quantity no vendor, no DCS database and neither archive holds, B-1's PFD-anchored
+     vapour vector on B-58's melt (decisions 42, 122) the model. The Neldisc row stays open on
+     decision 108's linear chord: the Neles bulletins the report tabulates are in no archive and
+     miss the sheets' printed points.

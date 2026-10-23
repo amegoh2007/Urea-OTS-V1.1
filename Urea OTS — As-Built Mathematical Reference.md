@@ -101,6 +101,7 @@ Design basis: `References/Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md
 - Part LXXXIII — Single-console conversion (Phase 6 / Phase 7)
 - Part LXXXIV — The data gaps searched again; seven valves on their vendor sheets (Phase 7)
 - Part LXXXV — The housekeeping split: every module inside 600 lines (Phase 7)
+- Part LXXXVI — An external report on five data-gap rows; two closed (Phase 7)
 
 ---
 
@@ -1704,6 +1705,7 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 334 | LV-324501A / B on Flowserve's 0310 sheets (decision 150) | V1's span law, linear from 75 %, the same on both valves | `data/unit_324` ``LV_324501A_OP_DES_PCT``, ``LV_324501B_FULL_KGH``, ``LV_324501_CHAR``; `units/evaporation/second_evaporator` ``vendor_drain``, ``lic_324501(vendor=)``; `units/evaporation/leg_seal` ``seal_air_kgh(vendor=)`` | **`[DECIDED DIVERGENCE]`** 2026-10-22: equal percentage 50:1, Kvs 100; the sheets' SG 0.751 taken to the melt's 1221 kg/m3: A from 75.35 %, B on its full stroke, 251.5 t/h; both ways in `test_lv_324501_on_flowserves_sheets_decided_divergence` (§LXXXIV.4) |
 | 335 | 322E006 on PFD 28's cooling water (decision 151) | V1 fixes 755 at 40 C; the port back-solved 10 374 kg/h on the datasheet UA | `data/unit_322e006` ``E006_M_CW_PFD_KGH``; `units/absorption/feed_cooler` ``E006_UA_DES_KW_K``, ``feed_cooler_322e006(ua_kw_k=)`` | **`[DECIDED DIVERGENCE]`** 2026-10-22: 14 t/h, the UA back-solved to 20.448 kW/K so 755 holds 40.0 C, the datasheet's 30.776 kept as margin (§LXXXIV.5) |
 | 336 | The open data gaps searched again (session 69) | — | `handoff.md` Open data gaps | **recorded** 2026-10-22: both user folders (486 documents) and the archive; four rows closed (rows 330-335), 15 open (§LXXXIV.1, §LXXXIV.6) |
+| 337 | Two data-gap rows closed (decision 153) | — | `handoff.md` Open data gaps; `data/unit_322c001` ``C001_HEAD_VOL_M3`` (unchanged) | **recorded** 2026-10-23: an external report audited against the code; 322C001's head volume (0.1029 m3, three methods within 1.2 %) and the urea-melt Henry constant (no source holds one) closed by the process engineer; the Neldisc row kept linear, its chord's departure from the uncited bulletins measured +13.4 % to -4.7 % on the sheets' points; 13 open (§LXXXVI) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -17283,3 +17285,86 @@ the module the names left re-exports the same objects. The equivalence suites pa
 tolerances recorded in earlier Parts stand: no arithmetic moved.
 
 `python -m pytest` — **7 536 collected** (7 475 at session 69: 61 more, the ten new test files), fourteen parallel parts, all green, none skipped. The first run set Qt's offscreen platform, under which Qt lists no font families on this machine, so the two overlap tests of `tests/hmi/test_screen_geometry.py` skipped on their own font guard; the commit message (`2cfa3f2`) called them font skips, but no font is missing: Consolas and Courier New are installed in `C:\Windows\Fonts`, and Qt's native platform also lists Cascadia Mono. Re-run on the native platform, the geometry file passes 17 of 17 and `tests/hmi` 75 of 75; `tests/docs` green; pyflakes clean over `ureasim`, `tests`, `tools` and `run.py`; the headless grep prints nothing.
+
+# Part LXXXVI — An external report on five data-gap rows; two closed (Phase 7)
+
+Session 71, 2026-10-23. The process engineer pasted an audit of five open data-gap rows and
+attached the report behind it ("Thermodynamic, Fluid-Dynamic, and Geometric Closure Analysis"),
+another tool's work. Under `CLAUDE.md` §4 a report is not a source: each of its numbers was
+re-measured from the code, each document it cites was looked for by name, and two rows were closed
+by the process engineer's decision (`project.md` decision 153). No code changed.
+
+## LXXXVI.1 What was checked
+
+| Row | The report's claim | Measured | Verdict |
+|---|---|---|---|
+| Henry constants, urea-melt basis | the -85.3 K refit; gamma_H2O 0.79 / 0.70 on the PFD, 0.52 / 0.48 on the literature parameters; one-row fits -71.66 / -98.92 K | `data/unit_324` ``MELT_A_UREA_WATER_K`` and its comment; `thermo/urea_melt` | verified (decision 42 the refit, decision 122 B-1's sign-off); "132.7 C under decision 140" wrong — `data/unit_322e001` ``T_CRYSTALLISATION_C``; "no pure-melt Henry constant can exist" uncited |
+| 322F001 | d_n 16.72 mm, D_t 50.23 mm, b 0.11082, shutoff 5.106 bar, stall 90.7 % | 16.721 mm, 50.228 mm, 0.11082, 5.1058 bar, 0.90697 (`data/unit_322f001`) | verified |
+| 322C001's head | 0.10266-0.10290 m3 exact, 0.10146-0.10173 m3 by 0.1298 Di^3, 0.10291 m3 by C(s/Da) | §LXXXVI.2 | verified; computed in `data/unit_322c001.py`, which `core/vessel_geometry.py` reuses (the report names the latter) |
+| Körting's ejectors | PV-324202 61.07 %, PV-324203 92.03 %, HV-329605 69.06 %, HV-329606 80.16 %; throats 24.7 / 106.5 and 14.5 / 30.8 mm; K 0.336 / 0.919 / 0.497; 324F002's nozzle 19.33 mm; 324F002 rated 84 kg/h at 0.33 bar a and 324F005 94 at 0.20; 324F004 breaking at 1.34 bar a, 324F005 at 2.39 | the same (`data/unit_324`, `data/unit_324_train`, `ejector_map`: K 0.3363 / 0.9192 / 0.4974); the vendor duties are 324F002 94 kg/h at 0.20 bar a (Körting) and 324F005 84 at 0.33 (Uhde); the critical back pressures at the design suction and motive are 1.305 bar a (324F002), 0.369 (324F004) and 1.105 (324F005) | verified, except the two duties (swapped between 324F002 and 324F005) and the two break pressures (not the model's); the row stays open for Körting's curves |
+| Neldisc above the last printed travel | every design stroke below its last printed travel; the chord within +8.4 % to -3.14 % of the bulletins' curve | §LXXXVI.4 | the first verified, the second not: +13.4 % to -4.7 % |
+
+## LXXXVI.2 322C001's bottom head volume (closed)
+
+The arrangement drawing UD-AU-322-DZ-0007-001 rev 02 prints the lower part's Da 950 mm, the crown
+R 760 and DIN 28013 in its list of material; the head's volume is its geometry on those dimensions,
+not a datum the archive withholds. The exact integral of `data/unit_322c001.py`
+(``torispherical_head_volume_m3``: crown 0.8 Da, knuckle 0.154 Da, inside radii) and the report's
+two correlations, which it attributes to DIN 28013 and to a published table (neither in the
+archive, a cross-check only), agree:
+
+| Method | s = 14.0 mm (Di 922, the port's) | s = 14.4 mm (Di 921.2) |
+|---|---|---|
+| exact torispherical integral | 0.10292 m3 | 0.10266 m3 |
+| 0.1298 Di^3 | 0.10173 m3 (-1.2 %) | 0.10147 m3 (-1.2 %) |
+| (pi / 12) C Di^3, C = 0.49951 + 0.10462 (s/Da) + 2.3227 (s/Da)^2 | 0.10292 m3 | 0.10267 m3 |
+
+The geometric dished height at Di 922 mm, 233.1 mm, is the standard's 0.255 Da - 0.635 s (233.4 mm)
+to 0.3 mm. LT-322502's taps are dimensioned from the bottom tangent line (200 and 1000 mm), so a
+straight flange stands in the cylinder above it and adds nothing below. Decision 138 built 323F004's
+two DIN 28013 heads the same way and logged no gap; the row is closed, ``C001_HEAD_VOL_M3``
+unchanged.
+
+## LXXXVI.3 The Henry constant on a urea-melt basis (closed)
+
+The row asked for NH3 and CO2 Henry constants on a urea-melt basis for 324E001's and 324E003's
+anchored vapour vector. Neither archive holds one (sessions 25, 58 and 69), no vendor and no DCS
+database could supply one, and the model does not need one: B-1's vapour vector is anchored on PFD
+705 / 709 over B-58's refitted melt (decisions 42 and 122), its departure carrying the off-design.
+The process engineer closed the row as a quantity no source holds (decision 153). The report's
+argument — that urea's decomposition and hydrolysis in the melt leave no non-reactive binary to
+measure — is recorded as its argument; it cites no measurement either way.
+
+## LXXXVI.4 The Neldisc characteristic above the last printed travel (kept linear)
+
+The report tabulates relative Cv against travel from Neles bulletins 2SL120EN, 2LW22EN and 2LBF20EN.
+None is in `References/`, `Urea Simulation Docs` or the vendor archive (searched by file name;
+Metso's own file read in sessions 53 and 69), and its citation does not resolve, so the table is not
+a source under §4. Measured against it anyway — its ASME 150 column, the one the report uses,
+rescaled to pass through each sheet's last printed point and the rated Cv:
+
+| Valve | Design stroke | Last printed travel | Sheet's Cv / rated there | Bulletin's | Chord against the rescaled bulletin |
+|---|---|---|---|---|---|
+| PV-323203 | 21.64 % | 44.6 % | 0.262 | 0.248 | +13.4 % (60 %) to -0.9 % (90 %) |
+| FV-329401 | 26.00 % | 52.9 % | 0.228 | 0.326 | +9.6 % (60 %) to -2.0 % (90 %) |
+| PV-329202 | 32.92 % | 52.9 % | 0.228 | 0.326 | +9.6 % (60 %) to -2.0 % (90 %) |
+| PV-329208 | 27.22 % | 58.0 % | 0.380 | 0.380 | +3.5 % (70 %) to -2.3 % (90 %) |
+| PV-329203 | 39.31 % | 61.0 % | 0.299 | 0.415 | +3.2 % (70 %) to -3.1 % (90 %) |
+| PV-329207B | 54.96 % | 63.3 % | 0.465 | 0.446 | +1.6 % (70 %) to -2.5 % (90 %) |
+| FV-329409 | 46.85 % | 63.5 % | 0.384 | 0.449 | +2.1 % (70 %) to -3.0 % (90 %) |
+| PV-329207A | shut | 64.2 % | 0.458 | 0.459 | +1.5 % (70 %) to -2.7 % (90 %) |
+| PV-329212 | 54.68 % | 70.5 % | 0.548 | 0.545 | +0.6 % (80 %) to -3.0 % (90 %) |
+| PV-329204 | 44.10 % | 77.7 % | 0.767 | 0.653 | +0.1 % (80 %) to -2.0 % (90 %) |
+| HV-323605 | 64.08 % | 78.1 % | 0.519 | 0.659 | +0.3 % (80 %) to -4.7 % (90 %) |
+| TV-328002 | 55.04 % | 90.5 % | 0.757 | 0.878 | 0.0 % (the bulletin is linear from 90 %) |
+
+Every design stroke lies below its valve's last printed travel, so the design point does not depend
+on the extension. The report's narrower +8.4 % to -3.14 % came from evaluating the chord in the
+bulletin's own normalised space, as if each sheet's last point lay on the bulletin's curve; the
+sheets print up to 30 % less (FV-329401: 0.228 against 0.326 at 52.9 %). The process engineer kept
+decision 108's linear chord; the row stays open with this measurement.
+
+## LXXXVI.5 Checks
+
+No code changed, so no test moved; `tests/docs` green. 13 data gaps remain; `handoff.md`'s Sections
+A, B and C stay empty.
