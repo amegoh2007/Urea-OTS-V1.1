@@ -16,6 +16,9 @@ from __future__ import annotations
 
 from ureasim.core.stream import MW_COMP
 from ureasim.data.design_point import STRIP_BOT_DES_KGH
+from ureasim.data.unit_322e001_bundle import BUNDLE
+from ureasim.data.unit_322e002 import TUBES as E002_TUBES
+from ureasim.data.unit_322e003 import TUBES as E003_TUBES
 from ureasim.data.relief_devices import RELIEF_DEVICES, RELIEF_SIZING
 from ureasim.data.unit_320 import SYN_P_DES_BARA
 from ureasim.data.unit_321 import CO2_DES_KGH
@@ -30,6 +33,7 @@ from ureasim.thermo.empirical import urea_soln_rho
 
 __all__ = [
     "SYN_P_TAU_MIN", "V_R001_M3", "V_E001_M3", "V_E002_M3", "V_E003_M3", "SYN_LOOP_V_M3",
+    "SYN_LOOP_V_V1_M3",
     "RHO_E002_LIQ", "BUFFER_DLN_FRAC", "LIQUOR_DP_DES_BAR", "REACT_FEED_DP_DES_BAR",
     "REACT_FEED_RHO_DES_LIVE",
     "SYN_LOOP_IN_DES_KGH", "SYN_LOOP_OUT_DES_KGH",
@@ -52,16 +56,23 @@ SYN_P_TAU_MIN = 4.0
 
 #: The loop's process-side volumes [m3], read in session 40 from the vendor's arrangement drawings,
 #: each visually verified: 322R001 185.4 (UD-AU-322-DZ-0006-003; Uhde's data sheet's 171.00 m3 is
-#: the shell between tangents), 322E001 24.7 (UD-AU-322-DZ-0003-003), 322E002 21.6
-#: (UD-AU-322-DZ-0004-003) and 322E003 10.0 (UD-AU-322-DZ-0005-003). Every one is open to the loop's
+#: the shell between tangents), 322E001 24.7 (UD-AU-322-DZ-0003-003; the 2,950-tube replacement
+#: the plant runs holds 28.83, Resta 6355's capacity, tube side, `unit_322e001_bundle`, decision
+#: 154), 322E002 21.6
+#: (UD-AU-322-DZ-0004-003) and 322E003 10.0 (UD-AU-322-DZ-0005-003), the two less the bores of the
+#: tubes plugged at the last turnaround, 0.211 and 0.011 m3 (decision 155). Every one is open to the loop's
 #: gas, so the vapour inventory is their sum less the liquid the model holds in them (decision 68's
 #: class). They replace V1's lumped 1500 kg/bar (``SYN_LOOP_C_KG_PER_BAR``, report A-1: "still a
 #: lumped constant, not a vapour-space EOS"; decided 2026-10-09, handoff B-77 (b)).
 V_R001_M3 = 185.4
-V_E001_M3 = 24.7
-V_E002_M3 = 21.6
-V_E003_M3 = 10.0
+V_E001_M3 = BUNDLE.tube_side_m3
+V_E002_M3 = 21.6 - E002_TUBES.v_plugged_m3
+V_E003_M3 = 10.0 - E003_TUBES.v_plugged_m3
 SYN_LOOP_V_M3 = V_R001_M3 + V_E001_M3 + V_E002_M3 + V_E003_M3
+
+#: The loop's vessels as V1's plant built them [m3], 241.7: 322E001's 2,600-tube stripper and no
+#: plugged tubes. The equivalence harnesses run the node on it (decisions 154, 155).
+SYN_LOOP_V_V1_M3 = V_R001_M3 + 24.7 + 21.6 + 10.0
 
 #: 322E002's carbamate liquor to 322R001 [kg/m3]: the volume LT-322E002's holdup takes in the
 #: vessel. Source: PFD, "Carb. Liq." at 170 C and 144.2 bar a.

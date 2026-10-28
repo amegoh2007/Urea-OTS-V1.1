@@ -30,6 +30,7 @@ import math
 import pytest
 
 from ureasim.data.unit_320 import SYN_P_DES_BARA
+from ureasim.data import unit_322e001 as d
 from ureasim.data.unit_322e001 import (
     BOTTOMS_DES_KGH,
     BOTTOMS_TD_DES_S,
@@ -564,10 +565,16 @@ def test_the_tubes_take_the_drain_and_their_unsubmerged_share_of_the_design_bott
 
 def test_a_drained_sump_fills_its_tubes_to_the_ceiling_and_passes_what_drains():
     """The sump with LV-322501 at 10 % and the stripper's feed capped at what the tubes take (the
-    reactor's bound, one kilogram of bottoms per kilogram taken): the tubes fill to their 8 689 kg
-    in about ten minutes, what the transit still delivers past the ceiling, 2 505 kg, is handed
-    back, and then the tubes take exactly what drains."""
-    sump = StripperSump(level_pct=99.9)
+    reactor's bound, one kilogram of bottoms per kilogram taken): V1's bundle's tubes fill to their
+    8 689 kg in about ten minutes, what the transit still delivers past the ceiling, 2 505 kg, is
+    handed back, and then the tubes take exactly what drains. The replacement's 10 663 kg hand
+    back 1 946 kg (decision 154)."""
+    for bundle, handed_back in ((d.BUNDLE_V1, 2505.3), (d.BUNDLE, 1945.6)):
+        _fill_the_tubes(bundle, handed_back)
+
+
+def _fill_the_tubes(bundle, handed_back):
+    sump = StripperSump(level_pct=99.9, bundle=bundle)
     lic = BottomLevelLoop(op=10.0, mode="MAN")
     bottoms, back = BOTTOMS_DES_KGH - 2.0, 0.0
     tick = (DESIGN["t_bot_c"], DESIGN["t_steam_c"], DESIGN["top_kmolh"], DESIGN["top_mw"],
@@ -577,8 +584,8 @@ def test_a_drained_sump_fills_its_tubes_to_the_ceiling_and_passes_what_drains():
         back += r.backup_kgh / 3600.0
         bottoms = (BOTTOMS_DES_KGH - 2.0 if r.take_kgh is None
                    else min(BOTTOMS_DES_KGH - 2.0, max(r.take_kgh, 0.0)))
-    assert sump.held_kg == TUBES_FULL_KG
-    assert back == pytest.approx(2505.3, abs=0.1)
+    assert sump.held_kg == bundle.v_tubes_m3 * d.RHO_BOTTOM
+    assert back == pytest.approx(handed_back, abs=0.1)
     assert r.take_kgh == r.drain_kgh == pytest.approx(28304.1, abs=0.1)
     assert r.bottoms_in_kgh == pytest.approx(r.drain_kgh, rel=1e-9)
 
@@ -598,10 +605,10 @@ def test_held_liquor_runs_down_before_the_level_falls():
 def test_the_level_integrates_the_real_net_flow():
     """Finding A-3: no fitted fill gate deleting most of the net inflow.
 
-    One tick of a 36 000 kg/h surplus into a 7893 kg span is 0.127 % of level, which is the
-    arithmetic and nothing else.
+    One tick of a 36 000 kg/h surplus into the replacement's 7861 kg span (V1's 7893) is 0.127 %
+    of level, which is the arithmetic and nothing else.
     """
-    span_kg = 4.638 * 1.5 * 1134.64
+    span_kg = math.pi * 0.25 * 2.425 ** 2 * 1.5 * 1134.64
     sump = StripperSump(level_pct=LEVEL_SP_DES_PCT)
     lic = BottomLevelLoop(op=LV_322501_OPEN_DES_PCT, mode="MAN")
     surplus = BOTTOMS_DES_KGH + 36_000.0

@@ -24,7 +24,7 @@ FT-329403             stream 901                           ``flows_kgh["901"]``
 ====================  ===================================  ==================================
 
 ``ANALYSERS``, a block V1 does not publish (decided 2026-10-09, handoff B-90): ``AI_329701``, the
-LP condensate's conductivity in 329D001 on its 0-10 uS/cm range, and ``AI_329701_over``, past that
+LP condensate's conductivity in 329D001 on its 0-30 uS/cm range, and ``AI_329701_over``, past that
 range — the instrument that shows a 322E002 tube leak (`units.steam.condensate_analyser`);
 ``D001_solids_ppm``, the solids the leak leaves in 322D001A/B's water, which no plant instrument
 reads (a laboratory sample's value).

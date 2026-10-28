@@ -224,10 +224,12 @@ LIC_328504_KC = 0.2
 LIC_328504_TI_S = 300.0
 
 #: TIC-328012, the bottom-to-third-tray differential, 10 K. V1 steps it for its faceplate only:
-#: its output drives nothing. Kc 3.0, Ti 250 s, set point 0-30 K. Source: V1 `main.py`
-#: State.__init__ 7083-7087.
-TIC_328012_KC = 3.0
-TIC_328012_TI_S = 250.0
+#: its output drives nothing; set point 0-30 K. Its faceplate in the plant DCS (photograph of 24
+#: October 2026, `References/Gaps Closure/Gaps/20261024_033945.jpg`): gain 0.20, TI 3000 s, TD and
+#: TF 0, range 0-200; on span, 0.20 x 100 % / 200 K = 0.10 % per K (decided 2026-10-28, decisions 76
+#: and 77's class). V1 runs Kc 3.0 and Ti 250 s (`main.py` State.__init__ 7083-7087).
+TIC_328012_KC = 0.20 * 100.0 / 200.0
+TIC_328012_TI_S = 3000.0
 TIC_328012_SP_HI_K = 30.0
 
 # ======================================================================================

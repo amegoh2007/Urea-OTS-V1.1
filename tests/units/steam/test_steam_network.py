@@ -234,14 +234,15 @@ def test_a_lost_raising_starves_the_users_b73():
 
 
 def test_the_flood_draws_the_9_bar_header_b73():
-    """XV-322915 opened at design: the flood draws 329D009's header to 8.765 bar a in ten seconds
-    and holds it, passing 975 kg/h on it — where its rating at 9.0 bar a is 1000; the 9-bar and
-    LP headers settle without ringing."""
+    """XV-322915 opened at design: the flood draws 329D009's header to 8.575 bar a in ten seconds;
+    PIC-329205's integral (its DCS row, decided 2026-10-28) restores it to 8.999 in five minutes,
+    passing 999.9 kg/h — its rating at 9.0 bar a is 1000 (V1's proportional split held 8.765 and
+    975 kg/h); one turn on the 9-bar header, the LP header settling without ringing."""
     out = _run_b73(3005, flood_at=5)
     p9 = [r.p_9_bara for r, _, _, _ in out]
-    assert (p9[105], p9[-1]) == (pytest.approx(8.7656, abs=1e-4), pytest.approx(8.7651, abs=1e-4))
-    assert out[-1][2]["flood"] == pytest.approx(975.12, abs=0.01)
-    assert _reversals(p9, 1e-7) == 0
+    assert (p9[105], p9[-1]) == (pytest.approx(8.5752, abs=1e-4), pytest.approx(8.9987, abs=1e-4))
+    assert out[-1][2]["flood"] == pytest.approx(999.87, abs=0.01)
+    assert _reversals(p9, 1e-7) == 1
     assert _reversals([r.p_lp_bara for r, _, _, _ in out], 1e-7) == 0
 
 

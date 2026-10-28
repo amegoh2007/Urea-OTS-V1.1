@@ -50,15 +50,15 @@ SWEEP_DES_KGH = d.FEED_DES_KGH - sum(
 OVERFLOW_DES_KGH = d.FEED_DES_KGH - SWEEP_DES_KGH
 
 
-def overflow_at_flood_fraction(fraction: float) -> dict:
-    """The reactor overflow that puts the bundle at ``fraction`` of its flooding limit."""
-    target_kgh = d.N_TUBES * d.FLOOD_KGH_PER_TUBE * fraction
+def overflow_at_flood_fraction(fraction: float, bundle=d.BUNDLE) -> dict:
+    """The reactor overflow that puts ``bundle`` at ``fraction`` of its flooding limit."""
+    target_kgh = bundle.n_tubes * bundle.flood_kgh_per_tube * fraction
     scale = (target_kgh - SWEEP_DES_KGH) / OVERFLOW_DES_KGH
     return {k: v * scale for k, v in d.FEED_207_KMOLH.items()}
 
 
 def test_flooding_is_inactive_at_design_by_inequality_not_tolerance():
-    """0.7448 of the limit, so the excess is the literal 0.0 that `max` returns.
+    """0.595 of the limit (0.7448 on V1's bundle), so the excess is the literal 0.0 `max` returns.
 
     The whole bit-exactness argument for this block is that it is a ONE-SIDED constraint the
     plant genuinely operates below — not an anchored ratio that happens to evaluate to one.
@@ -69,20 +69,29 @@ def test_flooding_is_inactive_at_design_by_inequality_not_tolerance():
     assert r.flood_excess == 0.0            # exactly, from max(negative, 0.0)
     assert r.dt_flood == 0.0
     assert r.g_flood == 1.0
-    # 108.0 kg/h per tube against the 145 kg/h limit.
-    assert r.flood_kgh_per_tube == pytest.approx(108.0, abs=0.1)
+    # 95.2 kg/h per tube against the replacement's 159.9 kg/h limit (decision 154); 108.0
+    # against 145 on V1's 2,600 tubes.
+    assert r.flood_kgh_per_tube == pytest.approx(95.2, abs=0.1)
+    v1 = stripper_322e001(CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA, bundle=d.BUNDLE_V1)
+    assert v1.flood_frac == pytest.approx(0.7448, abs=1e-4) and v1.flood_excess == 0.0
+    assert v1.flood_kgh_per_tube == pytest.approx(108.0, abs=0.1)
 
 
-def test_flooding_starts_at_about_134_per_cent_of_design_load():
-    """The plant-level limit that falls out of the DDS geometry and the IFS-166 figure.
+def test_flooding_starts_at_168_per_cent_of_design_load_on_the_replacement():
+    """The plant-level limit that falls out of the bundle's geometry and the IFS-166 figure.
 
-    2600 tubes x 145 kg/h is 377 000 kg/h, which is 1/0.7448 of the design feed. That it lands
-    near the source's own "110 % when new, 120 % at end of life" is the corroboration that the
-    geometry and the limit belong together.
+    V1's 2600 tubes x 145 kg/h is 377 000 kg/h, 1/0.7448 of the design feed — near the source's
+    own "110 % when new, 120 % at end of life". The replacement's 2950 tubes x 159.9 kg/h, the
+    figure scaled on Wallis's D^2.5 to its 26 mm bore, is 471 800 kg/h: 168 % of the design load
+    (decision 154).
     """
     onset = 1.0 / d.FLOOD_DES_FRAC
-    assert onset == pytest.approx(1.34, abs=0.01)
-    assert d.N_TUBES * d.FLOOD_KGH_PER_TUBE == pytest.approx(377_000.0, rel=1e-3)
+    assert onset == pytest.approx(1.68, abs=0.01)
+    assert d.N_TUBES * d.FLOOD_KGH_PER_TUBE == pytest.approx(471_817.0, rel=1e-5)
+    assert d.FLOOD_KGH_PER_TUBE == pytest.approx(145.0 * 1.04 ** 2.5, rel=1e-12)
+    v1 = d.BUNDLE_V1
+    assert v1.n_tubes * v1.flood_kgh_per_tube == pytest.approx(377_000.0, rel=1e-3)
+    assert d.FEED_DES_KGH / (v1.n_tubes * v1.flood_kgh_per_tube) == pytest.approx(0.7448, abs=1e-4)
 
     lo = stripper_322e001(CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA,
                           overflow_kmolh=overflow_at_flood_fraction(0.99))
@@ -277,10 +286,17 @@ def test_a_composition_choke_pushes_volatiles_overhead_rather_than_cutting_the_s
     # The breakthrough asks more of the shell than it can give at the design LMTD.
     assert rich.duty_raw_kw > DUTY_RAW_DES_KW * (1.0 + d.SHELL_DUTY_BAND)
     bounded = stripper_322e001(CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA,
-                               feed_nc=REACTOR_FEED_NC_DES + 0.2)
+                               feed_nc=REACTOR_FEED_NC_DES + 0.2, bundle=d.BUNDLE_V1)
     assert bounded.shell_capacity_ratio == 1.0 and bounded.shell_lambda < 1.0
     assert bounded.duty_raw_kw == pytest.approx(DUTY_RAW_DES_KW * (1.0 + d.SHELL_DUTY_BAND),
                                                 rel=1e-12)
+    # The replacement's shell gives 1.142 times V1's (decision 154): the breakthrough asks 1.267
+    # times the design balance, so it binds there too, less deep.
+    assert rich.duty_raw_kw / DUTY_RAW_DES_KW == pytest.approx(1.2669, abs=1e-4)
+    new = stripper_322e001(CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA,
+                           feed_nc=REACTOR_FEED_NC_DES + 0.2)
+    assert new.shell_capacity_ratio == d.BUNDLE.shell_capacity
+    assert bounded.shell_lambda < new.shell_lambda == pytest.approx(0.90659, abs=1e-5)
 
 
 def test_the_two_composition_penalties_have_a_floor():
@@ -324,18 +340,19 @@ def test_the_rate_law_cannot_reach_the_pfd_extent_which_is_why_it_is_anchored():
     hydrolysis alone; it lumps carbamate decomposition, which is what the stripper is for.
     Predicting it outright would be fitting a rate constant to a different reaction.
     """
-    # The bundle alone: 12.02 kmol/h, a seventh of the licensor extent.
-    bundle_only = hydrolysis_rate_group(
-        d.T_BOTTOM_DES_C, d.FEED_DES_KMOLH["Urea"], d.FEED_DES_KMOLH["H2O"],
-        d.VDOT_DES_M3H, d.V_TUBES_M3)
-    assert bundle_only == pytest.approx(12.02, abs=0.05)
-    # Bundle plus the sump at its design level: 17.48, which is the anchor denominator.
-    assert HYDROLYSIS_GROUP_DES == pytest.approx(17.48, abs=0.05)
-    # The whole vessel liquid-full — the physical maximum — still reaches only 26 %.
-    flooded_group = hydrolysis_rate_group(
-        d.T_BOTTOM_DES_C, d.FEED_DES_KMOLH["Urea"], d.FEED_DES_KMOLH["H2O"],
-        d.VDOT_DES_M3H, d.V_TUBES_M3 + d.V_SUMP_M3)
-    assert flooded_group == pytest.approx(22.94, abs=0.05)
+    def group(v_liq_m3):
+        return hydrolysis_rate_group(d.T_BOTTOM_DES_C, d.FEED_DES_KMOLH["Urea"],
+                                     d.FEED_DES_KMOLH["H2O"], d.VDOT_DES_M3H, v_liq_m3)
+    # The bundle alone: 14.75 kmol/h on the replacement's 9.40 m3, a sixth of the licensor
+    # extent (V1's 7.66 m3: 12.02).
+    assert group(d.V_TUBES_M3) == pytest.approx(14.75, abs=0.05)
+    assert group(d.BUNDLE_V1.v_tubes_m3) == pytest.approx(12.02, abs=0.05)
+    # Bundle plus the sump at its design level: 20.19, the anchor denominator (V1's 17.48).
+    assert HYDROLYSIS_GROUP_DES == pytest.approx(20.19, abs=0.05)
+    # The whole vessel liquid-full — the physical maximum — still reaches only 29 %.
+    flooded_group = group(d.V_TUBES_M3 + d.V_SUMP_M3)
+    assert flooded_group == pytest.approx(25.62, abs=0.05)
+    assert group(d.BUNDLE_V1.v_tubes_m3 + d.BUNDLE_V1.v_sump_m3) == pytest.approx(22.94, abs=0.05)
     assert flooded_group < 0.30 * d.XI_HYDROLYSIS_DES
 
 
@@ -485,14 +502,18 @@ def test_the_nh3_desorption_enthalpy_is_the_loop_s_own_value():
 
 
 def test_the_derived_geometry_agrees_with_the_datasheet_surface():
-    """The DDS is self-consistent, which is what licenses using it for a hydraulic limit.
+    """Each drawing set is self-consistent, which licenses using it for a hydraulic limit.
 
-    N . pi . d_o . L against the tabulated exchange surface: 1519.27 versus 1519.00 m2.
+    N . pi . d_o . L against the tabulated exchange surface: the replacement's 1723.85 against
+    Resta's 1724 m2, V1's 1519.27 against the DDS's 1519.00.
     """
-    computed = d.N_TUBES * math.pi * d.TUBE_OD_M * d.TUBE_L_EFF_M
-    assert computed == pytest.approx(d.SURFACE_DES_M2, rel=2.0e-4)
-    # And the tube ID is 0.984 inch, so the one-inch flooding figure needs no scaling.
-    assert d.TUBE_ID_M / 0.0254 == pytest.approx(0.984, abs=0.001)
+    for b in (d.BUNDLE, d.BUNDLE_V1):
+        computed = b.n_tubes * math.pi * b.tube_od_m * b.tube_l_eff_m
+        assert computed == pytest.approx(b.surface_m2, rel=2.0e-4), b.name
+    # V1's tube ID is 0.984 inch, so the one-inch flooding figure needs no scaling there; the
+    # replacement's is 1.024 inch, and the figure scales on D^2.5 from V1's.
+    assert d.BUNDLE_V1.tube_id_m / 0.0254 == pytest.approx(0.984, abs=0.001)
+    assert d.TUBE_ID_M / 0.0254 == pytest.approx(1.024, abs=0.001)
 
 
 def test_the_design_pressure_drop_is_a_subtraction_not_a_decimal():

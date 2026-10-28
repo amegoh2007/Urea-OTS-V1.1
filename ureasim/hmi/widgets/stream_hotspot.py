@@ -21,6 +21,8 @@ whole record); ``frontend/index.html`` ``#streamModal``.
 
 from __future__ import annotations
 
+import math
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Mapping
 
 from PyQt6.QtCore import QObject, Qt
@@ -45,10 +47,18 @@ _BASIS = (("H0", "H0 (ideal solution)"), ("H1", "H1 (with mixing)"))
 
 
 def _fmt(value: Any, decimals: int) -> str:
-    """V1's ``fStrm``: the number to ``decimals`` places, or "—" when there is none."""
+    """V1's ``fStrm``: the number to ``decimals`` places as JavaScript's ``toFixed`` writes it, or
+    "—" when there is none. ``toFixed`` rounds a tie away from zero on the double's exact value,
+    where Python's format rounds it to even (3342.5 kg/h reads 3343, not 3342), prints no sign on a
+    negative zero, and spells the non-finite values its own way."""
     if value is None:
         return MISSING
-    return f"{float(value):.{decimals}f}"
+    x = float(value)
+    if not math.isfinite(x):
+        return "NaN" if math.isnan(x) else ("Infinity" if x > 0.0 else "-Infinity")
+    if x == 0.0:
+        x = 0.0
+    return str(Decimal(x).quantize(Decimal(1).scaleb(-decimals), rounding=ROUND_HALF_UP))
 
 
 def _composition(record: Mapping[str, Any]) -> list[tuple[str, str]]:

@@ -109,10 +109,10 @@ def test_the_pfds_basis_decided_divergence(v1):
 def test_the_waters_the_drums_pay_decided_divergence(v1):
     """B-70, decided 2026-10-02. At design the port's 329D005 boils 8913 kg/h of its water on
     902's superheat — the stripper condenses 66 902 — 913 flashes 2570 kg/h into the LP header and
-    959 blows 3628 down; V1 has none of them. 324E003 lost: PV-329205B lets 4658 kg/h down and V1
-    adds 60.1 kg/h of letdown water to the LP vapour from nowhere, holding 322D001's level; the
-    port adds none — the letdown joins the header past the drums ("917", the next test) — and its
-    level moves.
+    959 blows 3628 down; V1 has none of them. 324E003 lost: 30 s on, PIC-329205's PI (its DCS row,
+    decided 2026-10-28) has PV-329205B letting 1957 kg/h down, and V1 adds 25.3 kg/h of letdown
+    water to the LP vapour from nowhere, holding 322D001's level; the port adds none — the letdown
+    joins the header past the drums ("917", the next test) — and its level moves.
     The HPCC's raising lost: V1 holds the LP header at its 3.5 bar a floor, PV-329207C wide open;
     the port's falls through it, 2.58 bar a in two minutes, 2.11 in five."""
     r = pair(v1, "B-70", 10)[0]["port"]
@@ -123,11 +123,11 @@ def test_the_waters_the_drums_pay_decided_divergence(v1):
     hist = pair(v1, "B-70", 3000, users_9=0.0)
     a, r = hist[300]["v1"], hist[300]["port"]
     assert (a["m_ld"], a["m_water"], a["lvl504"]) == (
-        pytest.approx(4658.02, abs=0.01), pytest.approx(60.129, abs=1e-3),
+        pytest.approx(1956.82, abs=0.01), pytest.approx(25.260, abs=1e-3),
         pytest.approx(50.0, abs=1e-9))
-    assert (r.flows_kgh["960"], r.flows_kgh["ds_322D001"]) == (pytest.approx(4658.03, abs=0.01),
+    assert (r.flows_kgh["960"], r.flows_kgh["ds_322D001"]) == (pytest.approx(1959.00, abs=0.01),
                                                                0.0)
-    assert r.levels_pct["LIC-329504"] == pytest.approx(50.1311, abs=1e-4)
+    assert r.levels_pct["LIC-329504"] == pytest.approx(50.1253, abs=1e-4)
     hist = pair(v1, "B-70", 3000, **{"raise": 0.0})
     for k in (300, 1200, 2999):
         assert hist[k]["v1"]["P_LP"] == 3.5
@@ -138,10 +138,10 @@ def test_the_waters_the_drums_pay_decided_divergence(v1):
 def test_the_lp_header_downstream_of_the_drums_decided_divergence(v1):
     """The topology note, 2026-10-02 (PFD 26, P&ID 107/1): 322D001A/B's tops discharge 917 into
     the LP header and 960 joins the header past them. At design the drums discharge 68 929 kg/h,
-    PFD 917's 68 928. 324E003 lost, PV-329205B letting 4658 kg/h down: B-70's build boils 70.4 kg/h
-    of 322D001's water on 960's superheat, the header at 5.13219 bar a and the drum at 50.1292 %
-    after 30 s; the port boils none, 5.13168 bar a and 50.1311 %, and its drums discharge 70 240
-    kg/h — the header's users and valves less 960."""
+    PFD 917's 68 928. 324E003 lost, PV-329205B letting 1957 kg/h down 30 s on (PIC-329205's PI,
+    decided 2026-10-28): B-70's build boils 29.2 kg/h of 322D001's water on 960's superheat, the
+    header at 5.10183 bar a and the drum at 50.1247 %; the port boils none, 5.10107 bar a and
+    50.1253 %, and its drums discharge 69 960 kg/h — the header's users and valves less 960."""
     r = pair(v1, "917", 10)[0]["port"]
     assert r.flows_kgh["917"] == pytest.approx(68929.0, abs=1e-6)
     assert r.flows_kgh["917"] == (r.flows_kgh["users_lp"] + r.flows_kgh["PV-329207A"]
@@ -149,21 +149,21 @@ def test_the_lp_header_downstream_of_the_drums_decided_divergence(v1):
     hist = pair(v1, "917", 301, users_9=0.0)
     a, r = hist[300]["v1"], hist[300]["port"]
     ds_960 = a["m_ld"] * ws.superheat_water_ratio(ws.h_vapour_sat_at_kjkg(a["P_9"]), a["P_LP"])
-    assert (ds_960, a["P_LP"], a["lvl_d001"]) == (pytest.approx(70.415, abs=1e-3),
-                                                  pytest.approx(5.13219, abs=1e-5),
-                                                  pytest.approx(50.1292, abs=1e-4))
+    assert (ds_960, a["P_LP"], a["lvl_d001"]) == (pytest.approx(29.193, abs=1e-3),
+                                                  pytest.approx(5.10183, abs=1e-5),
+                                                  pytest.approx(50.1247, abs=1e-4))
     assert (r.flows_kgh["ds_322D001"], r.p_lp_bara, r.levels_pct["LIC-329504"]) == (
-        0.0, pytest.approx(5.13168, abs=1e-5), pytest.approx(50.1311, abs=1e-4))
-    assert r.flows_kgh["917"] == pytest.approx(70240.1, abs=0.1)
+        0.0, pytest.approx(5.10107, abs=1e-5), pytest.approx(50.1253, abs=1e-4))
+    assert r.flows_kgh["917"] == pytest.approx(69959.9, abs=0.1)
 
 
 def test_the_drum_between_its_taps_decided_divergence(v1):
     """Decisions 33 and 11. LV-329502 wide open by hand: 329D005's water, 66.9 t/h in, 85.9 t/h
     out. V1's level, on the mid-chord's 11 223 kg per 100 %, reaches 0 % at 12 min 3 s and stays
-    there with the valve still passing 85.9 t/h — 27.9 t/h of water from nothing, 329D009 at 9.607
-    bar a. The port's drum holds its heads (10.0 m2 at the axis, not 8.8): its transmitter reads
-    0 % at 11 min 38 s, when the water is at the lower tap, not gone; at the heel LV-329502 passes
-    only what arrives, 60.4 t/h, and 329D009 settles at 9.046 bar a."""
+    there with the valve still passing 85.9 t/h — 27.9 t/h of water from nothing. The port's drum
+    holds its heads (10.0 m2 at the axis, not 8.8): its transmitter reads 0 % at 11 min 38 s, when
+    the water is at the lower tap, not gone; at the heel LV-329502 passes only what arrives, 60.4
+    t/h. On PIC-329205's PI (decided 2026-10-28) both hold 329D009 at its 9.0 bar a."""
     def act(k, s, net):
         if k == 5:
             s.lic502_mode, s.lic502_op = "MAN", 100.0
@@ -173,27 +173,36 @@ def test_the_drum_between_its_taps_decided_divergence(v1):
     assert next(k for k in range(15000) if hist[k]["port"].levels_pct["LIC-329502"] == 0.0) == 6980
     a, r = hist[14999]["v1"], hist[14999]["port"]
     assert a["water_d005"] == pytest.approx(-27943.0, abs=0.1)
-    assert (a["P_9"], r.p_9_bara) == (pytest.approx(9.6070, abs=1e-4),
-                                      pytest.approx(9.0463, abs=1e-4))
+    assert (a["P_9"], r.p_9_bara) == (pytest.approx(9.0000, abs=1e-4),
+                                      pytest.approx(9.0000, abs=1e-4))
     assert r.flows_kgh["904"] == pytest.approx(60380.1, abs=0.1)
     assert r.water_residual_kgh["329D005"] == pytest.approx(0.0, abs=1e-6)
 
 
 def test_the_vendor_trims_decided_divergence(v1):
     """Decision 23. PV-329205A sits at 19.55 % on Flowserve's trim, V1's at 50 %. 324E003 lost:
-    PIC-329205 shuts A and opens B; V1's linear PV-329205B (K 2.0) needs 24.2 % to let 4305 kg/h
-    down at 10.86 bar a, the vendor's modified equal-percentage trim 65.6 % for 4658 at 11.13."""
+    PIC-329205 shuts A and opens B, its PI (decided 2026-10-28) bringing 329D009 back to its set
+    point: 30 s on, V1's linear PV-329205B (K 2.0) stands at 6.9 % passing 1230 kg/h at 10.915 bar
+    a, the vendor's modified equal-percentage trim at 37.3 % passing 1959; five minutes on, 33.2 %
+    for 4770 kg/h at 9.025 bar a against the trim's 73.2 % for 4663 at 9.039."""
     hist = pair(v1, "trim", 3000, users_9=0.0)
     a, r = hist[0]["v1"], hist[0]["port"]
     assert (a["admit9_pct"], r.strokes_pct["PV-329205A"]) == (50.0,
                                                               pytest.approx(19.5479, abs=1e-4))
     a, r = hist[300]["v1"], hist[300]["port"]
     assert (a["letdown_pct"], a["m_ld"], a["P_9"]) == (
-        pytest.approx(24.1985, abs=1e-4), pytest.approx(4304.94, abs=0.01),
-        pytest.approx(10.8550, abs=1e-4))
+        pytest.approx(6.8593, abs=1e-4), pytest.approx(1229.54, abs=0.01),
+        pytest.approx(10.9147, abs=1e-4))
     assert (r.strokes_pct["PV-329205B"], r.flows_kgh["960"], r.p_9_bara) == (
-        pytest.approx(65.5703, abs=1e-4), pytest.approx(4658.03, abs=0.01),
-        pytest.approx(11.1280, abs=1e-4))
+        pytest.approx(37.3109, abs=1e-4), pytest.approx(1959.00, abs=0.01),
+        pytest.approx(10.9145, abs=1e-4))
+    a, r = hist[2999]["v1"], hist[2999]["port"]
+    assert (a["letdown_pct"], a["m_ld"], a["P_9"]) == (
+        pytest.approx(33.1540, abs=1e-4), pytest.approx(4770.00, abs=0.01),
+        pytest.approx(9.0246, abs=1e-4))
+    assert (r.strokes_pct["PV-329205B"], r.flows_kgh["960"], r.p_9_bara) == (
+        pytest.approx(73.1974, abs=1e-4), pytest.approx(4662.73, abs=0.01),
+        pytest.approx(9.0386, abs=1e-4))
 
 
 def test_the_butterflies_on_their_loop_summaries_decided_divergence(v1):

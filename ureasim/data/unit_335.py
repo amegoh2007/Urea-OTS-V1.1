@@ -17,9 +17,10 @@ design holds; the pumps' stroke law stays anchored on the PFD's 694 kg/h at V1's
 Source: `References/Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md` (streams 402G, 609,
 697); V1 ``backend/main.py`` 3404-3411 (the rows, the ratio, the 50 % stroke) and ``State.__init__``
 6803-6814 (the two loops' tunings and limits). Neither loop has a row in the plant DCS's tuning
-table (`References/Master_PID_Tuning_Constants.md`), so both keep V1's (handoff Open data gaps);
-Uhde's functional diagrams for unit 335 (UD-MR-335-FF-0002, read from the scans) draw no other
-structure for them.
+table (`References/Master_PID_Tuning_Constants.md`); Uhde's functional diagrams for unit 335
+(UD-MR-335-FF-0002, read from the scans) draw no other structure for them. FFIC-335406's faceplate
+in the plant DCS is a ratio station, and the plant runs it as one (decided 2026-10-28, handoff B-116
+(a), `project.md` decision 160); FIC-335405 keeps V1's tuning (handoff Open data gaps).
 """
 
 from __future__ import annotations
@@ -56,6 +57,19 @@ FFIC_335406_KC = 0.5
 FFIC_335406_TI_S = 60.0
 FFIC_335406_RATIO_HI = 0.05
 
+#: FFIC-335406 on its faceplate in the plant DCS (photograph of 24 October 2026, `References/Gaps
+#: Closure/Gaps/20261024_034014.jpg`, "UF/US RATIO CTRL."): a ratio station with no PI of its own,
+#: OUT = RAT . MV + BIAS — the UF85 FIC-335405 is asked for [t/h] on the urea solution's flow [t/h]
+#: — RAT 0.0000 to 0.0080, OUT 0.00 to 0.80 t/h, BIAS 0.0 (decided 2026-10-28, handoff B-116 (a),
+#: decision 26's class). The photograph's RAT, 0.0032 on 89.9 t/h, is that night's setting; the
+#: model seeds RAT on its design ratio, 0.008126, which stands 1.6 % above RAT H — the PFD's
+#: granulation case doses more than the faceplate lets an operator set — until an operator moves
+#: the ratio or the station tracks.
+FFIC_335406_RAT_LO = 0.0
+FFIC_335406_RAT_HI = 0.0080
+FFIC_335406_OUT_LO_TH = 0.0
+FFIC_335406_OUT_HI_TH = 0.80
+
 #: FIC-335405, the slave: V1's tuning on its PV in t/h, set point 0 to 1 t/h, output 0 to 100 %
 #: (V1 ``State.FIC_335405``).
 FIC_335405_KC = 100.0
@@ -65,6 +79,7 @@ FIC_335405_SP_HI_TH = 1.0
 __all__ = [
     "PFD_402G_KGH", "PFD_697_KGH", "PFD_697_T_C", "PFD_697_RHO_KGM3", "W_697", "UF_RATIO_DES",
     "UF85_DES_KGH", "FIC_335405_OP_DES_PCT", "FT_335405_TAU_S", "FFIC_335406_KC",
-    "FFIC_335406_TI_S", "FFIC_335406_RATIO_HI", "FIC_335405_KC", "FIC_335405_TI_S",
+    "FFIC_335406_TI_S", "FFIC_335406_RATIO_HI", "FFIC_335406_RAT_LO", "FFIC_335406_RAT_HI",
+    "FFIC_335406_OUT_LO_TH", "FFIC_335406_OUT_HI_TH", "FIC_335405_KC", "FIC_335405_TI_S",
     "FIC_335405_SP_HI_TH",
 ]

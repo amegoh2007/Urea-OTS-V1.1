@@ -66,6 +66,7 @@ import math
 
 from ureasim.core.stream import MW_COMP, atom_ratio
 from ureasim.core.units_of_measure import R_GAS_FITTED_J
+from ureasim.data.tube_plugging import PluggedBundle
 from ureasim.data.unit_322r001 import (
     C_ATOMS,
     NC_SPAN_MAX,
@@ -500,8 +501,18 @@ COND_P_DES_BARA = OVERFLOW_P_DES_BARA
 #: slope is the relation. See `thermo.parameters` for why the two are kept apart.
 COND_R_JMOLK = R_GAS_FITTED_J
 
+#: 322E003's bundle: 525 tubes 25 x 2.5 mm, 2,170 mm effective, 38 mm pitch at 30 deg, 89.50 m2
+#: (N.pi.d_o.L = 89.47). Source: Uhde DDS UD-AU-322-EC-0005 rev 00, page 3, lines 25 and 34 to 38
+#: (the vendor archive's "322E003 HP Scrubber Datasheet.pdf", a scan, read from the page image).
+#: 16 tubes plugged at the last turnaround (decided 2026-10-28, decision 155): 0.96952 of the
+#: bundle in service, 86.77 m2; the plugged bores hold 0.011 m3. ``UA_KWK`` holds on the tubes in
+#: service, re-anchored at a coefficient 1 / f_tubes above the clean bundle's (handoff B-113 (b)).
+TUBES = PluggedBundle(n_total=525, n_plugged=16, tube_od_m=0.025, tube_wall_m=0.0025,
+                      tube_l_eff_m=2.170, surface_m2=89.50)
+
 
 __all__ = [
+    "TUBES",
     "WASH_KGH_DES", "WASH_MASSPCT", "WASH_KMOLH_DES",
     "OFFGAS_MOLPCT", "VENT_INERTS", "VENT_CONDENSABLE", "VENT_Y_DES", "VENT_Y_MAX",
     "FEED_DES_KMOLH", "OFFGAS_DES_KMOLH", "OVERFLOW_DES_KMOLH",

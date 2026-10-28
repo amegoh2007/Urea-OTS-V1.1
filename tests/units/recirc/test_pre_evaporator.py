@@ -33,6 +33,15 @@ PV_329208_PLUS_20_PCT = 100.0 * stroke_for_cv_fraction(
     PV_329208.characteristic)
 
 
+def _tic():
+    """TIC-323012 on the tuning these measurements were taken on, the 2026-09-30 stand-in
+    (TIC-323007's row, 2.00 and 500 s, on TIC-323012's spans); its own row in the plant DCS,
+    1.00 and 300 s (decided 2026-10-28), has its own test."""
+    tic = pe.tic_323012()
+    tic.Kc, tic.Ti = 2.00 * d.PT_329208_SPAN_BAR / d.TT_323012_SPAN_C, 500.0
+    return tic
+
+
 def _hv(fraction: float) -> float:
     """HV-323605's stroke [%] at which its Neldisc passes ``fraction`` of its design capacity."""
     return 100.0 * stroke_for_cv_fraction(
@@ -45,7 +54,7 @@ def _run(seconds: float, dt: float = 1.0, hic: float = d.HIC_323605_DES_PCT,
     """Run stage 3 alone on design boundaries; return the last result (and the one at
     `trace` seconds, if asked)."""
     sep = pe.PreEvaporator()
-    tic, pic = pe.tic_323012(), pe.pic_329208()
+    tic, pic = _tic(), pe.pic_329208()
     if sp is not None:
         tic.sp = sp
     if pic_man is not None:
@@ -63,6 +72,23 @@ def _run(seconds: float, dt: float = 1.0, hic: float = d.HIC_323605_DES_PCT,
 # ======================================================================================
 # 1. The design point
 # ======================================================================================
+
+def test_tic_323012_on_its_dcs_row_holds_its_set_point():
+    """Its faceplate in the plant DCS, 1.00 and 300 s on 0-160 C and PT-329208's 0-6 bar
+    (decided 2026-10-28): a set point raised to 101 C is met as the stand-in met it, 99.48 C at ten
+    minutes and 100.98 C at two hours — the liquor's own bubble point at the live vacuum (B-24)
+    — with no overshoot."""
+    tic, pic = pe.tic_323012(), pe.pic_329208()
+    assert (tic.Kc, tic.Ti) == (1.00 * 6.0 / 160.0, 300.0)
+    tic.sp = 101.0
+    sep, temps = pe.PreEvaporator(), []
+    for _ in range(7200):
+        temps.append(sep.step(tic, pic, R323_M319_DES, d.F004_T_SP_C, dict(d.W_S319), *NO_BLOW,
+                              d.HIC_323605_DES_PCT, P_LP_BARA, d.P_324E002_DES_BARA, 1.0).t_c)
+    assert (temps[599], temps[-1]) == (pytest.approx(99.476, abs=1e-3),
+                                       pytest.approx(100.9825, abs=1e-4))
+    assert max(temps) < 101.0
+
 
 def test_the_first_design_tick_is_the_pfd():
     r = _run(0.1, dt=0.1)
@@ -193,7 +219,7 @@ def test_a_stopped_drain_takes_the_separator_to_its_heel_and_makes_nothing():
     evaporation, and nothing below the heel boils. Nothing is made (V1's leg passed the floor's
     kilogram every tick, 36 t/h at this step)."""
     sep = pe.PreEvaporator()
-    tic, pic = pe.tic_323012(), pe.pic_329208()
+    tic, pic = _tic(), pe.pic_329208()
     sep.m_kg, dt, created, heel_s = 300.0, 0.1, 0.0, None
     for k in range(1, 601):
         m_pre = sep.m_kg
@@ -216,7 +242,7 @@ def _pinched(hic: float, seconds: float = 7200.0) -> dict:
     """HV-323605 held at ``hic`` from the design: the results at the times the tests read, and the
     lowest level."""
     sep = pe.PreEvaporator()
-    tic, pic = pe.tic_323012(), pe.pic_329208()
+    tic, pic = _tic(), pe.pic_329208()
     at, lowest = {}, 100.0
     for k in range(1, int(seconds) + 1):
         r = sep.step(tic, pic, R323_M319_DES, d.F004_T_SP_C, dict(d.W_S319), *NO_BLOW, hic,
@@ -283,7 +309,7 @@ def _heel(seconds: int, backward: bool, monkeypatch) -> tuple[int, dict]:
         monkeypatch.setattr(pe.liquor_stage, "advance_species",
                             lambda *a, **k: explicit(*a, **k, backward=False))
     sep = pe.PreEvaporator()
-    tic, pic = pe.tic_323012(), pe.pic_329208()
+    tic, pic = _tic(), pe.pic_329208()
     heel, at = None, {}
     for k in range(1, seconds + 1):
         r = sep.step(tic, pic, R323_M319_DES, d.F004_T_SP_C, dict(d.W_S319), *NO_BLOW, _hv(0.2),
@@ -369,7 +395,7 @@ def test_pv_329208_on_its_vendor_trim_holds_the_chest_on_a_falling_header():
     Neldisc; 2.3934 / 98.258 and 2.5039 / 98.878 with HV-323605 on V1's trim)."""
     def run(chest):
         sep = pe.PreEvaporator(chest=chest)
-        tic, pic = pe.tic_323012(), pe.pic_329208(chest)
+        tic, pic = _tic(), pe.pic_329208(chest)
         for _ in range(300):
             sep.step(tic, pic, R323_M319_DES, d.F004_T_SP_C, dict(d.W_S319), *NO_BLOW,
                      d.HIC_323605_DES_PCT, 0.9 * P_LP_BARA, d.P_324E002_DES_BARA, 1.0)

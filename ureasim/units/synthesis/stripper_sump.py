@@ -88,8 +88,8 @@ from ureasim.data.unit_322e001 import (
     T_DOWNSTREAM_DES_C,
     T_STRIPPER_TAU_S,
     TT_323001_GAIN,
-    TUBES_FULL_KG,
 )
+from ureasim.data.unit_322e001_bundle import BUNDLE, TubeBundle
 from ureasim.data.unit_323 import W_S208
 from ureasim.thermo import iapws, real_gas, service
 from ureasim.thermo.ammonia_water import K_RATIO_T_HI_C, K_RATIO_T_LO_C
@@ -339,8 +339,8 @@ class StripperSumpResult:
     take_kgh: float | None = None
 
 
-#: LT-322501's sump over its span [kg]: the bottom head's cross-section over the transmitter's
-#: 1.5 m at the bottoms' density.
+#: LT-322501's sump over its span [kg]: the bottom channel's cross-section over the transmitter's
+#: 1.5 m at the bottoms' density, on the bundle the plant runs (a sump on ``BUNDLE_V1`` takes V1's).
 SUMP_SPAN_KG = SUMP_AREA_M2 * LEVEL_SPAN_M * RHO_BOTTOM
 
 
@@ -371,6 +371,10 @@ class StripperSump:
     #: submerged share derating the shell (decided 2026-10-22, handoff B-104); False is B-103's
     #: held liquor without a ceiling, and with ``hold_full`` False V1's clamp.
     tube_ceiling: bool = True
+    #: The tube bundle above the sump: its standing-full mass caps the held liquor and its bottom
+    #: channel sets the span's mass. The 2,950-tube replacement the plant runs (decided
+    #: 2026-10-28, decision 154); ``BUNDLE_V1`` is V1's, which the equivalence harness keeps.
+    bundle: TubeBundle = BUNDLE
 
     def step(self, lic: BottomLevelLoop, bottoms_kgh: float, t_bot_c: float,
              t_steam_c: float, top_kmolh: dict, top_mw: float,
@@ -461,11 +465,12 @@ class StripperSump:
         # back in the tubes above it, the vessel that drains into it, and runs down first as the
         # sump makes room — V1 clamps the level at 100 % and deletes it (``main.py`` 7657). The
         # held liquor adds exactly 0.0 while there is none, so a sump below full is V1's to the bit.
+        span_kg = self.bundle.v_sump_m3 * RHO_BOTTOM
         level_0, held_0 = self.level_pct, self.held_kg
-        level = self.level_pct + (bottoms_in - drain) / 3600.0 * dt / SUMP_SPAN_KG * 100.0
+        level = self.level_pct + (bottoms_in - drain) / 3600.0 * dt / span_kg * 100.0
         if self.hold_full:
-            level += self.held_kg / SUMP_SPAN_KG * 100.0
-            self.held_kg = max(level - 100.0, 0.0) / 100.0 * SUMP_SPAN_KG
+            level += self.held_kg / span_kg * 100.0
+            self.held_kg = max(level - 100.0, 0.0) / 100.0 * span_kg
         self.level_pct = clamp(level, 0.0, 100.0)
         lic.publish(self.level_pct)
 
@@ -476,11 +481,12 @@ class StripperSump:
         # drains; what still arrives past the ceiling is handed back to 322R001.
         backup_kgh, take_kgh = 0.0, None
         if self.hold_full and self.tube_ceiling:
-            if self.held_kg > TUBES_FULL_KG:
-                backup_kgh = (self.held_kg - TUBES_FULL_KG) * (3600.0 / dt)
-                self.held_kg = TUBES_FULL_KG
+            tubes_full_kg = self.bundle.v_tubes_m3 * RHO_BOTTOM
+            if self.held_kg > tubes_full_kg:
+                backup_kgh = (self.held_kg - tubes_full_kg) * (3600.0 / dt)
+                self.held_kg = tubes_full_kg
             if self.held_kg > 0.0:
-                take_kgh = drain + (1.0 - self.held_kg / TUBES_FULL_KG) * BOTTOMS_DES_KGH
+                take_kgh = drain + (1.0 - self.held_kg / tubes_full_kg) * BOTTOMS_DES_KGH
 
         # ----- L3-7, the sump energy balance ---------------------------------------------------
         t_out = sump_outlet_temperature_c(t_bot_c, t_steam_c, drain)
@@ -507,7 +513,7 @@ class StripperSump:
             dp_lv_bar=dp_lv_bar,
             solidification=bool(mushy < 1.0),
             lv_erosion=bool(blowthrough > 0.0),
-            dm_kgh=((self.level_pct - level_0) / 100.0 * SUMP_SPAN_KG
+            dm_kgh=((self.level_pct - level_0) / 100.0 * span_kg
                     + (self.held_kg - held_0)) * (3600.0 / dt),
             held_kg=self.held_kg, backup_kgh=backup_kgh, take_kgh=take_kgh,
         )

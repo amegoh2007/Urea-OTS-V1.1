@@ -56,6 +56,7 @@ import math
 
 from ureasim.core.packet import normalise_solution_mass_fraction as _w_norm
 from ureasim.core.vessel_geometry import VerticalVessel
+from ureasim.data.tube_plugging import PluggedBundle
 from ureasim.data.control_valves import HV_323605, LV_323505, PV_329208, design_stroke_pct
 from ureasim.data.design_point import (
     R323_CP_SOLN,
@@ -409,6 +410,15 @@ E010_Q_DES_KW = (MEVAP_DES_KGH / 3600.0 * EVAP_LAMBDA_KJKG
 #: Heater conductance [kW/K], back-solved so the design duty crosses the design approach.
 E010_UA_KW = E010_Q_DES_KW / (iapws.tsat_c(E010_PCHEST_DES_BARA) - F010_T_SP_C)
 
+#: 323E010's bundle: 1,087 tubes 25.00 x 1.60 mm, 3,700 mm effective, 32 mm pitch, 316.00 m2
+#: (N.pi.d_o.L = 315.9). Source: Uhde DDS UD-AU-323-EC-0009 rev 00, page 2, lines 25 and 34 to 37
+#: (the vendor archive's "323E010 Datasheet.pdf", a scan, read from the page image). 15 tubes
+#: plugged at the last turnaround (decided 2026-10-28, decision 155): 0.98620 of the bundle in
+#: service, 311.6 m2. ``E010_UA_KW`` holds on the tubes in service, re-anchored at a coefficient
+#: 1 / f_tubes above the clean bundle's (handoff B-113 (b)).
+E010_TUBES = PluggedBundle(n_total=1087, n_plugged=15, tube_od_m=0.025, tube_wall_m=0.0016,
+                           tube_l_eff_m=3.700, surface_m2=316.00)
+
 #: Total heat available to evaporate at design [kW]: the two feeds' sensible terms plus the
 #: heater. The same expression, in the same float operation order, as the runtime q_avail, so
 #: the duty ratio is exactly 1.0 at the seed.
@@ -455,17 +465,16 @@ TT_323012_SPAN_C = 160.0
 #: the normal as 3.5 bar a (2.5 bar g), against the design chest above.
 PT_329208_SPAN_BAR = 6.0
 
-#: TIC-323012: output is the chest-pressure demand [bar a], 0 to the LP header. The loop has no
-#: row in the plant DCS table. V1 ran its own retune, 3.6 bar/K and 1200 s
-#: (`Master_PID_Tuning_Constants.md` Appendix C, 2026-09-04, G-VLE-4), which was stable only
-#: behind V1's slow PIC-329208 (a closed loop of about 6000 s): behind the slave on span it
-#: limit-cycles, +/- 0.5 K with a 50-minute period after a 2 K set-point step. DECIDED
-#: 2026-09-30 (As-Built §XL.2): TIC-323012 runs its sibling's table row — TIC-323007's, 2.00 and
-#: 500 s, the same cascade on the same unit — on its own spans, 2.00 x 6 bar / 160 K =
-#: 0.075 bar/K. A stated tuning, not a table value; Phase 7 re-measures it against the trends.
-TIC_323012_KC_TABLE = TIC_323007_KC_TABLE
+#: TIC-323012: output is the chest-pressure demand [bar a], 0 to the LP header. Its faceplate in
+#: the plant DCS (photograph of 24 October 2026, `References/Gaps Closure/Gaps/20261024_033633.jpg`):
+#: gain 1.00, TI 300 s, TD and TF 0, DZ 2.0 % (not modelled, decision 93), range 0-160 C; on its
+#: own spans, 1.00 x 6 bar / 160 K = 0.0375 bar/K (decided 2026-10-28, decisions 76 and 77's class).
+#: V1 ran its own retune, 3.6 bar/K and 1200 s (`Master_PID_Tuning_Constants.md` Appendix C,
+#: G-VLE-4), which limit-cycles behind the slave on span; the 2026-09-30 stand-in (As-Built §XL.2)
+#: was TIC-323007's row, 2.00 and 500 s.
+TIC_323012_KC_TABLE = 1.00
 TIC_323012_KC = TIC_323012_KC_TABLE * PT_329208_SPAN_BAR / TT_323012_SPAN_C
-TIC_323012_TI_S = TIC_323007_TI_S
+TIC_323012_TI_S = 300.0
 TIC_323012_SP_LO_C = 50.0
 TIC_323012_SP_HI_C = 130.0
 
@@ -544,7 +553,7 @@ __all__ = [
     "F010_ID_M", "F010_SHELL_M", "F010_VOL_M3", "F010_AREA_M2",
     "F010_P_MIN_BARA", "F010_P_MAX_BARA", "EVAP_LAMBDA_KJKG", "CP_F010_DES", "CP_S331_DES",
     "RHO_F010_ANCHOR", "E010_PCHEST_DES_BARA", "E010_OP_DES_PCT", "PV_329208_OP_DES_PCT", "PV_329208_XT", "E010_Q_DES_KW",
-    "E010_UA_KW", "QEVAP_DES_KW", "HIC_323605_DES_PCT_V1", "HV605_CHAR_V1", "HIC_323605_DES_PCT",
+    "E010_UA_KW", "E010_TUBES", "QEVAP_DES_KW", "HIC_323605_DES_PCT_V1", "HV605_CHAR_V1", "HIC_323605_DES_PCT",
     "HV605_CHAR", "HV605_XT", "P_324E002_DES_BARA",
     "TT_323012_SPAN_C", "PT_329208_SPAN_BAR", "TIC_323012_KC_TABLE",
     "TIC_323012_KC", "TIC_323012_TI_S", "TIC_323012_SP_LO_C", "TIC_323012_SP_HI_C",

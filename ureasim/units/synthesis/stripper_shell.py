@@ -200,19 +200,20 @@ def shell_capacity_ratio(t_steam_c: float) -> float:
 # The tubes standing full (handoff B-104, decided 2026-10-22)
 # ======================================================================================
 
-def submerged_fraction(held_kg: float) -> float:
+def submerged_fraction(held_kg: float, tubes_full_kg: float = TUBES_FULL_KG) -> float:
     """The share of the tube bundle standing full of liquor [-], sigma.
 
     Process utility
     ---------------
     How far a full sump has backed up into the tubes: the liquor LT-322501's sump holds back above
-    it (B-103) over what the bundle holds standing full, 8 689 kg. Zero while the sump has room,
-    one when the tubes are full to their top and the reactor's liquor backs up behind them.
+    it (B-103) over what the bundle holds standing full, 10 663 kg on the 2,950-tube bundle the
+    plant runs (8 689 kg on V1's). Zero while the sump has room, one when the tubes are full to
+    their top and the reactor's liquor backs up behind them.
     """
-    return clamp(held_kg / TUBES_FULL_KG, 0.0, 1.0)
+    return clamp(held_kg / tubes_full_kg, 0.0, 1.0)
 
 
-def unsubmerged_factor(held_kg: float) -> float:
+def unsubmerged_factor(held_kg: float, tubes_full_kg: float = TUBES_FULL_KG) -> float:
     """What a partly submerged bundle still does, as a fraction of a dry one's [-], f_sub.
 
     Process utility
@@ -226,7 +227,7 @@ def unsubmerged_factor(held_kg: float) -> float:
 
     exactly 1.0 with nothing held back, so a sump with room is B-102's to the bit.
     """
-    return 1.0 - (1.0 - SUBMERGED_DUTY_FLOOR) * submerged_fraction(held_kg)
+    return 1.0 - (1.0 - SUBMERGED_DUTY_FLOOR) * submerged_fraction(held_kg, tubes_full_kg)
 
 
 def submerged_bottoms_c(t_bot_c: float, f_sub: float) -> float:

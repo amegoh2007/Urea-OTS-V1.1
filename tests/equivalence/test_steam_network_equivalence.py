@@ -26,7 +26,9 @@ field of V1's ``SteamState`` on every tick, and with every switch on it is ``==`
   * "loopsum" — HV-329601, PV-329207A, PV-329207C and HV-329602 wide open on their loop summaries'
     maximum cases (§4); V1's literal coefficients;
   * "gains" — PIC-329204 and the PIC-329207 trio on the table per cent of span, LIC-329503 and
-    LIC-329504 on their rows (decisions 10, 21); V1's 1.8 %/bar, its 24 %/bar retune, 2.5 / 90 s;
+    LIC-329504 on their rows (decisions 10, 21), LIC-329502 and PIC-329205 (a PI, 3.00 and 50 s on
+    0-16 bar g) on their faceplates in the plant DCS (decided 2026-10-28); V1's 1.8 %/bar, its
+    24 %/bar retune, 2.5 / 90 s, PIC-329205 proportional at 40 %/bar;
   * "trip" — trip 21.2's set point on PIC-329204 and HV-329601's forcing, as Uhde's functional
     diagram draws them (decisions 26, 27, 39): the port's `header_control`; V1 has neither;
   * "relief" — the drums' certified safety valves (decision 32); V1 has none;
@@ -135,13 +137,13 @@ def _v1_state(v1, decided, inputs):
              _relief_valve("SV32978", n.SV_322D001, n.N_SV_322D001))
     s.m_users_lp = inputs["users_lp"]
     s.raise_des = inputs["raise"] / 3600.0
+    s.split205, s.e205 = s.valve_admit9_pct, 0.0
     return s
 
 
 def _lic(v1, tag, s, prefix, direct, dt, decided, level):
     """V1 ``_level_loop``'s control, TRANSCRIBED; "gains" its table row."""
-    kc, ti = n.LIC_TUNING[tag] if ("gains" in decided and tag != "LIC-329502") else (
-        v1.LIC_KC, v1.LIC_TI)
+    kc, ti = n.LIC_TUNING[tag] if "gains" in decided else (v1.LIC_KC, v1.LIC_TI)
     sp, op, ep, mode = (getattr(s, prefix + k) for k in ("_sp", "_op", "_ep", "_mode"))
     e = (level - sp) if direct else (sp - level)
     if mode == "AUTO":
@@ -267,15 +269,24 @@ def _v1_steam(v1, s, dt, inputs, decided, trip=False):
     m_flash9 = flash9_frac * m_lv502
 
     # -- PIC-329205 split range (518-531) --
+    e9 = s.pic205_sp - s.P_9
     if s.pic205_mode == "AUTO":
         err9 = s.P_9 - s.pic205_sp
-        split = bias205 - g.K_PIC_9 * err9
+        if "gains" in decided:   # the plant DCS's PI on PT-329205's span (decided 2026-10-28)
+            s.split205 = min(max(s.split205 + n.PIC_329205_KC * (
+                (e9 - s.e205) + (dt / n.PIC_329205_TI_S) * e9), -100.0), 100.0)
+            split = s.split205
+        else:
+            split = bias205 - g.K_PIC_9 * err9
         if split >= 0.0:
             s.valve_admit9_pct = min(100.0, split)
             s.valve_letdown_pct = 0.0
         else:
             s.valve_admit9_pct = 0.0
             s.valve_letdown_pct = min(100.0, -split)
+    else:
+        s.split205 = s.valve_admit9_pct if s.valve_admit9_pct > 0.0 else -s.valve_letdown_pct
+    s.e205 = e9
     if trim:
         m_903 = sv.pv_329205a_kgs(s.valve_admit9_pct, s.P_SUP, s.P_9)
         m_ld9 = sv.pv_329205b_kgs(s.valve_letdown_pct, s.P_9, s.P_LP)

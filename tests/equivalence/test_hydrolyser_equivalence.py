@@ -169,6 +169,8 @@ def _v1_state(v1, decided=ALL):
     if "gains" in decided:
         s.PIC_328203["Kc"] = DECIDED_PIC203_KC
         s.FIC_329402["Kc"] = DECIDED_FIC402_KC
+        # TIC-328012 on its faceplate in the plant DCS (decided 2026-10-28): 0.20 on 0-200, 3000 s.
+        s.TIC_328012["Kc"], s.TIC_328012["Ti"] = 0.20 * 100.0 / 200.0, 3000.0
     return s
 
 

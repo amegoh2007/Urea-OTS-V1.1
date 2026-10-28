@@ -37,6 +37,12 @@ Handoff B-102, decided 2026-10-21
 The port bounds the split's duty by what the shell can transfer at the live steam's LMTD against
 the tube side's design profile (`stripper_shell`); V1 books whatever the split asks of the header.
 Sections 1 to 3 run the port with ``shell_bound=False``, V1's split; section 5 asserts both sides.
+
+The 2,950-tube replacement bundle, decided 2026-10-28 (decision 154)
+--------------------------------------------------------------------
+The plant runs the replacement Stamicarbon / Resta bundle (`data.unit_322e001_bundle`); V1 models
+Uhde's 2,600 tubes. Every comparison above runs the port on ``BUNDLE_V1``, V1's own bundle, so
+V1's bytes meet the port's; section 6 runs V1 against the port on ``BUNDLE_2950``.
 """
 
 from __future__ import annotations
@@ -48,6 +54,7 @@ import pytest
 from ureasim.core.stream import MW_COMP, mass_fractions_from_kmolh
 from ureasim.data import unit_322e001 as d
 from ureasim.data.unit_321 import CO2_DES_KGH
+from ureasim.data.unit_322e001_bundle import BUNDLE_2950, BUNDLE_V1
 from ureasim.data.unit_322r001 import REACTOR_FEED_HC_DES, REACTOR_FEED_NC_DES
 from ureasim.thermo.kinetics import urea_hydrolysis_k_m3_kmol_h
 from ureasim.thermo.service import ratio_shift_frac
@@ -139,8 +146,8 @@ def assert_same(v1_result: dict, result, where: str) -> None:
 
 
 def run_both(v1, co2_th, t_steam_c, p_bara, overflow_kmolh=None, nc=None, hc=None,
-             t_feed=None, level=None, shell_bound=False):
-    """Drive both implementations with one set of inputs."""
+             t_feed=None, level=None, shell_bound=False, bundle=BUNDLE_V1):
+    """Drive both implementations with one set of inputs, the port on V1's bundle unless told."""
     kwargs_v1 = {}
     kwargs_new = {}
     if overflow_kmolh is not None:
@@ -161,6 +168,7 @@ def run_both(v1, co2_th, t_steam_c, p_bara, overflow_kmolh=None, nc=None, hc=Non
     # V1's unbounded split: the shell's duty bound (B-102, decided 2026-10-21) is asserted both
     # ways in the last section.
     kwargs_new["shell_bound"] = shell_bound
+    kwargs_new["bundle"] = bundle
     return (v1["stripper_322e001"](co2_th, t_steam_c, p_bara, **kwargs_v1),
             stripper_322e001(co2_th, t_steam_c, p_bara, **kwargs_new))
 
@@ -183,7 +191,14 @@ def test_the_design_constants_are_the_same_numbers(v1):
     """
     assert d.STEAM_T_DES_C == v1["STRIP_STEAM_T_DES_C"]
     assert d.FEED_DES_KGH == v1["STRIP_FEED_DES_KGH"]
-    assert HYDROLYSIS_GROUP_DES == v1["STRIP_HYD_GROUP_DES"]
+    # The rate group at design on V1's bundle is V1's; the port's own is on the replacement's
+    # larger holdup (decision 154), and the extent is a ratio of each against its own.
+    v_liq_des_v1 = BUNDLE_V1.v_tubes_m3 + BUNDLE_V1.v_sump_m3 * (d.LEVEL_SP_DES_PCT / 100.0)
+    assert hydrolysis_rate_group(d.HYDROLYSIS_T_DES_C, d.FEED_DES_KMOLH["Urea"],
+                                 d.FEED_DES_KMOLH["H2O"], d.VDOT_DES_M3H,
+                                 v_liq_des_v1) == v1["STRIP_HYD_GROUP_DES"]
+    assert HYDROLYSIS_GROUP_DES == pytest.approx(
+        v1["STRIP_HYD_GROUP_DES"] * d.V_LIQ_DES_M3 / v_liq_des_v1, rel=1e-12)
     assert DUTY_RAW_DES_KW == v1["STRIP_DUTY_RAW_DES_KW"]
     assert TOP_DES_KMOLH_TOTAL == v1["STRIP_TOP_MOL_DES"]
     assert TOP_DES_NH3_KMOLH == v1["STRIP_TOP_NH3_DES"]
@@ -382,7 +397,7 @@ def test_below_the_flooding_limit_the_switch_is_inert(v1, v1_verbatim):
         a = v1_verbatim["stripper_322e001"](CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA,
                                            overflow_kmolh=overflow)
         b = stripper_322e001(CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA, overflow_kmolh=overflow,
-                             shell_bound=False)
+                             shell_bound=False, bundle=BUNDLE_V1)
         assert b.dt_flood == 0.0
         assert_same(a, b, f"overflow x{scale}")
 
@@ -399,10 +414,11 @@ def test_a_flooded_stripper_tends_to_its_liquor_decided_divergence(
     is the same on both sides; its efficiency knockdown moves by under 0.4 %, through the
     carbamate the cooler bottoms decompose, which is its denominator."""
     from tests.units.synthesis.test_stripper import overflow_at_flood_fraction
-    overflow = overflow_at_flood_fraction(fraction)
+    overflow = overflow_at_flood_fraction(fraction, BUNDLE_V1)
     a = v1_verbatim["stripper_322e001"](CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA,
                                        overflow_kmolh=overflow)
-    b = stripper_322e001(CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA, overflow_kmolh=overflow)
+    b = stripper_322e001(CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA, overflow_kmolh=overflow,
+                         bundle=BUNDLE_V1)
     assert (a["dT_flood"], a["dT_load"]) == (b.dt_flood, b.dt_load)
     assert abs(a["g_flood"] - b.g_flood) < 0.004
     assert a["dT_flood"] == pytest.approx(flood, abs=0.01)
@@ -489,3 +505,71 @@ def _case_inputs(v1, case: dict):
     if "scale" in case:
         kwargs["overflow_kmolh"] = {k: v * case["scale"] for k, v in d.FEED_207_KMOLH.items()}
     return case.get("co2_th", CO2_DES_TH), t_steam, case.get("p_bara", d.P_DES_BARA), kwargs
+
+
+# ======================================================================================
+# 6. The decided divergence: the 2,950-tube replacement bundle (2026-10-28), both sides
+# ======================================================================================
+# The plant runs the replacement (decision 154): 2,950 tubes on a 26 mm bore, 159.9 kg/h each at
+# the flooding limit, 9.40 m3 of tubes over a 2,425 mm channel, a shell 1.142 times V1's. The PFD
+# stays the anchor, so the design point is V1's; the equipment's own limits move.
+
+#: The fields the bundle moves at the design point: the flooding fraction and the load per tube.
+BUNDLE_FIELDS = ("flood_frac", "flood_kgh_tube")
+
+
+def test_on_the_replacement_the_design_point_is_v1s(v1):
+    """V1's 2,600 tubes against the port's 2,950: every field the same to the bit but the two the
+    tube count divides — 0.7448 of V1's flooding limit, 0.5951 of the replacement's."""
+    a, b = run_both(v1, CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA, bundle=BUNDLE_2950)
+    for v1_key, attr in SCALARS.items():
+        if v1_key not in BUNDLE_FIELDS:
+            assert a[v1_key] == getattr(b, attr), v1_key
+    for v1_key, attr in VECTORS.items():
+        assert a[v1_key] == getattr(b, attr), v1_key
+    assert a["flood_frac"] == pytest.approx(0.7448, abs=1e-4)
+    assert b.flood_frac == pytest.approx(0.5951, abs=1e-4)
+    assert a["flood_kgh_tube"] / b.flood_kgh_per_tube == pytest.approx(2950 / 2600, rel=1e-12)
+
+
+def test_where_v1s_bundle_floods_the_replacement_strips_decided_divergence(v1):
+    """At 110 % of V1's flooding limit V1's flood rise is 3.5 C — under the 10.9 C load swing that
+    sets both bottoms (B-9's one ceiling) — and its efficiency knocks down; the replacement runs at
+    0.879 of its own limit, strips in full, and lifts more ammonia overhead."""
+    from tests.units.synthesis.test_stripper import overflow_at_flood_fraction
+    overflow = overflow_at_flood_fraction(1.10, BUNDLE_V1)
+    a, b = run_both(v1, CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA, overflow_kmolh=overflow,
+                    bundle=BUNDLE_2950)
+    assert a["dT_flood"] == pytest.approx(3.5, abs=0.01) and a["g_flood"] < 1.0
+    assert b.flood_frac == pytest.approx(1.10 * 2600 * 145.0 / (2950 * 145.0 * 1.04 ** 2.5),
+                                         rel=1e-9)
+    assert b.dt_flood == 0.0 and b.g_flood == 1.0
+    assert b.t_bot == a["T_bot"]
+    assert b.top_kmolh["NH3"] > a["top_kmolh"]["NH3"]
+
+
+@pytest.mark.parametrize("case", [{"scale": 1.3}, {"p_mp": 16.0}, {"nc": 3.4}])
+def test_the_replacements_shell_pays_more_of_an_overload_decided_divergence(v1, case):
+    """B-102's bound on the two bundles, below either's flooding limit: what the split asks is
+    V1's on both; the replacement's shell, 1.142 times V1's, scales the lift back less."""
+    co2_th, t_steam, p_bara, kwargs = _case_inputs(v1, case)
+    a, old = run_both(v1, co2_th, t_steam, p_bara, shell_bound=True, **kwargs)
+    _, new = run_both(v1, co2_th, t_steam, p_bara, shell_bound=True, bundle=BUNDLE_2950,
+                      **kwargs)
+    assert new.duty_demand_raw_kw == old.duty_demand_raw_kw == a["duty_raw_kw"]
+    assert new.shell_capacity_ratio == pytest.approx(
+        old.shell_capacity_ratio * BUNDLE_2950.shell_capacity, rel=1e-12)
+    assert old.shell_lambda < new.shell_lambda <= 1.0
+    assert new.duty_raw_kw > old.duty_raw_kw
+
+
+def test_the_replacements_larger_bundle_damps_the_levels_reach_decided_divergence(v1):
+    """The hydrolysis and biuret extents ride the holdup, tubes plus the sump to its level: on
+    the replacement the tubes are a larger share of it, so an empty or a full sump moves them
+    less than on V1's bundle — and at the design level both are the PFD's extent."""
+    for level in (0.0, 100.0):
+        a, b = run_both(v1, CO2_DES_TH, d.STEAM_T_DES_C, d.P_DES_BARA, level=level,
+                        bundle=BUNDLE_2950)
+        assert abs(b.xi_hydrolysis / d.XI_HYDROLYSIS_DES - 1.0) < abs(
+            a["xi_hyd"] / d.XI_HYDROLYSIS_DES - 1.0)
+        assert abs(b.xi_biuret / d.XI_BIURET_DES - 1.0) < abs(a["xi_biu"] / d.XI_BIURET_DES - 1.0)

@@ -8,10 +8,10 @@ built, B-18, B-37 and B-20 decided and closed, trip 21.2's hand switches and AI-
 screens, the plant DCS's readback applied — the cold start reaches 79.7 bar a in 16 000 s, still
 short of the start-up band (session 50); B-94 closed on PFD 734's departure form, the steady state
 3080 of 3188, 322E003 on its own liquor and a full sump, 323P008's trip from AC4 PC23, B-95 closed
-as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70); an external report on five data-gap rows audited against the code, 322C001's head volume and the urea-melt Henry constant closed (decision 153, session 71)
+as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70); an external report on five data-gap rows audited against the code, 322C001's head volume and the urea-melt Henry constant closed (decision 153, session 71); 322E001 on its 2,950-tube replacement (decision 154), the turnaround's plugged tubes derating 322E002, 322E003 and 323E010 (decision 155), five loops and AI-329701's range on the plant DCS's faceplates of 24 October 2026 (decision 156), `Scenarios6.docx` put to the plant (session 72); the plugged tubes' conductances re-anchored on the bundle in service (decision 157), LV-322501's failure case read tick by tick — SV32351 / SV32352 lift at their set (decision 158) — the vacuum bleeds kept on the 1750 MTPD basis (decision 159), TIC-328008 and FFIC-335406 on their faceplates (decision 160), the dynamic audits built and their one finding, B-117, signed off as built, `Scenarios6.docx` 47 of 71; Sections A, B and C empty, 11 data gaps open (sessions 73 and 74)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `D:\Work\Urea Simulation` (V1 — reference only, never edited from here)
-**Last updated:** 2026-10-23 (session 71)
+**Last updated:** 2026-10-28 (sessions 73 and 74)
 
 ---
 
@@ -803,6 +803,22 @@ steam system (`steam/`).
       322C001's bottom head volume and the urea-melt Henry constant closed, the Neldisc row
       kept linear and annotated; 13 data gaps open (session 71, decision 153, As-Built Part
       LXXXVI)
+- [x] 322E001 on its 2,950-tube replacement, V1's bundle on the harness switch (decision 154); the
+      plugged tubes of 322E002, 322E003 and 323E010 derating their conductances (decision 155);
+      AI-329701's range and five tunings from the faceplate photographs (decision 156); the
+      `Scenarios6.docx` survey, 45 of 71; B-113 to B-116 raised; 12 data gaps open (session 72,
+      As-Built Part LXXXVII)
+- [x] The full suite green on session 72's changes, every group (2026-10-28): the stream inspector
+      rounding as V1's ``toFixed`` (a defect the audit found), the synthesis harness keeping the
+      LP side's session-72 changes on its switches, the design-seed tests on the clean bundles
+      (`build_plant(plugged=False)`), the documented values the DCS rows moved re-measured
+- [x] B-113 to B-116 decided and built (decisions 157 to 160); the dynamic audits built,
+      `tests/engine/test_dynamic_audit.py`, 14 tests — the holdups' balances integrated over a
+      disturbance, the trip paths and the updated controllers' transfers, a FAST shutdown with no
+      node ringing, freeze-snapshot-reload-resume under FAST and a seeded malfunction fuzz; their
+      one finding, B-117, signed off as built; step responses measured on TIC-328008's row (no plant
+      trend of the loop to fit); `Scenarios6.docx` 47 of 71; 11 data gaps open (sessions 73 and 74,
+      As-Built Part LXXXVIII)
 
 ---
 
@@ -4864,6 +4880,69 @@ LXXXVI):
 No code changed; `tests/docs` green. `handoff.md`'s Sections A, B and C stay empty; 13 open data
 gaps remain.
 
+### Session 72 — the replacement stripper, the plugged tubes, the gap photographs, Scenarios6
+
+Five tasks from the process engineer (As-Built Part LXXXVII):
+
+* **322E001 replaced** (decision 154). The vendor archive's `New Stripper` folder read in full:
+  Resta's job 6355 for Stamicarbon (Z524-H1269, built 2025) — 2,950 tubes 31 x 2.5 mm minimum wall,
+  6,000 mm tubesheet to tubesheet, 1,724 m2, 28.83 m3 tube side, a 2,425 mm bottom channel, no level
+  taps (the radar nozzle N17 blinded); Stamicarbon's process data sheet A4-101124, 41,738 kW, no
+  coefficient or corrected MTD (data gap kept). `data/unit_322e001_bundle.py` carries both bundles;
+  the units take the bundle the plant runs, the harnesses V1's. The design seed does not move.
+* **Plugged tubes** (decision 155). 322E002 2,929 tubes (60 plugged), 322E003 525 (16), 323E010
+  1,087 (15), each from its Uhde design data sheet (scans, read from the page images); the
+  conductances derated by the share in service, the plugged bores out of the loop's volume. The
+  derated plant leaves the PFD seed (322E002's saturation 0.93 after 30 minutes): B-113 raised.
+* **The gap photographs** (decision 156). 26 photographs of 22-24 October 2026: AI-329701's range
+  0-30 uS/cm (its data-gap row closed); TIC-323012, FIC-328404, PIC-329205 (a PI on its split),
+  LIC-329502 and TIC-328012 on their faceplates; TIC-328008 and FFIC-335406 raised as B-116; the
+  vacuum bleeds' trend (B-115); LT-323503's and TT-322015's limits confirmed, no hysteresis shown.
+* **`Scenarios6.docx`** put to the plant (`tests/phase7/seal_loss.py`, `run_seal_loss.py`): four
+  cases, 45 of 71 claims as claimed; LV-322501 failing open blows through 31.5 t/h and does not lift
+  323C003's safety valves, sized on 60 t/h each (B-114).
+* **The audit**: pyflakes clean on `ureasim`, `tests`, `tools` and `run.py`; every module at or below
+  600 lines; nothing below `hmi` imports PyQt6; the check-valve audit and the native-platform screen
+  geometry green; the full suite green. One defect found and fixed: the stream inspector rounded a
+  tie to even where V1's ``toFixed`` rounds it up (PFD 709's 3 342.5 kg/h read 3342, not 3343).
+  The synthesis harness now keeps every LP-side change of the session on its switches; the
+  design-seed tests run on the clean bundles. The dynamic audits were not run.
+
+### Sessions 73 and 74 — B-113 to B-117 closed, and the dynamic audits
+
+The process engineer's decisions on session 72's four items, the dynamic audits of the Phase 7
+checklist, and the close-out (As-Built Part LXXXVIII):
+
+* **B-113 (b)** (decision 157). The plugged tubes' conductances re-anchored on the bundle in
+  service, so the PFD's design point holds by construction: session 72's derate removed with the
+  units' `plugged` fields and `build_plant(plugged=)`; the tube counts, the active surfaces and the
+  plugged bores out of the loop's vessels kept. The plant's first tick is the PFD to the bit
+  (322E002 170.0 C and saturated, 322E003 at its whole demand, 323E010's chest 2.5 bar a).
+* **B-114** (decision 158), measured and signed off as built. V1 and the port already scale
+  LV-322501's blow-through by the stroke over its design stroke, and SV32351 / SV32352 already pop
+  at 6.010 bar a; read every tick, LV-322501 forced wide open lifts them at 91.0 s, 12.6 s lifted,
+  51.4 t/h at the peak — the survey's 5 s samples had missed every lift, and now read the peak
+  between samples. The 31.5 t/h ceiling is the sump's level standing in its seal band.
+* **B-115 (a)** (decision 159). The 8-10 October trend is the plant at 112.5 % load; the bleeds stay
+  on the 1750 MTPD design basis; the data-gap row closed.
+* **B-116** (decision 160). TIC-328008 on its faceplate's 1.00 and 60 s, carried from wt% onto the
+  model's mol% by 737's local slope (84.59 kg/h of reflux per mol%); FFIC-335406 a ratio station on
+  its faceplate's limits, the PFD's ratio its seed; V1's tunings on the harnesses; the tuning row
+  narrowed to FIC-335405.
+* **The dynamic audits** (`tests/engine/test_dynamic_audit.py`, 14 tests, green): the holdups close
+  on their flows to rounding through a multi-unit disturbance; every trip initiator's path; the
+  updated controllers' anti-windup and transfers; a FAST shutdown with LV-322501 wide open, no node
+  ringing and every evaporator stage solved; a freeze-snapshot-reload-resume bit-exact; a seeded fuzz
+  of simultaneous malfunctions. One finding, **B-117**: TIC-328008, as every cascade master V1's
+  `_ctrl_ipd` builds, integrates while its slave is out of cascade (FIC-328404 steps 1.5297 to
+  0.8381 m3/h on re-entry after five minutes in AUTO) — signed off as built (decision 120's class).
+* **`Scenarios6.docx`** re-run: 47 of 71 (45). S6-2 gained three — PI-322E002 rising over 15-45
+  minutes, the reactor feed's N/C, TT-324001 climbing — and lost 323F004's early surge; S6-1 gained
+  323D011 draining and lost the top gas falling: the re-anchored plant no longer drifts from its seed
+  under the control run.
+* **Session 74**: the four documents; the full suite and pyflakes; the temporary resume files
+  deleted; Sessions 72 to 74 committed.
+
 ## 5. Design decisions on record
 
 1. **PyQt6, not PyQt5.** Qt6 is current, has proper high-DPI scaling for the 1366×720 stage,
@@ -5577,3 +5656,57 @@ gaps remain.
      vapour vector on B-58's melt (decisions 42, 122) the model. The Neldisc row stays open on
      decision 108's linear chord: the Neles bulletins the report tabulates are in no archive and
      miss the sheets' printed points.
+154. **322E001 on its 2,950-tube replacement** (2026-10-28, session 72, the process engineer): the
+     equipment model runs the bundle installed at the last turnaround — Resta 6355 for Stamicarbon,
+     2,950 tubes 31 x 2.5 mm on 6.000 m, 1,724 m2, 28.83 m3 tube side, a 2,425 mm bottom channel —
+     while the 1750 MTPD PFD stays the flowsheet's anchor (decision 47). The flooding limit per tube
+     scales from V1's 145 kg/h on Wallis's counter-current law, as D^2.5 (159.9 kg/h on the 26 mm
+     bore); the shell's capacity is V1's design duty times the two process datasheets' U.A ratio,
+     1.142 (1,325.7 against 1,160.5 kW/K, each on its own terminal temperatures); the holdup, the
+     standing-full mass (10,663 kg), the sump's span and the loop's vessel volume are the
+     replacement's. V1's 2,600-tube bundle stays on every harness's switch.
+155. **The plugged tubes derate their exchangers** (2026-10-28, session 72, the process engineer):
+     60 of 322E002's 2,929 tubes, 16 of 322E003's 525 and 15 of 323E010's 1,087 plugged at the last
+     turnaround; each conductance is its clean value times the share in service (0.97952, 0.96952,
+     0.98620), the coefficient held, and the plugged bores leave the loop's vessel volume. The clean
+     bundles stay on the harnesses' switches (`plugged=False`). The plugged plant leaves the PFD's
+     seed (B-113).
+156. **The plant DCS's faceplates of 24 October 2026 are tuning rows** (2026-10-28, session 72,
+     decisions 76, 77 and 103's classes): TIC-323012 1.00 and 300 s (on its 0-160 C and PT-329208's
+     0-6 bar), FIC-328404 1.00 and 200 s on 0-8.0 m3/h, PIC-329205 3.00 and 50 s on 0-16 bar g — a PI
+     on its split where V1's is proportional at 40 %/bar — LIC-329502 3.00 and 250 s with its
+     derivative off, TIC-328012 0.20 and 3000 s on 0-200; AT-329701's object display gives
+     AI-329701's present range, 0-30 uS/cm. V1's tunings stay on the harnesses.
+157. **The plugged tubes re-anchored on the bundle in service** (2026-10-28, session 73, handoff
+     B-113, option (b); amends decision 155): each of the three conductances is back-solved on the
+     PFD's design point and the plant runs that point with its tubes plugged, so the conductance
+     holds on the tubes in service at a coefficient 1 / f_tubes above the clean bundle's
+     (`PluggedBundle.u_service_ratio`); the tube counts, the active surfaces and the plugged bores
+     out of the loop's vessels (245.61 m3) stay. The plant's first tick is the PFD to the bit and
+     thirty minutes hold the clean basis to the printed digits. V1's clean vessel volume stays on
+     the harnesses' switch (`LoopPressure.vessels_m3`).
+158. **LV-322501's failure case read tick by tick** (2026-10-28, session 73, handoff B-114; signed
+     off as built, session 74): V1 and the port already scale the blow-through by the stroke over
+     its design stroke (V1 `main.py` 7633, `stripper_sump.py`), and SV32351 / SV32352 already pop at
+     their 6.010 bar a set on the sheets' 1.010 bar atmosphere (decision 71), reseating at 5.51; no
+     relation changes. LV-322501 forced wide open lifts them 91.0 s on, 12.6 s lifted, 51.4 t/h at the
+     peak, PT-323201 to 6.027 bar a; the 31.5 t/h ceiling is the sump's level standing in its seal
+     band (1.2 %, the nozzle 42 % covered by the bottoms still arriving). A Phase 7 survey reads a
+     relief, an event shorter than its sample, on its peak between samples.
+159. **The vacuum bleeds on the 1750 MTPD design basis** (2026-10-28, handoff B-115, option (a);
+     decisions 6 and 47): the 8-10 October 2026 trend is the plant at 112.5 % load on deeper set
+     points (-0.72 and -0.90 bar g, HIC-329605 at 91.5 %, the bleeds 0.2 and 0.5 %); the model keeps
+     the PFD's design strokes (PV-324202 61.07 %, PIC-324203 92.0 %). The bleed valves' data-gap row
+     is closed.
+160. **TIC-328008 and FFIC-335406 on their faceplates** (2026-10-28, handoff B-116, options (b) and
+     (a); decisions 10, 21, 26, 77 and 103's classes): TIC-328008's 1.00 on 0-100 wt% water and 60 s,
+     its output on FIC-328404's 0-8.0 m3/h in mass, carried onto the model's mol% PV by 737's local
+     slope at the PFD's composition, d(wt%)/d(mol%) = 0.96559 — 84.59 kg/h of reflux per mol%;
+     FFIC-335406 a ratio station, RAT 0 to 0.0080, OUT 0 to 0.80 t/h, FIC-335405's set point the
+     ratio times the melt, its ratio tracking the achieved one while FIC-335405 is out of cascade.
+     V1's tunings and V1's PI master (``ffic_335406(station=False)``) stay on the harnesses. Signed
+     off as built (session 74): the design seed is the PFD's ratio, 694 / 85 405 = 0.0081260, which
+     closes the design at 617.0722 kg/h to the bit, 1.6 % above RAT H; an operator's ratio and a mode
+     transfer are held to RAT H. B-117, the dynamic audits' finding — TIC-328008, as every cascade
+     master V1's ``_ctrl_ipd`` builds (`ProcessLoop`), integrating while its slave is out of cascade,
+     so FIC-328404 steps on its return — signed off as built (decision 120's class).

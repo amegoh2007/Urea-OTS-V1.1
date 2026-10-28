@@ -79,22 +79,28 @@ HYDROLYSIS_GROUP_DES = hydrolysis_rate_group(
 
 
 def hydrolysis_extent(t_bot_c: float, urea_kmolh: float, h2o_kmolh: float,
-                      vdot_m3h: float, v_liq_m3: float) -> float:
+                      vdot_m3h: float, v_liq_m3: float,
+                      v_liq_des_m3: float = V_LIQ_DES_M3) -> float:
     """Urea hydrolysed in the tubes [kmol/h]: the PFD extent times the rate law's departure.
 
     Process utility
     ---------------
     The holdup tracks the LIVE sump level, so a level or throughput excursion moves the
     extent. The extent can never exceed either reagent that is actually present.
+    ``v_liq_des_m3`` is the design holdup of the bundle the stripper runs (decision 154): the
+    departure is taken against the same bundle's design, so it is exactly 1.0 at design on
+    either bundle.
     """
     group = hydrolysis_rate_group(t_bot_c, urea_kmolh, h2o_kmolh, vdot_m3h, v_liq_m3)
-    xi_hyd_raw = XI_HYDROLYSIS_DES * (group / HYDROLYSIS_GROUP_DES
-                                      if HYDROLYSIS_GROUP_DES > 0.0 else 1.0)
+    group_des = (HYDROLYSIS_GROUP_DES if v_liq_des_m3 == V_LIQ_DES_M3 else hydrolysis_rate_group(
+        HYDROLYSIS_T_DES_C, _FEED_DES_KMOLH["Urea"], _FEED_DES_KMOLH["H2O"], VDOT_DES_M3H,
+        v_liq_des_m3))
+    xi_hyd_raw = XI_HYDROLYSIS_DES * (group / group_des if group_des > 0.0 else 1.0)
     return max(min(xi_hyd_raw, urea_kmolh, h2o_kmolh), 0.0)
 
 
 def biuret_extent(t_bot_k: float, urea_kmolh: float, vdot_m3h: float, v_liq_m3: float,
-                  urea_after_hyd: float) -> float:
+                  urea_after_hyd: float, v_liq_des_m3: float = V_LIQ_DES_M3) -> float:
     """Biuret formed in the tubes, 2 Urea -> Biuret + NH3 [kmol/h].
 
     Process utility
@@ -108,5 +114,5 @@ def biuret_extent(t_bot_k: float, urea_kmolh: float, vdot_m3h: float, v_liq_m3: 
                   * math.exp((BIURET_EA_JMOL / BIURET_R_GAS_J)
                              * (1.0 / BIURET_T_DES_K - 1.0 / t_bot_k))
                   * (urea_kmolh / FEED_UREA_DES_KMOLH) ** 2
-                  * (VDOT_DES_M3H / vdot_m3h) * (v_liq_m3 / V_LIQ_DES_M3))
+                  * (VDOT_DES_M3H / vdot_m3h) * (v_liq_m3 / v_liq_des_m3))
     return max(min(xi_biu_raw, 0.5 * urea_after_hyd), 0.0)

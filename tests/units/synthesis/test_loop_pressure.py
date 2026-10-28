@@ -18,6 +18,7 @@ from ureasim.data.unit_322_loop import (
     SYN_LOOP_OUT_DES_KGH,
     SYN_LOOP_RESID_DES_KGH,
     SYN_LOOP_V_M3,
+    SYN_LOOP_V_V1_M3,
 )
 from ureasim.data.unit_322e001 import LEVEL_SP_DES_PCT
 from ureasim.data.unit_322e002 import LEVEL_NLL_PCT
@@ -55,24 +56,27 @@ def _design_step(node: LoopPressure, uncond=0.0, cool=1.0, frac=1.0, extra_in=0.
 
 
 def test_the_node_is_the_loops_vapour_and_the_reactor_liquors_buffering():
-    """B-77 (b), decided 2026-10-09: 241.7 m3 of vessels, 89.3 m3 of vapour over the design
-    liquids, the gas's 0.763 compressibility on the PFD's 113.3 kg/m3 — 71.6 kg/bar — and PFD
-    207's buffering, 0.01536 kg/(kg.bar), 2088 kg/bar on the design holdup. An empty loop holds
-    193.8 kg/bar of vapour and nothing buffers it."""
-    assert SYN_LOOP_V_M3 == pytest.approx(241.7, abs=1e-9)
+    """B-77 (b), decided 2026-10-09: 245.61 m3 of vessels — 241.7 in V1's plant, 322E001's
+    replacement holding 28.83 m3 to its 24.7 (decision 154) and 0.222 m3 of plugged bores out of
+    322E002 and 322E003 (decision 155) — 93.2 m3 of vapour over the design liquids, the gas's 0.763
+    compressibility on the PFD's 113.3 kg/m3 — 74.7 kg/bar — and PFD 207's buffering, 0.01536
+    kg/(kg.bar), 2088 kg/bar on the design holdup. An empty loop holds 196.9 kg/bar of vapour and
+    nothing buffers it."""
+    assert SYN_LOOP_V_M3 == pytest.approx(245.6078, abs=1e-4)
+    assert SYN_LOOP_V_V1_M3 == pytest.approx(241.7, abs=1e-9)
     assert Z_GAS_DES == pytest.approx(0.76273, abs=1e-5)
     assert B_207_PER_BAR == pytest.approx(0.0153639, abs=1e-7)
-    assert SYN_LOOP_V_M3 - LIQ_DES[1] == pytest.approx(89.250, abs=1e-3)
+    assert SYN_LOOP_V_M3 - LIQ_DES[1] == pytest.approx(93.172, abs=1e-3)
     mw = gas_mw(OFFGAS_DES_KMOLH)
-    assert vapour_capacity_kg_per_bar(LIQ_DES[1], mw, 183.0) == pytest.approx(71.564, abs=1e-3)
+    assert vapour_capacity_kg_per_bar(LIQ_DES[1], mw, 183.0) == pytest.approx(74.709, abs=1e-3)
     assert B_207_PER_BAR * M_LIQ_DES_KG == pytest.approx(2088.01, abs=0.01)
-    assert vapour_capacity_kg_per_bar(0.0, mw, 183.0) == pytest.approx(193.805, abs=1e-3)
+    assert vapour_capacity_kg_per_bar(0.0, mw, 183.0) == pytest.approx(196.938, abs=1e-3)
     assert loop_liquid(0.0, 0.0, 0.0, 0.0) == (0.0, 0.0)
 
 
 def test_mass_the_liquid_takes_is_not_pressure():
     """10 t/h more in, all of it gained by the reactor's holdup: V1's node rises 6.7 bar an hour;
-    here only the vapour the liquid displaces is compressed: 10 m3 of the 89 m3, 0.51 bar in the
+    here only the vapour the liquid displaces is compressed: 10 m3 of the 93 m3, 0.51 bar in the
     hour."""
     node = LoopPressure()
     m_r = M_LIQ_DES_KG
@@ -82,7 +86,7 @@ def test_mass_the_liquid_takes_is_not_pressure():
     assert r.dm_liq_kgh == pytest.approx(10000.0 * (1.0 - r.m_liq_kg * 0.0) - 10000.0 / 990.0
                                          * 140.7 * gas_mw(OFFGAS_DES_KMOLH)
                                          / (Z_GAS_DES * 0.0831446261815324 * 456.15), rel=1e-3)
-    assert node.p_syn_bara - 140.7 == pytest.approx(0.5116, abs=1e-4)
+    assert node.p_syn_bara - 140.7 == pytest.approx(0.5108, abs=1e-4)
 
 
 def test_the_residual_is_v1s_and_holds_the_design():
@@ -106,7 +110,7 @@ def test_without_the_credit_the_residual_climbs_the_loop():
 
 def test_a_liquor_above_its_bubble_point_buffers_its_saturation_fraction():
     """B-91 (a), decided 2026-10-10: the reactor liquor's buffering taken at the liquor's
-    saturation fraction — at 0.5, half the 2088 kg/bar; at 0, the vapour's 71.6 kg/bar alone, so a
+    saturation fraction — at 0.5, half the 2088 kg/bar; at 0, the vapour's 74.7 kg/bar alone, so a
     loop below its melt's bubble pressure pressurises on its vapour."""
     node = LoopPressure()
     c = {f: node.step(SYN_LOOP_IN_DES_KGH, 0.0, 0.0, SYN_LOOP_OUT_DES_KGH, 0.0, 0.0, 0.0, 1.0, 1.0,
@@ -114,7 +118,7 @@ def test_a_liquor_above_its_bubble_point_buffers_its_saturation_fraction():
     assert c[1.0].c_buf_kg_per_bar == B_207_PER_BAR * M_LIQ_DES_KG
     assert c[0.5].c_buf_kg_per_bar == pytest.approx(0.5 * B_207_PER_BAR * M_LIQ_DES_KG, rel=1e-15)
     assert c[0.0].c_buf_kg_per_bar == 0.0
-    assert c[0.0].c_vap_kg_per_bar == pytest.approx(71.564, abs=1e-3)
+    assert c[0.0].c_vap_kg_per_bar == pytest.approx(74.709, abs=1e-3)
 
 
 def test_the_loop_mass_fraction():

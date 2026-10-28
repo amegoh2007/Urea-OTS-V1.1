@@ -3,7 +3,7 @@
 
 Pinned: clean condensate reads pure water; the ammonia and CO2 a tube leak puts into the steam
 read as ammonium bicarbonate on the ions' limiting conductivities, the lesser of the two pairing;
-the transmitter reads the top of its 0-10 uS/cm range past it; on the plant, a 322E002 tube leak of
+the transmitter reads the top of its 0-30 uS/cm range past it; on the plant, a 322E002 tube leak of
 0.1 kg/h already reads 2.2 uS/cm and 10 t/h pegs the analyser (handoff B-90, decided 2026-10-09);
 its high and high-high alarms on the plant DCS's 15 and 18 uS/cm (read back 2026-10-13).
 """
@@ -44,14 +44,15 @@ def test_the_lesser_of_ammonia_and_co2_pairs_as_ammonium_bicarbonate():
 
 
 def test_the_transmitter_reads_the_top_of_its_range_past_it():
-    assert AI_329701_SPAN_US_CM == 10.0
+    assert AI_329701_SPAN_US_CM == 30.0
     assert ai_329701_reading(2.5) == (2.5, False)
-    assert ai_329701_reading(250.0) == (10.0, True)
+    assert ai_329701_reading(18.0) == (18.0, False)
+    assert ai_329701_reading(250.0) == (30.0, True)
 
 
 def test_the_alarms_stand_on_the_plant_dcs_set_points():
     """H1 15 and H2 18 uS/cm (the plant DCS, read back 2026-10-13), on the condensate's
-    conductivity: both above the 0-10 uS/cm range the archive gives the transmitter."""
+    conductivity, inside the transmitter's present 0-30 uS/cm."""
     assert (AI_329701_H1_US_CM, AI_329701_H2_US_CM) == (15.0, 18.0)
     assert ai_329701_alarms(14.9) == (False, False)
     assert ai_329701_alarms(15.1) == (True, False)
@@ -60,8 +61,8 @@ def test_the_alarms_stand_on_the_plant_dcs_set_points():
 
 def test_a_tube_leak_reads_on_ai_329701():
     """At design the analyser reads pure water; a bare trigger leaks the decided 10 t/h and pegs
-    it (216 624 uS/cm measured, past the dilute law's range); 0.1 kg/h reads 2.22 uS/cm (2.2232
-    before the loop's vapour inventory, B-77 (b))."""
+    it at its 0-30 uS/cm range's top (216 624 uS/cm measured, past the dilute law's range); 0.1 kg/h
+    reads 2.22 uS/cm (2.2232 before the loop's vapour inventory, B-77 (b))."""
     sched = Scheduler(*build_plant())
     sched.tick()
     u = sched.results["329-USERS"]
@@ -70,7 +71,7 @@ def test_a_tube_leak_reads_on_ai_329701():
     sched.tick()
     u = sched.results["329-USERS"]
     assert u.kappa_329d001_us_cm == pytest.approx(216624.0, rel=1e-4)
-    assert (u.ai_329701_us_cm, u.ai_329701_over) == (10.0, True)
+    assert (u.ai_329701_us_cm, u.ai_329701_over) == (30.0, True)
     assert (u.ai_329701_h1, u.ai_329701_h2) == (True, True)
     assert apply_command(sched.plant, {"type": "trigger_fault", "id": "322E002",
                                        "rate": 0.0001}).ok

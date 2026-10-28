@@ -12,9 +12,10 @@ Five provenances appear, and the difference between them is the whole point of t
 
 * **PFD / design basis** — the stream-207 reactor overflow, the design split fractions, the
   design duty, the product temperatures and the design bottoms flow. These are the anchor.
-* **licensor datasheet** — the tube bundle. Uhde DDS UD-AU-322-DZ-0003-003 rev 00, page 3.
-  The DDS is self-consistent: its tabulated surface area confirms its own tube count to
-  0.018 %, which is why the geometry can be trusted to carry a hydraulic limit.
+* **vendor drawings** — the tube bundle, `data.unit_322e001_bundle`: the 2,950-tube replacement
+  (Stamicarbon / Resta 6355) the plant runs, and V1's 2,600-tube Uhde bundle (DDS
+  UD-AU-322-DZ-0003-003 rev 00, page 3), which the equivalence harnesses run. Each drawing set
+  is self-consistent: its tabulated surface confirms its own tube count to 0.02 %.
 * **open literature** — the flooding limit, the carbamate and hydrolysis enthalpies, and the
   biuret activation energy. Each is cited at its constant.
 * **field calibration** — LV-322501's opening at design, from a DCS startup trend, which
@@ -34,6 +35,7 @@ from ureasim.data.unit_320 import (
     CO2_FEED_MOLFRAC,
     SYN_P_DES_BARA,
 )
+from ureasim.data.unit_322e001_bundle import BUNDLE, BUNDLE_V1, TubeBundle
 from ureasim.data.unit_322e003 import COND_CHOKE_MIN
 from ureasim.data.unit_322r001 import OVERFLOW_DES_KMOLH, REACTOR_T_DES_C
 from ureasim.thermo.iapws import tsat_c
@@ -204,28 +206,19 @@ DT_STEAM_DES_C = DUTY_DES_KW * 3600.0 / (FEED_DES_KGH * CP_BOTTOM)
 # film off the wall, the film thickens, liquid is dragged upward, residence time collapses
 # and stripping stops, however much steam is available.
 
-#: Number of tubes [-]. Source: licensor DDS line 34.
-N_TUBES = 2600
-
-#: Tube outside diameter [m], 31 mm. Source: DDS line 36.
-TUBE_OD_M = 0.031
-
-#: Tube wall thickness [m], 3.0 mm. Source: DDS line 36.
-TUBE_WALL_M = 0.003
-
-#: Tube inside diameter [m], 0.025 — which is 0.984 inch, so the one-inch flooding figure
-#: below applies WITHOUT scaling. Derived from the two DDS dimensions.
-TUBE_ID_M = TUBE_OD_M - 2.0 * TUBE_WALL_M
-
-#: Effective tube length [m]. Source: DDS line 35, "6000 mm eff."
-TUBE_L_EFF_M = 6.000
-
-#: Exchange surface per exchanger [m2]. Source: DDS line 25.
+#: The bundle the plant runs, the 2,950-tube replacement (decided 2026-10-28, decision 154), and
+#: V1's 2,600-tube one, which the equivalence harnesses run the port on. The geometry, the
+#: flooding limit per tube and the shell's capacity are in `data.unit_322e001_bundle`; the names
+#: below are the installed bundle's.
 #:
-#: Carried as the datasheet's own number and used as the CONSISTENCY CHECK on the geometry:
-#: N.pi.d_o.L = 2600 x pi x 0.031 x 6.000 = 1519.27 against the tabulated 1519.00, +0.018 %.
-#: That agreement is why the tube count and length can be trusted to carry a hydraulic limit.
-SURFACE_DES_M2 = 1519.00
+#: Number of tubes [-], 2,950; the tube 31 mm outside on a 2.5 mm wall, 26.0 mm bore; 6.000 m
+#: effective; 1,724 m2, which N.pi.d_o.L reproduces to -0.009 %. Source: Resta 6355, 6355-A1.
+N_TUBES = BUNDLE.n_tubes
+TUBE_OD_M = BUNDLE.tube_od_m
+TUBE_WALL_M = BUNDLE.tube_wall_m
+TUBE_ID_M = BUNDLE.tube_id_m
+TUBE_L_EFF_M = BUNDLE.tube_l_eff_m
+SURFACE_DES_M2 = BUNDLE.surface_m2
 
 #: Tube-side gas density at operating conditions [kg/m3]. Source: DDS line 14.
 RHO_GAS_DES = 10.28
@@ -233,31 +226,31 @@ RHO_GAS_DES = 10.28
 #: Tube-side liquid density in [kg/m3]. Source: DDS line 13.
 RHO_LIQ_IN_DES = 989.88
 
-#: Solution per tube at the flooding limit [kg/h]. Source: Brouwer, "How to Solve Stripper
-#: Efficiency Issues", UreaKnowHow 2025, citing IFS Proceeding 166 — at 183 C reactor outlet
-#: and 140 bar the flooding limit in a 1-inch tube is 145 kg of solution per hour.
-#:
-#: Three independent facts make the citation applicable here without adjustment: the DDS tube
-#: ID is 0.984 inch, so the one-inch figure needs no scaling; the DDS effective length is
-#: 6.000 m, which the same paper states is what gives a Stamicarbon CO2 stripper its 80 %
-#: design efficiency; and the quoted reference condition is this stripper's own feed
-#: temperature at a pressure within 3 % of its tube side.
-FLOOD_KGH_PER_TUBE = 145.0
+#: Solution per tube at the flooding limit [kg/h], 159.9. Source: Brouwer, "How to Solve
+#: Stripper Efficiency Issues", UreaKnowHow 2025, citing IFS Proceeding 166 — at 183 C reactor
+#: outlet and 140 bar the flooding limit in a 1-inch tube is 145 kg of solution per hour, which
+#: V1's 25.0 mm (0.984 inch) bore takes without scaling; the replacement's 26.0 mm bore takes it
+#: scaled on Wallis's flooding law, as D^2.5 (`data.unit_322e001_bundle`). The 6.000 m length is
+#: the one the same paper says gives a Stamicarbon CO2 stripper its 80 % design efficiency, and
+#: the quoted reference condition is this stripper's own feed temperature at a pressure within
+#: 3 % of its tube side.
+FLOOD_KGH_PER_TUBE = BUNDLE.flood_kgh_per_tube
 
 #: Industry operating cap as a fraction of the limit [-]. Source: the same paper, "in practice
 #: an upper limit of 70 % of this value is applied". Carried as provenance for the design
 #: margin; the model uses the limit itself, not the practice cap.
 FLOOD_PRACTICE_FRAC = 0.70
 
-#: Flooding fraction at design [-], 0.7448. A COMPUTED RESULT, not a tuned constant:
-#: 280797 / 2600 / 145, i.e. 108.0 kg/h per tube against a 145 kg/h limit.
+#: Flooding fraction at design [-], 0.5952. A COMPUTED RESULT, not a tuned constant:
+#: 280797 / 2950 / 159.9, i.e. 95.2 kg/h per tube against a 159.9 kg/h limit (V1's bundle:
+#: 280797 / 2600 / 145 = 0.7448, 108.0 kg/h per tube).
 #:
-#: Two consequences, both load-bearing. The plant-level limit is 377 000 kg/h, so flooding
-#: starts at 134 % of design load — the same order as the paper's "110 % when new, 120 % at
-#: end of life". And because 0.7448 < 1.0 the flooding term is IDENTICALLY INACTIVE at the
-#: design seed: it is a one-sided constraint that does not bind, so it cannot move a single
-#: bit of the pinned design state. That is the whole bit-exactness argument for the flooding
-#: block — not an anchored ratio, just a constraint the plant genuinely operates below.
+#: Two consequences, both load-bearing. The plant-level limit is 471 800 kg/h, so flooding
+#: starts at 168 % of design load (V1's bundle: 377 000 kg/h, 134 %). And because the fraction
+#: is below 1.0 the flooding term is IDENTICALLY INACTIVE at the design seed: it is a one-sided
+#: constraint that does not bind, so it cannot move a single bit of the pinned design state.
+#: That is the whole bit-exactness argument for the flooding block — not an anchored ratio,
+#: just a constraint the plant genuinely operates below.
 FLOOD_DES_FRAC = FEED_DES_KGH / N_TUBES / FLOOD_KGH_PER_TUBE
 
 #: Bottom-temperature ramp per unit of excess over the flooding limit [-], 3.83.
@@ -415,17 +408,19 @@ BIURET_T_DES_K = T_BOTTOM_DES_C + 273.15
 # Holdup volumes — what the second-order rate laws integrate over
 # ======================================================================================
 
-#: Tube-bundle liquid volume [m3], 7.658. Derived from the DDS geometry above.
-V_TUBES_M3 = N_TUBES * math.pi * 0.25 * TUBE_ID_M ** 2 * TUBE_L_EFF_M
+#: Tube-bundle liquid volume [m3], 9.398 (V1's bundle 7.658). Derived from the geometry above.
+V_TUBES_M3 = BUNDLE.v_tubes_m3
 
-#: Bottom-head cross-section [m2], pi/4 x 2.43^2. Source: datasheet, bottom head ID 2430 mm.
-SUMP_AREA_M2 = 4.638
+#: Bottom-channel cross-section [m2], pi/4 x 2.425^2 = 4.619. Source: Resta 6355-A9, I.D. channel
+#: 2,425 mm (V1's bundle: the bottom head's 2,430 mm, 4.638 m2).
+SUMP_AREA_M2 = BUNDLE.sump_area_m2
 
-#: Liquid band spanned by LT-322501, 0 to 100 % [m]. Source: instrument datasheet.
-LEVEL_SPAN_M = 1.5
+#: Liquid band spanned by LT-322501, 0 to 100 % [m]. Source: instrument datasheet. The
+#: replacement vessel has no level taps, only a blinded radar nozzle, so the span is unchanged.
+LEVEL_SPAN_M = BUNDLE.level_span_m
 
 #: Sump volume between the two transmitter limits [m3].
-V_SUMP_M3 = SUMP_AREA_M2 * LEVEL_SPAN_M
+V_SUMP_M3 = BUNDLE.v_sump_m3
 
 #: LIC-322501 design level set point [%]. Source: PFD / DCS.
 LEVEL_SP_DES_PCT = 50.0
@@ -460,7 +455,7 @@ BOTTOMS_TD_DES_S = 60.0
 #: long to deliver its bottoms. Same constraint argument as the CO2 and NH3 feed lines.
 BOTTOMS_LINE_M3 = (BOTTOMS_DES_KGH / 3600.0 * BOTTOMS_TD_DES_S) / RHO_BOTTOM
 
-#: The liquor the tube bundle holds standing full [kg], 8 689: the bundle's liquid volume at the
+#: The liquor the tube bundle holds standing full [kg], 10 663 (V1's bundle 8 689): its volume at the
 #: bottoms' density. The ceiling on what a full LT-322501 sump holds back in the tubes above it;
 #: past it 322R001 keeps the excess (decided 2026-10-22, handoff B-104).
 TUBES_FULL_KG = V_TUBES_M3 * RHO_BOTTOM
@@ -566,6 +561,7 @@ __all__ = [
     "T_TOPGAS_DES_C", "T_BOTTOM_DES_C", "T_FLOOD_ANCHOR_C", "FLOOD_GAP_DES_C",
     "T_DOWNSTREAM_DES_C", "SHELL_DUTY_BAND",
     "CP_BOTTOM", "CP_GAS", "DT_STEAM_DES_C",
+    "TubeBundle", "BUNDLE", "BUNDLE_V1",
     "N_TUBES", "TUBE_OD_M", "TUBE_WALL_M", "TUBE_ID_M", "TUBE_L_EFF_M",
     "SURFACE_DES_M2", "RHO_GAS_DES", "RHO_LIQ_IN_DES",
     "FLOOD_KGH_PER_TUBE", "FLOOD_PRACTICE_FRAC", "FLOOD_DES_FRAC",

@@ -39,6 +39,12 @@ The port runs the table's 0.20 and 280 s with a 1.0 s derivative behind a 1.0 s 
 from the faceplate photograph; V1 runs 2.5 and 90 s with none. ``v1_sump_step`` carries the
 switch ``table`` (default True): the port's tuning and derivative in V1's lines; ``table=False``
 is V1 verbatim.
+
+The 2,950-tube replacement bundle (decided 2026-10-28, decision 154)
+--------------------------------------------------------------------
+The port's sump runs on the bundle the plant runs, its 2,425 mm bottom channel; V1's on Uhde's
+2,430 mm head. Every comparison runs the port's sump on ``BUNDLE_V1``; the last section asserts
+both sides.
 """
 
 from __future__ import annotations
@@ -48,6 +54,8 @@ from collections import deque
 
 import pytest
 
+from ureasim.data.unit_322e001 import RHO_BOTTOM
+from ureasim.data.unit_322e001_bundle import BUNDLE_2950, BUNDLE_V1
 from ureasim.units.synthesis import stripper_level as sl
 from ureasim.units.synthesis import stripper_sump as ss
 from ureasim.units.synthesis.stripper_level import BottomLevelLoop
@@ -265,7 +273,7 @@ def assert_same(ours, theirs: dict, where: str) -> None:
 
 
 def drive(v1, ticks, dt: float = 1.0, level0: float = 50.0, mode: str = "AUTO",
-          sp: float = 50.0, op0: float = 46.1, flash: bool = True):
+          sp: float = 50.0, op0: float = 46.1, flash: bool = True, bundle=BUNDLE_V1):
     """Drive both implementations through the same tick sequence and compare each one.
 
     `ticks` is a sequence of ``(strip_dict, p_syn_bara)``. Both sides start from the same
@@ -274,7 +282,7 @@ def drive(v1, ticks, dt: float = 1.0, level0: float = 50.0, mode: str = "AUTO",
     """
     # V1's clamped sump: the full sump's held-back excess (B-103, decided 2026-10-21) is
     # asserted both ways in the last section.
-    sump = StripperSump(level_pct=level0, hold_full=False)
+    sump = StripperSump(level_pct=level0, hold_full=False, bundle=bundle)
     lic_new = BottomLevelLoop(op=op0, sp=sp, pv=level0, e_prev=0.0, mode=mode)
 
     state = {"strip_level": level0, "tlag": {}}
@@ -351,7 +359,7 @@ def test_a_bad_level_freezes_both_loops_identically(v1):
     """
     good = (strip_at(), 140.7)
     ticks = [good] * 5
-    sump = StripperSump(level_pct=62.0)
+    sump = StripperSump(level_pct=62.0, bundle=BUNDLE_V1)
     lic_new = BottomLevelLoop(op=46.1, sp=50.0, pv=62.0, e_prev=0.0, mode="AUTO")
     state = {"strip_level": 62.0, "tlag": {}}
     lic_old = {"op": 46.1, "sp": 50.0, "pv": 62.0, "e_prev": 0.0, "mode": "AUTO",
@@ -520,7 +528,7 @@ def _full_sump_run(v1, hold_full: bool):
     shutting the drain, then eighty at the design 172 C. Returns each tick's (port level, port
     held, V1 level), the port's net inflow integrated, and the run's two sumps."""
     ticks = [(strip_at(T_bot=25.0), 140.7)] * 40 + [(strip_at(), 140.7)] * 80
-    sump = StripperSump(level_pct=95.0, hold_full=hold_full)
+    sump = StripperSump(level_pct=95.0, hold_full=hold_full, bundle=BUNDLE_V1)
     lic = BottomLevelLoop(op=80.0, sp=50.0, pv=95.0, e_prev=0.0, mode="MAN")
     state = {"strip_level": 95.0, "tlag": {}}
     lic_old = {"op": 80.0, "sp": 50.0, "pv": 95.0, "e_prev": 0.0, "mode": "MAN",
@@ -543,7 +551,7 @@ def test_a_full_sump_holds_its_excess_back_decided_divergence(v1):
     bottoms reopen the drain: V1's level falls on the first hot tick and stands at 73.0 % eighty
     seconds on, the port's holds at 100 % for 39 s while what it held drains, and stands at 86.4 %.
     The switch off is V1's clamp to the bit."""
-    span = ss.SUMP_SPAN_KG
+    span = BUNDLE_V1.v_sump_m3 * RHO_BOTTOM
     rows_v1, _ = _full_sump_run(v1, hold_full=False)
     assert all(port == v1_level for port, held, v1_level in rows_v1)
     assert all(held == 0.0 for _, held, _ in rows_v1)
@@ -559,3 +567,28 @@ def test_a_full_sump_holds_its_excess_back_decided_divergence(v1):
     assert len(hot_full) == 39
     assert rows[40][2] < 100.0
     assert (level, v1_level) == (pytest.approx(86.354, abs=1e-3), pytest.approx(72.987, abs=1e-3))
+
+
+# ======================================================================================
+# 10. The decided divergence: the 2,950-tube replacement's bottom channel (2026-10-28)
+# ======================================================================================
+
+def test_the_replacements_channel_moves_the_level_further_decided_divergence(v1):
+    """Decision 154. LV-322501 in MAN at its design opening and 20 t/h more bottoms than design:
+    the same mass reaches both sumps, and the port's level, on the replacement's 2,425 mm channel,
+    rises by V1's 2,430 mm head's cross-section over its own — 4.638 over 4.619 m2."""
+    ticks = [(strip_at(bot_kgh=DESIGN_STRIP["bot_kgh"] + 20_000.0), 140.7)] * 60
+    sump = StripperSump(level_pct=50.0, hold_full=False, bundle=BUNDLE_2950)
+    lic = BottomLevelLoop(op=46.1, sp=50.0, pv=50.0, e_prev=0.0, mode="MAN")
+    state = {"strip_level": 50.0, "tlag": {}}
+    lic_old = {"op": 46.1, "sp": 50.0, "pv": 50.0, "e_prev": 0.0, "mode": "MAN",
+               "pv_bad": False}
+    for strip, p_syn in ticks:
+        r = sump.step(lic, strip["bot_kgh"], strip["T_bot"], strip["T_steam"],
+                      strip["top_kmolh"], strip["top_MW"], p_syn, strip["bot_mass_pct"], 1.0)
+        theirs = v1_sump_step(v1, state, lic_old, strip, p_syn, 1.0)
+        assert r.drain_kgh == pytest.approx(theirs["drain_kgh"], rel=1e-9)
+    rise_port, rise_v1 = r.level_pct - 50.0, state["strip_level"] - 50.0
+    assert rise_v1 > 0.0
+    assert rise_port / rise_v1 == pytest.approx(
+        BUNDLE_V1.sump_area_m2 / BUNDLE_2950.sump_area_m2, rel=1e-6)

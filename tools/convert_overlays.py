@@ -118,7 +118,7 @@ DECIDED_ADDITIONS = (
     ("screen-329-1", {"k": "ai329701", "t": "ind", "x": 1265, "y": 410, "tag": "AI-329701",
                       "bind": "ANALYSERS.AI_329701", "u": "uS/cm", "dec": 3,
                       "note": ("AI-329701, the LP condensate's conductivity in 329D001 on its "
-                               "0-10 uS/cm range: a 322E002 tube leak's ammonium bicarbonate")}),
+                               "0-30 uS/cm range: a 322E002 tube leak's ammonium bicarbonate")}),
 )
 
 #: Element types the process engineer decided to render as another type, every element of the

@@ -411,7 +411,20 @@ none of them is optional:
    needs scaling as m / sqrt(rho), the mass a stroke passes as sqrt(rho) (decision 150, decision
    23's class); an exchanger whose coolant flow a PFD fixes running on that flow, its UA
    back-solved so the design point holds and the datasheet's kept as margin (decision 151, decision
-   36's class); and
+   36's class); a unit replaced at a turnaround run on the replacement's own drawings and process
+   datasheet — its limits, holdups and capacity — the PFD still the flowsheet's anchor and the
+   equipment V1 models kept on every harness's switch (decision 154); an exchanger with plugged tubes
+   keeping its tube counts and active surface and its plugged bores out of its process volume, its
+   conductance re-anchored on the bundle in service so the PFD's design point holds by construction,
+   the clean bundle on the harnesses' switch (decisions 155, 157); a photograph of the plant DCS's
+   faceplate a tuning-table row, a range and a limit as decisions 76, 77 and 103 take them (decision
+   156); an event shorter than a survey's sample — a safety valve's lift — read on its peak between
+   samples, and a premise checked in the code before a relation is changed for it (decision 158); a
+   trend taken at another load not moving the 1750 MTPD design basis (decision 159); a faceplate's
+   gain on a PV the model carries in other units taken through their local slope at the design, and
+   a ratio station's design seed kept where the PFD closes the design, the photographed limits held
+   on what an operator enters (decision 160); a cascade master integrating while its slave is out of
+   cascade, as V1's ``_ctrl_ipd`` builds it, kept (decision 160, B-117, decision 120's class); and
    no approximation of
    the physics bought for a pacing target (decision 88). A
    new mechanism still goes to the process engineer, with both sides measured.

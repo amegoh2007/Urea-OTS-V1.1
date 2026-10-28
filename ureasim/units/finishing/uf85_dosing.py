@@ -22,6 +22,16 @@ the master tracking the achieved ratio while its slave is out of cascade (`contr
 delivered UF85 joins the forward melt at LV-324501's selector, ``uf_ratio = m_uf / m_402``
 (`melt_route.melt_route`): 609 = 402G + 697, at the sensible-heat-weighted temperature.
 
+On the plant FFIC-335406 is the ratio station its faceplate in the plant DCS shows (decided
+2026-10-28, handoff B-116 (a), `project.md` decision 160): no controller, FIC-335405's set point
+the ratio set point times the melt,
+
+    SP_405   = clamp(RAT . m_402 / 1000, OUT L, OUT H)      [t/h], RAT within RAT L to RAT H
+
+its ratio set point tracking the achieved ratio while FIC-335405 is out of cascade
+(`control.ratio.RatioStation`). V1's PI master on the ratio is ``ffic_335406(station=False)``,
+which the equivalence harness keeps.
+
 Where this unit departs from V1 — decided 2026-10-16 (`project.md` decision 123)
 -----------------------------------------------------------------------------------
 V1 ports the whole cascade and its selector but never runs them: its ``step_sim`` calls
@@ -45,9 +55,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ureasim.control.process_loop import FlowLoop, ProcessLoop
-from ureasim.control.ratio import BASE_FLOW_FLOOR, RatioMaster
+from ureasim.control.ratio import BASE_FLOW_FLOOR, RatioMaster, RatioStation
 from ureasim.data.unit_335 import (
     FFIC_335406_KC,
+    FFIC_335406_OUT_HI_TH,
+    FFIC_335406_OUT_LO_TH,
+    FFIC_335406_RAT_HI,
+    FFIC_335406_RAT_LO,
     FFIC_335406_RATIO_HI,
     FFIC_335406_TI_S,
     FIC_335405_KC,
@@ -82,9 +96,16 @@ class Uf85Result:
     route: MeltRoute
 
 
-def ffic_335406() -> RatioMaster:
-    """FFIC-335406, the UF85-to-melt ratio master, in AUTO on the PFD's ratio (V1's seed)."""
+def ffic_335406(station: bool = True) -> RatioStation | RatioMaster:
+    """FFIC-335406, the UF85-to-melt ratio, in AUTO on the PFD's ratio (V1's seed): the ratio
+    station of its faceplate in the plant DCS, FIC-335405's set point its output in t/h (decided
+    2026-10-28, handoff B-116 (a)); ``station`` False is V1's PI master on the ratio."""
     r = UF_RATIO_DES
+    if station:
+        return RatioStation(
+            tag="FFIC-335406", sp=r, op=UF85_DES_KGH / KG_PER_T, pv=r, sp_lo=FFIC_335406_RAT_LO,
+            sp_hi=FFIC_335406_RAT_HI, op_lo=FFIC_335406_OUT_LO_TH, op_hi=FFIC_335406_OUT_HI_TH,
+            factor=1.0 / KG_PER_T)
     return RatioMaster(loop=ProcessLoop(
         tag="FFIC-335406", Kc=FFIC_335406_KC, Ti=FFIC_335406_TI_S, Td=0.0, act=+1.0,
         mode="AUTO", op=r, sp=r, pv=r, pv1=r, pv2=r, op_lo=0.0, op_hi=FFIC_335406_RATIO_HI,
@@ -103,8 +124,8 @@ def fic_335405(m_uf_kgh: float = UF85_DES_KGH) -> FlowLoop:
                     op_des=FIC_335405_OP_DES_PCT, tau_s=FT_335405_TAU_S)
 
 
-def uf85_step(master: RatioMaster, slave: FlowLoop, m_402_kgh: float, w_402: dict,
-              t_402_c: float, recycle: bool, dt: float) -> Uf85Result:
+def uf85_step(master: RatioStation | RatioMaster, slave: FlowLoop, m_402_kgh: float,
+              w_402: dict, t_402_c: float, recycle: bool, dt: float) -> Uf85Result:
     """Advance the dosing one tick and join what it delivers to the forward melt.
 
     Process utility
@@ -122,6 +143,8 @@ def uf85_step(master: RatioMaster, slave: FlowLoop, m_402_kgh: float, w_402: dic
         LV-324501B selected (`SecondEvaporatorResult.recycle_selected`).
     """
     m_base = max(m_402_kgh, 0.0)
+    if isinstance(master, RatioStation):
+        return _station_step(master, slave, m_base, m_402_kgh, w_402, t_402_c, recycle, dt)
     result = master.step(max(slave.loop.pv * KG_PER_T, 0.0), m_base, dt,
                          slave_in_cascade=slave.loop.mode == "CAS", permissive_ok=not recycle)
     if result.interlocked:
@@ -136,6 +159,33 @@ def uf85_step(master: RatioMaster, slave: FlowLoop, m_402_kgh: float, w_402: dic
     ratio = delivered_kgh / m_base if m_base > BASE_FLOW_FLOOR else 0.0
     return Uf85Result(result.measured, result.command, flow_setpoint_th, delivered_kgh, False,
                       melt_route(m_402_kgh, w_402, t_402_c, recycle, ratio))
+
+
+def _station_step(station: RatioStation, slave: FlowLoop, m_base: float, m_402_kgh: float,
+                  w_402: dict, t_402_c: float, recycle: bool, dt: float) -> Uf85Result:
+    """One tick of the dosing under FFIC-335406's ratio station (decided 2026-10-28, B-116 (a)).
+
+    Process utility
+    ---------------
+    The plant's DCS multiplies rather than integrates: FIC-335405 is handed the ratio times the
+    melt the moment the melt moves, and the metering pumps' own loop alone sets how fast the
+    UF85 follows. LV-324501B selected, or no melt, stops the pumps as under V1's master; the
+    station's base flow is then gone, so its output in AUTO is OUT L and its ratio set point
+    stands.
+    """
+    if recycle or m_base <= BASE_FLOW_FLOOR:
+        station.pv = 0.0
+        if station.mode == "AUTO":
+            station.op = station.op_lo
+        slave.loop.op = 0.0
+        slave.loop.observe(slave.force_measurement(0.0, dt))
+        return Uf85Result(0.0, station.sp, 0.0, 0.0, True,
+                          melt_route(m_402_kgh, w_402, t_402_c, recycle))
+    measured = max(slave.loop.pv * KG_PER_T, 0.0) / m_base
+    flow_setpoint_th = station.step(measured, m_base, slave_in_cascade=slave.loop.mode == "CAS")
+    delivered_kgh = max(slave.step(dt, cas_sp=flow_setpoint_th) * KG_PER_T, 0.0)
+    return Uf85Result(measured, station.sp, flow_setpoint_th, delivered_kgh, False,
+                      melt_route(m_402_kgh, w_402, t_402_c, recycle, delivered_kgh / m_base))
 
 
 __all__ = ["KG_PER_T", "Uf85Result", "ffic_335406", "fic_335405", "uf85_step"]

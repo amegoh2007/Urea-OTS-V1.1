@@ -82,14 +82,13 @@ from ureasim.data.unit_322e001 import (
     FEED_NC_DES,
     FLOOD_ETA_FLOOR,
     FLOOD_GAP_DES_C,
-    FLOOD_KGH_PER_TUBE,
     FLOOD_T_RAMP_K,
     FRAC_TOP_DES,
     FRAC_TOP_MAX,
     LEVEL_SP_DES_PCT,
     MOD_CEILING,
-    N_TUBES,
     P_DES_BARA,
+    RHO_BOTTOM,
     RHO_LIQ_IN_DES,
     SHELL_DUTY_BAND,
     SLIP_GAIN,
@@ -99,9 +98,8 @@ from ureasim.data.unit_322e001 import (
     T_BOTTOM_DES_C,
     T_TOPGAS_DES_C,
     T_TOP_LOAD_K,
-    V_SUMP_M3,
-    V_TUBES_M3,
 )
+from ureasim.data.unit_322e001_bundle import BUNDLE, TubeBundle
 from ureasim.data.unit_322r001 import REACTOR_FEED_HC_DES, REACTOR_FEED_NC_DES
 from ureasim.thermo.service import ratio_shift_frac
 from ureasim.units.synthesis.hp_split import hp_k_ratio
@@ -217,7 +215,8 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
                      overflow_kmolh: dict = None, feed_nc: float = None,
                      feed_hc: float = None, t_feed_c: float = None,
                      level_pct: float = LEVEL_SP_DES_PCT,
-                     shell_bound: bool = True, held_kg: float = 0.0) -> StripperResult:
+                     shell_bound: bool = True, held_kg: float = 0.0,
+                     bundle: TubeBundle = BUNDLE) -> StripperResult:
     """Evaluate the HP stripper for one set of inlet conditions.
 
     Parameters
@@ -245,6 +244,11 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
         The liquor a full LT-322501 sump holds back in the tubes above it [kg], one tick old
         (B-103): the share of the bundle standing full derates the shell and cools TT-322004
         (decided 2026-10-22, handoff B-104). Zero, the default, is a bundle running dry.
+    bundle
+        The tube bundle the equipment model runs on: the flooding limit, the holdup, the
+        standing-full mass and the shell's capacity. The default is the 2,950-tube replacement
+        the plant runs (decided 2026-10-28, decision 154); ``BUNDLE_V1`` is V1's 2,600 tubes,
+        which the equivalence harness keeps. The design point is the PFD's on either.
 
     This function is PURE: it reads nothing and writes nothing. The sump inventory, the level
     controller and the drain valve are dynamics and live in :mod:`.stripper_sump`.
@@ -327,9 +331,9 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
     # independent question of whether the tube can physically carry the film at all.
     #
     # flood_excess is EXACTLY 0.0 at design because max() returns the literal 0.0 for a
-    # negative argument, and the design fraction is 0.7448. Every term below is therefore an
+    # negative argument, and the design fraction is 0.595 (0.7448 on V1's bundle). Every term below is an
     # exact identity at the seed — 1 - exp(0) is 0.0 — so the pin cannot move.
-    flood_frac = feed_kgh / N_TUBES / FLOOD_KGH_PER_TUBE
+    flood_frac = feed_kgh / bundle.n_tubes / bundle.flood_kgh_per_tube
     flood_excess = max(flood_frac - 1.0, 0.0)
     dt_flood = flood_gap * (1.0 - math.exp(-FLOOD_T_RAMP_K * flood_excess))
     # Both rises describe one end state, unstripped liquor falling through untouched, so they
@@ -367,7 +371,8 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
     t_bot_c = min(T_BOTTOM_DES_C + 0.7 * d_t_steam + dt_bot + dt_strip, t_steam_c)
     # Tubes standing full above a full sump strip no film, and the bottoms cool toward the
     # crystallisation floor by the share still running (decided 2026-10-22, handoff B-104).
-    f_sub = unsubmerged_factor(held_kg)
+    tubes_full_kg = bundle.v_tubes_m3 * RHO_BOTTOM
+    f_sub = unsubmerged_factor(held_kg, tubes_full_kg)
     t_bot_c = submerged_bottoms_c(t_bot_c, f_sub)
     t_bot_k = t_bot_c + 273.15
 
@@ -380,10 +385,13 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
     # --- urea hydrolysis and biuret, anchored extents times the rate laws' departures ----
     # Over the LIVE sump level's holdup (`stripper_kinetics`), each capped by its reagents.
     vdot_m3h = max(feed_kgh / RHO_LIQ_IN_DES, 1e-9)
-    v_liq_m3 = V_TUBES_M3 + V_SUMP_M3 * clamp(level_pct / 100.0, 0.0, 1.0)
-    xi_hyd = hydrolysis_extent(t_bot_c, feed["Urea"], feed["H2O"], vdot_m3h, v_liq_m3)
+    v_liq_m3 = bundle.v_tubes_m3 + bundle.v_sump_m3 * clamp(level_pct / 100.0, 0.0, 1.0)
+    v_liq_des_m3 = bundle.v_tubes_m3 + bundle.v_sump_m3 * (LEVEL_SP_DES_PCT / 100.0)
+    xi_hyd = hydrolysis_extent(t_bot_c, feed["Urea"], feed["H2O"], vdot_m3h, v_liq_m3,
+                               v_liq_des_m3)
     urea_after_hyd = max(feed["Urea"] - xi_hyd, 0.0)
-    xi_biu = biuret_extent(t_bot_k, feed["Urea"], vdot_m3h, v_liq_m3, urea_after_hyd)
+    xi_biu = biuret_extent(t_bot_k, feed["Urea"], vdot_m3h, v_liq_m3, urea_after_hyd,
+                           v_liq_des_m3)
 
     # --- what is available to split, after the reactions --------------------------------
     avail = dict(feed)
@@ -477,11 +485,13 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
     # its design duty scaled by the LMTD of the live steam against the tube side's design
     # profile, over the design's (`stripper_shell`). Past that,
     # with the band's margin, the lift beyond the sweep is scaled back until the balance meets
-    # the capacity, and what is not lifted stays in the bottoms to LV-322501. The ratio is
-    # exactly 1.0 at design and the band holds the seed's own drift, so the design point and
+    # the capacity, and what is not lifted stays in the bottoms to LV-322501. On V1's bundle the
+    # ratio is exactly 1.0 at design and the band holds the seed's own drift, so the design point and
     # the unperturbed plant run V1's split to the bit. ``shell_bound=False`` is V1's split.
-    # Tubes standing full transfer less, to 322E003's flooded-surface floor (B-104).
-    capacity = shell_capacity_ratio(t_steam_c) * f_sub
+    # Tubes standing full transfer less, to 322E003's flooded-surface floor (B-104). The
+    # replacement bundle's shell transfers 1.142 times V1's at the same LMTD (decision 154), so
+    # on it the bound sits 14 % above the design duty; V1's bundle's capacity is exactly 1.0.
+    capacity = shell_capacity_ratio(t_steam_c) * bundle.shell_capacity * f_sub
     lam = 1.0
     if shell_bound:
         cap_raw_kw = DUTY_RAW_DES_KW * capacity * (1.0 + SHELL_DUTY_BAND)
@@ -516,13 +526,13 @@ def stripper_322e001(co2_feed_th: float, t_steam_c: float, p_bara: float,
         feed_nc=nc_strip, feed_hc=hc_strip,
         dt_load=dt_load, dt_bot=dt_bot, dt_strip=dt_strip, r_gl=r_gl, feed_kgh=feed_kgh,
         flood_frac=flood_frac, flood_excess=flood_excess, g_flood=g_flood,
-        dt_flood=dt_flood, flood_kgh_per_tube=feed_kgh / N_TUBES,
+        dt_flood=dt_flood, flood_kgh_per_tube=feed_kgh / bundle.n_tubes,
         duty_raw_kw=balance.total_kw, q_carbamate_kw=balance.q_carbamate_kw,
         q_nh3_kw=balance.q_nh3_kw, q_h2o_kw=balance.q_h2o_kw,
         q_hydrolysis_kw=balance.q_hydrolysis_kw, q_sensible_kw=balance.q_sensible_kw,
         n_co2_desorbed=balance.n_co2_desorbed, n_nh3_free=balance.n_nh3_free,
         shell_capacity_ratio=capacity, duty_demand_raw_kw=demand_raw_kw, shell_lambda=lam,
-        submerged_frac=submerged_fraction(held_kg),
+        submerged_frac=submerged_fraction(held_kg, tubes_full_kg),
     )
 
 

@@ -127,6 +127,14 @@ SV32353 = dr.Valve.orifice(5.0 + 1.010, 5.0 + 1.010 - 0.1 * 5.0, 1462.20 * 1.0e-
 #: PT-328202's 0-10 bar g, its 3.00 on TT-328002's 0-160 C.
 DECIDED_PIC202_KC = 2.50 * 100.0 / 10.0
 DECIDED_TIC002_KC = 3.00 * 100.0 / 160.0
+#: FIC-328404 on its faceplate in the plant DCS (decided 2026-10-28): 1.00 on 0-8 m3/h, 200 s.
+DECIDED_FIC404_KC, DECIDED_FIC404_TI = 1.00 * 100.0 / 8.0, 200.0
+#: TIC-328008 on its faceplate (decided 2026-10-28, B-116 (b)): 1.00 on 0-100 wt% water, 60 s, onto
+#: FIC-328404's 0-8 m3/h in mass and the mol% PV by 737's slope, written from the PFD's row.
+_M_REST = (12.32 * 44.0098 + 41.47 * 17.0304) / (12.32 + 41.47)
+DECIDED_TIC8008_KC = (1.00 * 8.0 * 1095.0 / 100.0 * 18.0152 * _M_REST
+                      / (0.4621 * 18.0152 + 0.5379 * _M_REST) ** 2)
+DECIDED_TIC8008_TI = 60.0
 
 
 @pytest.fixture(scope="module")
@@ -176,6 +184,8 @@ def _v1_state(v1, decided=ALL):
     if "gains" in decided:
         s.PIC_328202["Kc"] = DECIDED_PIC202_KC
         s.TIC_328002["Kc"] = DECIDED_TIC002_KC
+        s.FIC_328404["Kc"], s.FIC_328404["Ti"] = DECIDED_FIC404_KC, DECIDED_FIC404_TI
+        s.TIC_328008["Kc"], s.TIC_328008["Ti"] = DECIDED_TIC8008_KC, DECIDED_TIC8008_TI
     return s
 
 

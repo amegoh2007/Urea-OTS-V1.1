@@ -245,10 +245,25 @@ def test_tic_328002_on_span_decided_divergence(v1):
                                              pytest.approx(56.946, abs=1e-3))
 
 
+def test_tic_328008_on_its_faceplate_decided_divergence(v1):
+    """Decision 160 (B-116 (b)), 2026-10-28. TIC-328008 to 48 mol% at the 0.1 s step: V1's 240 kg/h
+    of reflux per mol% and 110 s and the port's faceplate row — 1.00 and 60 s on 0-100 wt% water,
+    84.59 kg/h per mol% on 737's slope — part on the tick; ten minutes on, 737 carries 47.9945
+    mol% on V1's tuning and 48.9513 on the row, which is still on its first overshoot (on the drum
+    alone both settle, the row's decay ratio 0.87 a 22-minute period against V1's 0.61)."""
+    r = _both(v1, lambda k: _design(), 6000, 0.1, _set_point("TIC_328008", "tic_328008", 48.0),
+              ALL - {"gains"})
+    assert r.parted == 0
+    assert (r.s.TIC_328008["pv"], r.loops.tic_328008.pv) == (pytest.approx(47.9945, abs=1e-4),
+                                                             pytest.approx(48.9513, abs=1e-4))
+
+
 def test_pic_328202_on_span_decided_divergence(v1):
     """Decision 10. PIC-328202 to 3.7 bar a, closed through 328C002 — its transmitter on the
     column, its valve on the drum's vent: V1's 2.5 per bar has taken the column 0.044 bar in ten
-    minutes, the port's 25 %/bar on PT-328202's 0-10 bar g 0.161, both monotone. Both run in the
+    minutes, the port's 25 %/bar on PT-328202's 0-10 bar g 0.161 (FIC-328404 and TIC-328008 on
+    their faceplates' rows, decisions 156 and 160: 0.1609 where V1's tunings gave 0.1613), both
+    monotone. Both run in the
     transcriptions, the port's lines on the side of the gain — bit-exact with the ported column
     and drum coupled (`test_the_drum_takes_737_on_the_same_tick`)."""
     pv = {}
@@ -268,4 +283,4 @@ def test_pic_328202_on_span_decided_divergence(v1):
         assert all(b >= a - 1e-12 for a, b in zip(seen, seen[1:])), side
         pv[side] = seen[-1]
     assert (pv["v1"], pv["port"]) == (pytest.approx(3.5440, abs=1e-4),
-                                      pytest.approx(3.6613, abs=1e-4))
+                                      pytest.approx(3.6609, abs=1e-4))

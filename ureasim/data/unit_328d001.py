@@ -27,7 +27,8 @@ Sources
   (handoff B-53, decided 2026-09-30).
 * ``References/Master_PID_Tuning_Constants.md`` — LIC-328501 "328D001,ACA" 1.00 / 300 s;
   PIC-328202 "328D001 GAS OUTLET" 2.50 / 200 s; TIC-328002 "LIQU.OUT REFLUX COND" 3.00 / 500 s.
-  FIC-328404 and TIC-328008 have no row.
+  FIC-328404 and TIC-328008 have no row; both are on their faceplates in the plant DCS (decisions
+  156 and 160).
 * Uhde loop summary UD-MR-328-EC-0001 rev 1 (the vendor archive, scanned, read from the page
   images): P 328202 on 328C002 (line 100-AW4-328066, 3.5 bar a), range 0-10 bar g, its PV-328202
   on sheet 103/2; T 328002 on 328P002's suction, 61 C, range 0-160 C; L 328501, a DP cell on
@@ -229,10 +230,8 @@ C002_OFFGAS_H2O_DES_MOLPCT = (100.0 * C002_OFFGAS_PHI * iapws.psat_bara(C002_T_T
 #: residence.
 C002_DT_TOP_NO_REFLUX_K = 10.0
 
-#: TIC-328008 (V1's own tuning; the table has no row): 240 kg/h of reflux per mol%, 110 s, DIRECT;
-#: set point 25-65 mol%, output 0-4000 kg/h — FIC-328404's set point in mass.
-TIC_328008_KC = 240.0
-TIC_328008_TI_S = 110.0
+#: TIC-328008, DIRECT: set point 25-65 mol%, output 0-4000 kg/h — FIC-328404's set point in mass
+#: (V1's limits). Its gain and integral time are its faceplate's, below FIC-328404's span.
 TIC_328008_SP_LO = 25.0
 TIC_328008_SP_HI = 65.0
 TIC_328008_OP_HI_KGH = 4000.0
@@ -274,13 +273,36 @@ TIC_328002_TI_S = 500.0
 TIC_328002_SP_LO_C = 45.0
 TIC_328002_SP_HI_C = 80.0
 
-#: FIC-328404, 775: a VOLUMETRIC loop in CAS under TIC-328008, on V1's own tuning (the table has
-#: no row) — 0.5 per kg/h carried to m3/h by the density, 25 s — its set point to V1's 4000 kg/h.
-#: FT-328404's span is 0-5 m3/h (the loop summary).
-FIC_328404_KC = 0.5 * RHO_775_KGM3
-FIC_328404_TI_S = 25.0
+#: FIC-328404, 775: a VOLUMETRIC loop in CAS under TIC-328008, its set point to V1's 4000 kg/h. Its
+#: faceplate in the plant DCS (photograph of 24 October 2026, `References/Gaps Closure/Gaps/
+#: 20261024_033707.jpg`): gain 1.00, TI 200 s, TD and TF 0, range 0-8.0 m3/h; on span, 1.00 x 100 %
+#: / 8 m3/h = 12.5 % per m3/h (decided 2026-10-28, decisions 76 and 77's class). V1 runs 0.5 per kg/h
+#: carried to m3/h by the density, 25 s. The loop summary's 0-5 m3/h is the range before the DCS's.
+FT_328404_SPAN_M3H = 8.0
+FIC_328404_KC = 1.00 * 100.0 / FT_328404_SPAN_M3H
+FIC_328404_TI_S = 200.0
 FIC_328404_SP_HI_M3H = 4000.0 / RHO_775_KGM3
-FT_328404_SPAN_M3H = 5.0
+
+#: d(wt%)/d(mol%) of 737's water at its design content [-], 0.96559: the water moving against the
+#: rest of the gas at the PFD's ratio of ammonia to carbon dioxide (737: 12.32 mol% CO2, 46.21 H2O,
+#: 41.47 NH3), dw/dy = M_H2O . M_rest / M_737^2. The design's 46.21 mol% is 40.01 wt%, the set point
+#: TIC-328008's faceplate carries.
+Y737_CO2_MOLPCT, Y737_NH3_MOLPCT = 12.32, 41.47
+_M737_REST = ((Y737_CO2_MOLPCT * MW_COMP["CO2"] + Y737_NH3_MOLPCT * MW_COMP["NH3"])
+              / (Y737_CO2_MOLPCT + Y737_NH3_MOLPCT))
+_Y737_H2O = C002_OFFGAS_H2O_DES_MOLPCT / 100.0
+H2O_737_WT_PER_MOL = (MW_COMP["H2O"] * _M737_REST
+                      / (_Y737_H2O * MW_COMP["H2O"] + (1.0 - _Y737_H2O) * _M737_REST) ** 2)
+
+#: TIC-328008 on its faceplate in the plant DCS (photograph of 24 October 2026, `References/Gaps
+#: Closure/Gaps/20261024_033802.jpg`): gain 1.00 on its inferential's 0-100 wt% water, TI 60 s, TD
+#: and TF 0, set point 40.0 wt%. Its output goes onto FIC-328404's 0-8.0 m3/h span in mass, and the
+#: gain onto the mol% the model carries by 737's local slope: 1.00 x 8.0 x 1095 / 100 x 0.96559 =
+#: 84.59 kg/h of reflux per mol% (decided 2026-10-28, handoff B-116 (b), decisions 10, 77 and 103's
+#: class). V1 runs its own 240 kg/h per mol% and 110 s, which the harnesses keep: on the drum alone
+#: both settle a set-point step, the row more slowly (decay ratio 0.87 a period against 0.60).
+TIC_328008_KC = 1.00 * FT_328404_SPAN_M3H * RHO_775_KGM3 / 100.0 * H2O_737_WT_PER_MOL
+TIC_328008_TI_S = 60.0
 FT_328404_TAU_S = 5.0
 
 #: FV-328404 as V1 strokes it — linear from 30.2 % — and on its vendor trim (decision 23):
@@ -325,6 +347,7 @@ __all__ = [
     "PIC_328202_SP_LO_BARA", "PIC_328202_SP_HI_BARA", "TT_328002_SPAN_K", "TIC_328002_KC_TABLE",
     "TIC_328002_KC", "TIC_328002_TI_S", "TIC_328002_SP_LO_C", "TIC_328002_SP_HI_C",
     "FIC_328404_KC", "FIC_328404_TI_S", "FIC_328404_SP_HI_M3H", "FT_328404_SPAN_M3H",
+    "Y737_CO2_MOLPCT", "Y737_NH3_MOLPCT", "H2O_737_WT_PER_MOL",
     "FT_328404_TAU_S", "FV404_OP_DES_PCT_V1", "FV404_CHAR", "FV404_OP_DES_PCT",
     "SV32353_SET_BARA", "SV32353_RESEAT_BARA", "SV32353_AREA_M2", "SV32353_KD",
 ]

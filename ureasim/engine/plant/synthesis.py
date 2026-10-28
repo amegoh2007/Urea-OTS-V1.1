@@ -189,7 +189,8 @@ def _322e001(plant, a, dt):
     strip = stripper_322e001(a["co2_feed_th"], a["t_steam_c"], p_tube, overflow_kmolh=overflow,
                              feed_nc=a["feed_nc"], feed_hc=a["feed_hc"], t_feed_c=t_feed,
                              level_pct=sump_state.level_pct, shell_bound=sump_state.shell_bound,
-                             held_kg=sump_state.held_kg if sump_state.tube_ceiling else 0.0)
+                             held_kg=sump_state.held_kg if sump_state.tube_ceiling else 0.0,
+                             bundle=sump_state.bundle)
     sump = plant.units["322E001"].step(
         *plant.loops["322E001"], strip.bot_kgh, strip.t_bot, strip.t_steam, strip.top_kmolh,
         strip.top_mw, a["p_syn_bara"], strip.bot_mass_pct, dt)

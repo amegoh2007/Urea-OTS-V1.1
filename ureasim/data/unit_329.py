@@ -224,18 +224,19 @@ BLOWDOWN_KGH = STEAM_PFD_KGH["959"]
 #: LV-329504's design flow [kg/h], 19 501: the make-up that closes 322D001's water.
 M_916_DES_KGH = RAISE_DES_KGH + BLOWDOWN_KGH - (M_913_DES_KGH - FLASH4_DES_KGH)
 
-#: AI-329701, the conductivity analyser on 329D001, the steam condensate tank: 0-10 uS/cm, in the
-#: DCS with a high alarm and a high-high safety alarm (Uhde's loop summary UD-MR-329-EC-0001 rev 1,
-#: A 329701, PDF pages 6-7, line D07; P&ID 107/2). The alarms' set points are DCS database values,
-#: not in the archive. Decided 2026-10-09 (handoff B-90): it shows a 322E002 tube leak.
-AI_329701_SPAN_US_CM = 10.0
+#: AI-329701, the conductivity analyser on 329D001, the steam condensate tank: 0-30 uS/cm, in the
+#: DCS with a high alarm and a high-high safety alarm (P&ID 107/2). The range is the plant DCS's
+#: object display of AT-329701, "CONDUCTIVITY CPL", scale 0.0 to 30.0, H1 15.0, H2 18.0, alarm delay
+#: 0 (photograph of 24 October 2026, `References/Gaps Closure/Gaps/20261024_033421.jpg`); Uhde's loop
+#: summary UD-MR-329-EC-0001 rev 1, A 329701 (PDF pages 6-7, line D07, 2007) gives 0-10 uS/cm, the
+#: range before it was changed (decided 2026-10-28, decision 103's class). Decided 2026-10-09
+#: (handoff B-90): it shows a 322E002 tube leak.
+AI_329701_SPAN_US_CM = 30.0
 
 #: AI-329701's alarms: H1 15 and H2 18 (the process engineer's readback of the plant DCS, 13 October 2026,
 #: "AI-329701 Alarm setpoints H1 = 15 H2 = 18", the handwritten note
-#: `Urea Simulation Docs/Data/DCS_Extract_2026-10-13.jpg`). The note prints no unit: the PV's,
-#: uS/cm. Both stand above the loop summary's 0-10 uS/cm range, so the transmitter's range has been
-#: changed since 2007 and its present value is not known (handoff Open data gaps): the alarms are
-#: evaluated on the condensate's conductivity, the reading keeps the archive's range. AC4's
+#: `Urea Simulation Docs/Data/DCS_Extract_2026-10-13.jpg`), confirmed with their unit on the object
+#: display of 24 October 2026: both inside the present 0-30 uS/cm range. AC4's
 #: PC29.5.2 reads the H2 flag into trip 29.2 and LVY-329506A, which the simulator does not model.
 AI_329701_H1_US_CM = 15.0
 AI_329701_H2_US_CM = 18.0

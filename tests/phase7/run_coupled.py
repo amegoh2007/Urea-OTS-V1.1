@@ -106,7 +106,7 @@ def _diagnostics(rec: dict) -> dict:
             "flags": rec["flags"]}
 
 
-def _md(results: list) -> str:
+def _md(results: list, not_put: dict = NOT_PUT) -> str:
     arrow = {1: "rises", -1: "falls", 0: "no change", None: "n/a"}
     fmt = (lambda v: "" if v is None else f"{v:+.4g}")
     lines = []
@@ -129,7 +129,7 @@ def _md(results: list) -> str:
         for u in case.unmodelled:
             lines.append(f"* not modelled: {u}")
         lines.append("")
-    for key, (source, why) in NOT_PUT.items():
+    for key, (source, why) in not_put.items():
         lines += [f"### {key} — {source}: not put", "", why, ""]
     return "\n".join(lines)
 

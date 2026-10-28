@@ -287,12 +287,13 @@ def test_the_recycle_at_the_heel(v1):
 # --------------------------------------------------------------------------------------
 
 def test_tic_328012_stays_on_its_faceplate(v1):
-    """TIC-328012's set point taken to 0 K: its output runs to 100 % and nothing follows it —
-    FIC-329402 stays in cascade with no remote set point, on its seed, and 911 on its design
-    1105 kg/h, the port bit-exact with V1 on every tick. The P&ID's cascade stays unwired
-    (handoff B-48, deferred to Phase 7)."""
+    """TIC-328012's set point taken to 0 K: its output moves and nothing follows it — FIC-329402
+    stays in cascade with no remote set point, on its seed, and 911 on its design 1105 kg/h, the
+    port bit-exact with V1 on every tick. On its faceplate's row, 0.20 and 3000 s on 0-200
+    (decision 156), the output stands at 50.2 % after the run, where V1's 3.0 and 250 s ran it to
+    100 %. The P&ID's cascade stays unwired (handoff B-48, deferred to Phase 7)."""
     s, col, loops, b = c003_eq._run(v1, lambda k: c003_eq._design(), 1200, DT,
                                     c003_eq._set_point("TIC_328012", "tic_328012", 0.0))
     fic = loops.fic_329402.loop
-    assert b.tic_op_pct == 100.0 and loops.tic_328012.op == 100.0
+    assert b.tic_op_pct == loops.tic_328012.op == pytest.approx(50.2, abs=1e-9)
     assert (fic.mode, fic.sp, b.m_911_kgh) == ("CAS", t.C003_M911_DES_KGH, t.C003_M911_DES_KGH)

@@ -298,7 +298,9 @@ def tic_328002(op_des_pct: float = TV_328002_OP_DES_PCT) -> ProcessLoop:
 
 def tic_328008() -> ProcessLoop:
     """TIC-328008, the inferential water content of 737 [mol%], on FIC-328404's set point in
-    kg/h. DIRECT acting: a wetter overhead asks more reflux. V1's own tuning (no table row)."""
+    kg/h. DIRECT acting: a wetter overhead asks more reflux. Its faceplate's row in the plant DCS,
+    carried onto the mol% PV (decided 2026-10-28, handoff B-116 (b)); V1's 240 and 110 s are the
+    harnesses'."""
     h = C002_OFFGAS_H2O_DES_MOLPCT
     return ProcessLoop(
         tag="TIC-328008", Kc=TIC_328008_KC, Ti=TIC_328008_TI_S, Td=0.0, act=-1.0,

@@ -354,7 +354,7 @@ class SteamNetwork:
         m_906 = FLASH9_FRACTION * m_502
 
         # 2. 329D009: the split range, its water boiled by 903's superheat (V1's anchor).
-        op_205a, op_205b = self.pic_329205.step(p_9)
+        op_205a, op_205b = self.pic_329205.step(p_9, dt)
         m_903 = pv_329205a_kgs(op_205a, P_SUP_BARA, p_9)
         m_960 = pv_329205b_kgs(op_205b, p_9, p_lp)
         ds_9 = DS9_DES_KGS * (m_903 / M_903_DES_KGS)

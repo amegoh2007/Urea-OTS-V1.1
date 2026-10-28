@@ -24,7 +24,9 @@ def test_the_design_seeds():
     assert SUPPLY_BIAS_PCT == pytest.approx(50.0, abs=1e-12)
     assert Pic329204().step(19.7, False, 0.1) == pytest.approx(44.1, abs=1e-12)
     assert v1_pic_329204().step(19.7, False, 0.1) == pytest.approx(50.0, abs=1e-12)
-    assert Pic329205().step(9.0) == (pytest.approx(n.PV205A_OP_DES_PCT, abs=1e-12), 0.0)
+    assert Pic329205().step(9.0, 0.1) == (pytest.approx(n.PV205A_OP_DES_PCT, abs=1e-12), 0.0)
+    assert Pic329205(table=False).step(9.0, 0.1) == (
+        pytest.approx(n.PV205A_OP_DES_PCT, abs=1e-12), 0.0)
     assert Pic329207().step(5.01325, 0.1) == (0.0, n.PV207B_OP_DES_PCT, 0.0)
     assert n.PV207B_OP_DES_PCT == pytest.approx(54.963, abs=1e-3)
     assert v1_pic_329207().step(5.01325, 0.1) == (0.0, 50.0, 0.0)
@@ -68,13 +70,22 @@ def test_hv_329601_forced_by_trip_21_2():
 
 
 def test_pic_329205s_split_range():
-    """Rising pressure shuts PV-329205A first; past it PV-329205B opens: 0.5 bar over set,
-    A shut and B at 0.45 %; 0.5 bar under, A at 39.5 %."""
-    pic = Pic329205()
-    assert pic.step(9.5) == (0.0, pytest.approx(0.452, abs=1e-3))
-    assert pic.step(8.5) == (pytest.approx(39.548, abs=1e-3), 0.0)
+    """Rising pressure shuts PV-329205A first; past it PV-329205B opens. V1's proportional split
+    (``table=False``): 0.5 bar over set, A shut and B at 0.45 %; 0.5 bar under, A at 39.5 %. The
+    plant DCS's PI (decided 2026-10-28), 3.00 x 100 % / 16 bar = 18.75 %/bar and 50 s: the same
+    half bar over takes A 9.394 % down on the tick and the integral keeps closing it; in MAN the
+    split tracks the strokes, so AUTO takes over without a bump."""
+    pic = Pic329205(table=False)
+    assert pic.step(9.5, 0.1) == (0.0, pytest.approx(0.452, abs=1e-3))
+    assert pic.step(8.5, 0.1) == (pytest.approx(39.548, abs=1e-3), 0.0)
     pic.mode = "MAN"
-    assert pic.step(12.0) == (pytest.approx(39.548, abs=1e-3), 0.0)
+    assert pic.step(12.0, 0.1) == (pytest.approx(39.548, abs=1e-3), 0.0)
+    pi = Pic329205()
+    a1, b1 = pi.step(9.5, 0.1)
+    assert (a1, b1) == (pytest.approx(n.PV205A_OP_DES_PCT - 18.75 * 0.5 * 1.002, abs=1e-9), 0.0)
+    assert pi.step(9.5, 0.1)[0] == pytest.approx(a1 - 18.75 * 0.1 / 50.0 * 0.5, abs=1e-9)
+    pi.mode, pi.op_a_pct, pi.op_b_pct = "MAN", 0.0, 20.0
+    assert pi.step(9.5, 0.1) == (0.0, 20.0) and pi.split_pct == -20.0
 
 
 def test_the_trio_fans_out_its_master():

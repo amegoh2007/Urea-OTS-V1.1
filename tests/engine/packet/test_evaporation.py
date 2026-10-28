@@ -23,8 +23,9 @@ def test_the_stages_and_the_soft_sensors_at_design(design):
 
 def test_the_selector_forwards_609_with_its_uf85(design):
     """Decision 123: the design drain's 75.94 t/h and 617.1 kg/h of UF85 at the PFD's ratio go
-    forward as 609, 76.56 t/h at 138.62 C, the selector closing to the bit; FFIC-335406 in AUTO on
-    its ratio, FIC-335405 in CAS at 0.617 t/h and 44.5 %."""
+    forward as 609, 76.56 t/h at 138.62 C, the selector closing to the bit; FFIC-335406, its
+    faceplate's ratio station (decision 160), in AUTO on the PFD's ratio, its output FIC-335405's
+    0.617 t/h, FIC-335405 in CAS at 44.5 %."""
     e3 = design.packet["EVAP_324"]["E003"]
     assert (e3["route"], e3["selector_stream"], e3["UF85_interlocked"]) == ("A", "609", False)
     assert e3["route_mass_residual_kgh"] == 0.0 and e3["route_energy_residual_kw"] == 0.0
@@ -34,13 +35,14 @@ def test_the_selector_forwards_609_with_its_uf85(design):
     assert (e3["uf85_kgh"], e3["uf85_m3h"]) == (617.1, 0.47)
     assert [e3[k] for k in ("UF85_measured_ratio", "UF85_ratio_command",
                             "UF85_flow_setpoint_th")] == [0.00812599, 0.00812599, 0.617072]
-    assert e3["FFIC_335406"] == {"pv": 0.0081, "sp": 0.0081, "op": 0.0081, "mode": "AUTO"}
+    assert e3["FFIC_335406"] == {"pv": 0.0081, "sp": 0.0081, "op": 0.6171, "mode": "AUTO"}
     assert e3["FIC_335405"] == {"pv": 0.617, "sp": 0.617, "op": 44.5, "mode": "CAS"}
 
 
 def test_the_melt_header_over_its_relief_setting_recycles():
     """PIC-335201 at 4.0 bar g, above LV-324501B's 3.8: the melt returns to 323D002 raw, the
-    metering pumps stopped and FT-335405 at zero, FFIC-335406 frozen on its ratio."""
+    metering pumps stopped and FT-335405 at zero, FFIC-335406's ratio standing and its output at
+    OUT L with no melt forward."""
     def back_up(plant):
         plant.boundary["PIC-335201.barg"] = 4.0
     e3 = run(5, back_up).packet["EVAP_324"]["E003"]
@@ -48,7 +50,7 @@ def test_the_melt_header_over_its_relief_setting_recycles():
     assert e3["recycle_selected"] is True and e3["melt_fwd_th"] == 0.0 and e3["recyc_th"] > 0.0
     assert (e3["uf85_kgh"], e3["UF85_measured_ratio"], e3["UF85_flow_setpoint_th"]) == (0.0, 0.0,
                                                                                       0.0)
-    assert e3["FFIC_335406"] == {"pv": 0.0, "sp": 0.0081, "op": 0.0081, "mode": "AUTO"}
+    assert e3["FFIC_335406"] == {"pv": 0.0, "sp": 0.0081, "op": 0.0, "mode": "AUTO"}
     assert e3["FIC_335405"] == {"pv": 0.0, "sp": 0.617, "op": 0.0, "mode": "CAS"}
 
 

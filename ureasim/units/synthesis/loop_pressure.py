@@ -126,7 +126,7 @@ Z_GAS_DES = (OFFGAS_P_DES_BARA * gas_mw(OFFGAS_DES_KMOLH)
 
 
 def loop_liquid(m_reactor_kg: float, m_scrubber_kg: float, condenser_level_pct: float,
-                sump_level_pct: float) -> tuple[float, float]:
+                sump_level_pct: float, sump_span_kg: float = E001_SPAN_KG) -> tuple[float, float]:
     """The liquid the model holds in the loop's vessels: (mass [kg], volume [m3]).
 
     Process utility
@@ -137,7 +137,7 @@ def loop_liquid(m_reactor_kg: float, m_scrubber_kg: float, condenser_level_pct: 
     sump below LT-322501's lower tap are in no model state and are left in the vapour space.
     """
     m_e002 = condenser_level_pct / 100.0 * E002_SPAN_KG
-    m_e001 = sump_level_pct / 100.0 * E001_SPAN_KG
+    m_e001 = sump_level_pct / 100.0 * sump_span_kg
     m = m_reactor_kg + m_scrubber_kg + m_e002 + m_e001
     v = (m_reactor_kg / OVERFLOW_RHO + m_scrubber_kg / RHO_SUCTION + m_e002 / RHO_E002_LIQ
          + m_e001 / RHO_BOTTOM)
@@ -160,15 +160,18 @@ def liquid_growth(dm_reactor_kgh: float, dm_scrubber_kgh: float, dm_condenser_kg
     return dm, dv
 
 
-def vapour_capacity_kg_per_bar(v_liq_m3: float, mw: float, t_gas_c: float) -> float:
+def vapour_capacity_kg_per_bar(v_liq_m3: float, mw: float, t_gas_c: float,
+                               vessels_m3: float = SYN_LOOP_V_M3) -> float:
     """The loop vapour's own capacity [kg/bar], V_v . MW / (Z_des . R . T).
 
     Process utility
     ---------------
     How much gas one bar puts into the vessels' free volume: about 80 kg/bar on the design holdups,
     some 200 kg/bar in an empty loop. The liquid the loop fills with takes the volume away.
+    ``vessels_m3`` is the vessels' volume: the plant's by default, 322E001's replacement and the
+    plugged tubes' bores out (decisions 154, 155).
     """
-    return (SYN_LOOP_V_M3 - v_liq_m3) * mw / (Z_GAS_DES * R_BAR_M3 * (t_gas_c + 273.15))
+    return (vessels_m3 - v_liq_m3) * mw / (Z_GAS_DES * R_BAR_M3 * (t_gas_c + 273.15))
 
 
 
@@ -226,6 +229,12 @@ class LoopPressure:
     #: What the backlog recondensed on the last tick [kg/h], which 322E003's sump takes on the
     #: next (B-76).
     m_recond_kgh: float = 0.0
+    #: The vessels open to the loop's gas [m3]: the plant's (decisions 154, 155); the harnesses
+    #: run V1's plant's, ``SYN_LOOP_V_V1_M3``.
+    vessels_m3: float = SYN_LOOP_V_M3
+    #: LT-322501's sump over its span [kg], the stripper bundle's the plant runs (decision 154);
+    #: the harnesses run V1's bundle's.
+    e001_span_kg: float = E001_SPAN_KG
 
     def step(self, m_nh3_kgh: float, m_co2_kgh: float, m_308_kgh: float, m_drain_kgh: float,
              m_purge_kgh: float, m_blow_kgh: float, uncond_kgh: float, cool_frac: float,
@@ -273,11 +282,11 @@ class LoopPressure:
         # The liquid the boundary's flow went into this tick, and the volume it took from the
         # vapour, which compresses the gas it displaced.
         m_liq, v_liq = loop_liquid(m_reactor_kg, m_scrubber_kg, condenser_level_pct,
-                                   sump_level_pct)
+                                   sump_level_pct, self.e001_span_kg)
         rho_g = p * mw / (Z_GAS_DES * R_BAR_M3 * (t_offgas_c + 273.15))
         dm, dv = liquid_growth(*dm_liquid)
         dm_liq_kgh = dm - rho_g * dv
-        c_vap = vapour_capacity_kg_per_bar(v_liq, mw, t_offgas_c)
+        c_vap = vapour_capacity_kg_per_bar(v_liq, mw, t_offgas_c, self.vessels_m3)
         c_buf = B_207_PER_BAR * m_reactor_kg
         if sat_frac < 1.0:
             c_buf *= sat_frac

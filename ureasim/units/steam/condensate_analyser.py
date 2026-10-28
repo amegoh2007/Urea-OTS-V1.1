@@ -4,7 +4,7 @@ What this models
 ----------------
 The DCS conductivity measurement on the low-pressure condensate collected in 329D001 (Uhde's loop
 summary UD-MR-329-EC-0001 rev 1, A 329701: function AI, realised in the control system with a high
-alarm and a high-high safety alarm, 0-10 uS/cm, on line 0-CPL2-329D001; P&ID 107/2). Clean steam
+alarm and a high-high safety alarm, 0-30 uS/cm on the plant DCS, on line 0-CPL2-329D001; P&ID 107/2). Clean steam
 condensate is nearly pure water; ammonia and carbon dioxide dissolved in it ionise as ammonium and
 bicarbonate, and a few milligrams a litre take the reading off its scale. On the plant it is the
 instrument that shows process leaking into the steam system — a 322E002 tube leak (handoff B-82)
@@ -70,8 +70,8 @@ def ai_329701_reading(kappa_us_cm: float) -> tuple[float, bool]:
 
     Process utility
     ---------------
-    The transmitter spans 0-10 uS/cm; past its upper range value it reads the top of its scale,
-    and the operator sees an analyser pinned at 10 with its high-high alarm, not the number.
+    The transmitter spans 0-30 uS/cm; past its upper range value it reads the top of its scale,
+    and the operator sees an analyser pinned at 30 with its high-high alarm, not the number.
     """
     return min(kappa_us_cm, AI_329701_SPAN_US_CM), kappa_us_cm > AI_329701_SPAN_US_CM
 
@@ -83,6 +83,6 @@ def ai_329701_alarms(kappa_us_cm: float) -> tuple[bool, bool]:
     ---------------
     What tells the board operator the steam condensate is contaminated: the plant DCS's H1 at 15
     and H2 at 18 uS/cm (read back 2026-10-13). They are evaluated on the condensate's conductivity
-    itself, because both stand above the 0-10 uS/cm range the archive gives the transmitter.
+    itself, as they always were: both lie inside the transmitter's present 0-30 uS/cm.
     """
     return kappa_us_cm > AI_329701_H1_US_CM, kappa_us_cm > AI_329701_H2_US_CM

@@ -13,6 +13,9 @@ from dataclasses import dataclass, replace
 
 import pytest
 
+from ureasim.data import unit_322_loop as loop
+from ureasim.data.unit_322e002 import T_PROD_DES_C
+from ureasim.data.unit_323 import E010_PCHEST_DES_BARA
 from ureasim.data.unit_329 import P_LP_BARA
 from ureasim.engine import plant as P
 from ureasim.engine.schedule import (
@@ -109,6 +112,23 @@ def test_every_unit_steps_exactly_once_a_tick(plant_minute):
     _, reports = plant_minute
     assert all(set(r.runs) == set(P.ORDER) and set(r.runs.values()) == {1} for r in reports)
     assert [r.tick for r in reports] == list(range(1, 601))
+
+
+def test_the_plant_holds_the_pfd_on_its_plugged_tubes(plant_minute):
+    """The tubes plugged at the last turnaround, each exchanger's conductance re-anchored on the
+    tubes still in service (decided 2026-10-28, handoff B-113 (b)): the plant's first tick is the
+    PFD's to the bit — 322E002's product at 170.0 C on a saturated melt, 322E003 condensing its
+    whole demand, 323E010's chest on PFD 926's 2.5 bar a. What the plugging leaves is the loop's
+    vessels less the plugged bores; V1's clean vessels are the harnesses' switch."""
+    sch, reports = plant_minute
+    r = reports[0].results
+    assert (r["322E002"].holdup.condenser.t_prod, r["322E002"].holdup.sat_frac) == (T_PROD_DES_C,
+                                                                                    1.0)
+    assert r["322E003"].rho_cond == 1.0
+    assert r["323F010"].chest_p_bara == E010_PCHEST_DES_BARA
+    assert sch.plant.units["PT-329201"].vessels_m3 == loop.SYN_LOOP_V_M3
+    assert loop.SYN_LOOP_V_M3 - loop.SYN_LOOP_V_V1_M3 == pytest.approx(28.83 - 24.7 - 0.2222,
+                                                                       abs=1e-4)
 
 
 def test_the_tears_carry_their_producers_outputs_one_tick_late(plant_minute):

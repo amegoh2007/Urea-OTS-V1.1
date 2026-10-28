@@ -32,7 +32,8 @@ Decided classes applied at the port (§5 rule 7, As-Built Part LIV)
   pressure, so they choke on FL^2 (P1 - FF Pv) as Flowserve sized them; V1 passes none.
 * **Decisions 10 and 21**: PIC-329204 and the PIC-329207 trio on the tuning table per cent of their
   transmitters' spans, V1's retune of the trio dropped; LIC-329503 and LIC-329504 on their rows.
-  PIC-329205 and LIC-329502 have no row and keep V1's tuning (handoff B-52's class, Section C).
+  PIC-329205 and LIC-329502 on their faceplates in the plant DCS (photographs of 24 October 2026,
+  decided 2026-10-28): PIC-329205 3.00 and 50 s on 0-16 bar g, LIC-329502 3.00 and 250 s.
 * **Decision 33**: each drum's inventory over its whole vessel, heads included, its level read
   between its transmitter's taps; **decision 11**: a valve draws at most what its drum holds.
 * **Decision 32**: SV32951, SV32952 and SV32978-81 on Sempell's certified capacities.
@@ -275,11 +276,19 @@ TRIP_212_SP_BARA = 10.0 + ATM_BARA
 HV601_FORCE_BARA = 12.0 + ATM_BARA
 HV601_SHUT_PULSE_S = 3.0
 
-#: PIC-329205's split range on 329D009: proportional, 40 % per bar about the set point, PV-329205A
-#: closing first, PV-329205B opening once A is shut — Uhde's two characteristics about OUTP 50 %
-#: (sheet 4). No table row: V1's gain (handoff Section C, B-52's class).
+#: PIC-329205's split range on 329D009: PV-329205A closing first, PV-329205B opening once A is shut —
+#: Uhde's two characteristics about OUTP 50 % (sheet 4). V1 runs it proportional, 40 % per bar about
+#: the set point (``K_PIC_9``, which the equivalence harness keeps). The plant DCS runs it PI, gain
+#: 3.00 and 50 s on PT-329205's 0-16 bar g, derivative and filter off (its faceplate, photograph of
+#: 24 October 2026, `References/Gaps Closure/Gaps/20261024_033830.jpg`): on span, 3.00 x 100 % / 16
+#: bar = 18.75 % per bar, the integral on the same split (decided 2026-10-28, decisions 76 and 77's
+#: class).
 P_9_SP_BARA = P_MP_BARA
 K_PIC_9 = 40.0
+PT_329205_SPAN_BAR = 16.0
+PIC_329205_KC_TABLE = 3.00
+PIC_329205_KC = PIC_329205_KC_TABLE * 100.0 / PT_329205_SPAN_BAR
+PIC_329205_TI_S = 50.0
 
 #: The PIC-329207 trio on the LP header (sheet 5): B on the master set point exporting to the
 #: turbine, A venting at master + 0.1 bar, C admitting at master - 0.1. The table's gains on
@@ -292,9 +301,11 @@ PIC_329207_KC = {k: v * 100.0 / PT_329207_SPAN_BAR for k, v in PIC_329207_KC_TAB
 PIC_329207_KI = {k: PIC_329207_KC[k] / PIC_329207_TI_S[k] for k in PIC_329207_KC}
 
 #: The level loops, velocity PI on per cent of level: LIC-329503 2.00 and 200 s, LIC-329504 2.50
-#: and 500 s (the table); LIC-329502 has no row and keeps V1's 2.5 and 90 s. The design level, 50 %.
+#: and 500 s (the table); LIC-329502 3.00 and 250 s, its derivative off (TD -1.0), its faceplate in
+#: the plant DCS (photograph of 24 October 2026, `References/Gaps Closure/Gaps/20261024_033905.jpg`,
+#: decided 2026-10-28, decisions 76 and 77's class), where V1 runs 2.5 and 90 s. The design level, 50 %.
 LEVEL_SP_DES_PCT = 50.0
-LIC_TUNING = {"LIC-329502": (2.5, 90.0), "LIC-329503": (2.00, 200.0), "LIC-329504": (2.50, 500.0)}
+LIC_TUNING = {"LIC-329502": (3.00, 250.0), "LIC-329503": (2.00, 200.0), "LIC-329504": (2.50, 500.0)}
 
 # ======================================================================================
 # The safety valves (decision 32)

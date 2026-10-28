@@ -66,7 +66,7 @@ def _drain(k: int) -> tuple[float, bool]:
 def _run(v1, script, ticks, forced=False, modes=None):
     """V1's cascade and selector and the port's dosing on the same drain, compared every tick."""
     s = _v1_state()
-    master, slave = uf.ffic_335406(), uf.fic_335405(u.PFD_697_KGH)
+    master, slave = uf.ffic_335406(station=False), uf.fic_335405(u.PFD_697_KGH)
     w = dict(d.W_S402)
     out = []
     for k in range(ticks):
@@ -111,6 +111,26 @@ def test_the_slaves_modes_are_v1s(v1):
     bumplessly — ``==`` V1's."""
     _run(v1, lambda k: (d.P2_DES_KGH, False), 1200, modes={200: "AUTO", 600: "CAS", 800: "MAN",
                                                              1000: "CAS"})
+
+
+def test_ffic_335406_as_its_ratio_station_decided_divergence():
+    """Decision 160, 2026-10-28 (B-116 (a)): FFIC-335406 is the ratio station its faceplate in the
+    plant DCS shows, where V1 runs a PI master on the ratio (``station=False``, ``==`` V1's function
+    on every tick above). Both seeded on the plant's design drain, the melt ramped down 20 % over a
+    minute: a minute after the ramp V1's master leaves the pumps at 485.84 kg/h, 1.6 % under the
+    ratio's 493.66, its proportional kick on the measured ratio against its integral; the station
+    hands FIC-335405 the ratio times the melt, 0.493658 t/h to the bit, and the pumps stand at
+    496.69 kg/h, settling on their own loop."""
+    seen = {}
+    for station in (False, True):
+        master, slave = uf.ffic_335406(station), uf.fic_335405()
+        for k in range(1500):
+            m, _ = _drain(k)
+            r = uf.uf85_step(master, slave, m, d.W_S402, T_402, False, DT)
+        seen[station] = r
+    assert seen[False].delivered_kgh == pytest.approx(485.840, abs=1e-3)
+    assert seen[True].flow_setpoint_th == pytest.approx(u.UF_RATIO_DES * m / 1000.0, rel=1e-12)
+    assert seen[True].delivered_kgh == pytest.approx(496.690, abs=1e-3)
 
 
 def test_the_live_dosing_decided_divergence(v1):

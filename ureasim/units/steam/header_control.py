@@ -51,6 +51,8 @@ from ureasim.data.unit_329_network import (
     PIC_329204_I_AUTHORITY_PCT,
     PIC_329204_KC,
     PIC_329204_KI,
+    PIC_329205_KC,
+    PIC_329205_TI_S,
     PIC_329207_KC,
     PIC_329207_KI,
     PV205A_OP_DES_PCT,
@@ -146,15 +148,32 @@ class Pic329205:
     sp_bara: float = P_9_SP_BARA
     op_a_pct: float = PV205A_OP_DES_PCT
     op_b_pct: float = 0.0
+    #: The plant DCS's PI on PT-329205's span, 3.00 and 50 s (decided 2026-10-28); False is V1's
+    #: proportional split about PV-329205A's design stroke.
+    table: bool = True
+    #: The PI's split [% of a stroke]: PV-329205A's above zero, PV-329205B's below it.
+    split_pct: float = PV205A_OP_DES_PCT
+    #: The error of the tick before [bar], set point less pressure: reverse acting.
+    e_prev: float = 0.0
 
-    def step(self, p_bara: float) -> tuple[float, float]:
-        """One tick. Returns (PV-329205A, PV-329205B) strokes [%]; MAN holds both."""
+    def step(self, p_bara: float, dt: float) -> tuple[float, float]:
+        """One tick. Returns (PV-329205A, PV-329205B) strokes [%]; MAN holds both, and the PI's
+        split tracks them so AUTO takes over bumplessly."""
+        e = self.sp_bara - p_bara
         if self.mode == "AUTO":
-            split = PV205A_OP_DES_PCT - K_PIC_9 * (p_bara - self.sp_bara)
+            if self.table:
+                self.split_pct = _clamp(self.split_pct + PIC_329205_KC * (
+                    (e - self.e_prev) + (dt / PIC_329205_TI_S) * e), -100.0, 100.0)
+                split = self.split_pct
+            else:
+                split = PV205A_OP_DES_PCT - K_PIC_9 * (p_bara - self.sp_bara)
             if split >= 0.0:
                 self.op_a_pct, self.op_b_pct = min(100.0, split), 0.0
             else:
                 self.op_a_pct, self.op_b_pct = 0.0, min(100.0, -split)
+        else:
+            self.split_pct = self.op_a_pct if self.op_a_pct > 0.0 else -self.op_b_pct
+        self.e_prev = e
         return self.op_a_pct, self.op_b_pct
 
 
@@ -222,10 +241,13 @@ class LevelLoop:
     mode: str = "AUTO"
     sp_pct: float = LEVEL_SP_DES_PCT
     e_prev: float = 0.0
+    #: (gain, integral time [s]) where a harness keeps a tuning the loop no longer runs — V1's for
+    #: LIC-329502 (decision 156); None is the loop's row in ``LIC_TUNING``.
+    tuning: tuple | None = None
 
     def step(self, level_pct: float, dt: float) -> float:
         """One tick on the level the transmitter reads. Returns the valve's stroke [%]."""
-        kc, ti = LIC_TUNING[self.tag]
+        kc, ti = self.tuning or LIC_TUNING[self.tag]
         e = (level_pct - self.sp_pct) if self.direct else (self.sp_pct - level_pct)
         if self.mode == "AUTO":
             self.op_pct = _clamp(self.op_pct + kc * ((e - self.e_prev) + (dt / ti) * e),

@@ -50,6 +50,16 @@ def test_every_published_stream_reads_as_v1_renders_it(packet):
         assert [list(r) for r in stream_rows(rec, comp)] == want, (rec["name"], comp)
 
 
+def test_numbers_round_as_javascripts_tofixed():
+    """V1 renders with ``toFixed``: a tie rounds away from zero on the double's exact value, a
+    negative zero prints no sign, the non-finite values are JavaScript's words."""
+    from ureasim.hmi.widgets.stream_hotspot import _fmt
+    assert (_fmt(3342.5, 0), _fmt(-3342.5, 0), _fmt(0.125, 2)) == ("3343", "-3343", "0.13")
+    assert (_fmt(2.675, 2), _fmt(-0.0, 1), _fmt(-0.04, 1)) == ("2.67", "0.0", "-0.0")
+    assert (_fmt(float("nan"), 1), _fmt(float("inf"), 1), _fmt(None, 1)) == (
+        "NaN", "Infinity", MISSING)
+
+
 def test_the_rows_are_the_records_fields(packet):
     rec = packet["STREAMS"]["SCRUB_OFFGAS"]
     rows = dict(stream_rows(rec))

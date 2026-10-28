@@ -28,6 +28,7 @@ from __future__ import annotations
 
 from ureasim.core.units_of_measure import R_GAS_FITTED_J
 from ureasim.data.unit_320 import SYN_P_DES_BARA
+from ureasim.data.tube_plugging import PluggedBundle
 from ureasim.data.unit_329 import P_LP_BARA
 from ureasim.thermo.iapws import tsat_c
 
@@ -207,8 +208,22 @@ LEAK_VOLATILE = ("NH3", "CO2", "N2", "O2", "H2", "CH4")
 #: works at once.
 LEAK_DEFAULT_TH = 10.0
 
+# ======================================================================================
+# The tube bundle and its plugged tubes (decided 2026-10-28, decision 155)
+# ======================================================================================
+
+#: 322E002's bundle: 2,929 tubes 25 x 2.5 mm, 11,208 mm effective, 36 mm pitch at 60 deg, 2,579.00
+#: m2 (N.pi.d_o.L = 2,578.3). Source: Uhde DDS UD-AU-322-EC-0004 rev 2, page 3, lines 25 and 34 to
+#: 38 (the vendor archive's "322E002 datasheet.pdf", a scan, read from the page image). 60 tubes
+#: plugged at the last turnaround: 0.97952 of the bundle in service, 2,526.2 m2; the plugged bores
+#: hold 0.211 m3. The conductance back-solved on the design outlet holds on the tubes in service,
+#: re-anchored at a coefficient 1 / f_tubes above the clean bundle's (handoff B-113 (b)).
+TUBES = PluggedBundle(n_total=2929, n_plugged=60, tube_od_m=0.025, tube_wall_m=0.0025,
+                      tube_l_eff_m=11.208, surface_m2=2579.00)
+
 
 __all__ = [
+    "TUBES",
     "FRAC_GAS_DES",
     "T_PROD_DES_C", "P_DES_BARA",
     "STEAM_P_BARA", "STEAM_TSAT_PFD_C", "STEAM_TSAT_C",

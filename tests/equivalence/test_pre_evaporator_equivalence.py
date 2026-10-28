@@ -100,8 +100,8 @@ DT = 0.1
 #: 323E010's DDS (UD-AU-323-EC-0009, 2.5 bar a); TIC-323007's table row, 2.00 and 500 s, on
 #: TT-323012's 160 K onto PT-329208's 6 bar [bar/K]; the table's 0.20 on PT-329208's 6 bar [%/bar].
 DECIDED_E010_PCHEST_BARA = 2.5
-DECIDED_TIC_323012_KC = 2.0 * 6.0 / 160.0
-DECIDED_TIC_323012_TI_S = 500.0
+DECIDED_TIC_323012_KC = 1.0 * 6.0 / 160.0
+DECIDED_TIC_323012_TI_S = 300.0
 DECIDED_PIC_329208_KC = 0.2 * 100.0 / 6.0
 
 
@@ -599,21 +599,22 @@ def _boil_both(v1, before, n):
 
 def test_the_held_liquor_boils_decided_divergence(v1):
     """B-24, decided 2026-10-02 (B-62's class). TIC-323012 to 101 C. V1's overhead is capped at
-    the design split, so after 20 minutes its liquor is at 100.29 C, 2.57 K above its bubble
+    the design split, so after 20 minutes its liquor is at 100.34 C, 2.67 K above its bubble
     point at the live PT-323204, and the product is still 80.00 % urea. The port's holdup boils
-    416 kg/h past its bubble point: the liquor holds there, 99.88 C, and the product has
-    concentrated to 80.28 %."""
+    392 kg/h past its bubble point: the liquor holds there, 99.82 C, and the product has
+    concentrated to 80.26 % (on TIC-323012's faceplate row, decision 156; 100.29 C, 2.57 K, 416
+    kg/h, 99.88 C and 80.28 % on the 2026-09-30 stand-in)."""
     def before(s, tic, pic):
         s.TIC_323012["sp"] = tic.sp = 101.0
     s, sep, a, b, tb_v1, tb = _boil_both(v1, before, 12001)
     assert (a["evap"], a["boil"], b.m_evap_kgh) == (d.MEVAP_DES_KGH, 0.0, d.MEVAP_DES_KGH)
-    assert b.m_boil_kgh == pytest.approx(416.46, abs=0.01)
-    assert (s.r323_f010_T, sep.t_c) == (pytest.approx(100.2894, abs=1e-4),
-                                        pytest.approx(99.8779, abs=1e-4))
-    assert s.r323_f010_T - tb_v1 == pytest.approx(2.571, abs=1e-3)
+    assert b.m_boil_kgh == pytest.approx(392.11, abs=0.01)
+    assert (s.r323_f010_T, sep.t_c) == (pytest.approx(100.3397, abs=1e-4),
+                                        pytest.approx(99.8238, abs=1e-4))
+    assert s.r323_f010_T - tb_v1 == pytest.approx(2.667, abs=1e-3)
     assert 0.0 < sep.t_c - tb < 0.01
     assert (s.w_f010["Urea"], sep.w["Urea"]) == (pytest.approx(0.800016, abs=1e-6),
-                                                 pytest.approx(0.802848, abs=1e-6))
+                                                 pytest.approx(0.802647, abs=1e-6))
 
 
 def test_more_steam_concentrates_instead_of_superheating_decided_divergence(v1):
@@ -640,8 +641,9 @@ def test_hv_323605_on_its_vendor_trim_decided_divergence(v1):
     runs it linear from 50 % on the globe valve's xT. The seed's own relaxation (B-94) moves both
     separators by 3e-8 bar in the first second, the two trims answering it apart from the first
     tick. Then 324E002's shell falls to 0.25 bar a: V1's valve pulls 13 638 kg/h at once and the
-    separator down to 0.4319 bar a and 97.76 C after five minutes; the Neldisc, choked below
-    0.298 bar a, pulls 12 196 kg/h and holds the separator at 0.4562 bar a and 98.83 C."""
+    separator down to 0.4301 bar a and 97.61 C after five minutes; the Neldisc, choked below
+    0.298 bar a, pulls 12 196 kg/h and holds the separator at 0.4558 bar a and 98.81 C (on
+    TIC-323012's faceplate row, decision 156; 0.4319, 97.76, 0.4562 and 98.83 on the stand-in)."""
     s = _v1_state(v1)
     sep = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
@@ -662,10 +664,10 @@ def test_hv_323605_on_its_vendor_trim_decided_divergence(v1):
             pulls = (a["pull"], b.pull_kgh)
     assert parted == 1
     assert pulls == (pytest.approx(13638.0, abs=0.1), pytest.approx(12195.7, abs=0.1))
-    assert (s.r323_f010_P, sep.p_bara) == (pytest.approx(0.4319, abs=1e-4),
-                                           pytest.approx(0.4562, abs=1e-4))
-    assert (s.r323_f010_T, sep.t_c) == (pytest.approx(97.764, abs=1e-3),
-                                        pytest.approx(98.835, abs=1e-3))
+    assert (s.r323_f010_P, sep.p_bara) == (pytest.approx(0.4301, abs=1e-4),
+                                           pytest.approx(0.4558, abs=1e-4))
+    assert (s.r323_f010_T, sep.t_c) == (pytest.approx(97.606, abs=1e-3),
+                                        pytest.approx(98.811, abs=1e-3))
 
 
 # --------------------------------------------------------------------------------------
@@ -702,7 +704,7 @@ def test_stages_two_and_three_coupled_through_a_feed_cut(v1):
 
 
 def test_a_pinched_hic_323605_reaches_the_drum_only_unchoked(v1):
-    """HIC-323605 to 20 %: the separator pressure rises to 0.94 bar a. V1 verbatim, 323F004's
+    """HIC-323605 to 20 %: the separator pressure rises to 0.945 bar a. V1 verbatim, 323F004's
     drain feels the smaller drop across LV-323505 one tick later and LIC-323505 answers. The
     port (handoff B-46, decided 2026-09-30): LV-323505 flashes and chokes on 0.054 bar while
     323F010 stays under its choke point, 1.076 bar a, so the drum feels nothing and LIC-323505
@@ -710,7 +712,7 @@ def test_a_pinched_hic_323605_reaches_the_drum_only_unchoked(v1):
     def hic(k):
         return 20.0 if k >= 10 else 50.0
     b2, b3 = _run_coupled(v1, lambda k: {"m314": R323_M314_DES, "hic": hic(k)}, 400, dt=0.5)
-    assert b3.p_bara == pytest.approx(0.9445, abs=1e-4)
+    assert b3.p_bara == pytest.approx(0.9450, abs=1e-4)
     assert (b2.lv505_op_pct, b2.m_319_kgh) == (d.LV505_OP_DES_PCT, R323_M319_DES)
     s = _v1_state(v1)
     s.flash_decided = False                                   # V1 verbatim: nothing chokes
@@ -763,9 +765,10 @@ def test_all_three_stages_coupled_through_a_stripper_feed_cut(v1):
 def test_a_set_point_step_on_the_decided_chest_and_gains(v1):
     """TIC-323012 to 97 C, V1's chest and gains and the port's side by side, the held liquor
     boiling on both (B-24). V1 works its chest from 1.76 bar a, on its 3.6 bar/K retune; the port
-    from PFD 926's 2.5, on TIC-323007's table row on span, 0.075 bar/K. The design duty is the
-    same on both anchors; after 20 minutes V1's separator is 1.27 K down and the port's 0.91 K,
-    both heading for 97 C (without B-24: 1.23 and 0.78 K)."""
+    from PFD 926's 2.5, on its faceplate's row on span, 0.0375 bar/K (decision 156; TIC-323007's
+    row, 0.075 bar/K, before). The design duty is the same on both anchors; after 20 minutes V1's
+    separator is 1.27 K down and the port's 0.85 K, both heading for 97 C (0.91 K on the stand-in;
+    without B-24: 1.23 and 0.78 K)."""
     s = _v1_state(v1, chest_decided=False)
     sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
@@ -781,6 +784,6 @@ def test_a_set_point_step_on_the_decided_chest_and_gains(v1):
                 pytest.approx(1.76, abs=0.01), pytest.approx(2.5, abs=0.01))
             assert a["Q"] == pytest.approx(b.q_e010_kw, rel=1e-3)
     assert s.r323_f010_T == pytest.approx(97.73, abs=0.01)
-    assert sep.t_c == pytest.approx(98.09, abs=0.01)
+    assert sep.t_c == pytest.approx(98.145, abs=0.001)
     assert s.r323_e010_chest_P == pytest.approx(1.63, abs=0.01)
     assert b.chest_p_bara == pytest.approx(2.33, abs=0.01)

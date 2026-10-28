@@ -102,6 +102,8 @@ Design basis: `References/Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md
 - Part LXXXIV — The data gaps searched again; seven valves on their vendor sheets (Phase 7)
 - Part LXXXV — The housekeeping split: every module inside 600 lines (Phase 7)
 - Part LXXXVI — An external report on five data-gap rows; two closed (Phase 7)
+- Part LXXXVII — The replacement stripper, the plugged tubes, the gap photographs, Scenarios6 (Phase 7)
+- Part LXXXVIII — B-113 to B-117 closed, and the dynamic audits (Phase 7)
 
 ---
 
@@ -1706,6 +1708,15 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 335 | 322E006 on PFD 28's cooling water (decision 151) | V1 fixes 755 at 40 C; the port back-solved 10 374 kg/h on the datasheet UA | `data/unit_322e006` ``E006_M_CW_PFD_KGH``; `units/absorption/feed_cooler` ``E006_UA_DES_KW_K``, ``feed_cooler_322e006(ua_kw_k=)`` | **`[DECIDED DIVERGENCE]`** 2026-10-22: 14 t/h, the UA back-solved to 20.448 kW/K so 755 holds 40.0 C, the datasheet's 30.776 kept as margin (§LXXXIV.5) |
 | 336 | The open data gaps searched again (session 69) | — | `handoff.md` Open data gaps | **recorded** 2026-10-22: both user folders (486 documents) and the archive; four rows closed (rows 330-335), 15 open (§LXXXIV.1, §LXXXIV.6) |
 | 337 | Two data-gap rows closed (decision 153) | — | `handoff.md` Open data gaps; `data/unit_322c001` ``C001_HEAD_VOL_M3`` (unchanged) | **recorded** 2026-10-23: an external report audited against the code; 322C001's head volume (0.1029 m3, three methods within 1.2 %) and the urea-melt Henry constant (no source holds one) closed by the process engineer; the Neldisc row kept linear, its chord's departure from the uncited bulletins measured +13.4 % to -4.7 % on the sheets' points; 13 open (§LXXXVI) |
+| 338 | 322E001 on its 2,950-tube replacement (decision 154) | V1's 2,600-tube bundle | `data/unit_322e001_bundle` ``BUNDLE``, ``BUNDLE_V1``; `units/synthesis/stripper`, `stripper_shell`, `stripper_kinetics`, `stripper_sump` (``bundle=``) | **`[DECIDED DIVERGENCE]`** 2026-10-28: flooding 159.94 kg/h per tube on D^2.5, the shell bound on the U.A ratio 1.14234, the holdups the replacement's; at the design every published field V1's to the bit but the flooding fraction and the load per tube; V1's bundle on the harness switch, both sides in `test_stripper_equivalence.py` §6 (§LXXXVII.1) |
+| 339 | The plugged tubes, re-anchored (decisions 155, 157) | V1's clean bundles | `data/tube_plugging` ``PluggedBundle``; `data/unit_322e002` ``TUBES``, `unit_322e003` ``TUBES``, `unit_323` ``E010_TUBES``; `data/unit_322_loop` ``V_E002_M3``, ``V_E003_M3`` | **`[DECIDED DIVERGENCE]`** 2026-10-28: the conductances re-anchored on the tubes in service (coefficient 1 / f_tubes), the design point exact by construction; the plugged bores out of the loop's 245.61 m3, V1's 241.7 on the harness switch (§LXXXVII.2, §LXXXVIII.1) |
+| 340 | The faceplate rows of 24 October 2026 (decision 156) | V1's tunings; AI-329701 on 0-10 uS/cm | `data/unit_323`, `unit_328d001`, `unit_328c003`, `unit_329`, `unit_329_network`; `units/steam/header_control` ``Pic329205``, ``LevelLoop.tuning`` | **`[DECIDED DIVERGENCE]`** 2026-10-28: TIC-323012, FIC-328404, PIC-329205 (a PI on its split), LIC-329502 and TIC-328012 on their faceplates, AI-329701 on 0-30 uS/cm; V1's on the harness switches (§LXXXVII.3) |
+| 341 | The stream inspector's tie rounding | V1 ``renderStream``'s ``toFixed`` | `hmi/widgets/stream_hotspot` ``_fmt`` | **fixed** 2026-10-28: a tie rounds half up on the double's exact decimal value and a negative zero prints unsigned, as ``toFixed``; PFD 709's 3 342.5 kg/h reads 3343 as V1's (§LXXXVII.5) |
+| 342 | `Scenarios6.docx` put to the plant | — | `tests/phase7/seal_loss.py`, `run_seal_loss.py` ``ReliefPeak``; `run_deviations.run_plant(watch=)` | **recorded** 2026-10-28: four cases; 45 of 71 claims as claimed on session 72's plant, 47 of 71 on the re-anchored plant with 323C003's relief read between samples (§LXXXVII.4, §LXXXVIII.2) |
+| 343 | LV-322501's failure case (decision 158) | V1's blow-through on the stroke over its design stroke | `units/synthesis/stripper_sump`, `units/recirc/rectifying_column` ``sv_32351`` (unchanged) | **recorded** 2026-10-28: SV32351 / SV32352 lift at 6.010 bar a 91.0 s after LV-322501 is forced wide open, 12.6 s lifted, 51.4 t/h at the peak; the 31.5 t/h ceiling is the seal band's equilibrium; no relation changed (§LXXXVIII.2) |
+| 344 | The vacuum bleeds on the design basis (decision 159) | — | `data/unit_324_train` (unchanged) | **recorded** 2026-10-28: the 8-10 October trend at 112.5 % load leaves the 1750 MTPD design strokes standing; the data-gap row closed (§LXXXVIII.3) |
+| 345 | TIC-328008 and FFIC-335406 on their faceplates (decision 160) | V1's 240 kg/h per mol% and 110 s; V1's PI master on the ratio, 0.5 and 60 s | `data/unit_328d001` ``TIC_328008_KC``, ``H2O_737_WT_PER_MOL``; `data/unit_335` ``FFIC_335406_RAT_*``, ``FFIC_335406_OUT_*``; `units/finishing/uf85_dosing` ``ffic_335406(station=)`` | **`[DECIDED DIVERGENCE]`** 2026-10-28: 84.59 kg/h per mol% and 60 s; a ratio station on RAT H 0.0080 and OUT H 0.80 t/h, the PFD's 0.0081260 its seed; V1's on the harnesses, both sides in `test_reflux_drum_decided_equivalence.py` and `test_uf85_dosing_equivalence.py` (§LXXXVIII.4) |
+| 346 | The dynamic audits | — | `tests/engine/test_dynamic_audit.py` | **recorded** 2026-10-28: 14 tests, green — the holdups' balances over a disturbance, the trip paths, the updated controllers' transfers, a FAST shutdown with no node ringing, freeze-snapshot-reload-resume, a seeded malfunction fuzz; B-117 signed off as built (§LXXXVIII.5) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -17368,3 +17379,305 @@ decision 108's linear chord; the row stays open with this measurement.
 
 No code changed, so no test moved; `tests/docs` green. 13 data gaps remain; `handoff.md`'s Sections
 A, B and C stay empty.
+
+
+# Part LXXXVII — The replacement stripper, the plugged tubes, the gap photographs, Scenarios6 (Phase 7)
+
+Session 72, 2026-10-28. Five tasks from the process engineer: 322E001's 2,950-tube replacement
+(`project.md` decision 154), the tubes plugged at the last turnaround (decision 155), the photographs
+of `References/Gaps Closure/Gaps` (decision 156), `References/scenarios/Scenarios6.docx` put to the
+plant, and an audit. Every departure from V1 keeps V1's side on its harness's switch.
+
+## LXXXVII.1 322E001's replacement bundle (decision 154)
+
+Source: the vendor archive's `Licensor and Vendor Documentation/New Stripper` folder, 21 documents,
+all read (text extracted; the drawings' tables rendered where the text was ambiguous): Resta job 6355
+for Stamicarbon, project Z524-H1269, built 2025 — the general arrangement rev 6, the tube bundle
+6355-A1 rev 4, the bottom tubesheet 6355-A9 rev 3, nozzle N17 6355-A7 rev 6, the part list 6355-B1
+rev 7; Stamicarbon's process data sheet A4-101124 rev -.
+
+| Datum | V1's bundle (Uhde DDS) | The replacement | Source |
+|---|---|---|---|
+| tubes | 2,600 | 2,950 | 6355-A1, -B1, GA |
+| tube | 31 x 3.0 mm, bore 25.0 | 31 (+-0.2) x 2.5 mm minimum wall, bore 26.0 | 6355-A1 |
+| effective length | 6.000 m | 6.000 m tubesheet to tubesheet (tubes 6,863 mm) | 6355-A1, -B1 |
+| surface | 1,519.00 m2 (N.pi.d.L 1,519.27) | 1,724 m2 (1,723.85) | GA |
+| tube side / shell side | 24.7 m3 / - | 28.83 / 14.67 m3 | GA, "capacity" |
+| bottom sump | head I.D. 2,430 mm, 4.638 m2 | channel I.D. 2,425 mm, 4.6186 m2 | 6355-A9 |
+| level connection | LT-322501's taps, 1.5 m | none: N17, a radar's stilling pipe, blinded; LT-322501's 1.5 m kept | 6355-A7, GA |
+| rated duty | 39,400 kW, 214 C steam, 187 -> 172 C | 41,738 kW, 212 C steam, gas out 187 C, liquor out 173 C | UD-AU-322-EC-0003; A4-101124 |
+| U.A on the terminal temperatures | 1,160.55 kW/K | 1,325.74 kW/K | the two datasheets |
+
+The replacement's sheet prints no coefficient and no corrected MTD; it refers to Stamicarbon's
+proprietary equipment data sheet A4-93540, not in the folder (the data gap stays open).
+
+What the equipment model now runs on (the PFD stays the flowsheet's anchor, decision 47):
+
+    m_flood,tube = 145 kg/h . (d_i / 0.025)^2.5 = 159.94 kg/h        (Wallis: j* ~ m / D^2.5)
+    flood_frac   = m_feed / (N . m_flood,tube) = 0.5951 at design     (V1's bundle 0.7448)
+    Q_max        = Q_des,raw . (UA_2950 / UA_V1) . LMTD(T_steam) / LMTD_des . f_sub,   UA ratio 1.14234
+    V_liq        = V_tubes + V_sump . L/100,   V_tubes = 9.3974 m3 (7.6576), V_sump = 6.9279 m3 (6.957)
+    M_tubes,full = V_tubes . rho_bottom = 10,662.7 kg (8,688.7)
+
+The hydrolysis and biuret departures are taken against the same bundle's design holdup, so both are
+exactly the PFD's extents at design on either bundle. At design every published field but the
+flooding fraction and the load per tube is V1's to the bit (`test_stripper_equivalence.py` §6); the
+shell bound no longer binds at the design (capacity 1.142); flooding starts at 168 % of design load
+(V1's bundle 134 %). Thirty minutes of the unperturbed plant on the replacement alone match the clean
+V1 basis to the printed digits. The loop's vessels hold 245.83 m3 with the replacement (241.7); the
+harnesses run the node on V1's (`LoopPressure.vessels_m3`, `SYN_LOOP_V_V1_M3`).
+
+## LXXXVII.2 The plugged tubes (decision 155)
+
+| Exchanger | Tubes, size, length | Surface | Plugged | f_tubes | Active surface | Plugged bores |
+|---|---|---|---|---|---|---|
+| 322E002 | 2,929, 25 x 2.5 mm, 11,208 mm | 2,579.00 m2 | 60 | 0.979515 | 2,526.17 m2 | 0.2113 m3 |
+| 322E003 | 525, 25 x 2.5 mm, 2,170 mm | 89.50 m2 | 16 | 0.969524 | 86.77 m2 | 0.0109 m3 |
+| 323E010 | 1,087, 25 x 1.60 mm, 3,700 mm | 316.00 m2 | 15 | 0.986201 | 311.64 m2 | 0.0207 m3 |
+
+Sources: the Uhde design data sheets in `References/Datasheets` (scans, read from the page images:
+UD-AU-322-EC-0004 rev 2 p.3, -0005 rev 00 p.3, UD-AU-323-EC-0009 rev 00 p.2); each surface
+reproduced by N.pi.d_o.L within 0.1 %. Each conductance is its clean value times f_tubes, the
+coefficient held: 322E002's design-pinned UA (its NTU quench), 322E003's UA in its effectiveness
+and capacity, 323E010's chest UA. The loop's vessels lose the plugged bores (245.61 m3).
+
+Measured at the design: 322E002's product 171.229 C (170.0 clean), its melt's bubble pressure 146.86
+bar a; 322E003's condensation capacity 0.97230 of its demand; 323E010's chest 2.5282 bar a on the
+first tick. Thirty minutes unperturbed (B-113): 322E002's saturation 0.979 -> 0.932, still falling;
+PT-329201 140.81 bar a at about 12 minutes, 140.76 at 30; LT-322501 down to 43 %; 323E010's chest
+2.456 bar a, PV-329208 26.1 %. The derated plant does not hold the PFD's seed; the options are
+B-113's. Superseded: the conductances are re-anchored on the bundle in service (§LXXXVIII.1,
+decision 157).
+
+## LXXXVII.3 The gap photographs (decision 156)
+
+26 photographs, 22-24 October 2026, OCR'd (Windows.Media.Ocr) and each value read from the image:
+
+| Instrument | The plant DCS | The model before | Now |
+|---|---|---|---|
+| AT-329701 (AI-329701) | 0-30 uS/cm, H1 15, H2 18, delay 0 | 0-10 uS/cm (loop summary, 2007) | 0-30 (data gap closed) |
+| TIC-323012 | 1.00, TI 300 s, TD 0, TF 0, DZ 2 %, 0-160 C | TIC-323007's row, 2.00 and 500 s | 1.00 x 6 / 160 = 0.0375 bar/K, 300 s |
+| FIC-328404 | 1.00, TI 200 s, 0-8.0 m3/h | V1's 0.5 per kg/h, 25 s; span 5 m3/h | 12.5 %/(m3/h), 200 s; span 8.0 |
+| PIC-329205 | 3.00, TI 50 s, 0-16 bar g | V1's proportional split, 40 %/bar | PI on the split, 18.75 %/bar, 50 s |
+| LIC-329502 | 3.00, TI 250 s, TD -1 (off) | V1's 2.5 and 90 s | 3.00 and 250 s |
+| TIC-328012 | 0.20, TI 3000 s, 0-200 | V1's 3.0 and 250 s | 0.10 %/K, 3000 s (its output drives nothing) |
+| TIC-328008 | 1.00, TI 60 s, PV wt% H2O | V1's 240 kg/h per mol%, 110 s | decided — §LXXXVIII.4 |
+| FFIC-335406 | ratio station: RAT 0.0032, RAT H 0.0080, OUT H 0.80 t/h | V1's PI on the ratio | decided — §LXXXVIII.4 |
+| LT-323503 | H1 80, L1 20, L2 5 %, delay 0 | trip at 5 %, 2 % hysteresis stand-in | unchanged (L2 confirmed) |
+| TT-322015 | 0-200 C, H1 100, H2 110, delay 0 | H2 110 C, 2 K stand-in | unchanged (H2 confirmed) |
+| PIC-324202 / 203, PV-324202 | 8-10 Oct 2026 at 112.5 %: -0.72 / -0.90 bar g, bleeds 0.2 / 0.5 % | design strokes 61.07 / 92.0 % | unchanged — §LXXXVIII.3 |
+
+PIC-329205's PI: the split u, seeded on PV-329205A's design stroke, u += Kc ((e - e_prev) + dt / Ti .
+e) with e = SP - P, clamped to +-100 %; A = u for u >= 0, B = -u below; in MAN u tracks the strokes.
+Its integral restores 329D009: XV-322915's flood draws the 9-bar header to 8.575 bar a in ten
+seconds and back to 8.999 in five minutes (V1's proportional split held 8.765). TIC-323012 on its
+row meets a 101 C set point as the stand-in did (99.476 C at ten minutes, 100.9825 C at two hours,
+the liquor's bubble point at the live vacuum), no overshoot; the separator's mechanism tests stay on
+the stand-in they were measured on. The trend photographs of 22 October (323C003 and the synthesis
+loop) and 23 October (FT-329407 with PV-329208 and TIC-323012) were OCR'd for their tags, not read
+value by value: normal-operation trends that carry no open gap's datum. IMG-20261023-WA0000 is a
+handwritten shift tally of urea production in Arabic, no plant datum.
+
+## LXXXVII.4 Scenarios6 — the stripper's level lost (Phase 7)
+
+`tests/phase7/seal_loss.py` and `run_seal_loss.py` put the note's four cases to the plant as
+`Scenarios5.md`'s were (`coupled.W1_S`, `W2_S`), the claims read off the text — its figures are
+images and, by its own first line, the old stripper's. On the plant of decisions 154-156:
+
+| Case | Lever | Claims as claimed |
+|---|---|---|
+| S6-1 runaway drain (S2-2.3a) | LIC-322501 MAN, LV-322501 46.1 -> 70 % | 18 of 30 |
+| S6-2 the valve forced wide open | LV-322501 -> 100 % | 17 of 30 |
+| S6-3 feed starvation behind a held valve (S2-2.2b) | LV-322501 MAN at 46.1 %, HIC-322605 60 -> 40 % | 5 of 6 |
+| S6-4 LT-322501 reading high | LIC-322501 AUTO, set point 50 -> 0 % | 5 of 5 |
+
+**45 of 71.** The mismatches, by class: (i) the note's drain pulling more liquor through the tubes
+— bottoms NH3 up, urea down, top gas and TT-322013 up — is not the plant's: the falling film is fed
+by 322R001's overflow, not by the sump below it; (ii) the seal's loss depressurises the loop through
+LV-322501 (PT-329201 -3.7 and -8.2 bar, TT-322010 down) where the note claims a rise from
+de-condensation — its own alternative; (iii) the reactor feed's N/C does not spike: 320K002's
+boundary delivers its demand (decision 73); (iv) the LP train's starvation — 323D011, FV-324401,
+TT-324001, the UF85 — assumes the reactor's feed lost, which these cases do not do; (v) 323C003's
+safety valves never lift: S6-2's blow-through peaks at 31.5 t/h, PT-323201 at 6.02 bar a against
+their 6.51 (B-114) — as the 5 s samples read it; tick by tick they lift at their 6.010 bar a
+set (§LXXXVIII.2). S6-3 latches trips 21.2, 21.8, 21.10, 22.1 and 22.2 at 1 160 s, PT-329201 at
+159.2 bar a.
+
+## LXXXVII.5 The audit
+
+pyflakes clean on `ureasim`, `tests`, `tools` and `run.py`; every module under `ureasim/` at or below
+600 lines (`pre_evaporator.py` 597); nothing below `hmi` imports PyQt6; no `thermo/` file changed, so
+the liquid-state stores stand. Six modules no test names (`hmi.widgets.bargraph`,
+`hmi.widgets.icon_geometry`, `thermo.kvalues`, `thermo.vle_grid`, `units.synthesis.hp_split`,
+`units.synthesis.reactor_calibration`) predate the session. Tests added: `tests/data/
+test_unit_322e001_bundle.py`, `test_tube_plugging.py`, `tests/phase7/test_seal_loss.py`, the
+both-sides sections of the stripper and sump equivalence files, the plugged pre-evaporator and
+TIC-323012's row; the steam suites re-measured on PIC-329205's PI. The synthesis loop's harness
+shares the plant's LP side through its headers: its `harness_plant()` now keeps everything the
+session changed as it stood before — 322E001's 2,600 tubes and LT-322501's span on the loop node
+(`LoopPressure.e001_span_kg`), the loop's 241.7 m3 (`vessels_m3`), the clean 322E002, 322E003 and
+323E010, PIC-329205's proportional split, V1's LIC-329502 (`LevelLoop.tuning`), TIC-323012's
+2026-09-30 stand-in and V1's FIC-328404 and TIC-328012 — measured on B-75's case to be what moved
+its decided numbers (141.4888 / 141.5018 bar a against the documented 141.4877 / 141.5007; each
+change alone moves them a fraction of that, all together restore every documented value of the
+file, B-106's azeotrope transient included). `build_plant(plugged=)`
+builds the plant on the clean bundles where a test pins the design seed (the packet's design
+values, the historian's PT-329201, the LP header at 4 bar g, LT-322E002's NLL, the tube leak on the
+seed): the plugged plant leaves that seed (B-113), the clean one is the one it was solved on
+(removed in session 73 with the re-anchoring, §LXXXVIII.1).
+
+The audit found one defect and fixed it: the stream inspector (`hmi/widgets/stream_hotspot.py`)
+formatted its numbers with Python's round-half-even where V1's ``renderStream`` uses JavaScript's
+``toFixed`` — a tie rounds away from zero on the double's exact value, a negative zero prints no
+sign. PFD 709's mass flow, 3 342.5 kg/h on this session's plant, read 3342 where V1 reads 3343;
+`_fmt` now rounds on the exact decimal value, half up, and the node comparison over every
+published stream agrees again. Documented values the session's rows moved were re-measured and
+their histories kept in the docstrings: the steam network on PIC-329205's PI, TIC-328012's
+faceplate test (50.2 % where V1's tuning ran it to 100 %), four of the pre-evaporator's decided
+tests on TIC-323012's row, PIC-328202's port side with FIC-328404's row (3.6610 bar a, 3.6613
+before).
+
+The full suite is green on every group (2026-10-28: engine, hmi, thermo, units, the nine
+equivalence groups and the rest); `tests/engine/test_check_valve_audit.py` and the native-platform
+`tests/hmi/test_screen_geometry.py` included, no test skipped for want of a font. Not run in this
+session: the dynamic audits the process engineer listed (the mass and energy balances integrated over
+a disturbance with the holdups' change, fault injection across the trip paths, step-response fitting,
+snapshot replay under FAST) beyond what the suite already pins. They were built in session 73,
+§LXXXVIII.5.
+
+
+# Part LXXXVIII — B-113 to B-117 closed, and the dynamic audits (Phase 7)
+
+Sessions 73 and 74, 2026-10-28. The process engineer decided B-113 (b), B-115 (a) and B-116 and
+confirmed B-114 as measured; the dynamic audits of the Phase 7 checklist were built into the suite,
+and their one finding, B-117, was signed off as built (`project.md` decisions 157 to 160). No relation
+was changed for B-114, B-115 or B-117.
+
+## LXXXVIII.1 The plugged tubes re-anchored on the bundle in service (B-113 (b), decision 157)
+
+Each of the three conductances is back-solved on the PFD's design point — 322E002's NTU quench to its
+170.0 C product, 322E003's condensation capacity on its design demand, 323E010's chest on PFD 926's
+2.5 bar a — and the plant runs that design point with its tubes plugged, so the anchor holds on the
+tubes still in service:
+
+    U_service = UA_des / A_active = U_des / f_tubes,      U_service . A_active = UA_des
+
+`PluggedBundle.u_service_ratio` is 1 / f_tubes: 1.02091 for 322E002, 1.03143 for 322E003, 1.01399
+for 323E010. Session 72's derate is removed — the three units' `plugged` fields, `build_plant(plugged=)`
+and the design-seed tests' workaround with them — and the records stay: the tube counts, the active
+surfaces, and the plugged bores' 0.222 m3 out of the loop's vessels (245.61 m3; V1's 241.7 stays on
+the harnesses' `LoopPressure.vessels_m3`). Measured: the plant's first tick is the PFD to the bit —
+322E002's product 170.0 C on a saturated melt, 322E003 at 1.0 of its demand, 323E010's chest 2.5 bar a
+(`tests/engine/test_scheduler.py::test_the_plant_holds_the_pfd_on_its_plugged_tubes`) — and thirty
+minutes unperturbed hold the clean basis to the printed digits (PT-329201 140.70184 bar a, 322E002's
+product 170.00342 C, LT-322501 49.974 %).
+
+## LXXXVIII.2 LV-322501's failure case tick by tick (B-114, decision 158)
+
+Session 72's survey read SV32351 / SV32352 as never lifting when LV-322501 fails open. The two premises
+B-114 offered were checked in the code before anything was changed:
+
+* the gas blow-through already scales on the stroke over its design stroke — V1 `main.py` 7633 passes
+  ``lv_open / LV322501_OPEN_DES``, the port ``lv_opening / LV_322501_OPEN_DES_PCT``
+  (`units/synthesis/stripper_sump.py`) — so the trim's gas capacity at full stroke is already 100 /
+  46.1 of its design stroke's (§XIX.2's derivation takes the design duty at the design stroke);
+* the valves already pop at their set, 5.0 bar g on the sheets' 1.010 bar a, 6.010 bar a (decision 71
+  keeps a relief valve's own atmosphere), and reseat at 5.51 bar a on the 10 % gas blowdown.
+
+Read every tick, LV-322501 forced wide open (case S6-2): the sump drains in 90 s; the valves lift at
+91.0 s and stay lifted 12.6 s in all over the next quarter minute, 51.4 t/h relieved at the peak,
+PT-323201 to 6.027 bar a. The survey's 5 s samples had missed every lift. The blow-through's 31.5 t/h
+is the sump's level standing in its seal band: the 130 t/h of bottoms still arriving hold LT-322501 at
+1.2 %, the nozzle 42 % covered, so the valve passes liquid and gas together; with the nozzle wholly
+uncovered the trim would pass about 53 t/h of gas at the live loop pressure, against the 60 t/h Uhde
+sized the valves on with no liquid left. No relation changed. The survey now reads 323C003's relief
+as its peak since the last sample (`tests/phase7/run_seal_loss.ReliefPeak`, through
+`run_deviations.run_plant(watch=)`).
+
+`Scenarios6.docx` re-run on the re-anchored plant: **47 of 71** claims as claimed (45 in session 72).
+Six verdicts moved, all through the plant's response, not the claims:
+
+| Case | Claim | Session 72 | Session 73 |
+|---|---|---|---|
+| S6-2 | PI-322E002, the melt's bubble pressure, rises (15-45 min) | -0.35 bar, not as claimed | +3.68 bar, as claimed |
+| S6-2 | CO2 starvation spikes the reactor feed's N/C (15-45 min) | +0.0001, under the threshold | +0.0003, as claimed |
+| S6-2 | stage 1's held melt concentrates, TT-324001 climbing (15-45 min) | -0.03 K | +0.03 K, as claimed |
+| S6-2 | the liquid surge fills 323F004 (first 5 min) | +16.3 %, as claimed | -16.1 %, not as claimed |
+| S6-1 | 323P008 drains 323D011 once the flash dies out (15-45 min) | +0.05 % | -0.04 %, as claimed |
+| S6-1 | the top gas drops by the CO2 sweep lost (15-45 min) | -2.10 t/h, as claimed | +0.81 t/h, not as claimed |
+
+S6-3 and S6-4 are unchanged (5 of 6, 5 of 5). The relief claim — SV32351 / SV32352 cycling over 15-45
+minutes — stays unmet: the valves lift in the first two minutes of the blow-through, then PT-323201
+holds 5.7 to 5.9 bar a, under their set.
+
+## LXXXVIII.3 The vacuum bleeds on the design basis (B-115 (a), decision 159)
+
+The 8-10 October 2026 trend (`References/Gaps Closure/Gaps/20261024_032621.jpg`) is the plant at
+112.5 % urea load on deeper set points — PIC-324202 -0.72 and PIC-324203 -0.90 bar g, HIC-329605 at
+91.5 %, the bleeds at 0.2 and 0.5 %. The model is anchored on the 1750 MTPD PFD (decisions 6 and 47),
+whose design strokes stand: PV-324202 61.07 % on PFD 784's 21 kg/h of false air, PIC-324203 92.0 %.
+The bleed valves' data-gap row is closed.
+
+## LXXXVIII.4 TIC-328008 and FFIC-335406 on their faceplates (B-116, decision 160)
+
+**TIC-328008** (`20261024_033802.jpg`): gain 1.00 on its inferential's 0-100 wt% water, TI 60 s, TD
+and TF 0, set point 40.0 wt%, DZ 2 % (no deadband in the model, decision 93). The model carries 737's
+water in mol%; the gain goes onto it by the local slope at the PFD's composition (737: 12.32 mol% CO2,
+46.21 H2O, 41.47 NH3), the water moving against the rest of the gas:
+
+    dw/dy = M_H2O . M_rest / M_737^2 = 18.0152 x 23.2097 / 20.8093^2 = 0.96559
+    Kc = 1.00 . (8.0 m3/h x 1095 kg/m3) / 100 wt% x 0.96559 = 84.586 kg/h of reflux per mol%
+
+its output on FIC-328404's 0-8.0 m3/h span in mass (decision 21). The design's 46.21 mol% is 40.01
+wt%, the faceplate's set point. On the drum alone a set-point step to 48 mol% settles on both
+tunings, the row's more slowly — successive peaks 1.44, 1.25, 1.08 mol%, a decay ratio of 0.87 a
+22-minute period, against 0.61 on V1's 240 kg/h per mol% and 110 s; ten minutes into the step 737
+carries 48.9513 mol% on the row and 47.9945 on V1's (`test_reflux_drum_decided_equivalence.py::
+test_tic_328008_on_its_faceplate_decided_divergence`). PIC-328202's port side moves to 3.6609 bar a
+(3.6610 before). V1's tuning stays on the reflux-drum and synthesis harnesses.
+
+**FFIC-335406** (`20261024_034014.jpg`, "UF/US RATIO CTRL."): a ratio station, OUT = RAT . MV + BIAS
+— MV the urea solution's flow, 89.9 t/h that night, RAT 0.0032, OUT 0.29 t/h — its limits RAT 0.0000
+to 0.0080, OUT 0.00 to 0.80 t/h, BIAS 0.0. Built on `control.ratio.RatioStation`:
+
+    SP_405 = clamp(RAT . m_402 / 1000, 0, 0.80)   [t/h],      RAT within [0, 0.0080]
+
+its ratio tracking the achieved one while FIC-335405 is out of cascade, its output at OUT L while
+LV-324501B or no melt stops the pumps. The design seed is the PFD's ratio, 694 / 85 405 = 0.0081260,
+which closes the design at 617.0722 kg/h to the bit and stands 1.6 % above RAT H; an operator's ratio
+and a mode transfer are held to RAT H (signed off as built, session 74). On a 20 % ramp of the melt
+the station hands FIC-335405 the ratio times the melt on every tick and the pumps stand at 496.69
+kg/h a minute after the ramp, settling on their own loop, where V1's PI master
+(``ffic_335406(station=False)``, the harness's) leaves them 1.6 % under the ratio, 485.84
+(`test_uf85_dosing_equivalence.py::test_ffic_335406_as_its_ratio_station_decided_divergence`).
+FIC-335405, never photographed, keeps V1's tuning: the tuning row's only open entry.
+
+## LXXXVIII.5 The dynamic audits (`tests/engine/test_dynamic_audit.py`)
+
+Fourteen tests on the plant the console runs, about two minutes of the suite:
+
+| Audit | What is pinned, as measured |
+|---|---|
+| Conservation | Through a minute of 320K002's CO2 cut a fifth, HV-322605 at 45 %, 329P006A stopped and a 5 t/h tube leak, 322E001's sump and 328D001 gain on every tick what their published flows bring less what they send, 9e-13 and 2e-13 kg at most; the three synthesis holdups' published accumulation, which PT-329201's node books as the loop's liquid, sums to their inventories' change to 1e-6 kg (the sump lost 317.358 kg); every result field is finite every tenth tick; LV-324501's selector and the four vacuum condensers close their residuals to 0.0 |
+| Safety logic | 21.2 by HS-321603: 21.2's flag lost, 21.8's and 21.10's with it, 321P002A / B stopped; released, the flags stay lost while no HP ammonia pump runs and a start is refused naming 21.8. 22.2 on PT-329201 injected at 165 bar a: latched, 320K002's demand refused, the reset refused above the 148 band and taken at 140.7. 22.1 on TT-322015 injected over 110 C (its line runs at 50 C; a process path takes about twenty minutes): XV-322915 floods 1000 kg/h, 961.6 five seconds on; TI-322015 stands downstream of the injection, so the steam holds it over its limit, and HS-322915, the OVERRIDE CLOSE (B-59), shuts the valve and the line cools under the 108 C clear. 323P008 on LT-323503 injected at 3 %: stopped on the tick, running again 48.1 s on, the level past 7 % |
+| Controllers | PIC-329205: MAN to AUTO on the stroke it found; driven to PV-329205A's 100 %, off it on the first reversed tick. TIC-328008: off its 4000 kg/h on the first reversed tick (both velocity forms, nothing winds up behind a limit). FFIC-335406: its ratio tracks 0.0073112 with FIC-335405 in MAN at 40 %, and back in cascade hands the pumps their own 555.2 kg/h. MAN to AUTO from the console on TIC-328008 and FFIC-335406: the set point takes the PV, FFIC-335406's within RAT H (0.0080) |
+| Transient fidelity | 21.2 tripped and LV-322501 wide open, 1200 steps at FAST on irregular passes: no step faults; no pressure node — PT-329201, PT-323201, the three steam headers, 323F010 — reverses its step more than twice running; stage 1's fixed point settles and stage 2's settles or takes its bracketed root (decision 144) on every tick; SV32351 / SV32352 lift, 35 ticks, PT-323201 to 6.0205 bar a |
+| OTS integrity | Through the engine session at FAST: thirty seconds into a transient the plant is frozen (the wall clock passes, the plant clock holds), saved, released and run twenty seconds on; a second session loads the exercise and runs the same twenty seconds — the two plants encode identically and publish identical results. A seeded fuzz (seed 73) of 600 ticks over the tube leak, both HP ammonia pumps' faults, the CO2 boundary cut and restored, trip resets, a restart, the tempered water, the melt header over LV-324501B's relief and 21.2's switch: every command answered, no tick raises, every packet finite with exactly the design packet's keys |
+
+Step responses were measured on TIC-328008's row (§LXXXVIII.4); no plant trend of the loop exists
+to fit them to.
+
+**B-117**, the audits' one finding: TIC-328008, as every cascade master V1's ``_ctrl_ipd`` builds
+(`control.process_loop.ProcessLoop`), integrates while its slave is out of cascade. FIC-328404 five
+minutes in AUTO with the set point moved to 48 mol%: TIC-328008's output winds from 1675 to 917.96
+kg/h against a PV the slave no longer moves, and the return to CAS steps FIC-328404 from 1.5297 to
+0.8381 m3/h (`test_tic_328008_leaves_its_limit_at_once_and_bumps_its_slave_on_cas_re_entry`). V1 does
+the same (``main.py`` 9310 steps the master every tick). Signed off as built, V1's behaviour kept
+(decision 120's class); the test pins it.
+
+## LXXXVIII.6 Checks
+
+pyflakes clean on `ureasim`, `tests`, `tools` and `run.py`; every module under `ureasim/` at or below
+600 lines; nothing below `hmi` imports PyQt6; no `thermo/` file changed, so the liquid-state stores
+stand. The full suite green on every group, `tests/docs`, `tests/engine/test_dynamic_audit.py` and the
+native-platform `tests/hmi/test_screen_geometry.py` included.

@@ -35,9 +35,11 @@ def _paths(devs) -> list:
     return sorted({e.path for d in devs for e in d.expects})
 
 
-def run_plant(dev: Deviation | None, duration_s: float, paths: list, extra: dict = None) -> dict:
+def run_plant(dev: Deviation | None, duration_s: float, paths: list, extra: dict = None,
+              watch=None) -> dict:
     """The design seed through ``dev`` (None: left alone) for ``duration_s`` after settling.
-    ``extra`` maps a name to a function of the tick's results, sampled beside the packet."""
+    ``extra`` maps a name to a function of the tick's results, sampled beside the packet; ``watch``,
+    if given, is called with every tick's results, for an indicator that must see between samples."""
     from ureasim.engine.command import apply_command
     from ureasim.engine.packet import build_packet
     from ureasim.engine.plant import build_plant
@@ -58,6 +60,8 @@ def run_plant(dev: Deviation | None, duration_s: float, paths: list, extra: dict
                 r = apply_command(plant, cmd, sched.results)
                 rec["commands"].append((cmd, r.ok, r.reason))
         sched.tick()
+        if watch is not None:
+            watch(sched.results)
         if k % every == 0:
             flat = flatten(build_packet(plant, sched.results, sched.tears_read, sim_mode="SLOW",
                                         t_wall=0.0))

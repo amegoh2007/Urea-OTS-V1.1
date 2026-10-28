@@ -65,6 +65,9 @@ from types import SimpleNamespace
 import pytest
 
 from ureasim.data import synthesis_pin as pin
+from ureasim.data.unit_322e001 import RHO_BOTTOM
+from ureasim.data.unit_328d001 import RHO_775_KGM3
+from ureasim.data.unit_322e001_bundle import BUNDLE_V1
 from ureasim.data.unit_322f001 import HYDRAULIC_FRAC_MAX
 from ureasim.control.interlocks import Unit21TripInputs
 from ureasim.data.unit_322_loop import (
@@ -73,6 +76,7 @@ from ureasim.data.unit_322_loop import (
     SV32251_RESEAT_BARA,
     SV32251_SET_BARA,
     SV32251_Z_REL,
+    SYN_LOOP_V_V1_M3,
     TRIP_21_2_FY_L2_FRAC,
     TRIP_21_8_PDY_L2_BAR,
 )
@@ -102,9 +106,12 @@ from ureasim.units.synthesis.scrubber import (
     scrubber_322e003,
 )
 from ureasim.units.synthesis.stripper_level import BottomLevelLoop
-from ureasim.units.synthesis.stripper_sump import SUMP_SPAN_KG, StripperSump
+from ureasim.units.synthesis.stripper_sump import StripperSump
 from tests.equivalence import b6_switch, b9_switch, b16_switch, b18_switch, ccw_tuning_switch
 from tests.equivalence.v1_loader import V1_BACKEND, lift, load, v1_available, v1_service
+
+#: LT-322501's span on V1's stripper, the bundle the harness runs (decision 154 has its own tests).
+V1_SUMP_SPAN_KG = BUNDLE_V1.v_sump_m3 * RHO_BOTTOM
 
 pytestmark = pytest.mark.skipif(not v1_available(), reason="V1 source tree not present")
 
@@ -214,7 +221,8 @@ def _v1_state(v1):
     r = v1["reactor"]
     return SimpleNamespace(
         line=CO2FeedLine(), pic=vent_pressure_loop(),
-        station=design_feed_station(), sump=StripperSump(hold_full=False), lic=BottomLevelLoop(),
+        station=design_feed_station(), sump=StripperSump(hold_full=False, bundle=BUNDLE_V1),
+        lic=BottomLevelLoop(),
         co2_raw_th=v1["CO2_DES_KGH"] / 1000.0,
         HIC_322602=74.0, HIC_322605=v1["REACT_HIC605_DES_PCT"],
         HIC_322604=v1["SCRUB_HIC604_DES_PCT"],
@@ -587,18 +595,19 @@ def _v1_tick(v1, s, x, decided):
     if "B-77" in decided:   # the vapour inventory (`loop_pressure`, decided 2026-10-09)
         mw_og = _offgas_mw(react, v1)
         m_liq, v_liq = loop_liquid(s.react_m_liq, s.scrub_holdup_kg + s.scrub_held_kg,
-                                   s.hpcc_level_pct, s.sump.level_pct)
+                                   s.hpcc_level_pct, s.sump.level_pct, V1_SUMP_SPAN_KG)
         rho_g = s.p_syn * mw_og / (Z_GAS_DES * R_BAR_M3 * (s.react_T_offgas + 273.15))
         dm, dv = liquid_growth(
             (s.react_m_liq - liq_0[0]) * (3600.0 / dt),
             (s.scrub_holdup_kg + s.scrub_held_kg - liq_0[1]) * (3600.0 / dt),
             (s.hpcc_level_pct - liq_0[2]) / 100.0 * E002_SPAN_KG * (3600.0 / dt),
-            (s.sump.level_pct - liq_0[3]) / 100.0 * SUMP_SPAN_KG * (3600.0 / dt))
+            (s.sump.level_pct - liq_0[3]) / 100.0 * V1_SUMP_SPAN_KG * (3600.0 / dt))
         dm_liq_kgh = dm - rho_g * dv
         c_buf = B_207_PER_BAR * s.react_m_liq
         if sat < 1.0:   # B-91: a liquor above its bubble point takes up no more gas
             c_buf *= sat
-        C_loop = vapour_capacity_kg_per_bar(v_liq, mw_og, s.react_T_offgas) + c_buf
+        C_loop = vapour_capacity_kg_per_bar(v_liq, mw_og, s.react_T_offgas,
+                                            SYN_LOOP_V_V1_M3) + c_buf
         m_phase_shift = -dm_liq_kgh
     if "A-16" in decided:
         m_psv_kgh = _sv32251_kgh(s, react, m_in_loop, m_out_loop, credit, v1, m_phase_shift,
@@ -728,6 +737,29 @@ def harness_plant():
     # (B-104), the azeotropic rise (B-106), 308's composition (B-105) and its line (B-110), decided
     # 2026-10-22, have their own tests.
     plant.units["322E001"].tube_ceiling = False
+    # V1's 2,600-tube stripper: the 2,950-tube replacement the plant runs (decided 2026-10-28,
+    # decision 154) has its own tests.
+    plant.units["322E001"].bundle = BUNDLE_V1
+    # V1's loop volume: the replacement's tubes and the bores plugged at the last turnaround
+    # (decisions 154, 155) have their own tests.
+    plant.units["PT-329201"].vessels_m3 = SYN_LOOP_V_V1_M3
+    plant.units["PT-329201"].e001_span_kg = V1_SUMP_SPAN_KG
+    # The LP side the loop shares through its headers as it stood before session 72: PIC-329205's
+    # proportional split and V1's LIC-329502 (decision 156), and TIC-323012's 2026-09-30 stand-in,
+    # 2.00 and 500 s (decision 156) — each has its own tests.
+    plant.units["329"].pic_329205.table = False
+    plant.units["329"].lic_329502.tuning = (2.5, 90.0)
+    tic_323012 = plant.loops["323F010"][0]
+    tic_323012.Kc, tic_323012.Ti = 2.00 * 6.0 / 160.0, 500.0
+    # Unit 328's three rows (decisions 156 and 160), V1's tunings: FIC-328404 0.5 per kg/h on the
+    # reflux's density and 25 s, TIC-328012 3.0 and 250 s, TIC-328008 240 kg/h per mol% and 110 s —
+    # the LP header carries them to the loop too.
+    fic_328404 = plant.loops["328D001"][0].fic_328404.loop
+    fic_328404.Kc, fic_328404.Ti = 0.5 * RHO_775_KGM3, 25.0
+    tic_328008 = plant.loops["328D001"][0].tic_328008
+    tic_328008.Kc, tic_328008.Ti = 240.0, 110.0
+    tic_328012 = plant.loops["328C003"][0].tic_328012
+    tic_328012.Kc, tic_328012.Ti = 3.0, 250.0
     plant.units["322E002"].low_nc_branch = False
     plant.units["323E003"].track_species = False
     plant.units["322E003"].wash_line = False

@@ -260,7 +260,7 @@ OVERLAYS = {
         {'k': 'nav3221322e001', 't': 'nav', 'x': 81, 'y': 412, 'w': 92, 'h': 21, 'tag': '322E001 -> 322-1', 'goto': 'screen-322-1'},
         {'k': 'nav3221322e0012', 't': 'nav', 'x': 81, 'y': 458, 'w': 92, 'h': 21, 'tag': '322E001 -> 322-1', 'goto': 'screen-322-1'},
         {'k': 'nav3281328c003', 't': 'nav', 'x': 81, 'y': 547, 'w': 92, 'h': 21, 'tag': '328C003 -> 328-1', 'goto': 'screen-328-1'},
-        {'k': 'ai329701', 't': 'ind', 'x': 1265, 'y': 410, 'tag': 'AI-329701', 'bind': 'ANALYSERS.AI_329701', 'u': 'uS/cm', 'dec': 3, 'note': "AI-329701, the LP condensate's conductivity in 329D001 on its 0-10 uS/cm range: a 322E002 tube leak's ammonium bicarbonate"},
+        {'k': 'ai329701', 't': 'ind', 'x': 1265, 'y': 410, 'tag': 'AI-329701', 'bind': 'ANALYSERS.AI_329701', 'u': 'uS/cm', 'dec': 3, 'note': "AI-329701, the LP condensate's conductivity in 329D001 on its 0-30 uS/cm range: a 322E002 tube leak's ammonium bicarbonate"},
     ],
     'screen-323-1': [
         {'k': 'hic323605', 't': 'ind', 'x': 1021, 'y': 139, 'tag': 'HIC-323605', 'bind': 'RECIRC_323.F010.HV_323605', 'u': '%', 'dec': 1, 'face': 'hic'},
