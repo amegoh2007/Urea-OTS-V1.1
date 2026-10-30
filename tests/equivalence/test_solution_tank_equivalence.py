@@ -519,7 +519,7 @@ def test_the_tie_opened_on_a_colder_compartment_two_decided_divergence(v1):
 def test_stages_three_and_four_coupled_through_a_drain_step(v1):
     """V1's stage 3 feeds V1's stage 4; the ported 323F010 feeds the ported 323D002."""
     s = _v1_state(v1)
-    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
+    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False, own_head_leg=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()
     for k in range(600):
         m319 = R323_M319_DES * (0.8 if k >= 20 else 1.0)
@@ -539,7 +539,7 @@ def test_all_four_stages_coupled_through_a_stripper_feed_cut(v1):
     col = rc.RectifyingColumn(chest=rc.V1_CHEST)
     loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
     drum, lic5 = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
-    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
+    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False, own_head_leg=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()
     for k in range(500):
         drain = FEED_DES * (0.85 if k >= 20 else 1.0)

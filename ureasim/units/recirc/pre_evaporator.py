@@ -74,8 +74,8 @@ Three pressures meet in this stage, and V1 treats them differently:
     seed the pressure is the design's, so the design point is V1's to the bit;
     ``PreEvaporator.live_bubble`` False is V1's, which the equivalence harness keeps.
 
-So the live PT-323204 reaches the barometric-leg drain, the vapour composition, HV-323605's
-pull, 323F004's LV-323505 and the temperature the liquor relaxes to. Since B-24 the liquor also
+So the live PT-323204 reaches the vapour composition, HV-323605's pull, 323F004's LV-323505
+and the temperature the liquor relaxes to, and on V1's leg the drain. Since B-24 the liquor also
 boils down to its bubble point at the live pressure when it stands above it — a deeper vacuum.
 
 Where this stage departs from V1 — decided 2026-09-27 (handoff B-29)
@@ -89,6 +89,12 @@ the leg at the liquid above the heel, net of the evaporation:
 
 so the floor is never drained. The cap binds only within one tick's drain of the heel, so
 every V1 scenario above it runs as V1 runs it.
+
+The drain on the separator's own head, decided 2026-10-30 (handoff B-119, option (b)): the
+leg's isometric puts N2 1.01 m above the column a full vacuum holds, so the separator drains
+through N2 on its own liquid head and its pressure has no part in the drive
+(`units.recirc.barometric_leg`); ``PreEvaporator(own_head_leg=False)`` is V1's leg, which the
+equivalence harness keeps.
 
 Three more, decided 2026-09-30: the chest's 2.5 bar a anchor above; PIC-329208 on the DCS
 table's gain per cent of PT-329208's span, without the chest-gain scale V1 multiplied it by;
@@ -124,7 +130,6 @@ barometric leg), F-8 / TD-009 (the species layer). The design data are in
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, field
 
 from ureasim.control.process_loop import ProcessLoop
@@ -132,7 +137,7 @@ from ureasim.control.valve import valve_gas_anchored
 from ureasim.core.node import vapour_volume_m3, vessel_dpdt
 from ureasim.core.numeric import clamp
 from ureasim.core.signal import first_order_lag
-from ureasim.core.units_of_measure import ABSOLUTE_ZERO_C, G_ACC, PA_PER_BAR
+from ureasim.core.units_of_measure import ABSOLUTE_ZERO_C
 from ureasim.data.design_point import R323_M317_DES, R323_M319_DES
 from ureasim.data.control_valves import PV_329208
 from ureasim.data.unit_323 import (
@@ -146,7 +151,6 @@ from ureasim.data.unit_323 import (
     E010_Q_DES_KW,
     E010_UA_KW,
     EVAP_LAMBDA_KJKG,
-    F010_AREA_M2,
     F010_LIQUOR,
     F010_M_DES_KG,
     F010_M_FLOOR_KG,
@@ -184,6 +188,7 @@ from ureasim.thermo.empirical import urea_soln_rho
 from ureasim.thermo.urea_liquor import SOLUTION_SPECIES
 from ureasim.units import liquor_stage
 from ureasim.units.evaporation.holdup_boil import liquor_boil
+from ureasim.units.recirc.barometric_leg import barometric_leg_kgh, own_head_leg_kgh
 from ureasim.units.recirc.liquor_line import receive_liquor, stream_cp
 from ureasim.units.steam_chest import ChestValve, steam_chest_pressure
 
@@ -254,36 +259,6 @@ def pic_329208(valve: ChestValve = PV_329208_CHEST) -> ProcessLoop:
 # ======================================================================================
 # The relations
 # ======================================================================================
-
-def barometric_leg_kgh(holdup_kg: float, p_separator_bara: float) -> float:
-    """The separator's drain through its barometric leg to 323D002 [kg/h], V1 report A-17.
-
-    Process utility
-    ---------------
-    PFD 317, the product to the tank. The leg has no valve: it discharges into the
-    ATMOSPHERIC 323D002, so its liquid column — about 8 m of 80 % melt — stands against the
-    atmosphere, and what drives the drain is the liquor standing in the separator plus the
-    separator's own absolute pressure. A falling level lowers the drain, and losing the vacuum
-    raises it, because the column no longer holds the atmosphere back.
-
-    Equation
-    --------
-    With rho . g . h_leg = P_atm the melt density cancels from both the vessel head and the leg,
-    which matters because no source pins it for this stream:
-
-        dP_drive = M g / A + P_separator
-        m_317    = m_317,des . sqrt( dP_drive / dP_drive,des )
-
-    with A the separator bore (datasheet ID 3478 mm). Exactly the design drain at the design
-    holdup and 0.46 bar a.
-
-    Source: V1 `main.py` `gravity_outflow_323f010`.
-    """
-    dp_des = F010_M_DES_KG * G_ACC / F010_AREA_M2 + F010_P_BARA * PA_PER_BAR
-    dp_live = (max(holdup_kg, 0.0) * G_ACC / F010_AREA_M2
-               + max(p_separator_bara, 0.0) * PA_PER_BAR)
-    return R323_M317_DES * math.sqrt(max(dp_live / dp_des, 0.0))
-
 
 def vapour_outlet_kgh(stroke_pct: float, p_separator_bara: float, p_324e002_bara: float,
                       t_c: float, mw_vap: float, valve: ChestValve = HV_323605_VENT) -> float:
@@ -402,6 +377,9 @@ class PreEvaporator:
     #: The bubble point on the live PT-323204 (B-22, decided 2026-10-15); False is V1's, on the
     #: design 0.46 bar a, which the equivalence harness keeps.
     live_bubble: bool = True
+    #: The drain on the separator's own head (B-119 (b), decided 2026-10-30); False is V1's
+    #: barometric leg, which the equivalence harness keeps.
+    own_head_leg: bool = True
 
     def step(self, tic: ProcessLoop, pic: ProcessLoop,
              drain_kgh: float, drain_t_c: float, drain_w: dict,
@@ -470,8 +448,9 @@ class PreEvaporator:
                      max(MEVAP_DES_KGH * ((q_avail - q_relax) / QEVAP_DES_KW), 0.0))
 
         # ----- the barometric leg --------------------------------------------------------
-        m_317 = barometric_leg_kgh(self.m_kg, self.p_bara)
-        # At M = 0 the leg is still driven by the separator's own pressure, and the engine
+        m_317 = (own_head_leg_kgh(self.m_kg) if self.own_head_leg
+                 else barometric_leg_kgh(self.m_kg, self.p_bara))
+        # At M = 0 V1's leg is still driven by the separator's own pressure, and the engine
         # has no two-phase leg: cap the drain at the liquid above the 1 kg heel plus what
         # arrives this tick, net of the evaporation (decided divergence, handoff B-29). V1
         # counted the floor's kilogram as drainable, so the floor restored it every tick. The

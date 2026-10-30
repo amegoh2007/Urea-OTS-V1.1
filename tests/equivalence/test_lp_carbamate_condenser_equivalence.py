@@ -696,7 +696,7 @@ def test_the_recirculation_end_to_end_through_a_stripper_feed_cut(v1):
     col = rc.RectifyingColumn(chest=rc.V1_CHEST)
     loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
     drum, lic5 = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
-    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
+    sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False, own_head_leg=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()
     lpcc, loops8 = lp.LpCarbamateCondenser(), _loops()
     cond, loops9 = fc.FlashCondenser(**fc.V1_CONDENSER), stage9._loops()

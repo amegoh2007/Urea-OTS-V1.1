@@ -8,8 +8,8 @@ Compartment II, behind the internal baffle, is a passive buffer with no nozzle o
 LIC-323507 holds Compartment I at about 10 % by cascading onto FIC-324401, which sends the solution
 through FV-324401 to the evaporators (PFD 324).
 
-This module carries the compartments' volumes and design holdups, FV-324401's trim and the two
-stage-4 controllers. Moved out of `unit_323` unchanged (2026-10-23, the housekeeping split);
+This module carries the compartments' volumes and design holdups, the tank's elevation and design
+liquid level, FV-324401's trim and the two stage-4 controllers. Moved out of `unit_323` unchanged (2026-10-23, the housekeeping split);
 `unit_323` re-exports every name.
 
 Sources
@@ -20,6 +20,8 @@ Sources
 * Uhde loop summary for unit 324, UD-MR-324-EC-0001 rev 1 (the vendor archive) — FT-324401's
   calibrated range.
 * The plant DCS tuning table, ``References/Master_PID_Tuning_Constants.md`` — FIC-324401's row.
+* Uhde's general assembly of the tank, UD-AU-323-TL-0001 (the vendor archive) — its reference level
+  and design liquid level.
 * Flowserve's calculation sheet for FV-324401 (`ureasim.data.control_valves`) — its trim and design
   stroke.
 * The design flow chain and the liquor's density live in `ureasim.data.design_point`.
@@ -62,6 +64,14 @@ D002_M_I_DES_KG = D002_M_I_FULL_KG * (D002_LVL_SP_PCT / 100.0)
 
 #: Floor on the Compartment I holdup [kg]. Source: V1 `main.py` step_sim, ``max(..., 1.0)``.
 D002_M_I_FLOOR_KG = 1.0
+
+#: The tank's reference level, the underside of its bottom plate [m EL], and its design liquid
+#: level above it [m]. N1, the urea-solution inlet through which 323F010's barometric leg dips into
+#: Compartment I, stands 5 295 mm above the reference. Source: Uhde's general assembly
+#: UD-AU-323-TL-0001 (read from the scan, 2026-10-30): "ref. level bottom of bottom plate +800" and
+#: the name plate's design liquid level, 4.95 m.
+D002_REF_EL_M = 0.800
+D002_DLL_M = 4.95
 
 # --- The stage-4 controllers ------------------------------------------------------------
 # LIC-323507 (Compartment I level, master) -> FIC-324401 (product flow, slave) -> FV-324401.
@@ -112,5 +122,5 @@ __all__ = [
     "D002_M_I_FULL_KG", "D002_M_I_DES_KG", "D002_M_I_FLOOR_KG", "LIC_323507_KC", "LIC_323507_TI_S",
     "LIC_323507_OP_HI_TH", "FIC_324401_KC_TABLE", "FT_324401_SPAN_M3H", "FT_324401_SPAN_TH",
     "FIC_324401_KC", "FIC_324401_TI_S", "FIC_324401_TD_S", "FIC_324401_SP_HI_TH",
-    "FT_324401_TAU_S",
+    "FT_324401_TAU_S", "D002_REF_EL_M", "D002_DLL_M",
 ]

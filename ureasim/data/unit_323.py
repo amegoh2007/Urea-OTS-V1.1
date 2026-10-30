@@ -55,6 +55,7 @@ from __future__ import annotations
 import math
 
 from ureasim.core.packet import normalise_solution_mass_fraction as _w_norm
+from ureasim.core.units_of_measure import ATM_BARA, G_ACC, PA_PER_BAR
 from ureasim.core.vessel_geometry import VerticalVessel
 from ureasim.data.tube_plugging import PluggedBundle
 from ureasim.data.control_valves import HV_323605, LV_323505, PV_329208, design_stroke_pct
@@ -122,10 +123,12 @@ from ureasim.data.unit_323c003 import (
     W_S314_TAB,
 )
 from ureasim.data.unit_323d002 import (
+    D002_DLL_M,
     D002_LVL_SP_PCT,
     D002_M_I_DES_KG,
     D002_M_I_FLOOR_KG,
     D002_M_I_FULL_KG,
+    D002_REF_EL_M,
     D002_VOL_II_M3,
     D002_VOL_I_M3,
     FIC_324401_KC,
@@ -352,6 +355,20 @@ F010_SHELL_M = 2.437
 F010_VOL_M3 = math.pi * 0.25 * F010_ID_M ** 2 * F010_SHELL_M
 F010_AREA_M2 = math.pi * 0.25 * F010_ID_M ** 2
 
+#: The separator's barometric leg, line 200-US6-323256 (P&ID 105/1), on its isometric
+#: UD-RL-100-MB-0142 (the vendor archive, read from the scan, 2026-10-30): 323F010/N2 at EL +15 740
+#: and 323D002/N1 at EL +6 095 [m EL], 0.9 m of DN 400 to a reducer at EL +14 722, then 219.1 x 4.5
+#: pipe, TT-323012 at its foot.
+F010_N2_EL_M = 15.740
+D002_N1_EL_M = 6.095
+
+#: The leg's margin over the deepest vacuum [m], about 1.01: N2's elevation less the top of the
+#: column a full vacuum holds of PFD 317's melt above 323D002 at its design liquid level. It is
+#: positive, so the leg never fills to the separator and the separator drains on its own head
+#: (decided 2026-10-30, handoff B-119 (b), `units.recirc.barometric_leg`).
+F010_LEG_MARGIN_M = (F010_N2_EL_M - (D002_REF_EL_M + D002_DLL_M)
+                     - ATM_BARA * PA_PER_BAR / (R323_D002_RHO * G_ACC))
+
 #: PT-323204 integration bounds [bar a]. Source: V1 `main.py` step_sim literals.
 F010_P_MIN_BARA = 0.05
 F010_P_MAX_BARA = 1.0
@@ -551,6 +568,7 @@ __all__ = [
     "F010_P_BARA", "F010_T_SP_C", "F010_M_TAU_S", "M331_DES_KGH", "M331_T_C",
     "MEVAP_DES_KGH", "F010_M_DES_KG", "F010_LVL_SP_PCT", "F010_M_FULL_KG", "F010_M_FLOOR_KG",
     "F010_ID_M", "F010_SHELL_M", "F010_VOL_M3", "F010_AREA_M2",
+    "F010_N2_EL_M", "D002_N1_EL_M", "F010_LEG_MARGIN_M",
     "F010_P_MIN_BARA", "F010_P_MAX_BARA", "EVAP_LAMBDA_KJKG", "CP_F010_DES", "CP_S331_DES",
     "RHO_F010_ANCHOR", "E010_PCHEST_DES_BARA", "E010_OP_DES_PCT", "PV_329208_OP_DES_PCT", "PV_329208_XT", "E010_Q_DES_KW",
     "E010_UA_KW", "E010_TUBES", "QEVAP_DES_KW", "HIC_323605_DES_PCT_V1", "HV605_CHAR_V1", "HIC_323605_DES_PCT",
@@ -560,7 +578,7 @@ __all__ = [
     "PIC_329208_KC_TABLE", "PIC_329208_KC", "PIC_329208_TI_S",
     "D002_VOL_I_M3", "D002_VOL_II_M3", "D002_LVL_SP_PCT", "FV401_OP_DES_PCT",
     "FV401_CHAR",
-    "D002_M_I_FULL_KG", "D002_M_I_DES_KG", "D002_M_I_FLOOR_KG",
+    "D002_M_I_FULL_KG", "D002_M_I_DES_KG", "D002_M_I_FLOOR_KG", "D002_REF_EL_M", "D002_DLL_M",
     "LIC_323507_KC", "LIC_323507_TI_S", "LIC_323507_OP_HI_TH",
     "FIC_324401_KC_TABLE", "FT_324401_SPAN_M3H", "FT_324401_SPAN_TH",
     "FIC_324401_KC", "FIC_324401_TI_S", "FIC_324401_TD_S", "FIC_324401_SP_HI_TH",

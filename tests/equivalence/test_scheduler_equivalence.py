@@ -94,6 +94,9 @@ def test_the_liquor_train_through_the_scheduler_is_v1s_chain(v1):
     units["323D002"].backward_species = False
     # V1's bubble point on the design vacuum: the live PT-323204 (B-22) has its own tests.
     units["323F010"].live_bubble = False
+    # V1's barometric leg, the separator's pressure in its drive: the drain on the separator's own
+    # head (B-119 (b)) has its own tests.
+    units["323F010"].own_head_leg = False
     loops["323C003"] = (loops["323C003"][0], rc.pic_329202(rc.V1_CHEST), loops["323C003"][2])
     loops["323F010"] = (loops["323F010"][0], pe.pic_329208(pe.V1_CHEST))
     boundary = dict(drain=FEED_DES, tt_323001=119.0, tt_322004=172.0,

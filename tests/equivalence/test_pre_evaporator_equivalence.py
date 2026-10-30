@@ -386,7 +386,7 @@ def _design(**over):
 def _run(v1, script, ticks: int, dt: float = DT, before=None):
     """Drive stage 3 alone through `script(k)`, comparing everything every tick."""
     s = _v1_state(v1)
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False, own_head_leg=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     if before:
         before(s, sep, tic, pic)
@@ -468,6 +468,19 @@ def test_the_barometric_leg(v1, m_kg, p_bara):
     assert pe.barometric_leg_kgh(m_kg, p_bara) == v1["gravity_outflow_323f010"](m_kg, p_bara)
 
 
+def test_the_barometric_leg_on_its_own_head_decided_divergence(v1):
+    """Handoff B-119, option (b), decided 2026-10-30: the leg is taller than any column the vacuum
+    holds (`unit_323.F010_LEG_MARGIN_M`), so the separator drains on its own head. At the design
+    state both sides give PFD 317 to the bit. A lost vacuum raises V1's drain 43.4 % and leaves the
+    decided one where it was; 21 % more holdup raises V1's 1.3 % and the decided one 10 %."""
+    leg = v1["gravity_outflow_323f010"]
+    m = d.F010_M_DES_KG
+    assert leg(m, d.F010_P_BARA) == pe.own_head_leg_kgh(m) == R323_M317_DES
+    assert leg(m, 1.01325) / R323_M317_DES == pytest.approx(1.43394, abs=1e-5)
+    assert leg(1.21 * m, d.F010_P_BARA) / R323_M317_DES == pytest.approx(1.01271, abs=1e-5)
+    assert pe.own_head_leg_kgh(1.21 * m) / R323_M317_DES == pytest.approx(1.1, rel=1e-12)
+
+
 @pytest.mark.parametrize("stroke, p1, p2, t_c", [
     (50.0, 0.46, 0.33, 99.0), (80.0, 0.46, 0.33, 99.0), (20.0, 0.60, 0.33, 101.0),
     (50.0, 0.30, 0.33, 99.0), (0.0, 0.46, 0.33, 99.0), (100.0, 0.90, 0.10, 95.0),
@@ -545,7 +558,7 @@ def test_the_barometric_leg_at_the_heel_decided_divergence(v1):
     the evaporation, and nothing is made. (Without B-24 the cap first bound in the 16th second
     and V1 made 452 kg.)"""
     s = _v1_state(v1)
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False, own_head_leg=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     s.r323_f010_M = sep.m_kg = 300.0
     x = _design(m319=0.0)
@@ -581,7 +594,7 @@ def test_the_barometric_leg_at_the_heel_decided_divergence(v1):
 def _boil_both(v1, before, n):
     """V1 verbatim on the held liquor (no B-24) against the port, design boundaries."""
     s = _v1_state(v1)
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False, own_head_leg=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     before(s, tic, pic)
     x = _design()
@@ -645,7 +658,7 @@ def test_hv_323605_on_its_vendor_trim_decided_divergence(v1):
     0.298 bar a, pulls 12 196 kg/h and holds the separator at 0.4558 bar a and 98.81 C (on
     TIC-323012's faceplate row, decision 156; 0.4319, 97.76, 0.4562 and 98.83 on the stand-in)."""
     s = _v1_state(v1)
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False)
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, live_bubble=False, own_head_leg=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     parted, pulls = None, None
     for k in range(3001):
@@ -679,7 +692,7 @@ def _run_coupled(v1, script, ticks: int, dt: float = DT, before=None):
     reads the separator pressure as it stood at the top of the tick, as V1 does."""
     s = _v1_state(v1)
     tank, lic = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False, own_head_leg=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     if before:
         before(s, tank, lic, sep, tic, pic)
@@ -739,7 +752,7 @@ def test_all_three_stages_coupled_through_a_stripper_feed_cut(v1):
     col = rc.RectifyingColumn(chest=rc.V1_CHEST)
     loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
     tank, lic = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False, own_head_leg=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     for k in range(500):
         drain = FEED_DES * (0.85 if k >= 20 else 1.0)
@@ -770,7 +783,7 @@ def test_a_set_point_step_on_the_decided_chest_and_gains(v1):
     separator is 1.27 K down and the port's 0.85 K, both heading for 97 C (0.91 K on the stand-in;
     without B-24: 1.23 and 0.78 K)."""
     s = _v1_state(v1, chest_decided=False)
-    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False)
+    sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False, own_head_leg=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     s.TIC_323012["sp"] = tic.sp = 97.0
     x = _design()

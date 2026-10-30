@@ -8,10 +8,10 @@ built, B-18, B-37 and B-20 decided and closed, trip 21.2's hand switches and AI-
 screens, the plant DCS's readback applied — the cold start reaches 79.7 bar a in 16 000 s, still
 short of the start-up band (session 50); B-94 closed on PFD 734's departure form, the steady state
 3080 of 3188, 322E003 on its own liquor and a full sump, 323P008's trip from AC4 PC23, B-95 closed
-as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70); an external report on five data-gap rows audited against the code, 322C001's head volume and the urea-melt Henry constant closed (decision 153, session 71); 322E001 on its 2,950-tube replacement (decision 154), the turnaround's plugged tubes derating 322E002, 322E003 and 323E010 (decision 155), five loops and AI-329701's range on the plant DCS's faceplates of 24 October 2026 (decision 156), `Scenarios6.docx` put to the plant (session 72); the plugged tubes' conductances re-anchored on the bundle in service (decision 157), LV-322501's failure case read tick by tick — SV32351 / SV32352 lift at their set (decision 158) — the vacuum bleeds kept on the 1750 MTPD basis (decision 159), TIC-328008 and FFIC-335406 on their faceplates (decision 160), the dynamic audits built and their one finding, B-117, signed off as built, `Scenarios6.docx` 47 of 71; Sections A, B and C empty, 11 data gaps open (sessions 73 and 74); the load range 70-115 % studied on the committed engine for the load-optimisation workbook (`D:\Work\Urea_Plant_Load_Optimization_70_to_115.xlsx`): 100 % verified on both objectives, the engine's turndown, 323F010's barometric leg and a stripper cut's loop oscillation raised as B-118 to B-120, no relation changed (sessions 75 and 76)
+as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70); an external report on five data-gap rows audited against the code, 322C001's head volume and the urea-melt Henry constant closed (decision 153, session 71); 322E001 on its 2,950-tube replacement (decision 154), the turnaround's plugged tubes derating 322E002, 322E003 and 323E010 (decision 155), five loops and AI-329701's range on the plant DCS's faceplates of 24 October 2026 (decision 156), `Scenarios6.docx` put to the plant (session 72); the plugged tubes' conductances re-anchored on the bundle in service (decision 157), LV-322501's failure case read tick by tick — SV32351 / SV32352 lift at their set (decision 158) — the vacuum bleeds kept on the 1750 MTPD basis (decision 159), TIC-328008 and FFIC-335406 on their faceplates (decision 160), the dynamic audits built and their one finding, B-117, signed off as built, `Scenarios6.docx` 47 of 71; Sections A, B and C empty, 11 data gaps open (sessions 73 and 74); the load range 70-115 % studied on the committed engine for the load-optimisation workbook (`D:\Work\Urea_Plant_Load_Optimization_70_to_115.xlsx`): 100 % verified on both objectives, the engine's turndown, 323F010's barometric leg and a stripper cut's loop oscillation raised as B-118 to B-120, no relation changed (sessions 75 and 76); the workbook retried on the process engineer's control document with HIC-322605 operated by hand: 100 % verified on both objectives, 105 % near-steady, the turndown unchanged, B-118 and B-119 updated and B-121 raised, no relation changed (session 77); a pasted analysis of B-118 to B-121 checked and measured as scratch patches, 105 % verified with FIC-328402 raised 10 %, two errors in session 77's record corrected, B-119 decided (b) and built — 323F010 draining on its own head through N2, its leg taller than any column the vacuum holds (decision 161) (session 78)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `D:\Work\Urea Simulation` (V1 — reference only, never edited from here)
-**Last updated:** 2026-10-30 (sessions 75 and 76)
+**Last updated:** 2026-10-30 (sessions 75 to 78)
 
 ---
 
@@ -819,6 +819,10 @@ steam system (`steam/`).
       one finding, B-117, signed off as built; step responses measured on TIC-328008's row (no plant
       trend of the loop to fit); `Scenarios6.docx` 47 of 71; 11 data gaps open (sessions 73 and 74,
       As-Built Part LXXXVIII)
+- [x] B-119 decided (b) and built: 323F010 drains on its own head through N2, the premise read from
+      the leg's isometric and the tank's general assembly (decision 161); V1's leg on the harnesses'
+      switch, asserted from both sides; a pasted analysis of B-118 to B-121 checked and measured,
+      105 % verified with FIC-328402 raised 10 % (session 78, As-Built Part XCI)
 
 ---
 
@@ -4975,6 +4979,105 @@ engine (the last turnaround's 322E001 and plugged tubes). No relation, constant 
   HV-322604's letdown), which bounded the study.
 * **B-118, B-119 and B-120** raised for the process engineer, Book2's bands as their acceptance data.
 
+### Session 77 — the load range retried on an attached control schedule, HIC-322605 by hand; B-121 raised
+
+Session 77 (2026-10-30) answered the process engineer's request to retry session 76's workbook after
+reading a control document. The document was "Coordinated Setpoint Scheduling and Dynamic
+Stabilization of the Stamicarbon HPCC Urea Synthesis Loop Across the 80% to 100% Load Envelope", a
+Word file with no document number. During the runs the process engineer added that HIC-322605 is a
+hand station. Its purpose is a stable 322R001 level, but it is not wired to the level: the operator
+moves it according to the solution 322R001 discharges. `D:\Work\Urea_Plant_Load_Optimization_70_to_
+115.xlsx` was rebuilt; session 76's version is kept in the session's scratchpad. No relation,
+constant or test changed (As-Built Part XC):
+
+* **The document's schedule.** Its laws were run on the live load and extrapolated outside 80-100 %:
+  HIC-322604's equal-percentage inverse; PIC-329204 at -0.06 bar per % of load, never below its shell
+  LMTD floor; MASTER-329207 +0.015 bar and TIC-329005 +0.225 K per % cut; 322F001's entrainment in
+  proportion to load; an NH3 lead of +1.5 % while the load rises. One anchor is wrong. HV-322605's
+  design opening is 60 % in the engine; the document's 50 % is HIC-323605's V1 design. The workbook
+  gives each law at each load beside the engine's value.
+* **HIC-322605 by hand.** An operator re-types it every 2 to 5 minutes. Each move sizes the valve to
+  the reactor's discharge plus its holdup's trend, adds a 30-minute correction toward LT-322504 80 %,
+  and inverts the sum through the Kv table. With the funnel flooded the level integrates; settled at
+  100 % and 105 % it held its hour with at most one move of 0.03 %.
+* **100 %.** The document's schedule is the design point: X 54.20 %, 835.1 kg of steam per tonne,
+  PASS, the steam optimum. Session 76's TT-322004 176 C, re-held by hand, gives X 55.94 % and
+  850.3 kg/t, PASS, the conversion optimum.
+* **105 %.** R105s (session 76's point by hand) gives X 52.92 % and 813.3 kg/t and fails only on
+  328D003 (+0.75 %/h). Raising FIC-328402 to 34.5 m3/h holds 328D003 (+0.24 %/h), but 328C003's level
+  falls while LIC-328504 recovers (corrected in session 78). This is raised as B-121.
+* **Turndown.** On the document's schedule:
+  - trip 22.1 at 53-55 minutes at 70-80 %;
+  - trip 22.2 at 80 minutes at 85 %;
+  - the cold branch at 90 % and a slide at 95 %;
+  - an operator on the ratio, toward AT-322701 3.02, reached the 2.0 floor and vented more;
+  - a 0.1 %/min ramp slid from 98 %.
+
+  With the fresh ratio fixed, AT-322701 rises to 3.3, TT-322011 to 147 C on its correlation, and
+  322E003 vents 1.6-2.4 t/h. Meanwhile the reactor's discharge and 308's wash stay at design. The
+  plant holds AY-322701 3.25 with TT-322011 at 130-134 C in every band (Book2). B-118 is updated.
+* **Above design.** The document's NH3 lead swung AT-322701 between 2.5 and 3.9, 322E003 vented up
+  to 8 t/h, and 323F010 overfilled at 105-115 % (B-119, updated).
+* **Plant practice.** Book2's band medians were added to the workbook. The plant follows the
+  document's directions: HVGT-322605 at 0.50 times the load, and HIC-322604 at the document's slope.
+* **Checks.** No file under `ureasim/`, `tests/` or `tools/` changed; the PyQt6 grep prints nothing.
+  The workbook recalculates in Excel with 232 formulas and no error.
+
+### Session 78 — a pasted analysis of B-118 to B-121 checked and measured; 105 % verified; B-119 built
+
+Session 78 (2026-10-30) took up another tool's analysis of session 77's open items, pasted by the
+process engineer, with a diagnosis and a recommended change for each. Every claim it makes about the
+code was checked in the source and against session 77's records. Each change was measured as a
+scratch patch on the committed engine (`patched_run.py` in the session's scratchpad; As-Built Part
+XCI). One relation changed, B-119's, on the process engineer's decision (decision 161):
+
+* **B-118.** The analysis's two mechanisms are not the engine's. 322E003's vent split takes its
+  K-values at the design temperature, so TT-322011's correlation sets only the reading and
+  HV-322604's purge. 322E002 does not over-quench at turndown: TT-322010 stays at 167.9-171.5 C and
+  its melt holds less gas, not more. At 90 %, TT-322011's slope cut to the plant's 133 C at 3.25
+  changes nothing else, and 322E002's conductance scaled on its flow delays the slide by 20 minutes.
+  With V1's conversion-deficit slip switched off the reactor still slides, to X 44 % at 90 % and
+  31 % at 80 %. The loop N/C's excursion on the ramp precedes every slide.
+* **B-119.** The drain-out below design is confirmed: 323F010 is empty at 80-90 % with HIC-323605
+  wide open. The analysis's level-proportional head is option (b) with an assumed rangeability; it
+  was not measured.
+* **B-120.** With HIC-322605 by hand the 1 h mode keeps its period at about a quarter of session 76's
+  swing. The stripper's slip gain sets its size: X swings 4.8 points at V1's 4, 1.6 at 2 and 0.4 at
+  0. No gain gives a steady hold; at 0, 323F010 drains 16 %/h.
+* **B-121.** The analysis's +4.5 % on FIC-328402 and FIC-329402 leaves the bays at +0.54 %/h. R105f
+  (FIC-328402 at 34.5 m3/h), continued so that its hold starts 3.5 h after the step, passes every
+  criterion: X 53.24 %, 812 kg of steam per tonne. The workbook's 105 % column now reports it on both
+  sheets; it recalculates in Excel with 232 formulas and no error.
+* **Corrections.** FIC-328402 reads m3/h, so session 77's 31.4 and 34.5 "t/h" are m3/h (31.1 and
+  34.2 t/h). R105f's 328C003 level fell 1.5 % while LIC-328504 recovered: the analysis script printed
+  the drift's magnitude, and session 77 read it as a rise. The script now prints signs. As-Built XC.3
+  and XC.5, B-121, session 77's entry and the workbook's notes are corrected.
+* **Decisions.** The process engineer kept B-121 open for (b). The other three answers did not
+  arrive, and the session took the recommended courses, which change nothing: B-118 and B-120 open,
+  B-119's leg searched before anything is built. Shown the leg and the prototype, the process
+  engineer decided B-119 (b).
+* **B-119, continued.** The leg is isometric UD-RL-100-MB-0142 (line 323256): 323F010/N2 at
+  EL +15 740 to 323D002/N1 at EL +6 095, N1 carrying a dip pipe (UD-AU-323-TL-0001). The 9.645 m
+  drop exceeds the 8.98 m that a full vacuum holds of PFD 317's 1 151 kg/m3 melt, so the separator
+  drains on its own head and its pressure has no say. Option (b) was prototyped as
+  m_317 = m_317,des . sqrt(M / M_des): the design point is unchanged, and 323F010 settles at its
+  throughput level from 90 to 115 % (71.9 % at 110 %, where V1's law reaches 201 %). The 110 % hold
+  then fails on 324E001's level and HV-322604's deposition flag, and the 115 % run trips on a loop
+  excursion (As-Built §XCI.6).
+* **B-119 built** (decision 161, As-Built §XCI.7). `units/recirc/barometric_leg.py` carries the
+  drain on the separator's own head and V1's leg, moved there verbatim and re-exported by
+  `pre_evaporator` (569 lines); `PreEvaporator.own_head_leg` selects it, False on every
+  equivalence harness. The leg's elevations, the tank's reference and design liquid level, and the
+  premise's 1.013 m margin are data with their sources. The equivalence test asserts both sides;
+  the stage's twelve V1-leg scenarios run on V1's leg and four new ones pin the decided drain.
+  The synthesis harness takes V1's leg too, as it keeps the LP side's other changes: the LP header
+  carries 323E010's chest to the loop, and five of its decided tests moved without it. The dynamic
+  audit's fast shutdown reverses PT-323204's step three times running once, where V1's leg reaches
+  its limit of two eleven times: the boil-off's spikes (B-24), raised as B-122, the audit's one
+  exception. The workbook's 105 % point re-held on the built engine (Y121F2, from a copy of R105f's snapshot given the new field) passes as before, X 53.24 % and 812 kg/t, with 323F010 at 67.4 % where HIC-323605's trim had held 60 %; the workbook notes both.
+* **Checks.** The full suite ran 7 597 tests: 7 591 passed and six failed, the dynamic audit's fast shutdown on PT-323204 and five synthesis-loop decided tests on the LP header. After the synthesis harness took V1's leg and the audit its 323F010 exception (B-122), those six pass, as do the four other harness files (193 tests) and the rest of the decided file (22). The PyQt6 grep prints nothing. Snapshots saved before the build carry the old
+  field set and are refused, as after every change of a unit's fields.
+
 ## 5. Design decisions on record
 
 1. **PyQt6, not PyQt5.** Qt6 is current, has proper high-DPI scaling for the 1366×720 stage,
@@ -5742,3 +5845,13 @@ engine (the last turnaround's 322E001 and plugged tubes). No relation, constant 
      transfer are held to RAT H. B-117, the dynamic audits' finding — TIC-328008, as every cascade
      master V1's ``_ctrl_ipd`` builds (`ProcessLoop`), integrating while its slave is out of cascade,
      so FIC-328404 steps on its return — signed off as built (decision 120's class).
+161. **323F010 drains on its own head** (2026-10-30, handoff B-119, option (b), session 78; decision
+     158's class for its premise): the leg's isometric (UD-RL-100-MB-0142) puts 323F010/N2 at
+     EL +15 740, 9.645 m above 323D002/N1, which the tank's general assembly (UD-AU-323-TL-0001)
+     places 5 295 mm above its +800 reference with a dip pipe into Compartment I. A full vacuum holds
+     8.98 m of PFD 317's 1 151 kg/m3 melt, so with the tank at its design liquid level the leg's
+     column stands 1.013 m below N2 and never fills to the separator. The separator drains through
+     N2 on its own head, m_317 = m_317,des . sqrt(M / M_des), anchored on V1's design holdup and
+     drain, its pressure no part of the drive (`units.recirc.barometric_leg`). V1's leg (report
+     A-17), which takes the column as standing full to the separator, stays on the harnesses'
+     switch, ``PreEvaporator(own_head_leg=False)``.

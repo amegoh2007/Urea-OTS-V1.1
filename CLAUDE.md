@@ -424,8 +424,10 @@ none of them is optional:
    gain on a PV the model carries in other units taken through their local slope at the design, and
    a ratio station's design seed kept where the PFD closes the design, the photographed limits held
    on what an operator enters (decision 160); a cascade master integrating while its slave is out of
-   cascade, as V1's ``_ctrl_ipd`` builds it, kept (decision 160, B-117, decision 120's class); and
-   no approximation of
+   cascade, as V1's ``_ctrl_ipd`` builds it, kept (decision 160, B-117, decision 120's class); a
+   vessel draining through a barometric leg its drawings show taller than any column the vacuum can
+   hold draining on its own liquid head, the vessel's pressure no part of the drive (decision 161);
+   and no approximation of
    the physics bought for a pacing target (decision 88). A
    new mechanism still goes to the process engineer, with both sides measured.
 

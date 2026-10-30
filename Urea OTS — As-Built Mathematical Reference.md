@@ -1467,7 +1467,7 @@ same fixed step.
 | 95 | Unit-323 liquor lines: each stream's cp, and a drain's arrival through the receiving stage's inlet line | `main.py` `step_sim`, the `_cp` lambda and the three `_cq_packet` / `_transport_process` inlet blocks with their settled-line reuse | `units/recirc/liquor_line.py` `stream_cp`, `receive_liquor` | **`[PORTED]`** bit-exact, executed inside the stage-1 and stage-2 tick-by-tick tests (the 323C003 feed and the 323F004 inlet). **One decided divergence, 2026-09-30 (handoff B-21, closed):** the line delivers the live departure flow and delays only the temperature, composition and cp, where V1 delayed the flow too and made or destroyed liquor on every flow change; the four stage transcriptions carry the switch, the stopped drain runs both ways (§XXIX.6, §XXXIX.2) |
 | 96 | 323F004, stage 2 of unit 323 | `main.py` `step_sim` 8363-8375 and 8410-8507 | `units/recirc/flash_tank.py` `FlashTank` | **`[PORTED]`** bit-exact TICK BY TICK over thirteen scenarios alone and two coupled to stage 1, every published field, the whole drum state and LIC-323505; the wiring TRANSCRIBED, everything it calls EXECUTED (Part XXIX). **One more, 2026-09-30 (B-44):** LV-323505 on its vendor's modified equal percentage from 67.73 %, on the sheet's FL, its blow-through on the trim's capacity ratio (§XL.3). **B-46, 2026-09-30:** LV-323505 chokes on the drum liquor's bubble pressure, so the vacuum reaches the drum only past 1.076 bar a (§XLIV.2); asserted both ways |
 | 97 | Unit-323 stage-2 design basis | `main.py` `R323_F004_*`, `R323_LV505_OP_DES`, `R323_RHO_S319`, `R323_CP_F004_DES`, `R323_RHO_F004_DES`, `R323_Q701_DES_KW`, `R323_LAMBDA_701`, the LIC-323505 seed | `data/unit_323.py` | **`[PORTED]`** bit-exact; LIC-323505's tuning agrees with `References/Master_PID_Tuning_Constants.md`; PFD 319 and 701 checked against the strict design basis |
-| 98 | 323E010 / 323F010, stage 3 of unit 323 | `main.py` `step_sim` 8460-8469 and 8509-8654, `gravity_outflow_323f010`, `hv323605_flow_kgh` | `units/recirc/pre_evaporator.py` `PreEvaporator`, `barometric_leg_kgh`, `vapour_outlet_kgh` | **`[PORTED]`** bit-exact TICK BY TICK over fifteen scenarios alone, three coupled to stage 2 and one coupled to stages 1 and 2, every published field, the whole separator state and both controllers; the wiring TRANSCRIBED, everything it calls EXECUTED (Part XXX). Two V1 physics gaps reproduced and pinned: the design-vacuum bubble point (B-22), the evaporation cap (B-24). Session 35: the held liquor boils past its bubble point at the live PT-323204 (B-24, decided 2026-10-02, row 171, §LI.3), B-29's heel and the boil now switches of the transcription **One decided divergence, 2026-09-27 (handoff B-29, closed):** the barometric leg capped at the liquid above a 1 kg heel plus what arrives net of the evaporation, so the floor is never drained. Inert until the heel — every scenario above stays bit-exact — and asserted from both sides at it (§XXX.9). **Two more, 2026-09-30:** the 323E010 chest on PFD 926's 2.5 bar a (B-23, closed, §XL.1); PIC-329208 on the table's gain per cent of span without the chest scale, and TIC-323012 on its sibling TIC-323007's row (§XL.2) |
+| 98 | 323E010 / 323F010, stage 3 of unit 323 | `main.py` `step_sim` 8460-8469 and 8509-8654, `gravity_outflow_323f010`, `hv323605_flow_kgh` | `units/recirc/pre_evaporator.py` `PreEvaporator`, `barometric_leg_kgh`, `vapour_outlet_kgh` | **`[PORTED]`** bit-exact TICK BY TICK over fifteen scenarios alone, three coupled to stage 2 and one coupled to stages 1 and 2, every published field, the whole separator state and both controllers; the wiring TRANSCRIBED, everything it calls EXECUTED (Part XXX). Two V1 physics gaps reproduced and pinned: the design-vacuum bubble point (B-22), the evaporation cap (B-24). Session 35: the held liquor boils past its bubble point at the live PT-323204 (B-24, decided 2026-10-02, row 171, §LI.3), B-29's heel and the boil now switches of the transcription **One decided divergence, 2026-09-27 (handoff B-29, closed):** the barometric leg capped at the liquid above a 1 kg heel plus what arrives net of the evaporation, so the floor is never drained. Inert until the heel — every scenario above stays bit-exact — and asserted from both sides at it (§XXX.9). **Two more, 2026-09-30:** the 323E010 chest on PFD 926's 2.5 bar a (B-23, closed, §XL.1); PIC-329208 on the table's gain per cent of span without the chest scale, and TIC-323012 on its sibling TIC-323007's row (§XL.2). **One more, 2026-10-30 (handoff B-119, option (b), closed; decision 161, §XCI.7):** the separator drains on its own head through N2, m_317 = m_317,des sqrt(M / M_des), its leg taller than any column the vacuum holds (`units/recirc/barometric_leg.py`, V1's law moved there verbatim and re-exported); V1's leg on ``PreEvaporator(own_head_leg=False)``, asserted from both sides |
 | 99 | Unit-323 stage-3 design basis | `main.py` `R323_F010_*`, `R323_E010_*`, `R323_M331_*`, `R323_EVAP_LAMBDA`, `R323_QEVAP_DES_KW`, `R323_CP_F010_DES`, `R323_CP_S331_DES`, `R323_HIC605_DES_PCT`, `R323_HV605_CHAR`, `R324_F001_P_BARA`, `SOL_F010_Y_DES`, `R323_F010_MW_VAP_DES`, the TIC-323012 / PIC-329208 seeds | `data/unit_323.py`, `pre_evaporator.Y_VAP_DES` / `MW_VAP_DES` | **`[PORTED]`** bit-exact; PIC-329208 agrees with `References/Master_PID_Tuning_Constants.md`, TIC-323012 is V1's Appendix C retune (no DCS row); the 1.76 bar a chest anchor disagrees with PFD 926 (B-23) |
 | 100 | 323D002, stage 4 of unit 323 | `main.py` `step_sim` 8564-8572 and 8656-8810, the telemetry at 10663-10669 | `units/recirc/solution_tank.py` `SolutionTank` | **`[PORTED]`** bit-exact TICK BY TICK over ten scenarios alone, three more forcing the baffle spill, the part-filled tie and FIC-324401 in AUTO, one coupled to stage 3 and one to stages 1 to 3, every published field, both compartments' state, the FT-324401 lag and both controllers; the wiring TRANSCRIBED, everything it calls EXECUTED (Part XXXI). One V1 gap reproduced and pinned: no biuret in the tank (B-25). **One decided divergence, 2026-09-27 (handoffs B-26 and B-27, closed):** 323P003 capped at what the tank holds above a 1 kg heel, with a loss-of-suction flag and FT-324401 on the delivered flow; a full tank's excess published as an overflow stream; Compartment II's blend divided by its holdup before the overflow; Compartment II given its own temperature. Inert until each limit — every scenario above stays bit-exact — and asserted from both sides at the limit by four tests (§XXXI.9). **A second, 2026-09-30 (handoff B-41, closed):** FIC-324401 on the DCS table's 0.40 read per cent of FT-324401's 0-110 m3/h span, 0.316 %/(t/h) where V1 runs 0.40 — seeded into the transcription, since the cascade keeps the loop off its set point, and proved both ways in `test_flow_loop_gains_equivalence.py` (Part XXXVII). **One more, 2026-09-30 (B-44):** FV-324401 on its vendor's modified equal percentage from 72.36 % (`fv_324401_th`, §XL.3) |
 | 101 | Unit-323 stage-4 design basis | `main.py` `R323_D002_VOL_I_M3` / `_VOL_II_M3`, `R323_D002_LVL_SP`, `R323_FV401_OP_DES`, `R323_D002_M_I_FULL` / `_M_I_DES`, `R324_W_IN`, `R324_W_EV2`, the LIC-323507 / FIC-324401 seeds and the FT-324401 lag | `data/unit_323.py`, `data/design_point.py`, `solution_tank.FLOW_SPAN_324_TH` | **`[PORTED]`** bit-exact; FIC-324401 agrees with `References/Master_PID_Tuning_Constants.md` except the table's 2 % deadband, which V1 does not carry (B-28), and carries the table's gain per cent of FT-324401's 0-110 m3/h span (Uhde loop summary UD-MR-324-EC-0001; decided, B-41); LIC-323507 has no DCS row, its Ti is V1's settling-time estimate on the retired 1300 kg/m3 |
@@ -17773,3 +17773,362 @@ flag and 322E001's seal at 0.979. 172 C (design), 174 C and 176 C settle.
 
 No file under `ureasim/`, `tests/` or `tools/` changed, so the suite and the stores stand as session
 74 left them; nothing below `hmi` imports PyQt6 (the grep of `CLAUDE.md` §1.3 prints nothing).
+
+# Part XC — The load range retried on an attached operating schedule, HIC-322605 by hand (Phase 7)
+
+Session 77, 2026-10-30. A study, not a port: no relation, constant, test or document datum changed.
+The process engineer supplied a control document — "Coordinated Setpoint Scheduling and Dynamic
+Stabilization of the Stamicarbon HPCC Urea Synthesis Loop Across the 80% to 100% Load Envelope", a
+Word file with no document number — and asked for session 76's workbook (Part LXXXIX) to be retried
+on what it teaches. While the runs were going the process engineer added that HIC-322605 is a hand
+station: its purpose is a stable 322R001 level, it is not wired to the level, and the operator moves
+it according to the solution 322R001 discharges. `D:\Work\Urea_Plant_Load_Optimization_70_to_115.xlsx`
+was rebuilt from the retry; session 76's version is superseded.
+
+## XC.1 The document's schedule on the engine's anchors
+
+The document's laws, L the load fraction (the CO2 demand over 54.618 t/h), as the study ran them:
+
+| handle | law | at 80 % | document section |
+|---|---|---|---|
+| HIC-322605 | theta_des . L (not run; see XC.2) | 48.0 % on the engine's anchor (the document: 40.0 %) | 1 |
+| HIC-322602 | between A_t proportional to L, theta = (84.4 L - 40) / 0.6, and A_t proportional to L^2 | 45.9 % and 23.4 % | 4 |
+| HIC-322604 | 72 + 100 ln L / ln 50 | 66.30 % | 6 |
+| PIC-329204 | 19.70 + 6.0 (L - 1) bar a, never below the shell's LMTD floor | 18.50 bar a (floor 17.40) | 3 |
+| MASTER-329207 | 5.013 + 1.5 (1 - L) bar a | 5.313 bar a | 2 |
+| TIC-329005 | 80 + 22.5 (1 - L) C, never below 80 C | 84.5 C | 5 |
+| SIC-323901 | CAS from LIC-323502; 59.93 L rpm expected | 47.9 rpm | 7 |
+| AT-322701 | 3.00 on FFIC-321404's design ratio; a +1 to 2 % NH3 lead while the load rises | 3.00 | 8 and the sequencing table |
+
+The floor is the shell saturation whose LMTD against the design tube profile (TT-322013 187 C,
+TT-322004 172 C) is L times the design LMTD, 31.53 K, on IAPWS-IF97: 17.40 bar a at 80 % against the
+document's 17.45. It lies above the linear law above design (20.31, 20.94 and 21.59 bar a at 105, 110
+and 115 %), where the study ran it. HIC-322602 was run at the exact case the document places between
+its bounds: the opening at which 322F001 entrains L times its design carbamate on its own map at the
+live motive, corrected on LT-329501 at 50 %.
+
+Every anchor was checked against `ureasim/data`: HIC-322602 74 % and its free-area map 40 + 0.6 theta
+(`unit_322f001`), HIC-322604 72 % (`unit_322e003`) and R 50 (`control.valve.EQUAL_PCT_RANGE`), and the
+seed's PIC-329204 19.70 bar a, MASTER-329207 5.013 bar a, TIC-329005 80 C, SIC-323901 59.93 rpm and
+AT-322701 3.00. One anchor is wrong. HV-322605's design opening is 60 % (`unit_322r001.HIC605_DES_PCT`,
+V1's REACT_HIC605_DES_PCT). The document's 50 % is HIC-323605's V1 design (`R323_HIC605_DES_PCT`).
+
+## XC.2 HIC-322605 by hand
+
+With the funnel flooded, HV-322605 passes m_des . Kv(theta) / Kv(theta_des) whatever the level
+(`reactor_hydraulics.outlet_line_outflow_kgh`). The level therefore integrates the difference between
+the reactor's make and the valve, and only the operator closes that loop. One per cent of stroke near
+60 % moves 3.6 t/h, which is 36 % of LT-322504's 1.5 m span an hour.
+
+The study's operator re-typed HIC-322605 every 2 minutes on the ramp and every 5 minutes after, to
+0.01 %. Each move sized the valve to pass the solution 322R001 is discharging: its discharge plus its
+holdup's trend, smoothed over 4 minutes. It added what returns LT-322504 to 80 % over 30 minutes, and
+inverted the sum through the vendor's Kv table (`hv322605_kv`). A move under 0.03 % was not made.
+
+Settled at 100 % and 105 %, the operator made at most one move in the hour's hold (0.03 %). The
+level met its criterion with the valve fixed. In the plant (Book2), HVGT-322605 stands at 0.50 times
+the load in every band: 47.2 % at 92.3 %, 51.4 % at 102.5 %, 53.9 % at 108.6 % and 55.3 % at 111 %.
+
+## XC.3 What the engine holds
+
+| load | run | outcome |
+|---|---|---|
+| 70, 75, 80 % | M1 | trip 22.1 at 54, 53 and 55 min: 322E003's sump full, 9.4-13.7 t/h vented, TT-322005 165-166 C, X 32-34 % |
+| 85 % | M1 | trip 22.2 at 80 min (with 21.2, 21.8, 21.10 and 22.1): TT-322005 down to 161.5 C, X 27 %, then PT-329201 to 155 bar a |
+| 90 % | M1 | cold branch, stopped at 1.3 h: TT-322005 171.6 C, X 41 %, 322E003 venting 1.9 t/h, 323F010 drained |
+| 95 % | M1 | sliding, stopped at 1.2 h: TT-322005 178.6 C, X 49 %, 322E003 venting 2.3 t/h |
+| 100 % | M1_100 | PASS: the document's schedule is the design point. X 54.20 %, 901 60.87 t/h, 835.1 kg/t, the steam optimum |
+| 100 % | R100c | PASS: PIC-329204 on TT-322004 176 C (session 76's point) by hand. X 55.94 %, 850.3 kg/t, the conversion optimum |
+| 105 % | R105s | near-steady: X 52.92 %, 813.3 kg/t, every criterion but 328D003's bay III (+0.75 %/h) |
+| 105 % | R105f | R105s with FIC-328402 stepped from 31.4 to 34.5 m3/h: 328D003 +0.24 %/h, but 328C003 falls 1.54 % in the hour while LIC-328504 recovers (corrected in §XCI.5) |
+| 105 % | M1 | stopped at 1.7 h: 323F010 97 % and rising, 322E003 venting 1.0 t/h |
+| 110, 115 % | M1 | stopped at 1.8 and 2.0 h: 323F010 201 and 260 % of full, 322E003 venting 3.8 and 7.9 t/h |
+
+Variants at 80-95 % were stopped once their outcome was plain:
+
+* **M2:** M1 plus an operator moving the FFIC-321404 ratio set point by at most 0.01 every five minutes
+  toward AT-322701 3.02, never below the faceplate's 2.0. It slid the same way: TT-322005 165.7 C and
+  X 32 % at 80 %.
+* **M3:** M1 on a 0.1 %/min ramp. It slid from 98 %: TT-322005 178.3 C and X 48.5 % at 93 %.
+
+## XC.4 The turndown against the document's claims
+
+On the ramp from 100 % at 0.5 %/min, the measurements contradict the document's claims:
+
+* **The discharge does not follow the load.** 322R001 still discharged 222-228 t/h at 90 % (design
+  226.2), and the hand station stayed within 1 % of 60 %. 308's wash stayed at 36.3-36.8 t/h; the
+  document expects 33.2 at 90 %, with LIC-323502 on its 400 s integral.
+* **AT-322701 rises with the cut.** With the fresh ratio fixed, it went from 3.00 to 3.30 at 90 % while
+  the reactor feed's N/C moved only from 3.073 to 3.088. TT-322011 follows its correlation
+  (`scrubber.py`, OFFGAS_T_GAIN on the N/C's deviation) from 114 to 147 C. 322E003's saturation
+  fraction falls to 0.93 and 1.6-1.8 t/h of condensable gas passes to HV-322604. That holds on the
+  document's baseline (intensive set points at design) and its thermal trims alike. In every run
+  below 100 %, HV-322604's letdown condenses carbamate from the sixth minute (the deposition flag).
+* **Conversion falls.** X drops below its pinned design within minutes, at 98 % load even on the
+  slow ramp. V1's slip term (B-118) then carries the reactor to its cold branch. The document's
+  expected 55.5-60.5 % at 95-80 % is reached at no load below 100 %.
+* **The ratio lever makes it worse.** The ratio operator (M2) reached the 2.0 floor within twenty
+  minutes, AT-322701 did not come back, and 322E003 vented more (2.4 against 1.8 t/h at 90 %) with
+  conversion lower. The engine's conversion rises with the N/C: X 62 % at AT-322701 3.10 in session 76.
+
+The plant at 92 % (Book2, 755 samples) runs differently: AY-322701 3.25, TT-322011 133.5 C and
+TT-322005 182.6 C on FFIC-321404B 2.115, with TIC-329005 at 90 C and no venting. Its vent top at its
+N/C is 11 K below what the engine's correlation gives (144 C at 3.25). Its N/C does not move with
+load: 3.25 at 92, 102, 108.6 and 111 %.
+
+## XC.5 Above design
+
+The document's ramp-up NH3 lead was +1.5 % while the load rose, decaying over 30 minutes after. With
+it, AT-322701 reached 3.6-3.9 at 105-110 %, and 2.5-2.7 in the swings at 110-115 %. 322E003 vented
+1.0-8.3 t/h. At 115 % the reactor's liquid make swung from -9 to +24 t/h within ten minutes. The
+hand station's five-minute moves did not hold LT-322504, which reached 100 %. 323F010 rose past full
+at 105-115 % on B-119's leg.
+
+Session 76's 105 % point by hand (R105s: no ratio lead, PIC-329204 on TT-322004 170 C, HIC-323605 on
+323F010) fails only on 328D003. Its bays gain 3.2-3.7 t/h of ammonia water more than FIC-328402's
+design 31.4 m3/h (31.1 t/h) takes; bay III holds 249.6 t at 58.6 %. Raising FIC-328402 once to
+34.5 m3/h (R105f) holds the bays (+0.24 %/h), but 328C003's level falls 1.54 % in the hour while
+LIC-328504 recovers from the step (corrected in §XCI.5). Raised as B-121.
+
+## XC.6 The plant's practice (Book2.xlsx, band medians)
+
+| band (median load) | 92.3 % | 102.5 % | 108.6 % | 111.0 % |
+|---|---|---|---|---|
+| samples | 755 | 34 | 109 | 4 253 |
+| HVGT-322605 % | 47.2 | 51.4 | 53.9 | 55.3 |
+| HV-322602 % | 63 | 69 | 73 | 76 |
+| HIC-322604 % | 51.5 | 53.9 | 55.5 | 56.0 |
+| PIC-329204 bar g | 18.21 | 19.20 | 19.80 | 20.00 |
+| PT-329207 bar g | 4.11 | 3.98 | 3.92 | 3.90 |
+| TIC-329005 C | 90.0 | 84.1 | 80.9 | 80.0 |
+| FFIC-321404B | 2.115 | 2.097 | 2.113 | 2.116 |
+| AY-322701 | 3.248 | 3.247 | 3.252 | 3.251 |
+| TT-322005 C | 182.6 | 182.6 | 182.6 | 182.6 |
+| TT-322004 C | 166.6 | 169.0 | 171.1 | 172.3 |
+| TT-322011 C | 133.5 | 130.1 | 131.7 | 133.6 |
+| LT-329501 % | 7.1 | 10.6 | 9.0 | 10.8 |
+| FY-329403 t/h | 53.4 | 59.9 | 64.7 | 66.3 |
+
+The plant's practice follows the document's directions. HIC-322604 moves 0.24 % per % of load,
+the slope of the document's log law at design (0.256). PIC-329204 rises 0.10 bar per %, between the
+document's 0.06 and its floor's 0.12. PT-329207 falls 0.011 bar per % against the document's 0.015.
+TIC-329005 falls 0.53 K per % against the document's 0.225. The workbook carries these medians as
+its green rows.
+
+## XC.7 Checks
+
+No file under `ureasim/`, `tests/` or `tools/` changed, so the suite and the stores stand as session
+74 left them. Nothing below `hmi` imports PyQt6: the grep of `CLAUDE.md` §1.3 prints nothing. The
+workbook was recalculated in Excel: 232 formulas, no error. The runner, its policies and every run's
+record are in the session's scratchpad, not the tree.
+
+# Part XCI — A pasted analysis of B-118 to B-121 checked and measured (Phase 7)
+
+Session 78, 2026-10-30. A study, not a port: no relation, constant, test or document datum changed.
+The process engineer sent another tool's analysis of session 77's four open items (B-118 to B-121),
+with a diagnosis and a recommended change for each. Every claim it makes about the code was checked
+against the source, and its mechanisms against session 77's run records. Each recommended change was
+measured on the committed engine as a scratch patch. The session's `patched_run.py` replaces a module
+global or wraps a function in its own process, then runs session 77's runner (Part XC), so nothing
+under `ureasim/` was edited. The check also found two errors in Part XC's record of R105f, corrected
+in place (XCI.5), and a 105 % hold that passes (XCI.3), which the workbook now reports.
+
+## XCI.1 The analysis's claims about the code
+
+| claim | finding |
+|---|---|
+| HV-322605's design opening is 60 %; the control document's 50 % is HIC-323605's V1 design, which decision 131 moved to 64.08 % | verified (`unit_322r001.HIC605_DES_PCT`, `R323_HIC605_DES_PCT`, decision 131) |
+| 322R001's liquid residence is 44.9 min | verified (`unit_322r001`: the 170.9 m3 span over 228.5 m3/h) |
+| 322E002's shell conductance is a fixed 1 610 148.5 kJ/(h K) | verified (`carbamate_condenser.UA_KJHK`, back-solved on the design point) |
+| the carbamate and dehydration heats are 117 000 and 15 500 kJ/kmol | verified (`thermo.kinetics`) |
+| a 9 481 kW reactor exotherm | found nowhere in the code or this reference |
+| in isolation, 322R001's conversion rises to 66 % at 70 % load | no record; not measured |
+| TT-322011's overshoot is documented in B-17 and decision 99 | B-17, yes: 13.8 C over the plant's one steady record, signed off by decision 120. Decision 99 is HV-322604's 72 % anchor |
+| `saturated_inert_vent` takes the volatiles' K-values at TT-322011 | false. 322E003's vent split takes its K ratio at the design temperature on both sides, so only the loop pressure moves it (`scrubber.py`). TT-322011 reaches only HV-322604's purge (its gas density and its letdown) and the display |
+| decisions 142 and 147 are 322E002's low-N/C branch | verified |
+| `core.valve.gravity_discharge` drives 323F010's leg | no such function; the leg is `pre_evaporator.barometric_leg_kgh` |
+| the leg does not respond to the holdup above its 1 kg heel | imprecise: its drive is the holdup's head plus the separator's absolute pressure, and the pressure dominates (B-119) |
+| the stripper's slip: slip = max(1 - g_N/C, 0) + max(1 - g_H/C, 0), f <- f + G . slip . (1 - f) | verified (`stripper.py`; G = `unit_322e001.SLIP_GAIN` = 4.0, V1's STRIP_SLIP_GAIN) |
+| 744 31 478, 734 1 534, 735 31 114 and 911 1 105 kg/h; FIC-329402 sets 911 into 328C003 under an unwired TIC-328012 (B-48); 328C003 at 200 C and 16.8 bar a | verified (`unit_328d003`, `unit_323e003`, `desorption_train`, `unit_328c003`) |
+
+## XCI.2 Its mechanisms against session 77's records
+
+* **322E002 does not over-quench at turndown.** TT-322010 stays at 167.9-171.5 C at 80 and 90 %
+  (M1_080, M1_090). Its melt's saturation fraction falls to 0.88-0.90 as the melt's N/C rises to
+  3.4, so the condenser holds less gas and 322R001 receives more vapour than its design share.
+  322R001's off-gas grows from 22.4 t/h to 46 t/h at 90 % and to 80 t/h at 80 %. The reactor is not
+  starved of gas; it does not hold the gas it receives.
+* **322E003's venting follows its saturation fraction, not TT-322011.** The fraction is 0.92-0.96
+  while AT-322701 stands at 3.25-3.32, and the venting stops when AT-322701 falls back. The reactor
+  keeps cooling after the venting stops. In M1_090, from 36 to 61 minutes, nothing is vented while
+  conversion falls from 43.5 to 39.1 % and TT-322005 from 175.9 to 171.5 C.
+* **The ratio cut did not reach the low-N/C branch.** M2_090 moved FFIC-321404 only from its design
+  2.023 to the faceplate's floor, 2.000, and its trajectory follows M1_090's, whose ratio stayed at
+  design. In both, the melt's N/C dips to 2.95 at the ramp's start and stands at 3.3-3.4 while
+  322E003 vents most (16-26 minutes); PI-322E002 rises there to 149-150 bar on V1's K_N line above
+  3.0.
+* **323F010 drains below design, as claimed.** It is empty at 80-90 % with HIC-323605 wide open, and
+  at 29 % at 95 %.
+* **328C003's pressure does not fall in R105f.** PIC-328203 holds 16.80 bar a at the run's end and
+  LIC-328504 is in AUTO. The level falls, not rises (XCI.5).
+
+## XCI.3 The recommended changes, measured
+
+**B-118 at 90 and 80 %.** Session 77's M1 schedule (the control document's laws, HIC-322605 by hand)
+ran from the design seed at 0.5 %/min: 90 % is reached in 20 minutes, 80 % in 40. The runs were
+stopped at 60-70 minutes, their outcome plain.
+
+| run | change | 40 min | 60 min | outcome |
+|---|---|---|---|---|
+| M1_090 (session 77) | none | X 41.1 %, TT-322005 174.1 C | 40.9 %, 171.4 C | the cold branch |
+| X118T_090 | TT-322011's slope 120 to 75.9 C per N/C unit: 133 C at AT-322701 3.25, the design pin kept | 41.1 %, 174.1 C | 40.9 %, 171.4 C | identical but for TT-322011, at most 139.4 C against 154.6 |
+| X118U_090 | 322E002's conductance times (m / m_des)^0.75, m_des 250 639 kg/h | 52.3 %, 180.6 C | 45.9 %, 175.7 C | the slide 20 minutes later: 44.5 %, 174.2 C at 70 minutes |
+| X118B_090 | both | 52.3 %, 180.6 C | 45.8 %, 175.7 C | as X118U_090 |
+| X118S0_090 | V1's conversion-deficit slip off (`unit_322r001.OFFGAS_DEFICIT_GAIN` 1 to 0) | 43.3 %, 175.5 C | 44.4 %, 174.1 C | the cold branch; 322R001's off-gas at most 33.4 t/h against 46.4 |
+| M1_080 (session 77) | none | 40.8 %, 173.9 C | — | trip 22.1 at 55 minutes |
+| X118B_080 | both of the analysis's changes | 55.1 %, 181.3 C | 40.6 %, 172.2 C | 34.5 %, 166.3 C at 70 minutes |
+| X118S0_080 | the slip off | 42.0 %, 174.9 C | 30.6 %, 164.9 C | collapsing |
+
+**B-120 at 100 %.** Session 76's case S100_t168 (PIC-329204 on TT-322004 168 C) was re-run from its
+seed with HIC-322605 by hand, and with the stripper's slip gain halved and set to zero. The swing
+over 100-180 minutes, and the hold's failed criteria:
+
+| run | SLIP_GAIN | X % | AT-322701 | 308 t/h | LT-322501 % | the hold |
+|---|---|---|---|---|---|---|
+| S100_t168 (session 76, HIC-322605 on an automatic trim) | 4 | 48.8-66.2 | 2.75-3.55 | 21.7-43.2 | 20.8-80.5 | — |
+| X120B | 4 | 54.3-59.1 | 2.88-3.19 | 33.0-40.1 | 35.2-66.8 | LT-322501 -10.4 %/h in a falling half-swing; 323F010 +4.6 % |
+| X120G2 | 2 | 55.4-56.9 | 3.06-3.14 | 35.4-37.0 | 45.0-56.0 | LT-322501 -9.7 %/h; 323F010 -6.0 % |
+| X120G0 | 0 | 56.3-56.7 | 3.14-3.16 | 35.5-36.4 | 48.7-50.9 | 323F010 -16.1 %/h (net -14.6 %); AT-322701 3.15, outside 2.90-3.10; carbon yield 0.956 |
+
+At gain 4 the conversion's maxima fall at 51, 103 and 163 minutes in both runs, the period of
+session 76's mode.
+
+**B-121 at 105 %.** From R105s's point (session 76's 105 % policy, HIC-322605 by hand):
+
+| run | start | change | 328D003's bays | 328C003 | the hold |
+|---|---|---|---|---|---|
+| X121N | R105s's end | none; 1.5 h, then the hour | +0.77 %/h | -0.07 %/h | FAIL: the bays |
+| X121S | R105s's end | FIC-328402 31.4 to 32.81 m3/h and FIC-329402 1 105 to 1 154.7 kg/h, both +4.5 %, as the analysis proposed | +0.54 %/h | -0.87 %/h | FAIL: both |
+| R105f (session 77) | R105s's end | FIC-328402 31.4 to 34.5 m3/h; 1.5 h, then the hour | +0.24 %/h | -1.65 %/h | FAIL: 328C003 |
+| X121F2 | R105f's end | none; 1 h, then the hour, 3.5 h after the step | +0.21 %/h | -0.24 %/h | PASS |
+
+X121F2 holds X 53.24 %, TT-322005 183.3 C, AT-322701 2.913 and 812.0 kg of steam per tonne of urea
+(FT-329403 60.54 t/h). HIC-322605 moved three times in the hour, 0.1 % in all. 328C003's pressure
+holds 16.80 bar a in every run (PIC-328203). The workbook's 105 % column now reports X121F2 on both
+sheets.
+
+## XCI.4 Reading
+
+* **B-118.** The analysis's diagnosis does not describe the engine, and its two changes do not hold
+  80 or 90 %. The conductance's scaling delays the slide by about 20 minutes and no more. Switching
+  off V1's conversion-deficit slip, the lead session 76 recorded, slows the off-gas's growth but not
+  the slide. Every slide is preceded by the loop N/C's excursion on the ramp: AT-322701 reaches 3.3
+  within 20 minutes with the fresh ratio fixed and 308's wash at its design rate, and the saturation
+  fractions of 322E002 and 322E003 fall to 0.87-0.90 and 0.92-0.96. B-118 stays open, its option (b)
+  narrowed to that excursion and to 322E003's margin at AT-322701 3.25.
+* **B-119.** Not measured. The analysis's head rising with LI-323506 about 50 % (0.7 of the design
+  flow at 30 %, 1.15 at 75 %) is option (b) with an assumed rangeability. The leg's geometry (its
+  height, bore and seal pot) is the datum (b) needs; found and prototyped in §XCI.6.
+* **B-120.** The stripper's slip gain sets the mode's size, as the analysis says and session 62
+  attributed: X swings 4.8 points at V1's 4, 1.6 at 2 and 0.4 at 0. Operating HIC-322605 by hand
+  already cuts session 76's swing to about a quarter. No gain gives a steady hold: at 2 LT-322501
+  still swings 11 points, and at 0 the loop is steady but 323F010 drains 16 %/h (B-119) and
+  AT-322701 stands at 3.15. The gain is V1's calibration, sourced to nothing but `main.py`.
+* **B-121.** The analysis's +4.5 % is short of the balance. Ten per cent on FIC-328402 holds 105 %
+  once LIC-328504 has settled 328C003, about three hours after the step. The plant moves FIC-328402
+  about 4 % from 102 to 108.6 % (Book2), so the engine's ammonia water grows faster with load than
+  the plant's.
+
+## XCI.5 Two errors in Part XC, corrected in place
+
+* **FIC-328402 reads volume.** Its 31.4 and 34.5 are m3/h (`unit_328d003.S735_VOL_DES_M3H`): 31.1
+  and 34.2 t/h of 735 at 990.9 kg/m3, not t/h. XC.3, XC.5, B-121 and the workbook's notes now say
+  m3/h.
+* **R105f's 328C003 level fell.** It dropped 1.54 % over the hold (-1.65 %/h least squares) while
+  LIC-328504, in AUTO, recovered from the step, and it had flattened by the hold's end. 328D003's
+  bays rose 0.24 %/h, inside the criterion. The analysis script printed a drift's magnitude, and
+  Part XC read it as a rise. The only other completed hold that failed on a drift, R105s, rises as
+  recorded (+0.75 %/h). The script now prints a drift's sign.
+
+## XCI.6 323F010's barometric leg on its drawings, option (b) prototyped (B-119)
+
+B-119's option (b) needs the leg's geometry, and the archive has it:
+
+* **The leg.** Isometric UD-RL-100-MB-0142, line 200-US6-323256-EC07DB-W80 (P&ID 105/1; design 2 and
+  -1.0 bar g, 165 C), runs from 323F010/N2 at EL +15 740. It passes through 0.9 m of DN 400 and a
+  400 x 200 reducer at EL +14 722, then 13.4 m of 219.1 x 4.5 pipe, to 323D002/N1 at EL +6 095.
+  TT-323012's thermowell is at its foot, EL +6 210. The elevations were read from the scan and
+  checked on a magnified crop.
+* **The seal.** 323D002's general assembly (UD-AU-323-TL-0001): N1, the DN 200 urea-solution inlet,
+  carries a dip pipe. It stands 5 295 mm above the reference level, the bottom plate's underside at
+  EL +800, which is the isometric's EL +6 095. The tank's design liquid level is 4.95 m, and its
+  name plate gives the solution's density as 1 173.94 kg/m3.
+* **The premise.** A full vacuum holds 101 325 / (1 151 x 9.806 65) = 8.98 m of PFD 317's melt
+  (8.80 m at the name plate's 1 173.94 kg/m3). With 323D002 at its design liquid level (EL +5 750),
+  the column's top at full vacuum stands at EL +14 727, 1.01 m below N2. The leg therefore never fills to the separator. The melt falls
+  through N2 into a leg whose space above the column stands at the separator's pressure, so the
+  separator drains on its own head. V1's law (report A-17) takes the leg as a column standing full
+  to the separator, rho g h_leg = P_atm. That puts the separator's absolute pressure into the drive,
+  and it is why the drain hardly answers the holdup.
+* **Option (b) as a prototype.** m_317 = m_317,des . sqrt(M / M_des), the orifice law on the
+  separator's own head. It is anchored on V1's design holdup (6 183.3 kg) and drain
+  (92 748.9 kg/h), so the design point is the same to the bit:
+
+| run | case | 323F010 | the hold |
+|---|---|---|---|
+| X119D_100 | M1_100, the design | 60.0 % | PASS: X 54.19 %, 835 kg/t, as M1_100 |
+| X119_090 | M1_090 | 36 % at 60 minutes (empty on V1's law) | stopped: the synthesis slides as in M1_090 (B-118), X 39.7 %, TT-322005 171.0 C |
+| X119_110 | session 76's CF110_t175 policy, HIC-322605 by hand, HIC-323605 fixed at 64.08 % | 71.9 % (201 % within two hours on V1's law, session 77) | FAIL: 324E001's level -4.47 %/h and HV-322604's deposition flag; AT-322701 2.75, X 54.03 %, 815 kg/t |
+| X119_115 | the same at 115 % | 85-89 % | trips 21.10, 21.2, 21.8, 22.1 and 22.2 at 121 minutes: 322E003's sump empties with HIC-322602 wide open and 308 at 20 t/h, 322R001 floods, then the stripper's sump empties |
+| X119G0 | B-120's 168 C case, SLIP_GAIN 0 | 54.7-59 % (-16 %/h on V1's law) | FAIL: LT-322504 +3.44 %/h; AT-322701 3.15; carbon yield 0.956 |
+
+With the leg on its own head, 323F010 settles where its throughput puts it, 60 % x (m / m_des)^2
+(72.6 % at 110 %), from 90 to 115 % load, and it neither drains nor floods. The holds that still
+fail, fail elsewhere: on 324E001's level and HV-322604's deposition at 110 %, on a loop excursion
+at 115 %, and on the turndown's slide at 90 %. The process engineer decided (b) on these
+measurements, and it is built (§XCI.7).
+
+## XCI.7 B-119 (b) built (decision 161)
+
+* **The drain** (`units/recirc/barometric_leg.py`, new): ``own_head_leg_kgh(M)`` =
+  m_317,des . sqrt(M / M_des). V1's ``barometric_leg_kgh`` moved there verbatim, keeping
+  `pre_evaporator` inside its 600-line target (569 lines), which re-exports both names.
+  ``PreEvaporator.own_head_leg``, True, selects the decided drain; False is V1's leg, which every
+  equivalence harness keeps (eleven constructions in five files and the scheduler's).
+* **The data, each with its source.** `unit_323`: F010_N2_EL_M 15.740 and D002_N1_EL_M 6.095 from
+  the isometric, and F010_LEG_MARGIN_M, the premise, 1.0132 m on PFD 317's 1 151 kg/m3.
+  `unit_323d002`: D002_REF_EL_M 0.800 and D002_DLL_M 4.95 from the tank's general assembly.
+* **Both sides asserted** (`tests/equivalence/test_pre_evaporator_equivalence.py`). At the design
+  state V1's executed ``gravity_outflow_323f010`` and the decided drain give PFD 317 to the bit. A
+  lost vacuum raises V1's by 43.394 % and leaves the decided one where it was; 21 % more holdup
+  raises V1's by 1.271 % and the decided one by 10 %.
+* **The stage's tests** (`tests/units/recirc/test_pre_evaporator.py`). The twelve scenarios whose
+  numbers and V1-trim comparisons were measured on V1's leg (the chest, the vacuum, the boil-off,
+  the heel) run on it, unchanged. Section 6 pins the decided drain on four of them:
+  - 10 % more feed settles the separator at 73.32 %; V1's leg reaches 141.5 % and is still rising.
+  - HV-323605 at a fifth of its capacity lifts it from 60 to 71.6 %; V1's leg drains it to its heel.
+  - HV-323605 at 1.6 times its capacity leaves it at 55.8 % (77.7 % on V1's leg).
+  - A stopped feed drains it to the 2.04 kg that PFD 331 keeps, above the heel, and nothing is
+    made.
+
+  `tests/units/recirc/test_barometric_leg.py` pins the premise and the law.
+* **The synthesis harness** (`tests/equivalence/test_synthesis_loop_equivalence.harness_plant`)
+  takes V1's leg as it keeps the LP side's other changes on their switches. The LP header carries
+  323E010's chest to the loop: on the decided leg, five of its decided tests moved; for example,
+  322E002 condensed 66.14 t/h 100 s after the CO2 step instead of 74.27.
+* **The dynamic audit.** Its fast shutdown with LV-322501 wide open sends 323F010 up to 192 t/h.
+  The held liquor's boil past its bubble point (B-24) spikes from tick to tick, 12.6 to 21.5 to
+  12.6 to 33.2 t/h, and PT-323204's step reverses twice running eleven times on V1's leg. On the
+  decided leg it reverses three times running once. The audit admits three on 323F010 alone, and
+  the spikes are raised as B-122.
+* **On the coupled engine.** M1_100 on the built engine passes its hour as before: X 54.19 %,
+  835 kg/t. The workbook's 105 % point re-held on the built engine (Y121F2, from a copy of R105f's snapshot given the new field) passes as before, X 53.24 % and 812 kg/t, with 323F010 at 67.4 % where HIC-323605's trim had held 60 %; the workbook notes both.
+
+## XCI.8 Checks
+
+Until B-119's build, no file under `ureasim/`, `tests/` or `tools/` changed; the build changed the
+files §XCI.7 names. The full suite ran 7 597 tests: 7 591 passed and six failed, the dynamic audit's fast shutdown on PT-323204 and five synthesis-loop decided tests on the LP header. After the synthesis harness took V1's leg and the audit its 323F010 exception (B-122), those six pass, as do the four other harness files (193 tests) and the rest of the decided file (22). Nothing below `hmi` imports PyQt6: the grep of `CLAUDE.md` §1.3 prints
+nothing. Snapshots saved before the build carry ``PreEvaporator``'s old field set and are refused
+by `snapshot.check_compatible`, as after every change of a unit's fields. The rebuilt workbook
+recalculates in Excel with 232 formulas and no error. The patches, the runs and their records are
+in the session's scratchpad, not the tree.
