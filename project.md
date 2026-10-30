@@ -8,10 +8,10 @@ built, B-18, B-37 and B-20 decided and closed, trip 21.2's hand switches and AI-
 screens, the plant DCS's readback applied — the cold start reaches 79.7 bar a in 16 000 s, still
 short of the start-up band (session 50); B-94 closed on PFD 734's departure form, the steady state
 3080 of 3188, 322E003 on its own liquor and a full sump, 323P008's trip from AC4 PC23, B-95 closed
-as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70); an external report on five data-gap rows audited against the code, 322C001's head volume and the urea-melt Henry constant closed (decision 153, session 71); 322E001 on its 2,950-tube replacement (decision 154), the turnaround's plugged tubes derating 322E002, 322E003 and 323E010 (decision 155), five loops and AI-329701's range on the plant DCS's faceplates of 24 October 2026 (decision 156), `Scenarios6.docx` put to the plant (session 72); the plugged tubes' conductances re-anchored on the bundle in service (decision 157), LV-322501's failure case read tick by tick — SV32351 / SV32352 lift at their set (decision 158) — the vacuum bleeds kept on the 1750 MTPD basis (decision 159), TIC-328008 and FFIC-335406 on their faceplates (decision 160), the dynamic audits built and their one finding, B-117, signed off as built, `Scenarios6.docx` 47 of 71; Sections A, B and C empty, 11 data gaps open (sessions 73 and 74)
+as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70); an external report on five data-gap rows audited against the code, 322C001's head volume and the urea-melt Henry constant closed (decision 153, session 71); 322E001 on its 2,950-tube replacement (decision 154), the turnaround's plugged tubes derating 322E002, 322E003 and 323E010 (decision 155), five loops and AI-329701's range on the plant DCS's faceplates of 24 October 2026 (decision 156), `Scenarios6.docx` put to the plant (session 72); the plugged tubes' conductances re-anchored on the bundle in service (decision 157), LV-322501's failure case read tick by tick — SV32351 / SV32352 lift at their set (decision 158) — the vacuum bleeds kept on the 1750 MTPD basis (decision 159), TIC-328008 and FFIC-335406 on their faceplates (decision 160), the dynamic audits built and their one finding, B-117, signed off as built, `Scenarios6.docx` 47 of 71; Sections A, B and C empty, 11 data gaps open (sessions 73 and 74); the load range 70-115 % studied on the committed engine for the load-optimisation workbook (`D:\Work\Urea_Plant_Load_Optimization_70_to_115.xlsx`): 100 % verified on both objectives, the engine's turndown, 323F010's barometric leg and a stripper cut's loop oscillation raised as B-118 to B-120, no relation changed (sessions 75 and 76)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `D:\Work\Urea Simulation` (V1 — reference only, never edited from here)
-**Last updated:** 2026-10-28 (sessions 73 and 74)
+**Last updated:** 2026-10-30 (sessions 75 and 76)
 
 ---
 
@@ -4942,6 +4942,38 @@ checklist, and the close-out (As-Built Part LXXXVIII):
   under the control run.
 * **Session 74**: the four documents; the full suite and pyflakes; the temporary resume files
   deleted; Sessions 72 to 74 committed.
+
+### Sessions 75 and 76 — the load range 70-115 %: an operating study; B-118 to B-120 raised
+
+Session 75 (2026-10-29, interrupted) studied the first request — the handles' optimum set points from
+70 to 115 % on three bases (the plugged tubes derating, as committed, the pre-turnaround bundle) — in
+scratch; its last 21 staged runs died unfinished with the session and nothing was logged. Session 76
+(2026-10-29 and 30) answered the request that superseded it: `D:\Work\Urea_Plant_Load_Optimization_
+70_to_115.xlsx`, two sheets — the maximum per-pass conversion in 322R001 and the minimum battery-limit
+steam per tonne of urea — at 70-115 % in 5 % steps, each point to be held one hour on the committed
+engine (the last turnaround's 322E001 and plugged tubes). No relation, constant or test changed
+(As-Built Part LXXXIX):
+
+* **Method.** A scratch runner drove the headless engine at 0.1 s through the command handlers —
+  operator trims on the levels, TT-322004 and TT-322005, then a one-hour hold judged on every published
+  level, relief, overflow, suction, seal, mushy flow, stall, deposition, trip and flag — about 70 runs,
+  candidates branched from exercise snapshots. The licensor's windows were read from Operating Manual
+  Part III (UD-VT-G00-DC-0003 sections 2.6 and 5.2) and the plant's own practice from
+  `References/DCS Trends/Book2.xlsx` (2023: 755 samples at 90-95 % load, 4 131 at 110-112 %).
+* **100 %.** The design point holds (X 54.18 %, 901 60.86 t/h, 835 kg/t against the PFD's 834.5); TT-322004
+  176 C, seven hours after the step, holds X 55.94 % at 850 kg/t — the conversion optimum; every cut of
+  TT-322004 to 170 C or below starts B-120's oscillation, so the design point is the steam optimum.
+* **105 %.** Near-steady, not passed: TT-322004 170 C with HIC-323605 holding 323F010 at 61 % gives X 52.92 %, 901 60.53 t/h, 813 kg/t — the best on both objectives (172 C: X 52.56 %, 834 kg/t; 175 C: X 51.71 %, 868 kg/t) — and meets every criterion over its hold, seven hours after the step, except 328D003's open-loop ammonia-water bays rising 0.75 %/h; FIC-328402 trimmed on them overloads 328C004 (+13 %/h). AT-322701 2.87-2.91, at the licensor's lower edge; 322E003 vents 125-141 kg/h.
+* **110-115 %.** No verified steady state: 323F010's barometric leg cannot pass the flow and the
+  separator fills (137 % at 110 %, 259 % at 115 %, HIC-323605 at its floor) — B-119; the holds'
+  values are reported as failing.
+* **70-95 %.** No steady state under seven policies and the plant's own 92 % set points: trip 22.1 at
+  70-85 % within 20-80 minutes or a collapse of the reactor, and a cold branch at 90-95 % (TT-322005
+  168-178 C, X 36-48 %, 323F010 drained) — B-118. The engine cannot reproduce the plant's 2023 turndown
+  (TT-322005 182.6 C at 92 %).
+* Off-design ticks cost about 110 ms against 15 ms at design (323C003 / 323F004 bubble points,
+  HV-322604's letdown), which bounded the study.
+* **B-118, B-119 and B-120** raised for the process engineer, Book2's bands as their acceptance data.
 
 ## 5. Design decisions on record
 

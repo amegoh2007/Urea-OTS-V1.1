@@ -17681,3 +17681,95 @@ pyflakes clean on `ureasim`, `tests`, `tools` and `run.py`; every module under `
 600 lines; nothing below `hmi` imports PyQt6; no `thermo/` file changed, so the liquid-state stores
 stand. The full suite green on every group, `tests/docs`, `tests/engine/test_dynamic_audit.py` and the
 native-platform `tests/hmi/test_screen_geometry.py` included.
+
+# Part LXXXIX — The load range 70-115 %: an operating study on the committed engine (Phase 7)
+
+Sessions 75 and 76, 2026-10-29 and 30. A study, not a port: no relation, constant, test or document
+datum changed. The committed engine — the last turnaround's 2,950-tube 322E001 and the plugged tubes
+re-anchored on the bundles in service (decisions 154, 155, 157) — was driven headless at the fixed
+0.1 s step to map its steady operating envelope from 70 to 115 % load for two objectives, the
+reactor's per-pass conversion and the battery-limit steam per tonne of urea, each point to be held
+one hour. The deliverable is `D:\Work\Urea_Plant_Load_Optimization_70_to_115.xlsx`. Session 75's
+earlier request (the set points on three bases) is superseded; its last runs died unfinished.
+
+## LXXXIX.1 Method
+
+A scratch runner (the session's scratchpad, not the tree) ramps the instructor's CO2 demand from
+the design seed at 0.25 to 0.5 %/min and moves the operator's handles only through
+`engine.command.apply_command`: HIC-322605 on LT-322504's 80 % (20.0 m), HIC-322602 on 322E003's 50 %
+(the spindle solved on 322F001's own map at the live motive), PIC-329204 on TT-322004, MASTER-329207
+on TT-322005 (4.21 to 6.2 bar a), and, where stated, HIC-323605 on 323F010's level; FFIC-321404 at
+its design 2.023. After a settle of two to seven hours it holds 3 600 s with the level trims still
+acting and every other handle frozen, and saves exercise snapshots at the hold's start and end so
+candidates branch from a settled plant. The hold is judged on every level the results and the packet
+publish — least-squares drift under 0.5 %/h and net change under 0.5 %, none above 100 % or drained
+to its heel — and on relief, overflow, lost suction, held-back liquor, seals, mushy flow, 322F001's
+stall, HV-322604's carbamate deposition, trips and flags.
+
+The licensor's operating windows (Operating Manual Part III, UD-VT-G00-DC-0003 section 5.2, read from
+the scan by OCR and checked on the page): reactor-outlet N/C 2.90-3.10, TT-322005 180-183 C, synthesis
+136-143 bar, stripper steam 19.6 bar at 100 % and never above 23 bar, TT-322004 162-176 C (+5 K), HP
+scrubber cooling water in about 80 C, overflow about 165 C, off-gas 110-120 C; section 2.6.3, read
+visually: name-plate HP steam 66.9 t/h at 107.8 bar a and 505 C including the CO2 turbine. The PFD's
+901: 60 848 kg/h at 1750 MTPD and 66 799 kg/h at 1925 MTPD, 902 at 19.7 bar a in both. The plant's own
+practice: `References/DCS Trends/Book2.xlsx` (July to September 2023) holds 755 samples at 90-95 %
+load and 4 131 at 110-112 %; its medians are in `handoff.md` B-118.
+
+Off-design ticks cost about 110 ms against 15 ms at the design seed (cProfile on a ramp to 90 %): the
+bubble-point solves of 323C003 and 323F004 (220 s of 725), HV-322604's condensing letdown (69 s), the
+vacuum train, 322C001 and 323F010 (45-60 s each). Turndown runs are therefore five to seven times
+slower than the design point.
+
+## LXXXIX.2 What the engine holds
+
+Hold means of the points the workbook reports (`select_runs.py`: a PASS first, then the
+best hold that only a slow level drift under 1 %/h kept from passing, then the best completed hold):
+
+| Load | Maximum conversion | Minimum steam | Verdict |
+|---|---|---|---|
+| 70-85 % | — | — | trip 22.1 at 60-80 min on the design handles; collapse or trip on every other policy |
+| 90 % | X 41.9 %, TT-322005 172.6 C, 901 73.1 t/h, 1 292 kg/t (design handles, HIC-322604 on PT-329201) | the same | FAIL: 323F010 drained, 328D003 1.9 %/h, carbon balance 87 % |
+| 95 % | — | — | the plant's 92 % set points trip 22.1 at 21 min; the other policies abandoned collapsing |
+| 100 % | TT-322004 176 C: X 55.94 %, 901 62.88 t/h, 850 kg/t | design: X 54.18 %, 901 60.86 t/h, 835 kg/t | PASS both, every licensor window met |
+| 105 % | TT-322004 170 C: X 52.92 %, 901 60.53 t/h, 813 kg/t | the same | FAIL: 328D003 +0.75 %/h only |
+| 110 % | X 52.10 %, 901 61.20 t/h, 782 kg/t | the same | FAIL: 323F010 137 %, HV-322604 deposition |
+| 115 % | X 60.80 %, 901 68.33 t/h, 797 kg/t | the same | FAIL: 323F010 258 %, TT-322005 184.7 C |
+
+At 100 % more stripping raises the conversion (172 / 174 / 176 C: 54.18 / 54.98 / 55.94 %) and costs
+steam (835 / 840 / 850 kg/t); at 105 % less stripping raises both the conversion and the economy (175 /
+172 / 170 C: 51.71 / 52.56 / 52.92 %). One 321P002 machine suffices at every load (321P002B's scoop
+96 % at 115 %).
+
+## LXXXIX.3 323F010's barometric leg (B-119)
+
+`pre_evaporator.barometric_leg_kgh` drives PFD 317 by sqrt((M g / A + P_separator) / dP_des), and the
+0.46 bar a separator dominates the bracket, so the leg's drain hardly follows the holdup. Three hours
+after TT-322004 was raised 4 K at 100 % load the separator still rose 2.5 %/h (60 to 78.5 %); at 105 %
+HIC-323605 trimmed on the level held it at 61-64 % with the valve at 49-61 %; at 110 % it rose
+13 %/h to 137 % of the full vessel; at 115 % it stood at 259 % after five hours and at 249-277 % with
+HIC-323605 closed to 16-20 %. Below design it drains to its heel: 0.0 % at 90 and 95 %.
+
+## LXXXIX.4 The stripper cut's oscillation (B-120)
+
+At 100 % load PIC-329204 trimmed to TT-322004 168 C cycles with a period of about 1.1 h: urea leaving
+the stripper 62-81 t/h, conversion 49-65 %, AT-322701 2.76-3.46, 308's wash 23-43 t/h, LT-322501 swinging
+15 %; 164 C cycles harder (PT-329201 to 146.7 bar a) and 170 C the same way with LV-322501's erosion
+flag and 322E001's seal at 0.979. 172 C (design), 174 C and 176 C settle.
+
+## LXXXIX.5 Other measurements
+
+* AT-322701 trimmed by FFIC-321404's ratio (proportional-dominant): 3.0 to 3.77 within 40 minutes at
+  99 % load while the ratio went 2.023 to 2.166 and back to 2.01; the study held the ratio at design.
+  The plant held FFIC-321404B at 2.115 and AY-322701 at 3.25 in 2023.
+* 321P002B's scoop reached 96 % at 115 % load; the standby 321P002A rule (97 % for a minute) never
+  fired, one pump at every load.
+* With TIC-329005 lowered to stop 322E003 venting at 105-110 %, HV-322604's letdown cooled to 58 C and
+  deposited carbamate (B-79's law); at 115 % with the tempered water at 67.5 C the letdown stayed at
+  104 C and did not.
+* 322E003 condenses its whole demand at design and no more (decision 157): the plant's 92 % tempered
+  water, 90 C, makes it vent 7.2 t/h at once in the engine.
+
+## LXXXIX.6 Checks
+
+No file under `ureasim/`, `tests/` or `tools/` changed, so the suite and the stores stand as session
+74 left them; nothing below `hmi` imports PyQt6 (the grep of `CLAUDE.md` §1.3 prints nothing).
