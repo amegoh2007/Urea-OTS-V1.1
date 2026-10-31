@@ -755,6 +755,9 @@ def harness_plant():
     # separator's own head (B-119, decided 2026-10-30, decision 161) has its own tests, and the LP
     # header carries it to the loop through 323E010's chest.
     plant.units["323F010"].own_head_leg = False
+    # The linearised step on 323F010's vacuum where its holdup boils: the step solved itself (B-122,
+    # decided 2026-10-30, decision 162) has its own tests, and the LP header carries it to the loop.
+    plant.units["323F010"].exact_boil_step = False
     # Unit 328's three rows (decisions 156 and 160), V1's tunings: FIC-328404 0.5 per kg/h on the
     # reflux's density and 25 s, TIC-328012 3.0 and 250 s, TIC-328008 240 kg/h per mol% and 110 s —
     # the LP header carries them to the loop too.

@@ -1467,7 +1467,7 @@ same fixed step.
 | 95 | Unit-323 liquor lines: each stream's cp, and a drain's arrival through the receiving stage's inlet line | `main.py` `step_sim`, the `_cp` lambda and the three `_cq_packet` / `_transport_process` inlet blocks with their settled-line reuse | `units/recirc/liquor_line.py` `stream_cp`, `receive_liquor` | **`[PORTED]`** bit-exact, executed inside the stage-1 and stage-2 tick-by-tick tests (the 323C003 feed and the 323F004 inlet). **One decided divergence, 2026-09-30 (handoff B-21, closed):** the line delivers the live departure flow and delays only the temperature, composition and cp, where V1 delayed the flow too and made or destroyed liquor on every flow change; the four stage transcriptions carry the switch, the stopped drain runs both ways (§XXIX.6, §XXXIX.2) |
 | 96 | 323F004, stage 2 of unit 323 | `main.py` `step_sim` 8363-8375 and 8410-8507 | `units/recirc/flash_tank.py` `FlashTank` | **`[PORTED]`** bit-exact TICK BY TICK over thirteen scenarios alone and two coupled to stage 1, every published field, the whole drum state and LIC-323505; the wiring TRANSCRIBED, everything it calls EXECUTED (Part XXIX). **One more, 2026-09-30 (B-44):** LV-323505 on its vendor's modified equal percentage from 67.73 %, on the sheet's FL, its blow-through on the trim's capacity ratio (§XL.3). **B-46, 2026-09-30:** LV-323505 chokes on the drum liquor's bubble pressure, so the vacuum reaches the drum only past 1.076 bar a (§XLIV.2); asserted both ways |
 | 97 | Unit-323 stage-2 design basis | `main.py` `R323_F004_*`, `R323_LV505_OP_DES`, `R323_RHO_S319`, `R323_CP_F004_DES`, `R323_RHO_F004_DES`, `R323_Q701_DES_KW`, `R323_LAMBDA_701`, the LIC-323505 seed | `data/unit_323.py` | **`[PORTED]`** bit-exact; LIC-323505's tuning agrees with `References/Master_PID_Tuning_Constants.md`; PFD 319 and 701 checked against the strict design basis |
-| 98 | 323E010 / 323F010, stage 3 of unit 323 | `main.py` `step_sim` 8460-8469 and 8509-8654, `gravity_outflow_323f010`, `hv323605_flow_kgh` | `units/recirc/pre_evaporator.py` `PreEvaporator`, `barometric_leg_kgh`, `vapour_outlet_kgh` | **`[PORTED]`** bit-exact TICK BY TICK over fifteen scenarios alone, three coupled to stage 2 and one coupled to stages 1 and 2, every published field, the whole separator state and both controllers; the wiring TRANSCRIBED, everything it calls EXECUTED (Part XXX). Two V1 physics gaps reproduced and pinned: the design-vacuum bubble point (B-22), the evaporation cap (B-24). Session 35: the held liquor boils past its bubble point at the live PT-323204 (B-24, decided 2026-10-02, row 171, §LI.3), B-29's heel and the boil now switches of the transcription **One decided divergence, 2026-09-27 (handoff B-29, closed):** the barometric leg capped at the liquid above a 1 kg heel plus what arrives net of the evaporation, so the floor is never drained. Inert until the heel — every scenario above stays bit-exact — and asserted from both sides at it (§XXX.9). **Two more, 2026-09-30:** the 323E010 chest on PFD 926's 2.5 bar a (B-23, closed, §XL.1); PIC-329208 on the table's gain per cent of span without the chest scale, and TIC-323012 on its sibling TIC-323007's row (§XL.2). **One more, 2026-10-30 (handoff B-119, option (b), closed; decision 161, §XCI.7):** the separator drains on its own head through N2, m_317 = m_317,des sqrt(M / M_des), its leg taller than any column the vacuum holds (`units/recirc/barometric_leg.py`, V1's law moved there verbatim and re-exported); V1's leg on ``PreEvaporator(own_head_leg=False)``, asserted from both sides |
+| 98 | 323E010 / 323F010, stage 3 of unit 323 | `main.py` `step_sim` 8460-8469 and 8509-8654, `gravity_outflow_323f010`, `hv323605_flow_kgh` | `units/recirc/pre_evaporator.py` `PreEvaporator`, `barometric_leg_kgh`, `vapour_outlet_kgh` | **`[PORTED]`** bit-exact TICK BY TICK over fifteen scenarios alone, three coupled to stage 2 and one coupled to stages 1 and 2, every published field, the whole separator state and both controllers; the wiring TRANSCRIBED, everything it calls EXECUTED (Part XXX). Two V1 physics gaps reproduced and pinned: the design-vacuum bubble point (B-22), the evaporation cap (B-24). Session 35: the held liquor boils past its bubble point at the live PT-323204 (B-24, decided 2026-10-02, row 171, §LI.3), B-29's heel and the boil now switches of the transcription **One decided divergence, 2026-09-27 (handoff B-29, closed):** the barometric leg capped at the liquid above a 1 kg heel plus what arrives net of the evaporation, so the floor is never drained. Inert until the heel — every scenario above stays bit-exact — and asserted from both sides at it (§XXX.9). **Two more, 2026-09-30:** the 323E010 chest on PFD 926's 2.5 bar a (B-23, closed, §XL.1); PIC-329208 on the table's gain per cent of span without the chest scale, and TIC-323012 on its sibling TIC-323007's row (§XL.2). **One more, 2026-10-30 (handoff B-119, option (b), closed; decision 161, §XCI.7):** the separator drains on its own head through N2, m_317 = m_317,des sqrt(M / M_des), its leg taller than any column the vacuum holds (`units/recirc/barometric_leg.py`, V1's law moved there verbatim and re-exported); V1's leg on ``PreEvaporator(own_head_leg=False)``, asserted from both sides. **Numerics, 2026-10-30 (handoff B-122, option (b), closed; decision 162, §XCII.2):** on a tick where the held liquor boils at the old pressure, the Jacobian's probe or the linearised step, PT-323204's backward step solved itself (`core.node.backward_euler_pressure`), the linearised step to the bit elsewhere; the transcription carries it under ``boil_decided``, and the synthesis loop's harness keeps the linearised step on ``PreEvaporator(exact_boil_step=False)``, both sides asserted at the stage |
 | 99 | Unit-323 stage-3 design basis | `main.py` `R323_F010_*`, `R323_E010_*`, `R323_M331_*`, `R323_EVAP_LAMBDA`, `R323_QEVAP_DES_KW`, `R323_CP_F010_DES`, `R323_CP_S331_DES`, `R323_HIC605_DES_PCT`, `R323_HV605_CHAR`, `R324_F001_P_BARA`, `SOL_F010_Y_DES`, `R323_F010_MW_VAP_DES`, the TIC-323012 / PIC-329208 seeds | `data/unit_323.py`, `pre_evaporator.Y_VAP_DES` / `MW_VAP_DES` | **`[PORTED]`** bit-exact; PIC-329208 agrees with `References/Master_PID_Tuning_Constants.md`, TIC-323012 is V1's Appendix C retune (no DCS row); the 1.76 bar a chest anchor disagrees with PFD 926 (B-23) |
 | 100 | 323D002, stage 4 of unit 323 | `main.py` `step_sim` 8564-8572 and 8656-8810, the telemetry at 10663-10669 | `units/recirc/solution_tank.py` `SolutionTank` | **`[PORTED]`** bit-exact TICK BY TICK over ten scenarios alone, three more forcing the baffle spill, the part-filled tie and FIC-324401 in AUTO, one coupled to stage 3 and one to stages 1 to 3, every published field, both compartments' state, the FT-324401 lag and both controllers; the wiring TRANSCRIBED, everything it calls EXECUTED (Part XXXI). One V1 gap reproduced and pinned: no biuret in the tank (B-25). **One decided divergence, 2026-09-27 (handoffs B-26 and B-27, closed):** 323P003 capped at what the tank holds above a 1 kg heel, with a loss-of-suction flag and FT-324401 on the delivered flow; a full tank's excess published as an overflow stream; Compartment II's blend divided by its holdup before the overflow; Compartment II given its own temperature. Inert until each limit — every scenario above stays bit-exact — and asserted from both sides at the limit by four tests (§XXXI.9). **A second, 2026-09-30 (handoff B-41, closed):** FIC-324401 on the DCS table's 0.40 read per cent of FT-324401's 0-110 m3/h span, 0.316 %/(t/h) where V1 runs 0.40 — seeded into the transcription, since the cascade keeps the loop off its set point, and proved both ways in `test_flow_loop_gains_equivalence.py` (Part XXXVII). **One more, 2026-09-30 (B-44):** FV-324401 on its vendor's modified equal percentage from 72.36 % (`fv_324401_th`, §XL.3) |
 | 101 | Unit-323 stage-4 design basis | `main.py` `R323_D002_VOL_I_M3` / `_VOL_II_M3`, `R323_D002_LVL_SP`, `R323_FV401_OP_DES`, `R323_D002_M_I_FULL` / `_M_I_DES`, `R324_W_IN`, `R324_W_EV2`, the LIC-323507 / FIC-324401 seeds and the FT-324401 lag | `data/unit_323.py`, `data/design_point.py`, `solution_tank.FLOW_SPAN_324_TH` | **`[PORTED]`** bit-exact; FIC-324401 agrees with `References/Master_PID_Tuning_Constants.md` except the table's 2 % deadband, which V1 does not carry (B-28), and carries the table's gain per cent of FT-324401's 0-110 m3/h span (Uhde loop summary UD-MR-324-EC-0001; decided, B-41); LIC-323507 has no DCS row, its Ti is V1's settling-time estimate on the retired 1300 kg/m3 |
@@ -18132,3 +18132,236 @@ nothing. Snapshots saved before the build carry ``PreEvaporator``'s old field se
 by `snapshot.check_compatible`, as after every change of a unit's fields. The rebuilt workbook
 recalculates in Excel with 232 formulas and no error. The patches, the runs and their records are
 in the session's scratchpad, not the tree.
+
+
+---
+
+# Part XCII — B-122 built; B-121 and B-118 traced against Book2's bands (Phase 7)
+
+Session 79 (2026-10-30) took up the four open Section B items on a pasted plan from the process
+engineer: B-122 option (b), to trace 323F010's boil-off spikes and remove what the physics does not
+ask for; B-121 option (b) and B-118 / B-120's narrowed option (b), to measure against Book2.xlsx's
+plant bands and report before any relation changes. One relation's numerics changed, B-122's
+(decision 162); B-121 and B-118 changed nothing under `ureasim/`. The runs, the traces and the
+prototypes are in the session's scratchpad (`trace_b122.py`, `proto2_b122.py`, `stage_surge.py`,
+`b121_bands.py`, `probe_lp_gas.py`, `b121_option.py`, `trace_b118.py`, `b118_e003.py`). Resumed on
+2026-10-31 after a pause, the session kept the synthesis loop's harness on the linearised step and
+closed B-123 on the process engineer's sign-off (§XCII.2; `trace_synth_b122.py`,
+`trace_b106_split.py`, `lp_ring_b106.py`, `switch_sides_b122.py`).
+
+## XCII.1 B-122: the spikes traced
+
+The dynamic audit's fast shutdown (trip 21.2 by its switch, LV-322501 forced wide open, two
+minutes at FAST) feeds 323F010 up to 192 t/h. Its liquor holds 1 to 12 mK above its bubble point,
+and each tick its boil-off is the root of T* - x lambda / C = T_bub(w'(x), P) at the trial pressure
+(`holdup_boil.liquor_boil`, B-24), inside PT-323204's backward step linearised about the old
+pressure, P' = P + f dt / (1 - J dt), J taken on a 1e-6 bar probe. Traced inside the tick on the
+decided leg (ticks 662-670):
+
+| tick | Tb(P) - T* [mK] | boil at P, at the probe [kg/h] | step of PT-323204 [bar] | boil booked [kg/h] |
+|---|---|---|---|---|
+| 662 | -12.3 | 2003.3, 1994.5 | +0.88e-4 | 1231 |
+| 663 | -1.6 (Tb +10.6 mK: CO2 crosses 7.5e-4) | 256.1, 247.7 | -1.06e-4 | 1157 |
+| 665 | -23.5 | 2269.263, 2269.263 (pinned) | +24.1e-4 | 0 |
+| 666 | +95.1 | 0, 0 | -30.8e-4 | 8961 |
+| 667 | -26.6 | 3061.6, 3061.6 (pinned) | +44.3e-4 | 0 |
+| 669 | +15.9 | 0, 0 | -28.5e-4 | 20627 |
+
+Two things break the linearisation:
+
+* **The kink at the bubble point.** The boil-off is zero above the pressure that brings the liquor
+  to its bubble point and falls about 9 t/h per mbar below it (C / lambda = 7.8 kg/K, dT_bub/dP =
+  54 K/bar). A start subcooled by a fraction of a millikelvin leaves the probe with the valve's
+  slope alone, the step overshoots into the boiling region, and a flash is booked that the pressure
+  step never saw. The memo's bubble point steps 6 to 26 mK where the liquor crosses a bin edge (CO2,
+  a few quanta of 1e-4, crossing 7.5e-4 at tick 663), which is what puts a start on the wrong side.
+* **A root pinned on a bin edge.** When the boiled liquor's composition crosses a bin edge inside
+  the root's bracket, the bubble point steps and the root sits on the step: at ticks 665 and 667 it
+  is the same to the bit at the old pressure and at the probe, and the Jacobian again loses the
+  boil.
+
+V1's leg shows the same mechanism, two successive reversals eleven times. At the stage alone the
+linearised step books 172.5 t/h on the first tick of HV-323605 opened to 1.6 times its capacity at
+0.1 s and rings PT-323204 through eleven successive reversals when 324E002's shell falls to
+0.25 bar a at 1 s; the equivalence transcription, which carries the same code, had booked
+single-tick flashes of 165, 30 and 17 t/h in its own scenarios.
+
+## XCII.2 B-122 (b) built (decision 162)
+
+On a tick where the holdup boils at the old pressure, at the probe or at the linearised step's end,
+`PreEvaporator.step` solves the backward step itself, P' = P + f(P') dt, by
+`core.node.backward_euler_pressure` (V1's `_backward_euler_p`, ported verbatim) between the old
+pressure and the explicit step, where a falling f puts its root, clamped to the separator's range.
+Elsewhere the linearised step is kept to the bit, and at a settled state f(P) is 0 and both return
+P. The transcription in `tests/equivalence/test_pre_evaporator_equivalence.py` carries it under
+``boil_decided``, every tick-by-tick scenario `==` the port; ``boil_decided=False`` is V1 verbatim.
+
+| fast shutdown, 1 215 ticks | decided leg, before | after | V1's leg, before | after |
+|---|---|---|---|---|
+| longest run of PT-323204 reversals | 3 | 2 | 2 | 2 |
+| runs of two | 10 | 7 | 11 | 4 |
+| boil-off spikes (> 1.3 x both neighbours) | 11 | 0 | 6 | 0 |
+| largest tick-to-tick change of evaporation + boil-off [kg/h] | 20 647 | 457 | 18 092 | 1 032 |
+
+The audit's limit of two successive reversals is restored for every node
+(`tests/engine/test_dynamic_audit.py`). At the stage alone the opened vent flashes 6.93 t/h at once
+and moves at most 235 kg/h a tick; the falling shell moves PT-323204 to 0.4557 bar a without a
+reversal (section 7 of `tests/units/recirc/test_pre_evaporator.py`).
+
+Three other fixes were measured and set aside:
+
+* one memo bin's expansion frozen per tick: the pin goes, but the bin switches between ticks, and a
+  quiet boil at TIC-323012's 101 C chattered between 492 and 855 kg/h (longest run 4 on the audit);
+* the rigorous bubble point expanded about the tick's own state (`kvalues` Newton from the memo's
+  estimate): the smoothest, 56 kg/h, but up to 0.035 C off the memo that V1's relaxation uses, so a
+  liquor relaxing at 97 C boiled 5.3 kg/h that it should not, and every boiling state moved by the
+  memo's local error;
+* the exact step only where the boil starts or stops: the pinned root escapes it, longest run 3 and
+  a 19 t/h step.
+
+What moved. Every non-boiling tick and every fixed point is unchanged; the design seed's first tick
+is the PFD to the bit. The boiling scenarios' transients moved, and the stage's tests were measured
+again: among them the 0.1 s stopped drain's first-tick boil-off 9120.0 to 9307.9 kg/h, the B-98 heel
+reached at 5260 s instead of 5290, the B-24 deeper vacuum's boil-off at two hours 3287.54 to 3287.42
+kg/h (PT-323204 0.40424 bar a, unchanged), and the design seed's hour at 1 s, where the liquor
+touches its bubble point, 80.00038 to 80.00017 % urea and 0.00 to 0.03 kg/h boiled. Three decided
+tests of the equivalence file moved with the transcription: V1's trim pulls 13 793 kg/h on the
+first tick of the shell's fall (13 638), the 60 % chest boils 1179.23 kg/h (1176.10), and V1's
+chest reaches 97.75 C at twenty minutes (97.73).
+
+The synthesis loop's harness (2026-10-31). `harness_plant` in
+`tests/equivalence/test_synthesis_loop_equivalence.py` runs the port's whole plant, 323F010 with it,
+and its decided transients boil the holdup: B-104's (LV-322501 at 10 %) on 3 782 of 6 001 ticks from
+the eighth, with single-tick flashes up to 130 t/h on the linearised step (81 t/h solved itself);
+B-106's (the CO2 boundary +20 %) on 1 139 of 2 001 from the thirtieth, up to 31 t/h (3.2 t/h). The
+step's difference reaches the loop through the LP header, which 323E010's chest draws on, and the
+harness's knife edges answer it at length. In B-104's scenario the LPCC stands 1.3 mbar apart at ten
+minutes, and LV-322501's drain at 10 % (12.2 t/h on 1.5 mbar, decision 150) moves the reactor's
+discharge from 37.67 to 26.26 t/h. In B-106's the first boiling ticks differ by 5 kg/h and the LP
+header by 0.2 mbar at 33 s; on the harness's V1 switches the header rings period-two in that
+transient — 36 successive reversals, its tick-to-tick step alternating by up to 33 mbar, where the
+product's plant never reverses twice running — and the difference grows to 42 mbar at 100 s, the
+melt condensing 108.95 t/h instead of 74.27 and trip 22.2 coming at 193.0 s instead of 190.7. Six
+decided tests and V1's side of A-12's CO2 case (139.5473 to 139.5470 bar a) moved, all through the
+LP side. The harness keeps the linearised step, ``PreEvaporator(exact_boil_step=False)``, as it keeps
+V1's leg (decision 161), and every pin stands as committed. The switch's two sides are asserted at
+the stage (section 7 of `tests/units/recirc/test_pre_evaporator.py`): the linearised step books
+172.5 t/h on the opened vent's first tick and rings the falling shell's PT-323204 through eleven
+successive reversals.
+
+What remains is V1's memo itself (handoff B-123): its bubble point steps up to 0.026 C at a bin edge
+and its flash's vapour CO2 8 %, so a quiet boil at 101 C chatters PT-323204 by ±0.012 mbar and the
+stage alone under a 2.75-fold feed surge rings period-two at ±0.22 mbar on the vapour's composition —
+before and after the fix. The process engineer signed it off as built on 2026-10-31 (option (a),
+decision 163): the chatter lies below the transmitter's resolution, and V1's memo stays as ported.
+
+## XCII.3 B-121: unit 328's ammonia water against Book2
+
+Book2's four bands, reproduced on UREA-LOAD in [90, 95), [99, 103), [105, 109.5) and [109.5, 112.5)
+(755, 34, 109 and 4 253 samples; medians 92.30, 102.45, 108.62 and 111.01 %), against the engine at
+105 % (R105f's end on the built engine, FIC-328402 at 34.5 m3/h; design in brackets):
+
+| tag (stream) | 92 % | 102 % | 108.6 % | 111 % | engine 105 % [design] |
+|---|---|---|---|---|---|
+| FIC-328402 (735) [m3/h] | 37.01 | 40.21 | 42.00 | 44.01 | 34.5 [31.4] |
+| FT-322402 (744, 322P002) | 30.93 | 30.86 | 30.91 | 30.91 | 31.48 t/h [31.48] |
+| FIC-323401 (734) [m3/h] | 1.16 | 1.00 | 1.50 | 1.20 | 1.55 [1.55] |
+| FIC-323402 (791) [m3/h] | 1.50 | 1.58 | 2.00 | 1.60 | 1.55 [1.55] |
+| FIC-328405 (793, spare) [m3/h] | 0.41 | 0.51 | 0.50 | 0.42 | 0 [0] |
+| FT-328401 (776) [m3/h] | 4.93 | 7.26 | 6.36 | 7.47 | — |
+| FIC-328404 (775 reflux) [m3/h] | 1.44 | 1.35 | 1.35 | 1.37 | — |
+| LT-328507 / LT-328508 [%] | 20.3 / 22.9 | 18.1 / 20.4 | 23.2 / 25.5 | 22.3 / 24.8 | 59.2 [50] |
+| PIC-323203 output (PV-323203, 702) [%] | 32.9 | 31.7 | 36.6 | 39.7 | 82.5 [21.6] |
+| PIC-323202B PV [bar g] / output [%] | 3.75 / 28.5 | 4.07 / 24.0 | 3.70 / 28.0 | 4.20 / 25.0 | 3.20 bar a / 88.1 [36.4] |
+| TT-323006 (323E003) [C] | 85.5 | 87.4 | 85.7 | 87.5 | 73.4 [74] |
+
+The engine's streams at 105 %, tick-probed against the design seed:
+
+* compartment I takes 32.82 t/h of condensates (31.48), 744 drawing 31.48: +1.34 t/h;
+* 343 is 37.09 t/h (34.18): 323C005's gas is 3.92 t/h (0.90), of which 702 3.47 (0.44) — 2.99 t/h
+  NH3, 0.22 water, 0.23 air — and 708 0.45 (0.46);
+* 702 is 323E011's vent: its gas load 701 + 786 + 321 is 9.06 t/h (6.03) against a capacity its
+  pressure alone sets (C(P), decision 114), 5.59 t/h at PIC-323203's 1.13 bar a; 701, 323F004's
+  flash, is 5.59 t/h (4.43) with the drum at 100.2 C (106), and 321, 323E003's vent, 3.20 t/h (1.32);
+* 323E003's gas load is 28.44 t/h (26.32, +8 %) against a capacity of 25.25 (25.00, +1 %) at
+  PIC-323202's 3.2 bar a.
+
+One hour from that state with FIC-328402 back at its design 31.4 m3/h (`b121_option.py`):
+
+| PIC-323202 set point [bar a] | 3.2 (as built) | 3.9 | 4.7 |
+|---|---|---|---|
+| 323E003 [bar a / C] | 3.211 / 73.4 | 3.377 / 75.7 | 3.379 / 75.8 |
+| 321 / 701 / 702 [t/h] | 3.41 / 5.89 / 3.94 | 0 / 5.00 / 0 | 0 / 5.06 / 0 |
+| PV-323202 / PV-323203 [%] | 93.6 / 89.3 | 0 / 0 | 0 / 0 |
+| 343 [t/h] | 37.53 | 33.89 | 33.89 |
+| 328D003's net gain [t/h] / level [%/h] | +4.75 / +0.88 | +0.55 / +0.26 | +0.73 / +0.22 |
+
+Reading. Unit 328's relations agree with the plant where Book2 measures them: 322P002 delivers a
+fixed flow, as decision 81 holds 744, and the plant's FIC-328402 follows its inflows about in
+proportion to load. The engine's surplus at 105 % starts in the LP section of unit 323: 323E003's
+vent and 323F004's flash load 323E011 beyond the capacity its pressure sets, and the excess, mostly
+ammonia, reaches 328D003 through 323C005 and 343, so FIC-328402 must carry both compartments' growth.
+The plant's vent valves stay at a quarter to two fifths of their stroke at every band. A higher
+PIC-323202 set point lets 323E003 condense its whole gas at 3.38 bar a and closes both vents; the
+engine's LP gas nodes carry no inert gas, so the shut vents flatter it. Book2's PIC-323202B reads
+3.7-4.2 bar g, but its tuning-table row sits on line 329058 (WC): whether it is 323D001's loop must
+be confirmed on P&ID 103. The loop summary gives 323D001 3.9 bar a normal, the datasheet narrative
+3.2. Book2's TT-323010 reads 42.5-43.8 C in every band, where the console binds TT-323010 to
+323F010's liquor (99 C); noted for the process engineer.
+
+## XCII.4 B-118: the ramp's N/C excursion and 322E003's margin
+
+The first 25 minutes of the design handles' ramp to 90 % (0.5 %/min, 323F010 on its own head), with
+`reactor_322r001`'s overflow N/C (atom basis) recorded after each of its four steps:
+
+| t [s] | AT-322701 | real feed | out_total | re-flashed split | + NH3 partition | + slip | l_feed (driver) | X |
+|---|---|---|---|---|---|---|---|---|
+| 5 | 3.000 | 3.112 | 3.063 | 3.001 | 3.001 | 3.001 | 3.0730 | 0.5419 |
+| 245 | 3.115 | 3.257 | 3.208 | 3.134 | 3.136 | 3.136 | 3.0805 | 0.5471 |
+| 365 | 3.113 | 3.013 | 2.966 | 2.913 | 2.916 | 2.916 | 3.0832 | 0.5318 |
+| 725 | 3.151 | 3.306 | 3.256 | 3.177 | 3.181 | 3.181 | 3.0869 | 0.5465 |
+| 965 | 3.312 | 3.472 | 3.421 | 3.327 | 3.332 | 3.332 | 3.0876 | 0.5422 |
+| 1205 | 3.541 | 3.759 | 3.705 | 3.584 | 3.590 | 3.588 | 3.0884 | 0.5330 |
+| 1325 | 3.704 | 3.961 | 3.904 | 3.763 | 3.767 | 3.764 | 3.0844 | 0.5282 |
+
+The NH3 partition (``NC_OVERFLOW_GAIN``, at most 9.4 kmol/h) moves the overflow's N/C by at most
++0.006 and the conversion-deficit slip by at most 0.006; the re-flashed split takes a steady 0.06 to
+0.14 off it. AT-322701 follows the reactor's real feed, 322E002's melt and gas, which the reactor
+carries atom for atom. The 3.073-3.088 that session 77 recorded is ``l_feed``, the blended driver
+(30 % the fresh ratio's prompt, ``NC_LOOP_GAIN`` 0.5 on FFIC-321404's PV, and 70 % its lag on the
+loop inventory, V1's construction), which sets the kinetics and the partition and never sees the
+loop's composition. So the reactor converts at the driver's 3.08 while its overflow, and 322E003's
+gas behind it, carry the loop's 3.3-3.7.
+
+The anchor. The engine's AT-322701 of 3.00 is the PFD's design overflow on an atom basis (2.99975,
+`unit_322e003`'s reference). Book2's AY-322701 stands at 3.25 in every band (3.21-3.61 between the
+10th and 90th percentiles at 92 %), above the licensor's 2.90-3.10: the plant runs NH3-richer than
+the design at every load, and the engine's correlations anchored at 3.00 — TT-322011 at 120 K per
+N/C unit — read 144 C at 3.25 where the plant reads 130-134 C.
+
+322E003's margin. At Book2's 92 % set points (TIC-329005 90 C, FFIC-321404 2.115, the LP header 4.11 bar g,
+PIC-329204 18.2 bar g, HIC-322604 51.5 %), applied at the design seed and ramped to 92 % at
+0.5 %/min (`b118_e003.py`), 322E003 leaves 1.51 t/h uncondensed within 30 s and 7.6-7.8 t/h at 20
+to 22 minutes. The term is the saturation fraction on its own liquor's bubble pressure (decision
+105): f is 0.927 at once, the liquor bubbling at 145.5 bar a against the loop's 140.7, and falls to
+0.763 as AT-322701 climbs past 3.9 and the bubble pressure to 156.2 bar a. Held at 1, f leaves at
+most 0.47 t/h, while the shell's capacity fraction (decisions 136, 157) dips to 0.979 for six
+minutes; the capacity held at 1 leaves the run unchanged to the kilogram. At the plant's ratio the
+engine's AT-322701 runs to 4.27 in 28 minutes, where the plant holds 3.25. On the design handles f
+never binds, but the overflow cools from 165 to 99 C, the sump fills, and from 24 minutes the
+full-sump rule vents 20-27 t/h.
+
+B-120's coupling — whether these damp the 1.1 h loop mode at TT-322004 166.6-168 C with V1's slip
+gain of 4 — was not measured.
+
+## XCII.5 Checks
+
+Under `ureasim/` only `units/recirc/pre_evaporator.py` changed: decision 162's step and its harness
+switch. Under `tests/` the stage's tests, the pre-evaporator's equivalence file, the dynamic audit
+and the synthesis loop's harness changed. The full suite collects 7 599 tests, two of them new
+(section 7 of `tests/units/recirc/test_pre_evaporator.py`). Run as eight parallel groups beside the
+decided synthesis file, all 7 599 pass: 7 577 in the groups, in 15 minutes' wall time, and the
+decided file's 22 with every pin as committed. Nothing below `hmi` imports PyQt6: the grep of
+`CLAUDE.md` §1.3 prints nothing. Snapshots saved before the build carry ``PreEvaporator``'s old
+field set and are refused by `snapshot.check_compatible`, as after every change of a unit's fields.
+The patches, the runs and their records are in the session's scratchpad, not the tree.

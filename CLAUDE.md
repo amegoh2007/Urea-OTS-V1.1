@@ -427,6 +427,12 @@ none of them is optional:
    cascade, as V1's ``_ctrl_ipd`` builds it, kept (decision 160, B-117, decision 120's class); a
    vessel draining through a barometric leg its drawings show taller than any column the vacuum can
    hold draining on its own liquid head, the vessel's pressure no part of the drive (decision 161);
+   a held liquor's boil-off on a tick where it boils — at the old pressure, the Jacobian's probe or
+   the linearised step — taking its vapour space's backward step solved itself, the boil's kink at
+   the bubble point and a root pinned on a memo bin's edge being what the linearisation cannot
+   carry, the linearised step kept to the bit elsewhere (decision 162, decision 78's class);
+   V1's thermo memo kept as ported where a stage chatters on its bin edges below its
+   transmitter's resolution (decision 163, B-123);
    and no approximation of
    the physics bought for a pacing target (decision 88). A
    new mechanism still goes to the process engineer, with both sides measured.

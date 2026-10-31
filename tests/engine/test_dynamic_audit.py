@@ -366,10 +366,7 @@ def test_a_fast_shutdown_with_lv_322501_wide_open_stays_stable():
         for a, b in zip(steps, steps[1:]):
             run = run + 1 if a * b < 0.0 and min(abs(a), abs(b)) > 1.0e-7 else 0
             longest = max(longest, run)
-        # 323F010's held liquor boils past its bubble point in spikes under this surge (B-24),
-        # each spike stepping PT-323204: two successive reversals eleven times on V1's leg, three
-        # once on the separator's own head (decision 161). Handoff B-122, open.
-        assert longest <= (3 if name == "323F010" else 2), name
+        assert longest <= 2, name
     lifted = [s for s in seen if s[3]]
     assert lifted and max(s[0]["PT-323201"] for s in seen) >= SV32351_SET_BARA
 

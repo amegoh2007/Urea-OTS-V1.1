@@ -48,6 +48,15 @@ joins the evaporation in the vapour space, the swell, the drain's heel cap and t
 two branches are untouched, so at design and below it the stage is V1's; above the design split,
 or under a vacuum deeper than the design's, the product concentrates.
 
+On a tick where the holdup boils, at the old pressure, the Jacobian's probe or the linearised
+step, the backward step is solved itself (`core.node.backward_euler_pressure`), decided 2026-10-30
+(handoff B-122, decision 78's class). The boil-off is zero above the pressure that brings the liquor
+to its bubble point and steep below it, and its root can sit on a memo bin's edge, where it stops
+answering the pressure: the linearisation carries neither, and its overshoot booked single-tick
+flashes of 9-21 t/h in a blow-through surge. A settled state is untouched: there f(P) is 0 and both
+steps return P. ``PreEvaporator(exact_boil_step=False)`` is the linearised step on every tick, which
+the synthesis loop's harness keeps.
+
 The steam chest and the vacuum: what each is solved on
 -----------------------------------------------------
 Three pressures meet in this stage, and V1 treats them differently:
@@ -134,7 +143,7 @@ from dataclasses import dataclass, field
 
 from ureasim.control.process_loop import ProcessLoop
 from ureasim.control.valve import valve_gas_anchored
-from ureasim.core.node import vapour_volume_m3, vessel_dpdt
+from ureasim.core.node import backward_euler_pressure, vapour_volume_m3, vessel_dpdt
 from ureasim.core.numeric import clamp
 from ureasim.core.signal import first_order_lag
 from ureasim.core.units_of_measure import ABSOLUTE_ZERO_C
@@ -380,6 +389,10 @@ class PreEvaporator:
     #: The drain on the separator's own head (B-119 (b), decided 2026-10-30); False is V1's
     #: barometric leg, which the equivalence harness keeps.
     own_head_leg: bool = True
+    #: The backward step solved itself on a tick where the holdup boils (B-122 (b), decided
+    #: 2026-10-30); False is the linearised step on every tick, which the synthesis loop's
+    #: harness keeps.
+    exact_boil_step: bool = True
 
     def step(self, tic: ProcessLoop, pic: ProcessLoop,
              drain_kgh: float, drain_t_c: float, drain_w: dict,
@@ -512,8 +525,17 @@ class PreEvaporator:
         p_old = self.p_bara
         f_old = dpdt(p_old)
         jac = min((dpdt(p_old + JACOBIAN_STEP_BARA) - f_old) / JACOBIAN_STEP_BARA, 0.0)
-        self.p_bara = clamp(p_old + f_old * dt / (1.0 - jac * dt),
-                            F010_P_MIN_BARA, F010_P_MAX_BARA)
+        p_new = p_old + f_old * dt / (1.0 - jac * dt)
+        # Where the holdup boils the linearisation cannot carry the boil's kink at the bubble
+        # point, nor a root pinned on a memo bin's edge: solve the backward step itself, between
+        # the old pressure and the explicit step, where a falling f puts its root (B-122).
+        if self.exact_boil_step and any(boil_at(p)[0] > 0.0
+                                        for p in (p_old, p_old + JACOBIAN_STEP_BARA, p_new)):
+            p_exp = p_old + f_old * dt
+            p_new = backward_euler_pressure(
+                p_old, dt, dpdt, clamp(min(p_old, p_exp), F010_P_MIN_BARA, F010_P_MAX_BARA),
+                clamp(max(p_old, p_exp), F010_P_MIN_BARA, F010_P_MAX_BARA))
+        self.p_bara = clamp(p_new, F010_P_MIN_BARA, F010_P_MAX_BARA)
         # The flow the step actually passed, at the pressure it ended on: what 324E002 takes.
         pull = vapour_outlet_kgh(hic_323605_pct, self.p_bara, p_324e002_bara, self.t_c, mw_vap,
                                  self.vent)

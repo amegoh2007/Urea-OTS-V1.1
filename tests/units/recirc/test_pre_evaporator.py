@@ -7,7 +7,9 @@ vacuum asserted both ways in the equivalence test), the heel decided on its baro
 and the held liquor boiling past its bubble point at the live vacuum (B-24, decided 2026-10-02).
 The scenarios whose numbers were measured on V1's barometric leg, the separator's pressure in its
 drive, run on it (``own_head_leg=False``); the drain on the separator's own head (handoff B-119,
-option (b), decided 2026-10-30) is pinned on the same scenarios in section 6.
+option (b), decided 2026-10-30) is pinned on the same scenarios in section 6. The pressure step
+solved itself on every tick the holdup boils (handoff B-122, decided 2026-10-30) moved the boiling
+scenarios' transients; their numbers were measured again on it, the figures before it in brackets.
 Every number here was
 measured on the module before it was written down, on the decided chest anchor and cascade gains
 (2026-09-30, As-Built §XL.1-2) and on PFD 314 and 319 closed on their urea (B-20, decided
@@ -90,7 +92,7 @@ def test_tic_323012_on_its_dcs_row_holds_its_set_point():
         temps.append(sep.step(tic, pic, R323_M319_DES, d.F004_T_SP_C, dict(d.W_S319), *NO_BLOW,
                               d.HIC_323605_DES_PCT, P_LP_BARA, d.P_324E002_DES_BARA, 1.0).t_c)
     assert (temps[599], temps[-1]) == (pytest.approx(99.476, abs=1e-3),
-                                       pytest.approx(100.9825, abs=1e-4))
+                                       pytest.approx(100.9828, abs=1e-4))
     assert max(temps) < 101.0
 
 
@@ -122,19 +124,20 @@ def test_the_design_seed_carries_a_biuret_remainder():
     """The PFD rows put 4.85 kg/h more biuret into the stage than out of it, and a negative
     formation extent is refused, so the anchor closes urea alone and the design seed is not a
     fixed point: biuret climbs from the first tick and settles 0.005 points high within an
-    hour, while the separator holds 99.0001 C (As-Built §XXX.2) and the urea 80.0004 %, where V1's
+    hour, while the separator holds 99.0001 C (As-Built §XXX.2) and the urea 80.0002 %, where V1's
     dips to 79.9995 %. On the rows closed on their urea (B-20, decided 2026-10-10) the liquor
     relaxes to its bubble point at the live PT-323204 (B-22, decided 2026-10-15), 0.4599 bar a,
-    and boils nothing of its own (0.04 kg/h and 79.9998 % on V1's HV-323605 trim, 0.87 on the
-    design vacuum's bubble point, B-24)."""
+    and boils 0.03 kg/h of its own on the ticks it touches that bubble point, where the pressure
+    step is solved itself (B-122; [0.00 and 80.0004 %], [0.04 kg/h and 79.9998 %] on V1's
+    HV-323605 trim, [0.87] on the design vacuum's bubble point, B-24)."""
     r1 = _run(0.1, dt=0.1)
     assert r1.xi_kmolh == 0.0 and r1.w["Biuret"] > d.W_S317["Biuret"]
     assert r1.m_boil_kgh == 0.0
     r = _run(3600.0)
     assert r.w["Biuret"] * 100.0 == pytest.approx(0.42518, abs=1e-5)
-    assert r.w["Urea"] * 100.0 == pytest.approx(80.00038, abs=1e-5)
+    assert r.w["Urea"] * 100.0 == pytest.approx(80.00017, abs=1e-5)
     assert r.t_c == pytest.approx(99.0001, abs=1e-4)
-    assert r.m_boil_kgh == pytest.approx(0.0, abs=0.01)
+    assert r.m_boil_kgh == pytest.approx(0.030, abs=1e-3)
 
 
 # ======================================================================================
@@ -142,14 +145,14 @@ def test_the_design_seed_carries_a_biuret_remainder():
 # ======================================================================================
 
 @pytest.mark.parametrize("p_lp, t_c, chest, pic_op, boil", [
-    (4.5, 99.0473, 2.5070, 29.284, 11.65), (4.0, 99.1059, 2.5160, 31.876, 32.14)])
+    (4.5, 99.0441, 2.5062, 29.279, 11.45), (4.0, 99.1002, 2.5152, 31.870, 31.10)])
 def test_a_sagging_lp_header_is_answered_by_pv_329208(p_lp, t_c, chest, pic_op, boil):
     """The chest pressure is solved from the valve admission against the wall's condensation
     each tick; TIC-323012 and PIC-329208 open PV-329208 to hold it. Half an hour on, the chest is
     back above its 2.5 bar a anchor and the liquor is coming down off its overshoot — standing
-    above its live bubble point, it boils 12 and 32 kg/h of its own (B-24; PV-329208 on its
-    vendor trim, decided 2026-10-15 — 76 and 188 on V1's linear valve; 15 and 39 with HV-323605 on
-    V1's trim; the bubble point on the live PT-323204, B-22). On V1's anchor,
+    above its live bubble point, it boils 11 and 31 kg/h of its own [12 and 32] (B-24; PV-329208
+    on its vendor trim, decided 2026-10-15 — [76 and 188] on V1's linear valve; [15 and 39] with
+    HV-323605 on V1's trim; the bubble point on the live PT-323204, B-22). On V1's anchor,
     gains and 40-sweep flash budget the liquor sat at 99.0414 and 98.8722 C, on a 1.76 bar a
     chest."""
     r = _run(1800.0, p_lp=p_lp, own_head_leg=False)
@@ -172,25 +175,25 @@ def test_less_steam_dilutes_the_product():
     r = _run(7200.0, sp=97.0, own_head_leg=False)
     assert r.m_evap_kgh == pytest.approx(11266.1, abs=0.1)
     assert r.m_boil_kgh == 0.0
-    assert r.p_bara == pytest.approx(0.43911, abs=1e-5)
-    assert r.t_bub_c == pytest.approx(97.018, abs=1e-3)
+    assert r.p_bara == pytest.approx(0.43914, abs=1e-5)
+    assert r.t_bub_c == pytest.approx(97.012, abs=1e-3)
     assert r.w["Urea"] * 100.0 == pytest.approx(79.369, abs=1e-3)
 
 
 @pytest.mark.parametrize("kw, t_c, boil, urea", [
-    (dict(sp=101.0), 100.9825, 673.71, 80.580),
-    (dict(pic_man=PV_329208_PLUS_20_PCT), 102.7601, 1213.51, 81.054),
+    (dict(sp=101.0), 100.9828, 669.62, 80.580),
+    (dict(pic_man=PV_329208_PLUS_20_PCT), 102.7601, 1213.50, 81.054),
 ])
 def test_more_steam_concentrates_the_product_b24(kw, t_c, boil, urea):
     """Handoff B-24, decided 2026-10-02. The cap still holds V1's evaporation at the design
     fraction of the feed, but the surplus no longer superheats the liquor: past its bubble point
     at the live vacuum the holdup boils it off, the product concentrates, and the liquor holds
-    within 0.08 K of its bubble point. TIC-323012 at 101 C: 674 kg/h more and 80.58 % urea (V1:
-    80.00 %, 3.9 K superheated); PV-329208 in MAN where its vendor trim admits 20 % more steam than
-    at its 27.22 % design stroke, 30.47 % (V1's linear valve ten points above its 49.87 %): 1214
-    kg/h more, 81.05 % and 102.8 C (V1: 106.5 C, 12.0 K superheated). On the Neldisc HV-323605's
-    pull grows less with the separator's pressure than on V1's trim (839 and 1336 kg/h there), so
-    the extra vapour raises PT-323204, and the bubble point with it, further."""
+    within 0.08 K of its bubble point. TIC-323012 at 101 C: 670 kg/h more [674] and 80.58 % urea
+    (V1: 80.00 %, 3.9 K superheated); PV-329208 in MAN where its vendor trim admits 20 % more steam
+    than at its 27.22 % design stroke, 30.47 % (V1's linear valve ten points above its 49.87 %):
+    1213 kg/h more [1214], 81.05 % and 102.8 C (V1: 106.5 C, 12.0 K superheated). On the Neldisc
+    HV-323605's pull grows less with the separator's pressure than on V1's trim (839 and 1336 kg/h
+    there), so the extra vapour raises PT-323204, and the bubble point with it, further."""
     r = _run(7200.0, own_head_leg=False, **kw)
     assert r.m_evap_kgh == d.MEVAP_DES_KGH
     assert r.m_boil_kgh == pytest.approx(boil, abs=0.01)
@@ -217,7 +220,7 @@ def test_the_barometric_leg():
 
 def test_a_stopped_drain_takes_the_separator_to_its_heel_and_makes_nothing():
     """Handoff B-29, decided: the 323F004 drain stopped on 300 kg. The chest's heat, no longer
-    taken by a feed, boils the held liquor — 9.1 t/h at once, 9.9 at 1 s — and it concentrates
+    taken by a feed, boils the held liquor — 9.3 t/h at once [9.1], 9.9 at 1 s — and it concentrates
     toward 92 % (B-24) as the leg empties the separator to its 1 kg heel in 12.5 s (V1: 15.1 s,
     the liquor superheating instead); then the leg passes what arrives, PFD 331 less the
     evaporation, and nothing below the heel boils. Nothing is made (V1's leg passed the floor's
@@ -232,7 +235,7 @@ def test_a_stopped_drain_takes_the_separator_to_its_heel_and_makes_nothing():
         created += (sep.m_kg - m_pre) - (r.feed_kgh + r.m_331_kgh - r.m_evap_kgh
                                          - r.m_boil_kgh - r.m_317_kgh) / 3600.0 * dt
         if k == 1:
-            assert r.m_boil_kgh == pytest.approx(9120.0, abs=0.1)
+            assert r.m_boil_kgh == pytest.approx(9307.9, abs=0.1)
         if heel_s is None and sep.m_kg <= d.F010_M_FLOOR_KG + 1e-9:
             heel_s = round(k * dt, 6)
     assert heel_s == 12.5
@@ -274,8 +277,8 @@ def test_pinching_hic_323605_raises_the_boiling_point_and_cuts_the_evaporation()
                                                   pytest.approx(102.129, abs=1e-3),
                                                   pytest.approx(113.277, abs=1e-3))
     assert r60.m_evap_kgh == pytest.approx(10030.9, abs=0.1)
-    assert (r300.t_c, r300.m_evap_kgh) == (pytest.approx(104.892, abs=1e-3),
-                                           pytest.approx(7797.2, abs=0.1))
+    assert (r300.t_c, r300.m_evap_kgh) == (pytest.approx(104.920, abs=1e-3),
+                                           pytest.approx(7790.0, abs=0.1))
     assert (r.p_bara, r.m_evap_kgh, r.w["Urea"] * 100.0) == (
         pytest.approx(0.5381, abs=1e-4), pytest.approx(7206.0, abs=0.1),
         pytest.approx(76.089, abs=1e-3))
@@ -288,7 +291,7 @@ def test_hic_323605_nearly_shut_pins_the_pressure_at_its_clamp_until_the_evapora
     the valve's 5.30 t/h lost there — choked, where V1's trim passed 6.31 — while the liquor heats
     toward its 121 C bubble point and its evaporation falls, 8.97 t/h after a minute. Within five
     minutes the evaporation is under what the valve passes and the pressure leaves the clamp,
-    0.863 bar a at 300 s; after an hour 0.628 bar a, 3.44 t/h, 73.28 % urea and the level at 2.4 %,
+    0.864 bar a at 300 s; after an hour 0.628 bar a, 3.44 t/h, 73.28 % urea and the level at 2.4 %,
     still falling: the choked valve holds the separator above its design vacuum, and the leg drains
     it to its heel at about 5000 s (V1's trim settles at 0.614 bar a, 3.80 t/h, the level at
     6.5 %). (On V1's design-vacuum bubble point the evaporation held 12 t/h at the clamp.) At the
@@ -298,17 +301,17 @@ def test_hic_323605_nearly_shut_pins_the_pressure_at_its_clamp_until_the_evapora
     assert r60.p_bara == d.F010_P_MAX_BARA
     assert (r60.pull_kgh, r60.m_evap_kgh) == (pytest.approx(5301.8, abs=0.1),
                                               pytest.approx(8972.1, abs=0.1))
-    assert r300.p_bara == pytest.approx(0.8632, abs=1e-4)
+    assert r300.p_bara == pytest.approx(0.8639, abs=1e-4)
     assert (r.p_bara, r.m_evap_kgh, r.w["Urea"] * 100.0) == (
         pytest.approx(0.6282, abs=1e-4), pytest.approx(3442.7, abs=0.1),
         pytest.approx(73.283, abs=1e-3))
-    assert r.level_pct == pytest.approx(2.40, abs=0.01) == lowest
+    assert r.level_pct == pytest.approx(2.38, abs=0.01) == lowest
 
 
 def _heel(seconds: int, backward: bool, monkeypatch,
           own_head_leg: bool = False) -> tuple[int, dict]:
     """HV-323605 at a fifth of its design capacity, on the port's species step or V1's explicit
-    one: the first tick at the 1 kg heel, and the results at 5280, 5400, 7199 and 7200 s."""
+    one: the first tick at the 1 kg heel, and the results at 5250, 5400, 7199 and 7200 s."""
     if not backward:
         explicit = liquor_stage.advance_species
         monkeypatch.setattr(pe.liquor_stage, "advance_species",
@@ -321,7 +324,7 @@ def _heel(seconds: int, backward: bool, monkeypatch,
                      P_LP_BARA, d.P_324E002_DES_BARA, 1.0)
         if heel is None and r.m_kg < d.F010_M_FLOOR_KG + 1e-9:
             heel = k
-        if k in (5280, 5400, 7199, 7200):
+        if k in (5250, 5400, 7199, 7200):
             at[k] = r
     monkeypatch.undo()
     return heel, at
@@ -329,25 +332,25 @@ def _heel(seconds: int, backward: bool, monkeypatch,
 
 def test_at_its_heel_the_separator_holds_the_liquor_that_passes_it_b98_b101(monkeypatch):
     """Handoffs B-98 and B-101, decided 2026-10-17. HV-323605 at a fifth of its design capacity:
-    the leg drains 323F010 to its 1 kg heel at 5290 s, where 99 t/h passes the heel, 27.5 kg on
-    each 1 s tick. V1's explicit species step drains each species at the old holdup's fraction and
-    floors water and urea at zero: the liquor reads 0.000 % urea and a 372.5 C bubble point. The
+    the leg drains 323F010 to its 1 kg heel at 5260 s [5290], where 105 t/h passes the heel, 29.3
+    kg on each 1 s tick. V1's explicit species step drains each species at the old holdup's fraction
+    and floors water and urea at zero: the liquor reads 0.000 % urea and a 372.5 C bubble point. The
     backward step, taken where the drain and the vapour pass more than the stage holds — from
-    5281 s, the same to the bit until then — draws both at the step's end composition: 73.31 % urea
-    at 5400 s, and at two hours 79.77 / 80.03 % on alternate ticks, the throughflow's own 80.07 %
-    within 0.3 points. (The drain alone backward rang 74.53 / 75.88 %; what alternates now is the
+    5251 s, the same to the bit until then — draws both at the step's end composition: 72.04 % urea
+    at 5400 s [73.31], and at two hours 79.77 / 80.03 % on alternate ticks, the throughflow's own
+    80.07 % within 0.3 points. (The drain alone backward rang 74.53 / 75.88 %; what alternates now is the
     vapour's composition, which the stage evaluates on the liquor at the start of the tick.)"""
     heel, ours = _heel(7200, True, monkeypatch)
     v1_heel, theirs = _heel(5400, False, monkeypatch)
-    assert heel == v1_heel == 5290
-    assert ours[5280] == theirs[5280]
+    assert heel == v1_heel == 5260
+    assert ours[5250] == theirs[5250]
     assert theirs[5400].w["Urea"] == 0.0
     assert theirs[5400].t_bub_c == pytest.approx(372.48, abs=0.01)
     r = ours[5400]
-    assert (r.w["Urea"] * 100.0, r.m_317_kgh) == (pytest.approx(73.309, abs=1e-3),
-                                                 pytest.approx(99049.3, abs=0.1))
+    assert (r.w["Urea"] * 100.0, r.m_317_kgh) == (pytest.approx(72.042, abs=1e-3),
+                                                 pytest.approx(98815.9, abs=0.1))
     assert (ours[7199].w["Urea"] * 100.0, ours[7200].w["Urea"] * 100.0) == (
-        pytest.approx(80.031, abs=1e-3), pytest.approx(79.767, abs=1e-3))
+        pytest.approx(79.767, abs=1e-3), pytest.approx(80.032, abs=1e-3))
     assert ours[7200].m_317_kgh == pytest.approx(92748.9, abs=0.1)
     assert ours[7200].p_bara == d.F010_P_MAX_BARA
 
@@ -355,21 +358,21 @@ def test_at_its_heel_the_separator_holds_the_liquor_that_passes_it_b98_b101(monk
 def test_a_deeper_vacuum_boils_the_liquor_down_to_its_live_bubble_point_b24():
     """HV-323605 opened to 1.6 times its design capacity, 79.09 % on the Neldisc (V1's 80 %):
     PT-323204 falls, and the liquor, standing above its bubble point at the deeper vacuum, boils
-    (handoff B-24, decided 2026-10-02) — 1522 kg/h after a minute, at 94.85 C and 0.385 bar a.
-    TIC-323012 brings it back to 99 C, which at the vacuum the boil-off holds, 0.404 bar a, is the
-    bubble point of an 82.91 % liquor: after two hours the holdup boils 3288 kg/h of its own and the
-    level sits at 78 % (on V1's trim 1325 kg/h at 95.38 C after a minute; 0.410 bar a, 2936 kg/h,
-    82.58 % and 75.6 % after two hours). V1 (B-22's design-vacuum bubble point and B-24's cap) held
+    (handoff B-24, decided 2026-10-02) — 1526 kg/h after a minute [1522], at 94.82 C and 0.385
+    bar a. TIC-323012 brings it back to 99 C, which at the vacuum the boil-off holds, 0.404 bar a, is the
+    bubble point of an 82.91 % liquor: after two hours the holdup boils 3287 kg/h of its own and the
+    level sits at 78 % (on V1's trim [1325 kg/h at 95.38 C after a minute; 0.410 bar a, 2936 kg/h,
+    82.58 % and 75.6 % after two hours]). V1 (B-22's design-vacuum bubble point and B-24's cap) held
     the overhead at the design split, the liquor 3.8 K superheated at 0.3825 bar a, and the level
     climbed past its span to 121.5 %."""
     r, r60 = _run(7200.0, hic=_hv(1.6), trace=60.0, own_head_leg=False)
     assert (r60.t_c, r60.p_bara, r60.m_boil_kgh) == (
-        pytest.approx(94.848, abs=1e-3), pytest.approx(0.3849, abs=1e-4),
-        pytest.approx(1522.0, abs=0.1))
+        pytest.approx(94.824, abs=1e-3), pytest.approx(0.3849, abs=1e-4),
+        pytest.approx(1526.3, abs=0.1))
     assert r.p_bara == pytest.approx(0.40424, abs=1e-5)
     assert r.level_pct == pytest.approx(77.73, abs=0.01)
     assert r.m_evap_kgh == d.MEVAP_DES_KGH
-    assert r.m_boil_kgh == pytest.approx(3287.54, abs=0.01)
+    assert r.m_boil_kgh == pytest.approx(3287.42, abs=0.01)
     assert r.w["Urea"] * 100.0 == pytest.approx(82.914, abs=1e-3)
     assert 0.0 < r.t_c - liquor_stage.bubble_t(d.F010_LIQUOR, r.w, r.p_bara) < 0.05
 
@@ -394,10 +397,11 @@ def test_lv323505_gas_adds_to_the_vapour_space_and_is_passed_on_by_share():
 def test_pv_329208_on_its_vendor_trim_holds_the_chest_on_a_falling_header():
     """Decision 108's class, applied 2026-10-15: PV-329208 on Metso's DN 250 balanced Neldisc from
     its 27.22 % design stroke, where V1 runs it linear from 49.87 % (the harness proves V1's ==).
-    The LP header 10 % down for five minutes: V1's valve opens to 54.7 %, the chest at 2.3971 bar a
-    and the separator at 98.188 C; the Neldisc, at 29.3 %, holds the chest at 2.5122 and the
-    separator at 98.944 C (both on the live PT-323204's bubble point, B-22, and HV-323605 on its
-    Neldisc; 2.3934 / 98.258 and 2.5039 / 98.878 with HV-323605 on V1's trim)."""
+    The LP header 10 % down for five minutes: V1's valve opens to 54.6 %, the chest at 2.3933 bar a
+    and the separator at 98.165 C; the Neldisc, at 29.3 %, holds the chest at 2.5073 and the
+    separator at 98.890 C (both on the live PT-323204's bubble point, B-22, and HV-323605 on its
+    Neldisc; [2.3971 / 98.188 and 2.5122 / 98.944]; [2.3934 / 98.258 and 2.5039 / 98.878] with
+    HV-323605 on V1's trim)."""
     def run(chest):
         sep = pe.PreEvaporator(chest=chest, own_head_leg=False)
         tic, pic = _tic(), pe.pic_329208(chest)
@@ -405,11 +409,11 @@ def test_pv_329208_on_its_vendor_trim_holds_the_chest_on_a_falling_header():
             sep.step(tic, pic, R323_M319_DES, d.F004_T_SP_C, dict(d.W_S319), *NO_BLOW,
                      d.HIC_323605_DES_PCT, 0.9 * P_LP_BARA, d.P_324E002_DES_BARA, 1.0)
         return sep.chest_p_bara, sep.t_c, pic.op
-    assert run(pe.V1_CHEST) == (pytest.approx(2.3971, abs=1e-4), pytest.approx(98.188, abs=1e-3),
-                                pytest.approx(54.68, abs=0.01))
-    assert run(pe.PV_329208_CHEST) == (pytest.approx(2.5122, abs=1e-4),
-                                       pytest.approx(98.944, abs=1e-3),
-                                       pytest.approx(29.35, abs=0.01))
+    assert run(pe.V1_CHEST) == (pytest.approx(2.3933, abs=1e-4), pytest.approx(98.165, abs=1e-3),
+                                pytest.approx(54.60, abs=0.01))
+    assert run(pe.PV_329208_CHEST) == (pytest.approx(2.5073, abs=1e-4),
+                                       pytest.approx(98.890, abs=1e-3),
+                                       pytest.approx(29.33, abs=0.01))
 
 
 def test_hv_323605_on_its_vendor_trim():
@@ -453,22 +457,22 @@ def test_a_heavier_feed_raises_the_level_to_where_its_throughput_puts_it_b119():
     assert r.level_pct == pytest.approx(
         d.F010_LVL_SP_PCT * (r.m_317_kgh / R323_M317_DES) ** 2, abs=1e-3)
     v1 = _run(7200.0, m319=1.1 * R323_M319_DES, own_head_leg=False)
-    assert v1.level_pct == pytest.approx(141.519, abs=1e-3)
+    assert v1.level_pct == pytest.approx(141.520, abs=1e-3)
     assert v1.m_317_kgh < v1.feed_kgh + v1.m_331_kgh - v1.m_evap_kgh - v1.m_boil_kgh - 1000.0
 
 
 def test_a_pinched_vent_raises_the_separators_pressure_but_not_its_drain_b119():
     """HV-323605 at a fifth of its design capacity, the case V1's leg drains to its heel (section
-    4): PT-323204 on its 1.0 bar a clamp at a minute, 0.853 bar a at 300 s and 0.628 bar a at an
+    4): PT-323204 on its 1.0 bar a clamp at a minute, 0.854 bar a at 300 s and 0.628 bar a at an
     hour, but the leg's column takes the pressure. The separator never falls below its 60 %, and as
     its evaporation falls to 3.44 t/h its larger product lifts it to 71.6 %."""
     at, lowest = _pinched(_hv(0.2), 3600.0)
     r60, r300, r = at[60], at[300], at[3600]
     assert r60.p_bara == d.F010_P_MAX_BARA
-    assert (r300.p_bara, r.p_bara) == (pytest.approx(0.8534, abs=1e-4),
-                                       pytest.approx(0.6281, abs=1e-4))
-    assert r.m_evap_kgh == pytest.approx(3437.5, abs=0.1)
-    assert (r.level_pct, lowest) == (pytest.approx(71.562, abs=1e-3),
+    assert (r300.p_bara, r.p_bara) == (pytest.approx(0.8538, abs=1e-4),
+                                       pytest.approx(0.6279, abs=1e-4))
+    assert r.m_evap_kgh == pytest.approx(3436.8, abs=0.1)
+    assert (r.level_pct, lowest) == (pytest.approx(71.567, abs=1e-3),
                                      pytest.approx(60.0, abs=1e-3))
 
 
@@ -478,7 +482,7 @@ def test_a_deeper_vacuum_lowers_the_level_with_the_product_it_boils_off_b119():
     puts it. V1's leg, the separator's pressure lower, held it at 77.7 %."""
     r = _run(7200.0, hic=_hv(1.6))
     assert r.p_bara == pytest.approx(0.40420, abs=1e-5)
-    assert r.m_boil_kgh == pytest.approx(3281.07, abs=0.01)
+    assert r.m_boil_kgh == pytest.approx(3281.01, abs=0.01)
     assert r.level_pct == pytest.approx(55.839, abs=1e-3)
     assert r.level_pct == pytest.approx(
         d.F010_LVL_SP_PCT * (r.m_317_kgh / R323_M317_DES) ** 2, abs=1e-3)
@@ -486,9 +490,9 @@ def test_a_deeper_vacuum_lowers_the_level_with_the_product_it_boils_off_b119():
 
 def test_a_stopped_feed_drains_the_separator_to_what_pfd_331_keeps_b119():
     """Section 4's B-29 case on the decided drain: the 323F004 drain stopped on 300 kg. The chest
-    boils 9.11 t/h of the held liquor at once, and the separator drains on its own head, 213 kg at
-    12.5 s and 56 kg at a minute, toward the holdup that passes what still arrives: PFD 331 less
-    the evaporation and the boil-off, 1.69 t/h on 2.04 kg at ten minutes, above its 1 kg heel.
+    boils 9.30 t/h of the held liquor at once [9.11], and the separator drains on its own head, 213
+    kg at 12.5 s and 56 kg at a minute, toward the holdup that passes what still arrives: PFD 331
+    less the evaporation and the boil-off, 1.69 t/h on 2.04 kg at ten minutes, above its 1 kg heel.
     Nothing is made."""
     sep = pe.PreEvaporator()
     tic, pic = _tic(), pe.pic_329208()
@@ -500,9 +504,68 @@ def test_a_stopped_feed_drains_the_separator_to_what_pfd_331_keeps_b119():
         created += (sep.m_kg - m_pre) - (r.feed_kgh + r.m_331_kgh - r.m_evap_kgh
                                          - r.m_boil_kgh - r.m_317_kgh) / 3600.0 * dt
         if k == 1:
-            assert r.m_boil_kgh == pytest.approx(9112.2, abs=0.1)
+            assert r.m_boil_kgh == pytest.approx(9300.1, abs=0.1)
         if k == 125:
-            assert sep.m_kg == pytest.approx(212.655, abs=1e-3)
+            assert sep.m_kg == pytest.approx(212.653, abs=1e-3)
     assert sep.m_kg == pytest.approx(2.043, abs=1e-3) and sep.m_kg > d.F010_M_FLOOR_KG
     assert r.m_317_kgh == pytest.approx(r.m_331_kgh - r.m_evap_kgh - r.m_boil_kgh, abs=1.0)
     assert abs(created) < 1e-9
+
+
+# ======================================================================================
+# 7. The pressure step solved itself where the holdup boils (handoff B-122, decided 2026-10-30)
+# ======================================================================================
+
+def _boiling_run(seconds: float, dt: float, hic: float = d.HIC_323605_DES_PCT,
+                 p_e002: float = d.P_324E002_DES_BARA, exact: bool = True) -> list:
+    """Every result of stage 3 on its own head from the design seed, HV-323605 at ``hic`` and the
+    324E002 shell at ``p_e002``; ``exact`` False is the linearised step on every tick."""
+    sep = pe.PreEvaporator(exact_boil_step=exact)
+    tic, pic = _tic(), pe.pic_329208()
+    return [sep.step(tic, pic, R323_M319_DES, d.F004_T_SP_C, dict(d.W_S319), *NO_BLOW, hic,
+                     P_LP_BARA, p_e002, dt) for _ in range(int(round(seconds / dt)))]
+
+
+def _longest_reversal_run(xs: list) -> int:
+    """The most successive reversals of a series' step, steps under 1e-7 not counted — the
+    dynamic audit's measure of a ringing node (`tests/engine/test_dynamic_audit.py`)."""
+    steps = [b - a for a, b in zip(xs, xs[1:])]
+    run = longest = 0
+    for a, b in zip(steps, steps[1:]):
+        run = run + 1 if a * b < 0.0 and min(abs(a), abs(b)) > 1.0e-7 else 0
+        longest = max(longest, run)
+    return longest
+
+
+def test_an_opened_vent_flashes_the_liquor_without_a_one_tick_spike_b122():
+    """HV-323605 opened to 1.6 times its design capacity at the 0.1 s step: PT-323204 falls and
+    the liquor, at its bubble point, flashes. The linearised pressure step (``exact_boil_step``
+    off) books 172.5 t/h of boil-off on the first tick, a flash its pressure never saw, then
+    6.2 t/h; solved itself, the step flashes 6.93 t/h at once, the evaporation and the boil-off
+    move at most 235 kg/h from tick to tick, and PT-323204 falls without reversing, 0.3884 bar a at
+    two minutes."""
+    linear = _boiling_run(120.0, 0.1, hic=_hv(1.6), exact=False)
+    assert (linear[0].m_boil_kgh, linear[1].m_boil_kgh) == (pytest.approx(172506.5, abs=0.1),
+                                                           pytest.approx(6222.7, abs=0.1))
+    rows = _boiling_run(120.0, 0.1, hic=_hv(1.6))
+    vapour = [r.m_evap_kgh + r.m_boil_kgh for r in rows]
+    assert rows[0].m_boil_kgh == pytest.approx(6926.5, abs=0.1)
+    assert max(abs(b - a) for a, b in zip(vapour, vapour[1:])) == pytest.approx(235.1, abs=0.1)
+    assert _longest_reversal_run([r.p_bara for r in rows]) == 0
+    assert rows[-1].p_bara == pytest.approx(0.3884, abs=1e-4)
+
+
+def test_a_falling_condenser_shell_moves_the_separator_without_ringing_b122():
+    """324E002's shell to 0.25 bar a at the 1 s step: HV-323605 pulls harder and the liquor
+    flashes. The linearised step (``exact_boil_step`` off) books 3.29 t/h of boil-off on the first
+    tick and rings PT-323204 through eleven successive reversals; solved itself, 184 kg/h, and the
+    pressure settles to 0.4557 bar a without reversing, the vapour moving under 5 kg/h a tick."""
+    linear = _boiling_run(120.0, 1.0, p_e002=0.25, exact=False)
+    assert linear[0].m_boil_kgh == pytest.approx(3288.13, abs=0.01)
+    assert _longest_reversal_run([r.p_bara for r in linear]) == 11
+    rows = _boiling_run(120.0, 1.0, p_e002=0.25)
+    vapour = [r.m_evap_kgh + r.m_boil_kgh for r in rows]
+    assert rows[0].m_boil_kgh == pytest.approx(184.14, abs=0.01)
+    assert _longest_reversal_run([r.p_bara for r in rows]) == 0
+    assert max(abs(b - a) for a, b in zip(vapour, vapour[1:])) < 5.0
+    assert rows[-1].p_bara == pytest.approx(0.4557, abs=1e-4)
