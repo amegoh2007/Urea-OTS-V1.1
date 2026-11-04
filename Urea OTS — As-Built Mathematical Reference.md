@@ -19281,3 +19281,124 @@ datasheet's surplus out of the model, so a margin in the capacity law is a propo
   by trimming FFIC-321404 on AY-322701, which the harness holds fixed.
 * 322E001 runs 7 K hot, on FT-329403 75.7 t/h against the plant's 66.3.
 * The level was still falling, so this is an unsettled hold.
+
+
+# Part XCVII — The start-up intro, and the plant held until 100% LOAD
+
+Session 84 (2026-11-04). **No equation is ported, altered or found to disagree with V1.** The intro
+computes no process quantity: its formulas are the easing curves in `ureasim/hmi/intro/timeline.py` and
+the look-at projection in `ureasim/hmi/intro/camera.py`, and it reads no engine value. Nothing below
+`ureasim/hmi` changed except `run.py`'s construction of the engine.
+
+## XCVII.1 What starts the plant (decision 166)
+
+| | before | now |
+|---|---|---|
+| `python run.py` | engine built and running from the start | engine built **held** (`EngineSession.frozen = True`, set in `run._serve` before the physics thread starts); the intro plays |
+| the plant clock | steps from the first pass | does not move until the release; `advance` returns 0 steps while frozen, so no owed time builds and nothing bursts at the release |
+| the console packet | published every 0.1 s | not published until the first tick (`packet()` is empty before it) |
+| 100% LOAD pressed | | the console is built hidden, the bridge connects, `{"type": "freeze", "on": false}` goes out, the first packet ends the wait |
+| `python run.py --no-intro` | | as before: not held |
+
+The release is the engine's existing `freeze` command (`engine/session.py` `_simulator_command`), `on`
+stated because a missing `on` toggles. The held seed is the design seed, the 1750 MTPD design basis, which
+is the 100 % load; the intro's `load_100` key therefore maps to the release and to nothing else
+(`data/intro.py` `START_COMMANDS`, pinned by `tests/hmi/test_startup.py` to a command in
+`SIMULATOR_COMMANDS` with `on` False).
+
+## XCVII.2 What was measured
+
+* Press at 1.7 s; console built 0.4 s; connected 0.4 s later; first packet about 6 s; shown 6.7 s.
+* The first tick after the release is cold: 2.3 s on its own (`EngineSession()` itself 0.03 s). The
+  bridge's watchdog is `STALE_MS = 5000` from the connect.
+* One intro frame: `build_frame` 6.5 ms, a full repaint 46 ms at 125 % display scaling (session 84; the figures after session 85 are in XCVII.3).
+
+Tolerance: none applies, nothing is compared with V1. The held plant and the running plant are the same
+engine; `tests/test_run.py` asserts that a held plant publishes nothing, that the start command releases
+it with an accepted ack and live packets and a status of ENGINE RUNNING, and that a plant not held runs
+from the start.
+
+## XCVII.3 The intro's frame cost (handoff A-25 point 1, session 85)
+
+Measured on the development machine, the real `IntroSplash` at 125 % display scaling (1366 x 720 logical, 1708 x 900
+device pixels), `paintEvent` timed from the live 16 ms timer over 10 s, and a synchronous `repaint()` over 300 frames.
+
+| | before | after |
+|---|---|---|
+| hold (orbit idle), `repaint()` | 46.8 ms (21 fps) | 16.2 ms |
+| hold, live timer | not measured | paintEvent median 15.0 to 15.1 ms (95th percentile 18.1 to 18.5 ms), delivered 60.3, 60.5 and 60.7 fps over three 10 s runs on an idle machine (57 to 59 fps while a background job loaded it) |
+| scan (first 3.7 s), live timer | not measured | paintEvent median 11.1 ms, 62.9 fps delivered, worst frame 16.4 ms |
+| fullscreen hold (1536 x 960 logical) | not measured | paintEvent median 17.5 ms, 52.2 fps delivered, 10 frames over 25 ms in 10 s |
+| `build_frame` | 7.5 ms | 2.4 ms |
+| first text drawn in the process | 0.6 s stall in the animation | before the window shows |
+
+Cuts, in order of payoff (one run each at the hold, noise about 1.5 ms): paper bitmap, flat caps and cached fonts,
+46.8 to 26.4; numpy wires, to 19.5; hairline thin wires, to 17.1; the paper cached by identity and the fade evaluated
+only near a zone, to 16.4; a pooled QLineF list, to about 15.4.
+
+**Exactness.** The numpy `_wires` does elementwise arithmetic in the scalar code's order (no matrix product), floors
+`v + 0.5` for the opacity level and sorts stably, so every operation is the scalar version's, to the last bit; the
+scalar version stays in `tests/hmi/intro/test_intro_flyby.py` as the reference. `camera.transform_array` equals
+`transform_all`. A baked paper equals the directly drawn one pixel for pixel at six sizes and pixel ratios
+(`test_intro_painter.py`). The hairline rule keeps the ink of a thin wire to 3.7 % at 125 % scaling (1 % at 100 %).
+Nothing here touches a process quantity.
+
+**Rejected, with the measurement:** antialiasing off for the thin wires saved 3.6 ms and left the vessels visibly
+jagged; `max_segment` up to 60 removes at most 21 % of the edges (1,988 to 1,563) with no measurable change in cost
+(the rings are 12-sided); one stroked `QPainterPath` per batch gave no gain over `drawLines`; a cosmetic pen saved
+2 ms but its width does not follow the window; `QStaticText` saved 0.5 ms but 1,148 bytes of the frame differ from
+`drawText`; baking the logo and titles changes the text weight (Qt blends antialiased text onto an opaque target and
+onto a transparent bitmap differently, up to 76 in 255), so only the opaque paper is baked.
+
+## XCVII.4 The first packet and the staleness watchdog (point 2)
+
+The bridge's watchdog was 5 s from the connect. An engine held at its design seed publishes nothing until released and
+its first tick is cold (2.3 s), leaving about 1 s of margin. `EngineBridge._arm_stale` now arms `FIRST_PACKET_STALE_MS`
+= 30 s until a packet with content has arrived, then `STALE_MS` = 5 s for the bridge's life, reconnects included. The
+start-up controller's wait is 45 s (`STARTUP.packet_timeout_s`), so the bridge's watchdog speaks first. The thermo memo
+is not warmed.
+
+Checked at the real constants, with the real engine and bridge (session 85, a scripted run): a held engine and an
+`EngineBridge`, 7 s with no packet (the strict window would have fired at 5 s) -- still connected, no `DISCONNECTED`, the
+watchdog armed at 30 000 ms; after the release the first live packet came 2.7 s later and the watchdog read 5 000 ms. And
+`run._run_with_intro` driven by script (skip, press, wait): the console shown 3.3 s after the press, its packet live
+(health ok, heartbeat 14), no bridge blank during start-up (the one blank in the log is 0.5 s after the console showed,
+when the script closed the application). The unit tests pin the same logic at 60 and 600 ms so they do not wait.
+
+## XCVII.5 Section order (point 3)
+
+`data/intro.SECTIONS` is 321 NH3 PUMPING, 322 UREA SYNTHESIS, 329 STEAM & UTILITIES, 323 LP RECIRCULATION, 328
+DESORPTION, 324 EVAPORATION, the order the console's tab bar first reaches them (`screen_layout.SCREENS`:
+321-1, 322-2, 322-1, 329-1, 323-1, 323-2, 328-1, 328-2, 324-1, 324-1b). A test derives the order from that list.
+
+## XCVII.6 The flyby's drawing choices, signed off (point 4)
+
+Signed off as built by the process engineer, 2026-11-04: the HP-loop wireframe is a stylized splash and not an
+operator training mimic. 322D001 is drawn once (project.md lists A and B); 322F001 is drawn once at the junction and
+HV-322602 is not drawn; unlabelled valves and every instrument are omitted; 322R001's liquid outlet is drawn at the
+bottom nozzle. The layout is a design choice, not to scale, and the screen says so.
+
+## XCVII.7 The logo asset (point 5)
+
+`hfc-logo.png` is 1280 x 602, 8-bit RGBA (colour type 6): the supplied 640 x 301 mark (md5
+f66903d8fa9929a07314077ef0ea35bc) resampled exactly 2x on premultiplied alpha with Lanczos, each output pixel then
+clamped to the range of its 3 x 3 source neighbourhood. Lanczos alone overshot that range by up to 46 in 255, bicubic
+by up to 29, bilinear by none; the clamp removes the ringing and the halo. The regions in `data/intro.LOGO` are the
+supplied file's, doubled. A resample adds no detail, and none shows: drawn the way the intro draws it, the old and the
+new file give the same picture at 125 % and at 100 % (mean gradient energy of the Arabic name +2.4 % and +1.9 %, of the HFC
+letters' edge -1.4 % and +1.4 %, 4x crops compared by eye), so this is not a sharpening. What it buys is that full-screen
+playback never scales the source up: the mark is drawn 480 design pixels wide, which is 675 device pixels on a 1920 x 1200
+screen, more than the old file's 640 and about half the new one's 1280. A vector mark from HFC would be the real sharpening.
+`SmoothPixmapTransform` is on for every operation of `IntroPainter.paint` (pinned by a test).
+
+## XCVII.8 Test mirrors (point 6)
+
+Each module has a test file of its own: `data/intro.py`, `intro_flyby.py` and `intro_plant.py` in `tests/data/`;
+`ops`, `camera`, `model3d`, `flyby`, `scene`, `sequencer`, `timeline`, `painter`, `splash`, `__init__` and
+`__main__` in `tests/hmi/intro/`; `startup.py` in `tests/hmi/test_startup.py`. The package author's `background.py`
+is not in the tree (removed per his notes) and was not recreated. Nine deliberate breaks of the new behaviour were
+each caught by a test.
+
+## XCVII.9 Checks
+
+The full suite on Qt's native platform: 2,033 passed, 5,862 skipped, none failed, 37 min 56 s (the skips are the equivalence suites: `E:\` is not mounted on this machine today, so V1's tree at `E:\Simulator\Urea Simulation` is unreachable; session 82 ran them with none skipped, and they are to be re-run when the drive is back; no physics changed this session); the intro, bridge, start-up, data and run tests also pass under `QT_QPA_PLATFORM=offscreen` set on the command line (307 passed); pyflakes is clean on every touched file; the PyQt6 grep over net, engine, units, control, core, thermo and data prints nothing; no module is over 600 lines (the largest of the intro, model3d.py, is 389); nine deliberate breaks of the new behaviour were each caught by a test.

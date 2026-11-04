@@ -204,7 +204,9 @@ Gaps** and proceed with the rest of the work.
 
 The simulator is **one plant with a single local console** (2026-10-22, `project.md`
 decision 149): `python run.py` (or `launch.bat`) starts the headless engine on the loopback
-interface and the console attached to it over `ureasim/hmi/bridge.py`. Three rules follow, and
+interface and the console attached to it over `ureasim/hmi/bridge.py`. Behind the start-up intro the
+plant is held at its design seed until the operator presses 100% LOAD (2026-11-04, `project.md`
+decision 166; `--no-intro` runs it from the start). Three rules follow, and
 none of them is optional:
 
 1. **The engine owns the plant; a console owns nothing.** A console renders the snapshot it
@@ -465,24 +467,18 @@ End (mandatory):
 
 ## Sonnet + Opus Advisor Workflow
 
-Binding whenever the session's main model is any version of Claude Sonnet (2026-11-04). A session
-run on Opus works as the rest of this file says.
+When the active main model is any version of Claude Sonnet (binding from 2026-11-04), operate in
+hybrid mode with Claude Opus via the `advisor` tool (configured via `"advisorModel": "opus"` in
+`.claude/settings.json`) at matching effort and ultracode standards. A session run on Opus works as
+the rest of this file says.
 
-1. **Configuration and parity.** Use the latest Claude Opus as the advisor through the `advisor`
-   tool — `"advisorModel": "opus"` in `.claude/settings.json` — held to the main model's thinking
-   depth and effort, ultracode and high-effort coding included. The tool takes no parameters: the
-   parity is the standard the advice is asked for, not a setting.
-2. **Stage 1 — Ingestion (Sonnet only).** First read every document, source file, image, PDF and
-   media file the task involves, and summarise its key context and constraints. Do not call the
-   advisor before this context gathering is complete.
-3. **Stage 2 — Thinking and planning (Opus advisor).** Before writing or modifying any code, invoke
-   the `advisor` tool so that Opus does the architectural thinking, the edge-case analysis and the
-   step-by-step implementation plan.
-4. **Stage 3 — Execution (Sonnet only).** Follow the advisor's plan strictly. Sonnet makes every
-   file edit, writes the boilerplate and runs every tool. If an unexpected blocker contradicts the
-   plan, stop and consult the advisor again before going on.
-5. **Stage 4 — Testing and verification (Opus advisor).** Whenever testing is required, consult the
-   advisor to define the test cases, and have it audit the raw test output and logs before the task
-   is declared complete. Where Opus needs direct command-line execution to debug a complex test, an
-   Opus sub-agent may be started through the Agent (Task) tool: the one exception to §3's
-   no-sub-agents rule, for that purpose and in Sonnet sessions only.
+1. **Stage 1 — Ingestion (Sonnet only).** Read and parse all required documents, source files,
+   images and media first. Never call the `advisor` tool before gathering context.
+2. **Stage 2 — Thinking & planning (Opus via the `advisor` tool).** Before writing or editing any
+   code, call the `advisor` tool (it takes no arguments) so Opus analyzes the context in the
+   transcript and produces the architecture and step-by-step plan.
+3. **Stage 3 — Execution (Sonnet only).** Implement Opus's plan strictly. If a blocker contradicts
+   the plan, call the `advisor` tool again before deviating.
+4. **Stage 4 — Testing & verification (Opus via the `advisor` tool).** When testing is required,
+   run the test commands via Sonnet and call the `advisor` tool afterward so Opus audits the test
+   output and verifies edge-case coverage before marking the task complete.

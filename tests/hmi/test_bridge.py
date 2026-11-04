@@ -5,6 +5,11 @@ reason, and a request on a link that is down is not sent; the historian's answer
 likewise. On a real socket, against a server on its own thread: the console is welcomed with no
 role to ask for (decision 149) and its request answered, and an engine that refuses its `hello`
 is shown with the reason and not retried.
+
+The staleness watchdog (session 85, handoff A-25 point 2): the strict window blanks a console that gets
+no packet, but an engine held at its design seed publishes nothing until released and its first tick is
+cold, so a bridge that has never had a packet waits far longer; once one has arrived the strict window
+applies again, for a reconnect too.
 """
 
 from __future__ import annotations
@@ -16,7 +21,8 @@ import time
 import pytest
 from PyQt6.QtTest import QTest
 
-from ureasim.hmi.bridge import EngineBridge
+from ureasim.hmi import bridge as bridge_module
+from ureasim.hmi.bridge import FIRST_PACKET_STALE_MS, STALE_MS, EngineBridge
 from ureasim.net import protocol
 from ureasim.net.server import StationServer
 
@@ -125,3 +131,63 @@ def test_a_refusal_is_shown_and_not_retried(qapp, refusing_server):
     assert statuses[-1] == ("REFUSED — protocol version 2 != 3", "fault")   # not overwritten
     assert sum(t.startswith("connecting") for t, _ in statuses) == 1        # never retried
     bridge.close()
+
+
+PACKET = protocol.snapshot(1, 0.1, {"_health": {"ok": True}})
+
+
+def _watched(monkeypatch, strict_ms: int, first_ms: int):
+    """A bridge on short watchdog windows, its blanks and snapshots recorded. The constants are read when
+    the watchdog is armed, so patching the module is enough."""
+    monkeypatch.setattr(bridge_module, "STALE_MS", strict_ms)
+    monkeypatch.setattr(bridge_module, "FIRST_PACKET_STALE_MS", first_ms)
+    bridge = EngineBridge("console")
+    statuses, snapshots = [], []
+    bridge.status.connect(lambda text, level: statuses.append(text))
+    bridge.snapshot.connect(snapshots.append)
+    return bridge, statuses, snapshots
+
+
+def test_the_first_packet_may_come_after_the_strict_window_without_a_false_disconnect(qapp, monkeypatch):
+    """A first tick later than the strict window after the connect: the console is not blanked, and the
+    packet, when it comes, is delivered; then the strict window is the one that applies."""
+    bridge, statuses, snapshots = _watched(monkeypatch, strict_ms=60, first_ms=600)
+    bridge._on_connected()
+    assert bridge._stale.interval() == 600
+    QTest.qWait(200)                                   # over three strict windows with no packet
+    assert not any(t.startswith("DISCONNECTED") for t in statuses) and snapshots == []
+    bridge._dispatch(PACKET)
+    assert snapshots == [PACKET["state"]] and bridge._stale.interval() == 60
+    bridge.close()
+
+
+def test_five_seconds_of_silence_after_the_first_packet_still_blanks_the_console(qapp, monkeypatch):
+    bridge, statuses, snapshots = _watched(monkeypatch, strict_ms=60, first_ms=600)
+    bridge._on_connected()
+    bridge._dispatch(PACKET)
+    snapshots.clear()
+    _wait(lambda: any(t.startswith("DISCONNECTED") for t in statuses), timeout=2.0)
+    assert snapshots == [{}] and statuses[-1] == "DISCONNECTED — no data from the engine"
+    bridge.close()
+
+
+def test_a_reconnect_after_a_packet_gets_the_strict_window(qapp, monkeypatch):
+    bridge, _, _ = _watched(monkeypatch, strict_ms=60, first_ms=600)
+    bridge._on_connected()
+    bridge._dispatch(PACKET)
+    bridge._on_connected()                             # the link came back
+    assert bridge._stale.interval() == 60
+    bridge.close()
+
+
+def test_a_blank_snapshot_does_not_end_the_startup_allowance(qapp, monkeypatch):
+    bridge, _, _ = _watched(monkeypatch, strict_ms=60, first_ms=600)
+    bridge._on_connected()
+    bridge._dispatch(protocol.snapshot(2, 0.0, {}))
+    assert bridge._stale.interval() == 600
+    bridge.close()
+
+
+def test_the_shipped_windows_are_the_ones_the_start_up_relies_on(qapp):
+    """The first packet is allowed ten times a cold first tick (2.3 s), and the strict window stays 5 s."""
+    assert STALE_MS == 5000 and FIRST_PACKET_STALE_MS == 30_000

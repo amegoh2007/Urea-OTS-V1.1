@@ -68,6 +68,15 @@ RECONNECT_MS = (500, 1000, 2000, 5000)
 #: a half-open TCP connection reports nothing until it is written to.
 STALE_MS = 5000
 
+#: The same watchdog, before this bridge has received its first packet from the engine [ms]. An engine held
+#: at its design seed publishes nothing until the operator releases it (the start-up intro, decision 166),
+#: and its first tick after the release is cold: 2.3 s on the development machine, against the 5 s above.
+#: A half-open link is no more likely on a link that has never carried a packet, so the first packet is
+#: given far longer; once one has arrived, the strict `STALE_MS` applies for the rest of the bridge's life,
+#: reconnects included. The start-up controller's own wait for the packet is at least this long
+#: (`ureasim/data/intro.py` ``STARTUP.packet_timeout_s``, pinned by a test).
+FIRST_PACKET_STALE_MS = 30_000
+
 
 class EngineBridge(QObject):
     """This console's link to the plant.
@@ -127,8 +136,9 @@ class EngineBridge(QObject):
         # Watchdog for a half-open link: the socket can stay "connected" long after the
         # far end has gone, and only the absence of snapshots reveals it.
         self._stale = QTimer(self)
-        self._stale.setInterval(STALE_MS)
         self._stale.timeout.connect(self._on_stale)
+        #: True once the engine has delivered a packet with content; the strict watchdog applies from then.
+        self._seen_packet = False
 
     # ----------------------------------------------------------------------------------
     # Connection
@@ -173,10 +183,17 @@ class EngineBridge(QObject):
     # Socket events
     # ----------------------------------------------------------------------------------
 
+    def _arm_stale(self) -> None:
+        """(Re)start the watchdog: the strict window once a packet has been seen, the long one before.
+
+        The interval is read here, each time, so the constants are the ones in force when it is armed.
+        """
+        self._stale.start(STALE_MS if self._seen_packet else FIRST_PACKET_STALE_MS)
+
     def _on_connected(self) -> None:
         self._attempt = 0
         self._socket.write(protocol.encode(protocol.hello(self._station)))
-        self._stale.start()
+        self._arm_stale()
 
     def _on_disconnected(self) -> None:
         self._connected = False
@@ -236,8 +253,9 @@ class EngineBridge(QObject):
         kind = message.get("t")
 
         if kind == Kind.SNAPSHOT.value:
-            self._stale.start()                     # restart the watchdog
             state = message.get("state") or {}
+            self._seen_packet = self._seen_packet or bool(state)
+            self._arm_stale()                       # restart the watchdog
             self._latest = state
             self.snapshot.emit(state)
 
@@ -334,4 +352,4 @@ class EngineBridge(QObject):
         self.close()
 
 
-__all__ = ["EngineBridge", "RECONNECT_MS", "STALE_MS"]
+__all__ = ["EngineBridge", "FIRST_PACKET_STALE_MS", "RECONNECT_MS", "STALE_MS"]

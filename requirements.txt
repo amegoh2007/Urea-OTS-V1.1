@@ -6,5 +6,5 @@
 
 PyQt6>=6.6          # operator console
 pyqtgraph>=0.13     # the console's trend window plot (Qt only; nothing headless imports it)
-numpy>=1.26         # flowsheet solver only
+numpy>=1.26         # flowsheet solver; and the start-up intro's wireframe (hmi/intro/flyby.py)
 pytest>=8.0         # test harness, including V1-equivalence regressions

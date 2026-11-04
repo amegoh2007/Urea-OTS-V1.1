@@ -1,9 +1,11 @@
 @echo off
 rem Urea Plant OTS V1.1 - launcher.
 rem
-rem Double-click to start the simulator on this machine: the engine and its console, as
-rem python run.py does. Any arguments are passed to run.py unchanged, for example
+rem Double-click to start the simulator on this machine: the start-up intro, then the engine
+rem and its console, as python run.py does; the plant starts when 100% LOAD is pressed.
+rem Any arguments are passed to run.py unchanged, for example
 rem     launch.bat --port 8766
+rem     launch.bat --no-intro
 
 setlocal
 title Urea Plant OTS V1.1

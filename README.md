@@ -25,6 +25,12 @@ On Windows, double-click **`launch.bat`** in this folder. It finds Python (the `
 starts the engine with its console; if anything is missing it says what and waits. Any arguments
 are passed to `run.py`.
 
+The console opens on the Helwan Fertilizers start-up intro. The plant is built and held at its design
+seed, the 1750 MTPD design basis, while the intro plays, and it starts when you press **100% LOAD**
+(click the button, or press Enter or Space). Any key or click before the button appears skips the
+animation without starting the plant. `--no-intro` skips the intro and runs the plant from the start;
+`--fullscreen-intro` plays it full screen.
+
 Or from a shell:
 
 ```bash

@@ -5,12 +5,23 @@ The simulator is **one plant with a single local console** (decided 2026-10-22, 
 decision 149). One command starts both halves on this machine: the headless engine, served on
 the loopback interface, and the console window attached to it.
 
-    python run.py                       the engine and its console (launch.bat does the same)
+    python run.py                       the intro, then the engine and its console (launch.bat
+                                        does the same)
+    python run.py --no-intro            no intro: the plant runs from the start, as before
 
 The console carries the ten DCS screens and their faceplates, and an Instructor menu whose panel
 holds the simulation controls — pacing, freeze, reset, malfunctions, the battery-limit CO2
 demand, exercise save and restore. No command is refused for who sent it; the engine refuses what
 the process refuses, with its reason.
+
+The start-up intro
+------------------
+The console opens on the HFC intro (`ureasim.hmi.intro`), which ends on a 100% LOAD button. The
+engine is built while the intro plays and held at its design seed, the 1750 MTPD design basis: its
+plant clock does not move and it publishes nothing. Pressing the button builds the console,
+connects it and releases the hold with the engine's own ``freeze`` command
+(`ureasim.hmi.startup`); the console is shown when the first packet arrives. ``--no-intro`` skips
+all of it and runs the plant from the start, which keeps the edit-and-run cycle short.
 
 The engine
 ----------
@@ -49,6 +60,10 @@ def _parse_args(argv=None) -> argparse.Namespace:
                         help="name shown in the audit line (default: this machine's hostname)")
     parser.add_argument("--verbose", "-v", action="store_true",
                         help="log the console's connection and refusals")
+    parser.add_argument("--no-intro", action="store_true",
+                        help="skip the start-up intro: the plant runs from the start")
+    parser.add_argument("--fullscreen-intro", action="store_true",
+                        help="play the start-up intro full screen")
     return parser.parse_args(argv)
 
 
@@ -56,15 +71,21 @@ def _parse_args(argv=None) -> argparse.Namespace:
 # Engine
 # ======================================================================================
 
-async def _serve(port: int, ready: threading.Event | None = None) -> None:
-    """The console server with the engine attached, until cancelled. No Qt involved."""
+async def _serve(port: int, ready: threading.Event | None = None, hold: bool = False) -> None:
+    """The console server with the engine attached, until cancelled. No Qt involved.
+
+    ``hold`` builds the plant with its clock held (the engine's own freeze), set before the physics
+    thread exists so nothing races it: the start-up intro releases it with a ``freeze`` command.
+    """
     # Imported here: building the plant reads the thermodynamic stores, which `--help` need not.
     from ureasim.engine.session import EngineSession
     from ureasim.net.engine_host import EngineHost
 
     server = StationServer()
     bound = await server.start(DEFAULT_HOST, port)
-    engine = EngineHost(EngineSession(), server, ENGINE_NAME)
+    session = EngineSession()
+    session.frozen = hold
+    engine = EngineHost(session, server, ENGINE_NAME)
     engine.start()
     print(f"engine serving on {DEFAULT_HOST}:{bound}")
     if ready is not None:
@@ -76,8 +97,8 @@ async def _serve(port: int, ready: threading.Event | None = None) -> None:
         await server.stop()
 
 
-def _serve_in_background(port: int) -> threading.Thread:
-    """Start the engine and its server on their own thread.
+def _start_engine(port: int, hold: bool = False) -> tuple[threading.Thread, threading.Event]:
+    """Start the engine and its server on their own thread; return it with its ready flag.
 
     The server is asyncio and the console is Qt; each needs its own event loop, so they get
     their own threads. They still talk over a loopback socket rather than sharing objects: the
@@ -88,12 +109,18 @@ def _serve_in_background(port: int) -> threading.Thread:
 
     def target() -> None:
         try:
-            asyncio.run(_serve(port, ready))
+            asyncio.run(_serve(port, ready, hold))
         except (KeyboardInterrupt, SystemExit):
             pass
 
     thread = threading.Thread(target=target, name="console-server", daemon=True)
     thread.start()
+    return thread, ready
+
+
+def _serve_in_background(port: int) -> threading.Thread:
+    """Start the engine and wait until it serves."""
+    thread, ready = _start_engine(port)
     if not ready.wait(timeout=60.0):
         raise RuntimeError("the engine failed to start within 60 s")
     return thread
@@ -120,6 +147,40 @@ def _run_console(port: int, station: str) -> int:
     return app.exec()
 
 
+def _run_with_intro(port: int, station: str, fullscreen: bool) -> int:
+    """Play the intro while the engine is built and held; the 100% LOAD press starts the plant."""
+    thread, ready = _start_engine(port, hold=True)      # builds while Qt loads and the intro plays
+
+    from PyQt6.QtWidgets import QApplication
+
+    from ureasim.hmi.bridge import EngineBridge
+    from ureasim.hmi.intro import IntroSplash
+    from ureasim.hmi.main_window import MainWindow
+    from ureasim.hmi.startup import StartupController
+
+    app = QApplication.instance() or QApplication(sys.argv[:1])
+    bridge = EngineBridge(station=station)
+
+    def make_window() -> MainWindow:
+        window = MainWindow(bridge)
+        window.resize(1382, 820)
+        return window
+
+    splash = IntroSplash(fullscreen=fullscreen)
+    startup = StartupController(splash=splash, bridge=bridge, make_window=make_window,
+                                engine_ready=ready, engine_alive=thread.is_alive,
+                                host=DEFAULT_HOST, port=port)
+
+    def engine_failed(reason: str) -> None:
+        print(f"run.py: {reason}", file=sys.stderr)
+        app.exit(1)
+
+    startup.failed.connect(engine_failed)
+    splash.finished.connect(splash.deleteLater)
+    splash.play()
+    return app.exec()
+
+
 # ======================================================================================
 
 def main(argv=None) -> int:
@@ -128,8 +189,11 @@ def main(argv=None) -> int:
         level=logging.INFO if args.verbose else logging.WARNING,
         format="%(asctime)s  %(levelname)-7s %(name)s  %(message)s",
     )
-    _serve_in_background(args.port)
-    return _run_console(args.port, args.station or socket.gethostname())
+    station = args.station or socket.gethostname()
+    if args.no_intro:
+        _serve_in_background(args.port)
+        return _run_console(args.port, station)
+    return _run_with_intro(args.port, station, args.fullscreen_intro)
 
 
 if __name__ == "__main__":

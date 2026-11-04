@@ -11,7 +11,7 @@ short of the start-up band (session 50); B-94 closed on PFD 734's departure form
 as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70); an external report on five data-gap rows audited against the code, 322C001's head volume and the urea-melt Henry constant closed (decision 153, session 71); 322E001 on its 2,950-tube replacement (decision 154), the turnaround's plugged tubes derating 322E002, 322E003 and 323E010 (decision 155), five loops and AI-329701's range on the plant DCS's faceplates of 24 October 2026 (decision 156), `Scenarios6.docx` put to the plant (session 72); the plugged tubes' conductances re-anchored on the bundle in service (decision 157), LV-322501's failure case read tick by tick — SV32351 / SV32352 lift at their set (decision 158) — the vacuum bleeds kept on the 1750 MTPD basis (decision 159), TIC-328008 and FFIC-335406 on their faceplates (decision 160), the dynamic audits built and their one finding, B-117, signed off as built, `Scenarios6.docx` 47 of 71; Sections A, B and C empty, 11 data gaps open (sessions 73 and 74); the load range 70-115 % studied on the committed engine for the load-optimisation workbook (`D:\Work\Urea_Plant_Load_Optimization_70_to_115.xlsx`): 100 % verified on both objectives, the engine's turndown, 323F010's barometric leg and a stripper cut's loop oscillation raised as B-118 to B-120, no relation changed (sessions 75 and 76); the workbook retried on the process engineer's control document with HIC-322605 operated by hand: 100 % verified on both objectives, 105 % near-steady, the turndown unchanged, B-118 and B-119 updated and B-121 raised, no relation changed (session 77); a pasted analysis of B-118 to B-121 checked and measured as scratch patches, 105 % verified with FIC-328402 raised 10 %, two errors in session 77's record corrected, B-119 decided (b) and built — 323F010 draining on its own head through N2, its leg taller than any column the vacuum holds (decision 161) (session 78); B-122 decided (b) and built — 323F010's pressure step solved itself where its holdup boils (decision 162) — and closed, the dynamic audit's two restored for every node; B-121 traced to the LP section's vents, not unit 328; B-118's N/C excursion traced to the reactor's real feed and 322E003's vent to its saturation fraction; B-123 raised and signed off as built, V1's thermo memo kept (decision 163); the synthesis loop's harness kept on the linearised step (session 79); every controller and hand station given a load relation (72 entries) and the schedule run from 70 to 115 % on both objectives with slow supervisory trims, then re-held at 100-110 %: 100 % verified on both objectives and 105 % on the steam objective, no steady state below 100 % or at 110-115 %, B-118 and B-120 updated, FFIC-321404's ratio found on the engine's basis (the plant's 2.115 is 2.05 here); B-121 closed on option (a), PIC-323202 and the unit 328 pair operator moves (decision 164); the load-optimisation workbook rebuilt with the 72-entry schedule; the Sonnet + Opus advisor workflow added to `CLAUDE.md` (session 80); B-118's and B-120's narrowed option (b) measured at Book2's 92.3 and 111 % bands as scratch patches, neither band held and no relation changed. B-118: 322E001's overhead fraction flat on the ramp, the excursion an operator handles' effect, and 322E003's liquor hot on the tempered water. B-120: near the plant's 111 % level the H/C slip is small and 322E003 vents on the same hot liquor. The Phase 7 cold start was found tripping 22.2 on the committed engine (B-124). V1's source tree and the References archive were moved (A-24, CLAUDE.md §4) (session 81); A-24 closed, V1's source tree named at `E:\Simulator\Urea Simulation`, its boot pin's test and the stripper's equivalence run on it (decision 165, session 82); B-124 bisected to 15e66c2, 322E002's low-N/C branch (decisions 142, 147) taking the NH3-lean cold start to trip 22.2; B-118's and B-120's TT-322002 prototype measured at Book2's 92.3 and 111 % bands, no band held and no relation changed (session 82); B-124's evidence gathered and the full cold start run (the branch off: no trip 22.2, tau 1350 s, dead time 540 s, final 137.45 bar g, 322R001 not full by 16 000 s (LT-322504 36 % at 8 000 s, where session 52 was full)), 322E001's turndown traced at 92.3 %, 322E003 on the vendor's margin at 111 %, no band held and no relation changed (session 83)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; at `D:\Work\Urea Simulation` until 2026-11-04, decision 165)
-**Last updated:** 2026-11-04 (sessions 75 to 83)
+**Last updated:** 2026-11-04 (sessions 75 to 85; session 84 attached the start-up intro and holds the plant until the operator presses 100% LOAD, decision 166; session 85 decided and closed its six open points, decision 167)
 
 ---
 
@@ -639,6 +639,22 @@ steam system (`steam/`).
       removed; the loopback bridge, back-pressure, the 5 s watchdog and the engine's process
       refusals kept; ``co2_set`` on the instructor's panel
 - [x] The Phase 6 display gaps (session 44, §LXI.2-6): B-5, B-6 / B-7, B-9, B-11, B-16 closed
+- [x] `hmi/intro/` and `hmi/startup.py` — the start-up intro and the 100% LOAD start (session 84,
+      decision 166, As-Built Part XCVII): the HFC mark and a "Plant Hover Flyby" (a continuous
+      360-degree orbit, 32 s a turn, round a stylized wireframe of the HP loop of flow sheets 322-1 and
+      322-2, its equipment joined in the sheets' order, flow dots along the arrows) ending on a 100% LOAD
+      button, supplied by another AI model and integrated here; scene, flyby, camera, model and sequencer
+      Qt-free, `painter.py` and `splash.py` the only Qt; constants in `data/intro.py`, `data/intro_flyby.py`
+      and the equipment and connections in `data/intro_plant.py` (the layout is a design choice, not to
+      scale). `run.py` builds the engine held at its design seed while the intro plays; the press builds
+      the console, connects it and releases the hold with the engine's own `freeze` command
+      (`hmi/startup.py`, `data/intro.py` `START_COMMANDS`). `--no-intro` runs the plant from the start
+- [x] The start-up intro's six open points closed (session 85, decision 167, As-Built Part XCVII.3-XCVII.9):
+      the frame cost cut from 46.8 ms to about 15.5 ms at 125 % scaling (a bitmapped paper, flat caps,
+      hairline thin wires, numpy wires held bit-for-bit to the scalar version, a pooled QLineF list, cached
+      fonts and a font warm-up); the bridge's staleness watchdog armed strictly only after the first
+      packet (`FIRST_PACKET_STALE_MS`); the sections in the console's tab order; the flyby's drawing
+      choices signed off; the logo resampled 2x; and a one-to-one test file for every intro module
 
 ### Phase 7 — Verification
 - [x] V1-vs-V1.1 steady-state comparison at 1750 MTPD / 100 % load (session 48, As-Built §LXIV.6):
@@ -5308,6 +5324,93 @@ Session 83 (2026-11-04) committed Session 82 (6ac6f08), then measured the pasted
   322E003 vents nothing at 111 %; the loop then runs NH3-rich on its fixed ratio (AT-322701 3.60).
 * **Checks.** No source changed; the PyQt6 grep prints nothing.
 
+### Session 84 — the start-up intro attached; the plant starts on 100% LOAD
+
+Session 84 (2026-11-04) took the process engineer's request: an intro developed by another AI model, in
+`D:\Work\Urea Simulation Docs\Intro\Sonet 5,5 extra\New folder`, plays when the software starts, and the
+simulation starts when the 100% LOAD button is pressed. The advisor (Opus) was consulted on the plan before
+any edit.
+
+* **The package.** 33 files, identical in the folder and in its zip (checked byte for byte), copied into
+  `ureasim/hmi/intro/` (with `assets/hfc-logo.png`), `ureasim/data/intro*.py` and `tests/hmi/intro/`; the
+  preview video and the zip stay out of the tree. Its Qt tests, never run where it was built, all pass on
+  real PyQt6. Two edits to its tests: the `QT_QPA_PLATFORM=offscreen` override at import is gone (it would
+  have leaked into a full run and turned `test_screen_geometry`'s two overlap tests into skips), and one
+  assertion reads the grab in device pixels (the console's 125 % display grabs 854 px for a 683 px window).
+* **The hold.** Before this session the plant ran from the moment `run.py` started. The engine is now built
+  held (`session.frozen`, set in `run._serve` before the physics thread exists, so nothing races it): its
+  clock does not move, no packet is published and no trend fills. The press releases it with the engine's
+  own `freeze` command, `on` always stated (a missing `on` toggles), the command the instructor's RUN button
+  sends. No engine code changed. `--no-intro` runs the plant from the start, as before.
+* **The order after the press** (`hmi/startup.py`, `StartupController`): the console is built hidden; the
+  application waits for the engine; the bridge connects only then (a bridge connected to a held engine gets
+  no packet, and its 5 s watchdog would blank it and reconnect); the release is sent once per link; the
+  first non-empty packet calls `mark_ready()`; the intro asks for the console and fades. A refusal, a silent
+  engine (30 s) and an engine that never started (60 s) end the wait with a reason, so the intro never sits
+  on "STARTING SIMULATOR" for ever; only the last exits. The engine's thread is watched from launch, not
+  from the press, so a port held by another instance still ends the application within a second.
+* **Measured on this machine.** Press at 1.7 s, console built in 0.4 s, first packet about 6 s, console
+  shown at 6.7 s. The first tick after the release is cold, 2.3 s on its own; the bridge's watchdog (5 s from
+  the connect) leaves about 1 s of margin here, and a slower machine reconnects on its own, the console not
+  yet shown. A throwaway warm-up tick was not added: it could change the thermo memo's history, and the
+  physics is not touched for a start-up delay.
+* **Frame cost, measured.** The intro repaints in 46 ms a frame at 125 % scaling (about 22 fps against its
+  60 fps target); `drawLines` is 21 ms of it and the Python wire building 14 ms. The two knobs the author
+  named, `alpha_steps` and `max_segment`, move it by under 10 % (`max_segment` is read when the model is
+  built, so that test is inconclusive). Handoff A-25.
+* **Checks.** 201 tests of the intro, the controller and `run.py` pass (`tests/test_run.py` keeps its
+  seven earlier tests, its first now run with `--no-intro`); `tests/hmi`, `tests/net`, `tests/data`,
+  `tests/docs`, `tests/test_run.py` and `tests/engine/test_session.py` pass, 626 passed and 13
+  skipped (V1's tree absent on this machine, none for a font); the PyQt6 grep prints nothing. A scripted run
+  of the real `run.py` path (skip, press, wait) showed the console visible with live packets.
+
+### Session 85 — handoff A-25 decided and closed: the intro's frame cost, watchdog, section order, logo and tests
+
+Session 85 (2026-11-04) took the process engineer's directive closing the six points of A-25. The advisor
+(Opus) was consulted on the plan before any edit and on the result before the close.
+
+* **1. Frame cost.** Measured first, by operation type, on the real window at 125 % display scaling:
+  one repaint took 46.8 ms (21 fps): the shell wires 15.3 ms, the grid 7.0, the stream wires 4.5, the ground
+  1.1 wires 3.6, the text 2.7, the circles 2.3 and the Python building of the frame 7.5. What was done, in
+  order of payoff, each measured: round pen caps cost three times a flat cap's antialiased fill, so wire
+  batches use flat caps (23.3 to 6.8 ms for the wires alone); the paper and grid are one opaque `Static`
+  group, drawn once into a bitmap when it repeats on two frames and blitted; the wireframe's clip,
+  projection, depth cue and text-zone fade run as numpy array arithmetic, equal to the scalar code **to the
+  last bit** (the scalar version is kept in `test_intro_flyby.py` as the reference and a test demands equal
+  operations over 969 frames, with the lens cutting edges, the scan and the fade-in); thin batches (no wider
+  than 1.5 device pixels) are drawn as one-device-pixel hairlines with their opacity scaled by their width,
+  which Qt rasterizes on a fast path (3.7 % ink difference measured at 125 %, 1 % at 100 %); the QLineF list is
+  pooled (2.4 to 0.8 ms); fonts and text widths are cached; and the font database, which took 0.6 s on the first
+  text and stalled the animation, is warmed before the window shows. Result on this machine: paintEvent median 15.0 to 15.1 ms (95th percentile 18.1 to 18.5 ms), delivered 60.3, 60.5 and 60.7 fps over three 10 s runs on an idle machine (57 to 59 fps while a background job loaded it).
+  **Rejected with their numbers:** antialiasing off on the thin wires (3.6 ms, visibly jagged on the vessels);
+  coarser `max_segment` (at most 21 % fewer edges, no measurable cost); one stroked path per batch (no gain);
+  cosmetic pens (2 ms, but their width does not scale with the window); `QStaticText` (0.5 ms, but 1,148 bytes
+  of the frame differ from `drawText`); a bitmap of the logo and titles (Qt blends text onto a transparent
+  bitmap and onto the opaque window with different weights, a pixel difference of up to 76 in 255).
+* **2. The cold first tick against the 5 s watchdog.** The thermo memo is not warmed. The bridge arms the
+  long `FIRST_PACKET_STALE_MS` (30 s) until it has received a packet with content, then the strict
+  `STALE_MS` (5 s) for the rest of its life, a reconnect included; the controller's own wait is 45 s, so
+  the bridge speaks first. Tests: a first packet later than the strict window does not blank the console; five
+  seconds of silence after the first packet still does; a reconnect after a packet gets the strict window; a
+  blank snapshot does not end the allowance.
+* **3. Section order.** The intro lights 321, 322, 329, 323, 328, 324, the order the console's tab bar first
+  reaches them; the test derives the expected order from `screen_layout.SCREENS`.
+* **4. The flyby's drawing choices signed off as built** (decision 167).
+* **5. Logo.** `SmoothPixmapTransform` was already on in `IntroPainter.paint` and is now pinned by a test. The
+  asset is the supplied 640 x 301 mark resampled exactly 2x (1280 x 602, 8-bit RGBA) on premultiplied alpha with
+  Lanczos, each pixel clamped to the range of its 3 x 3 source neighbourhood (Lanczos alone overshoots by up
+  to 46 in 255 at the mark's hard edges, which is the halo). A resample adds no detail; a vector mark from HFC
+  would.
+* **6. Test mirrors.** `tests/data/test_intro.py`, `test_intro_flyby.py` and `test_intro_plant.py` (the data
+  checks of the old combined file); `tests/hmi/intro/test_intro_ops.py`, `test_intro_model3d.py` (its mesh
+  checks), `test_intro_init.py` and `test_intro_main.py`; `ureasim/hmi/startup.py` has `tests/hmi/test_startup.py`.
+  The directive names `background.py`: it is not in the package (the author deleted it, as his notes say) and
+  was not recreated. Mutation check: nine deliberate breaks of the new behaviour, nine caught.
+* **New open items.** A-26: the intro's frame rate has no margin at the hold and falls short fullscreen. A-27: a
+  reset or exercise load while the engine is frozen leaves it publishing nothing, which the console shows as a
+  blank after 5 s (found by reading the code and confirmed on the engine side; not run through the console).
+* **Checks.** The full suite on Qt's native platform: 2,033 passed, 5,862 skipped, none failed, 37 min 56 s (the skips are the equivalence suites: `E:\` is not mounted on this machine today, so V1's tree at `E:\Simulator\Urea Simulation` is unreachable; session 82 ran them with none skipped, and they are to be re-run when the drive is back; no physics changed this session); the intro, bridge, start-up, data and run tests also pass under `QT_QPA_PLATFORM=offscreen` set on the command line (307 passed); pyflakes is clean on every touched file; the PyQt6 grep over net, engine, units, control, core, thermo and data prints nothing; no module is over 600 lines (the largest of the intro, model3d.py, is 389); nine deliberate breaks of the new behaviour were each caught by a test.
+
 ## 5. Design decisions on record
 
 1. **PyQt6, not PyQt5.** Qt6 is current, has proper high-DPI scaling for the 1366×720 stage,
@@ -6120,3 +6223,20 @@ Session 83 (2026-11-04) committed Session 82 (6ac6f08), then measured the pasted
      boot-pin cache carries the key `ureasim/data/synthesis_pin.py` pins. Every equivalence test and
      the Phase 7 runner's V1 side load V1 from it; the older copies (`main.py` 669 044 bytes,
      2026-08-20) are not used. No relation changes (As-Built §XCV.1).
+166. **The plant starts when the operator presses 100% LOAD** (2026-11-04, session 84, the process engineer's
+     request): the start-up intro ends on a 100% LOAD button, and until it is pressed the engine is held at
+     its design seed, the 1750 MTPD design basis, on its own `freeze`; the press releases it with the same
+     command the instructor's RUN sends, `on` stated. The console is built at the press and connected only
+     then, shown on the first packet, and a failed or silent step shows it anyway with the reason in the
+     status bar. `python run.py --no-intro` keeps the earlier behaviour, the plant running from the start.
+     No relation changes; the intro computes no process quantity (As-Built Part XCVII).
+167. **The start-up intro's six open points decided and closed** (2026-11-04, session 85, the process
+     engineer's directive, handoff A-25): (1) the frame cost is cut without changing the picture, by
+     measured steps (As-Built XCVII.3), and what a cache replaces is held to the original by a reference or a
+     pixel-identity test; (2) the first packet after a held start is allowed 30 s by the bridge's watchdog
+     (`FIRST_PACKET_STALE_MS`) and the strict 5 s applies from the first packet on, the thermo memo untouched;
+     (3) the intro lights the sections in the console's tab order, 321, 322, 329, 323, 328, 324; (4) the
+     flyby's drawing choices stand as built, a stylized splash and not an operator training mimic (322D001
+     drawn once, 322F001 at the junction, HV-322602, instruments and unlabelled valves omitted, 322R001's
+     liquid outlet at the bottom nozzle); (5) the logo is resampled 2x and drawn with smooth pixmap
+     filtering; (6) every intro module has a test file of its own. No relation changes.
