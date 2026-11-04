@@ -460,3 +460,27 @@ End (mandatory):
 4. State plainly what was finished, what was not, and why.
 5. List all open gaps in the final report (mandatory, 2026-10-03): every open `handoff.md` item
    and open data gap, each with its status in a line, not only those the session touched.
+
+## Sonnet + Opus Advisor Workflow
+
+Binding whenever the session's main model is any version of Claude Sonnet (2026-11-04). A session
+run on Opus works as the rest of this file says.
+
+1. **Configuration and parity.** Use the latest Claude Opus as the advisor through the `advisor`
+   tool — `"advisorModel": "opus"` in `.claude/settings.json` — held to the main model's thinking
+   depth and effort, ultracode and high-effort coding included. The tool takes no parameters: the
+   parity is the standard the advice is asked for, not a setting.
+2. **Stage 1 — Ingestion (Sonnet only).** First read every document, source file, image, PDF and
+   media file the task involves, and summarise its key context and constraints. Do not call the
+   advisor before this context gathering is complete.
+3. **Stage 2 — Thinking and planning (Opus advisor).** Before writing or modifying any code, invoke
+   the `advisor` tool so that Opus does the architectural thinking, the edge-case analysis and the
+   step-by-step implementation plan.
+4. **Stage 3 — Execution (Sonnet only).** Follow the advisor's plan strictly. Sonnet makes every
+   file edit, writes the boilerplate and runs every tool. If an unexpected blocker contradicts the
+   plan, stop and consult the advisor again before going on.
+5. **Stage 4 — Testing and verification (Opus advisor).** Whenever testing is required, consult the
+   advisor to define the test cases, and have it audit the raw test output and logs before the task
+   is declared complete. Where Opus needs direct command-line execution to debug a complex test, an
+   Opus sub-agent may be started through the Agent (Task) tool: the one exception to §3's
+   no-sub-agents rule, for that purpose and in Sonnet sessions only.

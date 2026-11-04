@@ -18365,3 +18365,364 @@ decided file's 22 with every pin as committed. Nothing below `hmi` imports PyQt6
 `CLAUDE.md` §1.3 prints nothing. Snapshots saved before the build carry ``PreEvaporator``'s old
 field set and are refused by `snapshot.check_compatible`, as after every change of a unit's fields.
 The patches, the runs and their records are in the session's scratchpad, not the tree.
+
+
+---
+
+# Part XCIII — The load schedule of every controller, 70-115 %; B-118 and B-120 measured, B-121 closed (Phase 7)
+
+Session 80 (2026-10-31 to 2026-11-04) worked through three pasted plans from the process engineer,
+the third on resuming after a shutdown (2026-11-02): finish the sweep, re-hold 100, 105 and 110 %
+with HIC-323605 on its relation and three further trims, close B-121 on option (a) and rebuild the
+load-optimisation workbook (§XCIII.9-11). The first took
+up B-121 option (a) — PIC-323202's documents and its set point raised as an operator's move at 105
+and 110 %, FIC-328402 in proportion to load — and B-118 / B-120 — the streams into 322E002 on the
+turndown ramp, atom by atom, and the AT-322701 feedback. The second directed a load-scheduled
+control of the whole plant: every controller and hand station inventoried and classified, a
+relation SP(L) or OP(L) derived for each from the engine's own equations and set against
+Book2.xlsx's four plant bands, and the relations applied together in the scratchpad's
+load-optimisation runner with slow supervisory trims, 70 to 115 % in 5 % steps, for the
+conversion and the steam objectives. Nothing under `ureasim/` changed. The scripts, configs and
+runs are in the session's scratchpad (`inventory80.py`, `schedule80.py` and its
+`load_schedule80.md`, `opt_run80.py`, `sched_run80.py` built by `make_sched80.py` from it and
+`sched80_extra.py`, `cfg_sched80.py`, `trace80_b118.py`, `an80.py`).
+
+## XCIII.1 PIC-323202 in the documents (B-121)
+
+* P&ID 103 sheet 1 (`References/Merged_Searchable_PIDs.pdf`): 323D001's gas vent, line
+  100-GCB4-323204, DN80, fail-open, is tagged TV-323013; PIC-323202's signal leaves the sheet for
+  P&ID 109.
+* P&ID 109: PV-323202A on 329E002's tempered-water outlet (fail-closed) and PV-323202B on its
+  bypass (fail-open).
+* The loop summary UD-MR-323-EC-0001, P 323202 revision 1 (2007), pages 86-87: PIC-323202 drives
+  the vent PV 323202, normal 3.9 bar a (2.9 bar g), range 0-5 bar g, 1 200 Nm3/h at 3.2 bar a.
+* The functional diagram's page 4 draws two characterizers, A and B, on the controller's output;
+  the DCS tuning table carries the row PIC-323202B on line 329058 (WC).
+* Book2's PIC-323202B reads, in every band, exactly PT-323201 less PDT-323201: 323D001's pressure,
+  3.75-4.20 bar g (4.76-5.21 bar a), its output 24-28.5 %.
+
+The documents agree that PIC-323202 measures 323D001's pressure and disagree on its final
+elements: the P&IDs put it on the tempered water through two characterized outputs and tag the
+vent as a temperature valve, the 2007 loop summary on the vent. The engine, as V1, drives the vent
+alone, at 3.2 bar a; it has no B output. With the set point above the node's own pressure the vent
+shuts and the node floats where 323E003's condensation at TIC-323013's water puts it.
+
+## XCIII.2 PIC-323202 raised at 105 and 110 % (B-121)
+
+Eight holds on the committed engine (decision 162's step on; snapshots saved before it load with
+the class default), PIC-323202 at 3.2, 3.5, 3.7 and 3.9 bar a, FIC-328402 in proportion to load.
+
+At 105 % (from R105f's end, Y121F2's policy, FIC-328402 32.97 m3/h, 1 h settle, 1 h hold):
+
+| PIC-323202 [bar a] | 323D001 [bar a] | vent op [%] | 321 / 702 [t/h] | 343 [t/h] | 328D003 [%/h] | X [%] | steam [kg/t] | urea [MTPD] |
+|---|---|---|---|---|---|---|---|---|
+| 3.2 | 3.20 | 85 | 3.08 / 3.32 | 36.95 | +0.46 | 53.02 | 813 | 1 786 |
+| 3.5 | 3.35 | 0 | 0 / 0.01 | 33.90 | -0.09 | 54.39 | 790 | 1 840 |
+| 3.7 | 3.35 | 0 | 0 / 0 | 33.89 | -0.09 | 54.34 | 791 | 1 838 |
+| 3.9 | 3.36 | 0 | 0 / 0 | 33.89 | -0.08 | 54.32 | 792 | 1 837 |
+
+Above 3.2 bar a both vents shut, 343 falls 3.1 t/h and 328D003 holds at FIC-328402's
+load-proportional flow; conversion gains 1.3 points and the steam per tonne falls 2.7 %. None of
+the four passes the hold: at 3.2 bar a 328C003's level rises 1.16 %/h after FIC-328402's step from
+34.5 to 32.97 m3/h (LIC-328504's slow recovery), above it 324F001's level rises 2.0-3.0 %/h — two
+hours do not settle the step; AT-322701 stands at 2.89 and TT-322005 at 183.4 C.
+
+At 110 % (from R105f's end, X119_110's policy, FIC-328402 34.54 m3/h, 2 h settle, 1 h hold) the
+X119_110 policy runs the stripper hotter (PIC-329204 19.5-20.7 bar a) and MASTER-329207 at its
+4.21 bar a floor; 323D001 floats at 2.35-2.37 bar a, below even the design set point, so both vents
+are shut at every set point and 328D003 holds within -0.23 to -0.52 %/h. X 59.4-60.3 %, 825-858 kg/t,
+1 935-1 973 MTPD. None passes: 328C003's level falls 1.2 %/h at 3.2 bar a (FIC-329402 left at its
+design 1 105 kg/h while 735 rises), 323D011 (LT-323503) moves 1.3-5.9 % in the hour, the reactor's
+and the stripper's levels move 1.2-4.5 %/h, HV-322604 lays carbamate down at 3.5-3.9 bar a, and
+TT-322005 (185.8-187.2 C) and PT-329201 (146.1-148.7 bar a) stand above the licensor's windows.
+
+Reading: B-121's surplus at 105 % is the LP vents' ammonia scrubbed into 343 (§XCII.3). An operator
+holding the vents shut — PIC-323202 at the loop summary's 3.9 bar a — balances 328D003 at
+FIC-328402 in proportion to load; FIC-329402 has to follow FIC-328402, or 328C003 drains.
+
+## XCIII.3 FFIC-321404's basis (B-118)
+
+The engine's FFIC-321404 ratio is ``m_NH3 / m_CO2,feed x 44.009 / 17.031`` on the whole CO2 feed
+gas, so its design 2.0231 is a true molar 2.086 (the PFD's feed gas: CO2 0.9524 mol fraction, molar
+mass 43.21, CO2 mass fraction 0.970). The plant's FFIC-321404B reads the true molar ratio:
+FY-321401's 40.0 t/h of NH3 against FY-322403's 26 110 Nm3/h of feed gas at 95.24 % CO2 gives 2.117
+against the displayed 2.115. On the engine's basis the plant runs 2.047-2.053 in every band, flat
+with load. Session 79's runs at the plant's ratio (§XCII.4) entered 2.115 on the engine's basis, a
+true 2.18 — 3 % more NH3 than the plant feeds.
+
+| run | load | ratio (engine basis) | result |
+|---|---|---|---|
+| Book2's 92 % set points | 92.3 % | 2.115 | AT-322701 3.70 at 19 min, 322E003 venting 7.0 t/h, trip 22.1 at 19 min |
+| Book2's 92 % set points | 92.3 % | 2.052 | AT-322701 3.44 at 31 min, venting 4.9 t/h, trip 22.1 at 31 min |
+| design handles | 100 % | 2.052 | AT-322701 3.00 to 3.35 at 31 min, 3.05 at 61, 3.21 at 91, settled at 3.14 from 140 min; the 1-hour hold passes: X 56.46 %, 836 kg/t, 1 782 MTPD |
+
+The basis accounts for the speed of session 79's runaway, not for the trip: at the plant's ratio on
+the engine's basis Book2's 92 % set points still trip, 322E003 venting at TIC-329005's 90 C on its
+saturation fraction (§XCII.4). At 100 % the plant's ratio holds: the step excites the loop's ~1 h
+mode (B-120), which damps in two cycles, and AT-322701 settles at 3.14 against the plant's 3.25,
+conversion 2.3 points above the design run's and the steam per tonne about 3 % higher.
+
+## XCIII.4 The streams into 322E002 on the turndown ramps (B-118)
+
+`trace80_b118.py`: the committed engine from the design seed on the design handles, the CO2 demand
+ramped at 0.5 %/min; every 10 s the N and C atoms [kmol/h] of 322E001's top gas, the motive NH3
+after its battery-limit transit, 322F001's suction (322E003's overflow), 308 and LV-322501's drain.
+
+| t [s] | load | feed N/C | AT-322701 | top gas N / C | top N/C | suction N | motive N | drain N |
+|---|---|---|---|---|---|---|---|---|
+| 10 | 1.000 | 3.11 | 3.00 | 3 662 / 1 884 | 1.94 | 1 325 | 2 505 | 3 045 |
+| 970 | 0.920 | 3.47 | 3.31 | 4 045 / 1 774 | 2.28 | 1 128 | 2 409 | 3 101 |
+| 1 330 | 0.900 | 3.96 | 3.70 | 4 507 / 1 678 | 2.69 | 669 | 2 341 | 3 290 |
+| 1 810 | 0.900 | 3.31 | 3.16 | 2 566 / 1 456 | 1.76 | 0 | 2 263 | 2 360 |
+| 2 290 | 0.900 | 3.06 | 2.95 | 2 095 / 1 418 | 1.48 | 0 | 2 254 | 2 019 |
+
+The rise from 3.11 to 3.47 in the first 16 minutes and on to 3.96 is 322E001's top gas: its
+nitrogen grows 23 % and its carbon falls 11 % while the load falls 10 %. The stripper, at its design
+shell pressure, gives the loop's ammonia back to 322E002 faster than the fresh feed falls, and only
+LV-322501's drain takes ammonia out of the loop (+8 %). The wash is constant and the motive follows
+the load. 322F001 stalls 4-10 minutes after the ramp ends, its spindle at the design 74 % for a
+motive of 90 %; with the suction gone the top gas falls and AT-322701 returns to 2.95. On the ramp
+to 80 % the same rise reaches 3.76 at 90 % load, the stall comes at 86-88 %, and the loop's
+circulation then collapses (the drain's nitrogen 3 045 to 1 092 kmol/h, 308's 663 to 220). A PI on
+AT-322701 onto the ratio holds nothing: it reaches the faceplate's 2.0 floor (1.1 % less NH3 than
+the design) and AT-322701 peaks at 3.76. The battery-limit transits pass the live feeds for their
+first ~350 s from the seed, both together, so the fresh ratio is not disturbed.
+
+Why the plant holds AY-322701 at 3.25: its ratio on the engine's basis is 2.05, not 2.115 (§XCIII.3);
+it closes 322F001's spindle with load (Book2's HIC-322602 63 % at 92 % against the design's 74 %),
+so the ejector never stalls; and its 322E003 does not vent at 90 C. The engine reproduces the first
+two as operator moves; the third is B-118's 322E003 margin.
+
+## XCIII.5 Every controller's load relation
+
+`inventory80.py` walked the committed plant at its design seed: 81 control objects, 47 inline
+faceplates, 26 operator entries. `schedule80.py` classified the 72 controllers and hand stations
+of units 320 to 335 and derived each one's relation from the engine's own equations, evaluated
+70-115 % and set against the medians of Book2's 92.3, 102.5, 108.6 and 111.0 % bands
+(`book2_bands80.json`, all 144 columns):
+
+* 34 automatic loops whose set point is fixed with load: every level loop, the stage temperatures,
+  the fixed pressures;
+* 9 standalone automatic loops whose set point scales with load: TIC-329005 (322E003's capacity
+  eps.C.(T_proc - T_ccw) held at L times the design's: 185 - 105 L, capped at the set point's 95
+  C), PIC-329204 (the shell saturation whose LMTD on the design tube profile is L times the
+  design's), MASTER-329207 (+0.015 bar per 1 % cut), FIC-328402, FIC-323418, FIC-323401,
+  FIC-323402 and FIC-329402 (in proportion to load), PIC-323202 (B-121);
+* 11 cascade or ratio slaves that follow their master; 3 ratio stations, FFIC-321404B on the
+  engine's basis with no load term;
+* 4 hand stations moved with load: HIC-322605 (Kv in proportion to load, trimmed on LT-322504),
+  HIC-322602 (322F001 entraining L times its design suction at L times its design motive),
+  HIC-322604 (the equal-percentage inverse, 72 + 100 ln L / ln 50), HIC-323605 (the Neldisc
+  stroke pulling L times the design vapour at 0.46 bar a); 11 hand stations held.
+
+Against Book2's slopes: HIC-322604 +0.256 %/% (plant +0.243), PIC-329204 +0.121 bar/% (+0.097),
+MASTER-329207 -0.015 bar/% (-0.011), SIC-323901 +0.60 rpm/% (+0.61), SIC-321951 +0.84 %/%
+(+0.81), FIC-328402 in proportion (the plant's 39.5 m3/h at 100 % against the engine's 31.4).
+Three diverge: HIC-322602 (+2.2 against +0.67 %/%, the plant holding LT-329501 at 7-11 %),
+TIC-329005 (-1.05 against -0.54 C/%, the plant at 85.7 C at 100 %) and HIC-322605 (+0.62 against
++0.43 %/%, the plant at 50.4 % at 100 %). The plant also holds several level set points the engine
+does not: LIC-322501 65 % (engine 50), LIC-323501 40 (60), LIC-323505 22 (60), LIC-329503 40 (50),
+LIC-323507 16-22 (10). TIC-328012 is faceplate-only (V1), so FIC-329402 stays at 1 105 kg/h unless
+it is scheduled.
+
+## XCIII.6 The schedule applied, 70-115 % (the directive's step 3)
+
+`sched_run80.py` is the load-optimisation runner (`opt_run80.py`) with the directive's relations
+and trims added; every move goes through the engine's command handlers at the fixed 0.1 s step.
+Each run starts from the design seed, ramps the CO2 demand at 0.5 %/min, settles three hours with
+the trims acting, and holds one hour with only the level trims acting; the verdict is the earlier
+study's (`analyze.py`: every level's least-squares slope and net change under 0.5, no relief,
+overflow, lost suction, held-back liquor, broken seal, mushy flow, stall, deposition, trip or flag).
+
+* On their relations at the live load: TIC-329005 (the capacity law, capped at its set point's
+  95 C), PIC-329204 (the LMTD law), MASTER-329207, FIC-323401, FIC-323402, FIC-329409 (306 t/h),
+  HIC-322604 (the equal-percentage inverse); FIC-328402 and FIC-329402 in proportion to load with
+  one shared bias; FIC-323418 in proportion to load. HIC-323605, not on the directive's list, kept
+  its design 64.1 %.
+* Trims: HIC-322605 by hand on 322R001's discharge and LT-322504 at 80 % (the session-77 operator);
+  HIC-322602 solved each step for the suction that holds LT-329501 at 50 %; FFIC-321404B by an
+  operator who reads AY-322701's ten-minute mean and steps the ratio by at most 0.004 outside a 0.04
+  dead band, 2.0-2.10 on the engine's basis, from the design 2.023; the FIC-328402 / FIC-329402 bias
+  on 328D003's level (its three bays level together); TIC-329005 cooled below its law, 0.15 C per
+  10 s, while 322E003 passes more than 300 kg/h of condensable gas, and relaxed back once it passes
+  less than 50; PIC-323202 at the loop summary's 3.9 bar a, TIC-323013 out of its masterless
+  cascade into AUTO, colder only while PV-323202 vents, FIC-323418 cut back while LT-323503 is
+  below 40 %. At 110 and 115 % a loop-pressure guard (HIC-322604 opened and MASTER-329207 lowered
+  above 145 bar a) and the standby pump on the ratio's shortfall were added after the first runs
+  tripped.
+* The objectives differ only in their targets. Conversion (C): AT-322701 3.25, TT-322004 174 C
+  through a bias on PIC-329204's law, TT-322005 183 C through a bias on MASTER-329207's. Steam (S):
+  AT-322701 3.00, TT-322004 170 C (the LMTD law is its floor: the bias cannot cut below it, so S runs
+  on the law), MASTER-329207 on its law guarded to keep PV-329207A shut and PV-329207C's letdown down.
+
+A first version with a PI trim on AT-322701 (0.08 per unit N/C, 0.003 per minute) was stopped
+after 35 minutes: at 105 % it pushed the ratio to 2.078 on an AT-322701 dip and AT-322701 then
+overshot to 3.9, the loop's N/C lagging the ratio by 20-30 minutes; and below 95 % TIC-329005's law
+rose faster on the ramp (0.53 C/min) than its correction (0.3 C/min) while 322E003 vented 4-6 t/h.
+
+## XCIII.7 B-120 with AT-322701 fed back to the ratio
+
+Two runs on the step-3 runner, PIC-329204 trimmed directly on TT-322004 (8-22 bar a) so it can cut
+below the LMTD law, AY-322701 read by the ratio operator of §XCIII.6, HIC-322605 by hand.
+
+* 100 %, TT-322004 168 C (steam targets): TT-322004 at 168.0 ± 0.3 C from 45 minutes, PIC-329204
+  17.0 bar a; no oscillation in four hours — LT-322501 swings 47-61 % in the first hour and holds
+  47-50 % after. AT-322701 falls to 2.70 in 90 minutes and stays there while the operator raises the
+  ratio from 2.023 to 2.083 in fifteen steps: with less stripping the ammonia leaves in LV-322501's
+  drain, and the loop's N/C no longer answers the feed. X 51.4 %, 745 kg/t, 1 726 MTPD. The hold
+  fails on the LP section taking what the stripper leaves: 323F010's level +3.2 %/h, 324F001's +2.2 %.
+* 92.3 %, TT-322004 toward Book2's 166.6 C (conversion targets): PIC-329204 falls to 12 bar a and
+  TT-322004 still stands at 168-175 C; AT-322701 runs NH3-lean, 3.1 to 2.36 at 46 minutes and 1.87 at
+  51, PT-329201 jumps to 155 bar a and trip 22.2 fires at 51 minutes. The plant holds this band at
+  166.6 C steadily.
+
+Session 76's growing ~1.1 h cycle did not appear at 168 C with the operator on the ratio and on
+HIC-322605 (session 78 measured HIC-322605 by hand alone shrinking it to a quarter); the loop instead
+settles NH3-lean, outside the licensor's 2.90-3.10. The two feedbacks were not separated.
+
+## XCIII.8 The sweep's results, 70-115 %
+
+Twenty runs on the v2 runner (`cfg80s/L{C,S}{070..115}.json`), each from the design seed; values
+are hold means, a tripped run's state is the sample three minutes before its trip. kg/t is FT-329403
+per tonne of urea leaving the stripper, MTPD that urea x 24. The verdict names only the largest drift
+and the largest net change, as the last column does; the bullets name the other levels that move.
+
+| Run | Outcome | X % | AT-322701 | TT-322005 C | PT-329201 bar a | kg/t | MTPD | Criteria missed, or the run's last minutes |
+|---|---|---|---|---|---|---|---|---|
+| LC070 | trip 22.1 at 62 min | 33.8 | 2.86 | 165.0 | 135.2 | - | - | LT-329501 to 100 %, 322E003 venting up to 10.5 t/h |
+| LS070 | trip 22.1 at 51 min | 32.8 | 2.84 | 166.6 | 136.0 | - | - | LT-329501 to 100 %, venting up to 12.1 t/h |
+| LC075 | trip 22.1 at 62 min | 33.2 | 2.96 | 164.7 | 135.0 | - | - | LT-329501 to 100 %, venting up to 7.0 t/h |
+| LS075 | trip 22.1 at 51 min | 32.8 | 2.85 | 166.5 | 135.9 | - | - | LT-329501 to 100 %, venting up to 12.7 t/h |
+| LC080 | trip 22.2 at 81 min | 28.0 | 2.65 | 159.2 | 140.0 | - | - | LT-329501 to 100 %, the loop NH3-lean |
+| LS080 | trip 22.1 at 52 min | 32.6 | 2.95 | 166.0 | 135.6 | - | - | LT-329501 to 100 %, venting up to 9.8 t/h |
+| LC085 | FAIL | 61.05 | 3.286 | 182.1 | 139.1 | 908 | 1 542 | 324F001 +8.15 %/h |
+| LS085 | trip 22.2 at 66 min | 28.9 | 2.54 | 163.4 | 139.4 | - | - | LT-329501 to 94 %, the loop NH3-lean |
+| LC090 | FAIL | 68.63 | 3.675 | 182.6 | 139.9 | 900 | 1 659 | 322D001A/B +16.4 %/h |
+| LS090 | FAIL | 48.43 | 3.019 | 177.0 | 139.5 | 1 009 | 1 457 | 324F001 +3.32 %/h; carbamate deposition at HV-322604; 322E003 venting 469 kg/h |
+| LC095 | FAIL | 67.95 | 3.962 | 183.1 | 140.9 | 876 | 1 791 | 322D001A/B +40.4 %/h |
+| LS095 | FAIL | 49.43 | 2.978 | 178.8 | 140.1 | 939 | 1 590 | 324F001 +1.56 %/h |
+| LC100 | **PASS** | 58.14 | 3.242 | 183.2 | 141.0 | 858 | 1 797 | none |
+| LS100 | FAIL | 54.15 | 2.970 | 183.0 | 140.7 | 828 | 1 758 | LT-322504 -0.51 %/h |
+| LC105 | FAIL | 59.14 | 3.196 | 183.5 | 141.6 | 854 | 1 884 | LT-322504 -2.23 %/h; 322E001's sump -1.89 % net |
+| LS105 | FAIL | 56.93 | 2.981 | 183.3 | 141.2 | 784 | 1 862 | 324F001 -1.33 %/h |
+| LC110 | FAIL | 63.05 | 3.128 | 186.3 | 146.9 | 889 | 2 030 | 323D011 +5.61 %/h; SV32253 lifted (322C001 overloaded) |
+| LS110 | FAIL | 66.21 | 3.297 | 185.0 | 144.5 | 779 | 2 049 | 323D011 +4.91 %/h; 323F010 +4.22 % net; SV32253 lifted |
+| LC115 | trip 22.2 at 32 min | 61.4 | 2.78 | 187.8 | 150.0 | - | - | the loop NH3-lean |
+| LS115 | trip 22.2 at 32 min | 64.2 | 2.78 | 188.0 | 150.3 | - | - | the loop NH3-lean |
+
+* **70-80 %, B-118's slide.** Trip 22.1 at 51-52 minutes (steam) and 62 minutes (conversion):
+  322E003's sump fills and vents 7-13 t/h of condensable gas, conversion 32-34 %, TT-322005
+  164-167 C.
+* **80-85 %, the NH3-lean branch.** LC080 and LS085 run NH3-lean (AT-322701 2.5-2.65), PT-329201
+  rises from 140 bar a and trip 22.2 fires at 81 and 66 minutes, 322F001 stalling with the trip.
+* **85-95 %, holds that complete and fail on levels.** The conversion objective runs NH3-rich,
+  AT-322701 3.29-3.96 — the ratio operator walked FFIC-321404B to 2.056-2.087 before the loop's N/C
+  turned, its 20-30 minute lag (§XCIII.6) — conversion 61-69 %; 324F001 fills at 85 % and
+  322D001A/B's level runs away at 90 and 95 %, most of the plant's other levels moving with them. The
+  steam objective holds AT-322701 at 2.98-3.02 and runs the reactor cold, TT-322005 177-179 C and
+  X 48-49 %, 324F001 filling 1.6-3.3 %/h and 328C003 falling 0.9-1.7 %/h; at 90 % 322E003 vents
+  469 kg/h and HV-322604 deposits carbamate.
+* **100 %.** LC100 passes: X 58.14 %, 858 kg/t, 1 797 MTPD at AT-322701 3.24, the plant's N/C.
+  LS100 misses on LT-322504's reading alone.
+* **105 %.** LC105's LT-322504 reading falls 2.23 %/h while the true level stays at 80.0-80.15 %:
+  AT-322701 swings 3.13-3.32 on B-120's ~1.1 h mode, decaying, and the liquor's density moves the DP
+  reading; 322D001A/B, 323F010, 328C003, 324F001 and the 322E001 and 322E003 sumps move 0.5-1.9 %
+  with it. LS105 misses on 324F001 (-1.33 %/h) and 328C003 (+0.63 %/h).
+* **110 %.** Both hold without a trip. The loop-pressure guard took HIC-322604 to 100 %, the purge
+  overloaded 322C001 and SV32253 lifted; 323D011 recovers from a dip at +4.9-5.6 %/h, a dozen other
+  levels moving; PT-329201 144.5-146.9 bar a and TT-322005 185-186 C, outside the windows. In the steam run the objective's own
+  MASTER-329207 command overrode the guard's, an ordering fault of the scratch runner.
+* **115 %.** Both trip 22.2 at 32 minutes: AT-322701 falls to 2.78 and PT-329201 passes 150 bar a
+  three minutes before; 322F001 stalls with the trip.
+* At 110 and 115 % the standby-pump rule started 321P002A at 410-420 s, on the ratio PV's dip as
+  the feed lines' delays fill, and its CAS start took the ratio set point toward 2.0.
+
+The five runs a shutdown interrupted on 2026-10-31 (LC085, LC090, LS090, LC095, LC110) were re-run
+from the start on 2026-11-02; the engine and the runner are deterministic at the fixed step, and
+each re-run's record matches its partial one sample for sample over the common span.
+
+## XCIII.9 The re-holds at 100, 105 and 110 % (the resume directive)
+
+Seven continuations from the sweep's snapshots on the same runner (`cfg_rehold80.py`), each taking
+its parent run's supervisory states from the parent's record (`seed_from`) and the design values
+its laws need (`des80.py`), and one more hour for RS105 (RS105x). Every re-hold adds:
+
+* (a) HIC-323605 on its relation, the Neldisc stroke that pulls L x design vapour from 323F010 at
+  0.46 bar a: 64.08 % at 100 %, 65.95 % at 105 %, 67.20 % at 110 %;
+* (b) FIC-329402 trimmed against FIC-328402 on LT-328504 (kc 0.05 per %, ti 1 200 s, within
+  ±15 %), with 328D003's pair trim made faster (kc 0.15, ti 5 400 s).
+
+At 110 % (c): HIC-322604 capped at 76 %; while PT-329201 exceeds 143 bar a or TT-322005 183 C,
+MASTER-329207 lowered to a 4.5 bar a floor; TIC-329005 floored at 70 C (its relation gives 69.5 C);
+PIC-329204 on a low select of three velocity PIs — TT-322004 on its target, PT-329201 and TT-322005
+on their limits — each proposing a move from the selected set point, floored at the design 19.7 bar a.
+At 100 % (d): LS100's hold repeated from its start with HIC-322605's hand-trim deadband 0.01 %
+(RS100d) and after 30 minutes more settle (RS100s). The verdict names the largest drift and the
+largest net change only; the last column lists every level that misses.
+
+| Run | Outcome | X % | AT-322701 | TT-322005 C | PT-329201 bar a | kg/t | MTPD | Criteria missed |
+|---|---|---|---|---|---|---|---|---|
+| RC100 | **PASS** | 58.13 | 3.242 | 183.2 | 141.0 | 858 | 1 797 | none |
+| RS100d | **PASS** | 54.14 | 2.969 | 183.0 | 140.7 | 828 | 1 758 | none (LT-322504 -0.37 %/h) |
+| RS100s | **PASS** | 54.13 | 2.969 | 183.0 | 140.7 | 828 | 1 757 | none (LT-322504 -0.22 %/h) |
+| RC105 | FAIL | 58.85 | 3.248 | 183.6 | 141.8 | 899 | 1 884 | LT-322504's reading -1.13, 322D001A/B +0.82, 322E001's sump -0.73, 328C003 +0.65 %/h |
+| RS105 | FAIL | 56.78 | 2.976 | 183.2 | 141.2 | 784 | 1 860 | 328C003 +0.58 %/h, net +0.52 % |
+| RS105x | **PASS** | 56.78 | 2.977 | 183.2 | 141.1 | 784 | 1 860 | none (LT-322504 +0.40 %/h) |
+| RC110 | trip 22.2 at 51 min | 44.9 | 2.50 | 185.3 | 145.8 | - | - | 322E003's sump drained at 26 min |
+| RS110 | FAIL | 59.13 | 3.027 | 184.4 | 143.3 | 813 | 1 962 | 328C003 -2.32, LT-322504's reading -2.27, 324F001 +1.16, 322E001's sump -1.01 %/h; 323F010 +1.04 % net |
+
+* **100 %, both objectives verified.** RC100 repeats LC100's pass. On the steam objective the 30
+  minutes' settle passes cleanly and the 0.01 % deadband with less margin (two moves of 0.01-0.02 %),
+  where LS100 missed at -0.51 %/h. RS100d is not a test of the deadband alone: it carries (a), (b)
+  and the faster pair trim, near-inert at 100 % (HIC-323605 at its design 64.08 %, FIC-328402 at
+  31.20 against 31.25 m3/h).
+* **105 %, the steam objective verified.** (a) settles the evaporation: 324F001 holds (61.8 to
+  61.7 % over the hold, against LS105's -1.33 %/h) and 323F010 with it, and the faster pair trim
+  holds 328D003's bays at +0.01 to +0.04 %/h. RS105 misses on 328C003 alone and passes the next hour
+  (RS105x). The conversion objective misses on four levels, the largest LT-322504's reading,
+  -1.13 %/h while the true level holds at 80.03-80.09 % and AT-322701 at 3.24-3.26: the liquor's
+  density moves the DP reading the hand operator trims on; 322D001A/B, 322E001's sump and 328C003
+  move 0.65-0.82 %/h.
+* **(b) does not hold LT-328504.** LIC-328504 (Kc 0.2, Ti 300 s) rings for hours after a load or
+  feed step, period about 3.5-4.5 h and amplitude 0.6-1.3 %. 911's steam changes 328C003's holdup by
+  only 0.57 kg per kg (478 of its 1 105 kg/h design leave as stripped gas), about a hundredth of the
+  LIC's own authority, so the trim cannot damp the ring. At 110 % the trim drove FIC-329402 to
+  988 kg/h and RS110's 328C003 fell 2.32 %/h; the two effects were not separated. The ring decays
+  with time (RS105 to RS105x).
+* **110 %, no steady state.** On the steam objective HIC-322604 at its cap stops 322C001 lifting
+  SV32253 and 323D011 holds; the guard takes MASTER-329207 to 4.5 bar a and PIC-329204 to 19.7 bar a,
+  PT-329201 settles at 143.3 bar a and TT-322005 at 184.4 C, just outside the windows, conversion
+  falls from LS110's 66.2 % to 59.1 %, and six levels miss (the table). On the conversion objective the
+  same cut shrinks the reactor's off-gas from 35 to 29 t/h, 322E003's sump drains in three minutes at
+  25 minutes with 322F001's spindle fully open, the ejector loses its suction, AT-322701 swings from
+  3.85 to 2.29 and trip 22.2 fires at 51 minutes (B-120); there the guard's 4.5 bar a floor had
+  raised MASTER-329207 from LC110's 4.21 at the start, and PT-329201 never fell below 144.6 bar a.
+
+## XCIII.10 B-121 closed on option (a)
+
+The process engineer closed B-121 on option (a) on 2026-11-02 (`project.md` decision 164): the
+engine is kept as built. B-121's surplus at 105 % is the LP section's vented ammonia scrubbed into
+343, not a unit 328 relation (§XCII.3, §XCIII.2). PIC-323202 at the loop summary's 3.9 bar a — any
+set point from 3.5 bar a holds the vents shut at 105 and 110 % — takes 3.1 t/h off 343 and balances
+328D003 at FIC-328402 in proportion to load; FIC-329402 follows FIC-328402 so that 328C003 neither
+fills nor drains. Both moves are operator entries on existing faceplates, the sweep and the re-holds
+make them (§XCIII.6, §XCIII.9), and no relation changes. The documents' disagreement on PIC-323202's
+final elements (§XCIII.1) stays recorded: the engine, as V1 and the 2007 loop summary, drives the
+vent alone. The item is deleted from `handoff.md`; Section B keeps B-118 and B-120.
+
+## XCIII.11 The workbook and the checks
+
+`D:\Work\Urea_Plant_Load_Optimization_70_to_115.xlsx` rebuilt by `build_wb80.py` from
+`make_sel80.py`'s selection (the previous file kept in the scratchpad): the two objective sheets
+show, at each load, the Session 80 hold that passed or else the latest completed one (RC100 and
+RS100s at 100 %, RC105 and RS105x at 105 %, LC110 and RS110 at 110 %, the v2 sweep at 85-95 %), a
+trip's state where no hold completed, and any re-hold the column does not show in its policy text
+(RC110's trip at 110 %); the third sheet, `Controller load schedule`, carries the 72 entries of
+`load_schedule80.md` with HIC-323605 marked, each handle's travel over the range and the class
+counts as formulas (34 / 9 / 11 / 3 / 4 / 11 = 72). Recalculated in Excel: 403 formulas, no error.
+
+Checks: nothing under `ureasim/` changed (`git status`: `CLAUDE.md`, `handoff.md`, `project.md`, this
+file and the new `.claude/settings.json`); `grep -rn "PyQt6" ureasim/net ureasim/engine ureasim/units
+ureasim/control ureasim/core ureasim/thermo` prints nothing; the engine and the runner are
+deterministic at the fixed step (the five re-run sweep points match their partial records sample for
+sample). No test was run: no source changed.
