@@ -18918,7 +18918,7 @@ written on 2026-11-04). `tests/equivalence/v1_loader.py` still names the old pat
 equivalence suite cannot load V1 until the process engineer names its home. Session 81 ran only the
 port side.
 
-# Part XCV — V1's source tree named (A-24)
+# Part XCV — V1's source tree named (A-24), the cold start's regression bisected (B-124), TT-322002 against Book2's bands (B-118, B-120)
 
 Session 82 (2026-11-04) took up three decisions of the process engineer, on a pasted plan.
 
@@ -18948,3 +18948,199 @@ Verified on the tree:
   every pinned value the cache's to the bit;
 * `tests/data/test_synthesis_pin.py` and `tests/equivalence/test_stripper_equivalence.py` pass,
   102 tests, none skipped.
+
+After the commit, the whole of `tests/equivalence` and `tests/data` was run on the tree: 6 148
+passed, none skipped, in 1 h 34 min.
+
+## XCV.2 The cold start's regression bisected (B-124)
+
+The process engineer approved B-124's option (b). Each physics-distinct commit was checked out as a
+detached worktree in the session's scratchpad, and the Phase 7 cold start (port side) was run on it to
+3 600 s. `tests/phase7` is unchanged since 0313003 except V1's path, so every difference is the
+engine's. Four commits change nothing under `ureasim/` or `tests/phase7`: 4981a36, 4bff33b, 8036991
+and d047fd8. Each therefore carries the physics of the commit before it, and HEAD's record is Session
+81's (§XCIV.6).
+
+A checkout writes `ureasim/thermo/activity.py` and `henry.py` with CRLF line endings, where the
+working copy that built the node stores holds them in LF. So every worktree's store key missed its
+committed store, and the first probes tabulated the grids live: correct, but slow. Rewriting those
+two files in LF made every worktree's keys equal to its committed stores' headers.
+
+| commit | trip 22.1 [s] | trip 22.2 [s] | PT-329201 at 1 000 / 2 000 / 3 000 s [bar a] | peak to 3 600 s | LT-322504 / LT-329501 at 3 000 s |
+|---|---|---|---|---|---|
+| 0313003 (sessions 52-57) | 134.5 | not reached | 45.2 / 95.5 / 137.8 | 149.6 | 0 / 100 % |
+| 36fe38c (58-61) | 134.1 | not reached | 45.0 / 95.3 / 137.5 | 149.5 | 0 / 100 % |
+| **15e66c2 (62-67)** | **103.6** | **3 271.6** | **48.7 / 112.6 / 151.6** | **154.9** | 0 / 100 % |
+| aa48039, 2e4d64c, 2cfa3f2 | 103.6 | 3 271.6-3 275.2 | 48.7 / 112.6 / 151.6 | 154.9 | 0 / 100 % |
+| f21f058 (72-74) | 107.9 | 3 331.7 | 48.1 / 111.5 / 150.8 | 155.0 | 0 / 100 % |
+| ad75349 (77-78) | 107.9 | 3 310.9 | 48.1 / 111.5 / 151.1 | 154.9 | 0 / 100 % |
+| HEAD (7a8fa3a's physics) | 107.9 | 3 322.0 | 48.1 / 111.5 / 150.7 | 154.7 | 0 / 100 % |
+
+* **0313003 reproduces session 52's accepted answer** (decision 110): trip 22.1 at 134.5 s (134.0 s),
+  95.5 and 137.8 bar a at 2 000 and 3 000 s (95.4 and 137.9), a peak of 149.6 bar a (149.6 at 3 630 s).
+* **15e66c2 moves it.** Trip 22.1 latches 31 s earlier and the loop rises faster, by 3.5 bar at
+  1 000 s and 17 bar at 2 000 s, and trips 22.2 at 3 272 s. f21f058's 322E001 replacement moves it
+  back by about 1 bar and 4 s. No other commit moves it by more than 0.5 bar.
+* **LT-322504 at 0 % and LT-329501 at 100 % are not distinguishable to 3 600 s.** Every commit shows
+  them, 0313003 included. Session 81 compared HEAD's full run, in which trip 22.2 stops the feed at
+  3 322 s, with session 52's reactor full at 8 000 s; whether HEAD's reactor would fill by 8 000 s
+  without the trip is untested.
+
+### The mechanism inside 15e66c2
+
+15e66c2's decided relations carry harness switches ("False is V1's"). Each group was turned off on
+HEAD, and the cold start was run to 1 500 s. Trip 22.1's time and PT-329201 at 1 000 and 1 500 s
+separate the good and the bad answers.
+
+| run | trip 22.1 [s] | PT-329201 at 600 / 1 000 / 1 500 s [bar a] | TT-322002 at 1 500 s [C] |
+|---|---|---|---|
+| 0313003 | 134.5 | 18.2 / 45.2 / 74.1 | 91.4 |
+| HEAD | 107.9 | 19.8 / 48.1 / 83.6 | 80.7 |
+| 322E001 `shell_bound` off (B-102) | 107.9 | 19.8 / 48.1 / 83.6 | 80.7 |
+| 322E001 `hold_full`, `tube_ceiling` off (B-103, B-104) | 107.9 | 19.8 / 48.1 / 83.6 | 80.7 |
+| 322R001 `flash_cap`, `design_drop` off (B-109, B-112) | 107.9 | 19.8 / 48.1 / 83.6 | 80.7 |
+| **322E002 `low_nc_branch` off (B-106, B-111)** | **135.4** | **19.6 / 45.9 / 73.8** | 81.4 |
+| 322E003 `wash_line`, 323E003 `track_species` off (B-110, B-105) | 107.2 | 18.3 / 46.2 / 81.8 | 91.6 |
+| all of these off | 135.1 | 18.0 / 44.5 / 73.2 | 91.4 |
+
+* Only 322E002's low-N/C branch restores 0313003's start: trip 22.1 within 1 s, and PT-329201 within
+  0.7 bar to 1 500 s. The 322E001 and 322R001 switches change nothing in the loop; 322R001's PT is a
+  published reading (B-112's V1 line reads −19 bar a at 600 s). The wash's live temperature (B-105)
+  takes TT-322002 10.9 K colder in the cold start and the loop 2 bar higher by 1 500 s.
+* **The cold start runs NH3-lean.** AT-322701, the reactor's N/C, reads 1.94-2.00 for the first 20
+  minutes, 2.52 at 1 200 s and 2.0-2.4 to 2 400 s. The branch reads 322E002's melt N/C, which is
+  NH3-richer than the reactor's, so the values below are the law's at a melt N/C, not logged
+  readings. Below a melt N/C of 3.0, decision 147 adds the Extended
+  UNIQUAC rise toward the azeotrope in bar, evaluated at the design product temperature (170 C), and
+  carries it to the live temperature on the condenser's own 23 kJ/mol law:
+
+  | melt N/C | the rise at 170 C [bar] | the model's own rise at 110 / 130 / 150 C [bar] |
+  |---|---|---|
+  | 2.0 | 630.6 | 63.9 / 148.2 / 273.7 |
+  | 2.2 | 264.6 | 32.1 / 80.6 / 152.6 |
+  | 2.5 | 65.3 | 10.0 / 29.4 / 57.9 |
+  | 2.8 | 9.4 | 1.9 / 7.1 / 14.6 |
+
+  At 110 C the condenser's law keeps 0.376 of the 170 C rise: 237 bar at N/C 2.0, where the model's
+  own rise is 64 bar. By the law, PI-322E002 then stands far above a loop at 10-50 bar, 322E002's
+  saturation fraction falls toward zero, the condenser takes less of the reactor's gas, and the
+  uncondensed gas raises PT-329201 faster. That chain is inferred from the law: the Phase 7 record
+  logs neither PI-322E002, the saturation fraction nor TT-322015, whose flood steam trips 22.1.
+  The toggle is the evidence.
+
+Run to 3 600 s on HEAD:
+
+| run | trip 22.1 [s] | trip 22.2 [s] | PT-329201 at 1 000 / 2 000 / 3 000 / 3 600 s [bar a] | LT-322E002 at 3 000 s [%] |
+|---|---|---|---|---|
+| 0313003 | 134.5 | not reached | 45.2 / 95.5 / 137.8 / 149.6 | 27.4 |
+| HEAD | 107.9 | 3 322.0 | 48.1 / 111.5 / 150.7 / 111.7 (tripped) | 21.0 |
+| `low_nc_branch` off | 135.4 | not reached | 45.9 / 95.1 / 136.1 / 148.0 | 27.8 |
+| `low_nc_branch`, `wash_line`, `track_species` off | 135.1 | not reached | 44.5 / 94.6 / 136.4 / 149.1 | 27.5 |
+| the rise at the melt's live temperature (prototype) | 107.9 | 3 164.8 | 48.1 / 114.4 / 151.7 / 97.2 (tripped) | 17.4 |
+
+* **The branch alone restores the cold start to 3 600 s.** With it off, HEAD returns to 0313003's answer within
+  1.7 bar to 3 600 s, and trip 22.2 is not reached.
+* **Taking the rise at the melt's live temperature does not restore it.** The scratch prototype
+  (`patch_b124.py`) evaluates the Extended UNIQUAC rise at the live temperature, in place of the
+  170 C rise carried on the 23 kJ/mol law; at 170 C the two are the same expression. Below N/C about
+  2.5 either form stands far above a loop at 10-50 bar, and a melt hotter than 170 C rises further,
+  so trip 22.2 comes 157 s earlier. What moves the cold start is the branch's reach to a melt N/C
+  near 2, not its temperature scaling.
+* Decision 147's record quotes the rise at N/C 2.6-3.0 (9.38 bar at 2.8, 38.04 at 2.6). The cold
+  start runs the law far below that range.
+
+## XCV.3 TT-322002 against Book2's bands (B-118, B-120)
+
+### The relation as built
+
+`scrubber_322e003` publishes the liquor's temperature from the shell's effectiveness-NTU bridge
+(V1's `scrub_322e003`):
+
+    T_bridge = min(T_ccw,in + Q / UA_eff, T_proc)           T_proc = 185 C, the ceiling
+    Q = Q_des . s . (P / P_des) . chi_spindle . chi_choke     85 K over UA_eff at design
+    TT-322002 = max(T_bridge - 12 (HIC-322604 / 72 - 1), T_ccw,in) + wash and carry blends
+
+It rises 1 K per K of TIC-329005, with the load and the loop pressure, with a 322F001 spindle
+closed past its design 74 %, and by 12 K per unit of HV-322604's closure. The plant's TT-322002
+holds 165.7-167.5 C across Book2's four bands, while TIC-329005 runs 80-90 C, HIC-322604 51.5-56 % and
+HV-322602 63-76 %. Evaluated on each band's set points, at design circulation and a sump below 50 %:
+
+| band (Book2) | load [%] | PT-329201 [bar a] | TIC-329005 | HIC-322604 | HV-322602 | plant TT-322002 | the law | T_cond(P) | P1 | plant TDY-329125 [K] |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ~92 % | 92.3 | 138.39 | 90.0 | 51.5 | 63 | 166.75 | 175.9 | 164.8 | 168.3 | 25.7 |
+| ~102 % | 102.5 | 141.97 | 84.1 | 53.9 | 69 | 165.74 | 178.2 | 165.1 | 168.1 | 26.8 |
+| ~108 % | 108.6 | 142.51 | 80.9 | 55.5 | 73 | 167.14 | 178.0 | 165.1 | 167.9 | 28.5 |
+| ~111 % | 111.0 | 143.08 | 80.0 | 56.0 | 76 | 167.50 | 176.9 | 165.2 | 167.8 | 28.8 |
+
+The law runs 9-12 K above the plant on the plant's own set points. On the bubble side, the liquor
+law at the plant's own TT-322002, with the composition factor of the nearest engine hold (A40's 1.004
+at 92.3 %, RC100's 1.031 near 102 %, B0L's 0.885 above 105 %), stands 6.4 and 4.6 bar above the loop
+at the ~92 and ~102 % bands (saturation fractions 0.90 and 0.93), and 14 bar below it above 105 %.
+Book2 also carries TDY-329125, the tempered water's rise across 322E003: 25.7-28.8 K, against the
+engine's design 15 K. FV-329409 is a valve opening (41-46 %), not a flow, so the plant's circulation
+is not known.
+
+The shell's own condensing temperature, `condensing_temperature_c` (V1's `scrub_cond_t_c`, 160 kJ/mol,
+165.0 C at 140.7 bar a, 0.07 K/bar), holds 164.8-165.2 C over the bands' pressures. It already sets
+the shell's driving force in `condensation_capacity`.
+
+**The liquor's temperature acts on the process only through its saturation fraction.** Its
+consumers are the sump's bubble pressure (the saturation fraction on the next tick), the mushy factor
+(a 60 C floor), the TT-322002 lag and the packet. 322F001's discharge is on its design suction
+temperature (`T_SUCTION_DES_C`), so 322E003's liquor carries no heat into 322E002 or 322R001.
+
+### The prototypes
+
+Both re-execute `scrubber_322e003`'s own source with one statement changed, in the session's
+scratchpad, and change nothing under `ureasim/`:
+
+* **P1, the liquor's ceiling at its condensing temperature.** `min(T_bridge, T_cond(PT-329201))` in
+  place of the fixed 185 C, before V1's purge, wash and carry terms; the water side keeps the bridge.
+  It adds no parameter, and once the ceiling binds TT-322002 no longer follows the tempered water.
+  At the design seed T_bridge = T_cond = 165.0 C: identical to the bit (0 of 1 373 result leaves
+  differ after 100 ticks).
+* **P1b, P1 with the liquor at most at its own bubble point** at the live loop pressure, on its own
+  law (`liquor_bubble_p_bara` inverted on the tick's overflow), so its saturation fraction reads 1
+  (decisions 102 and 115's class). At the design seed it moves the result by about 1e-7, the seed's
+  knife edge (§XCIV.1).
+
+The arms run Session 81's harness from the design seed: ramp at 0.5 %/min, settle 9 000 s, hold
+3 600 s on Book2's set points, with HIC-322605 by hand and HIC-322602 solved for LT-329501's
+published reading on Book2's level schedule (7.05 % at 92.3 %, 10.8 % at 111 %).
+
+| arm | TT-322002 [C] | f | capacity | 322E003 vent [kg/h] | X [%] | AT-322701 | TT-322005 | TT-322004 | PT-329201 | LT-329501 shown / true [%] | HIC-322602 | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| P1, 92.3 % | 167.3 | 0.921 | 0.956 | 1 819 | 49.73 | 3.059 | 178.8 | 176.6 | 140.8 | 21.7 / 20.3 | 23.1 % | FAIL: 324F001 -1.54 %/h, HV-322604 deposition flag |
+| P1b, 92.3 % | 163.9 | 1.000 | 0.956 | 1 036 | 49.86 | 3.076 | 178.9 | 176.7 | 140.6 | 21.3 / 20.5 | 23.1 % | FAIL: 324E001 -1.44 %/h, deposition flag |
+| Book2 92.3 % | 166.75 | | | none | | 3.25 | 182.6 | 166.6 | 138.39 | 7.05 shown | 63 % | |
+| P1, 111 % | 164.6 | 1.000 | 0.905 | 4 364 | 66.65 | 3.497 | 185.4 | 179.4 | 145.3 | 24.6 / 22.9 | 55.9 % | FAIL: 323D011 +8.11 %/h, deposition flag |
+| Book2 111 % | 167.5 | | | none | | 3.25 | 182.6 | 172.25 | 143.08 | 10.8 shown | 76 % | |
+
+LT-329501 did not settle in any arm. At the hold's end it read 21-25 % against targets of 7.05 and
+10.8 %, still falling 0.55-1.24 %/h, with HIC-322602 at 23 % at 92.3 %. 322F001's suction is its
+capacity times the level over 50 %, so the spindle closes as the level falls. The verdicts are those
+of unsettled holds.
+
+The 100 % guard was not run. Session 80's RC100 started from a snapshot that has since been
+overwritten, so it cannot be replayed. Its record shows the bridge at least 8 K under the ceiling
+throughout, so P1 would not bind there. RS100s, the steam objective's verified hold, ran TT-322002 at
+165.0-165.2 C, where P1 binds by up to 0.2 K. P1 is not identity there, and that hold is unverified
+under it.
+
+* **At 92.3 % the prototype puts TT-322002 on the plant's value** (167.3 against 166.75 C). The
+  liquor law still leaves its saturation fraction at 0.92, and 322E003 vents 1.8 t/h.
+* **With no saturation venting the band still misses on the reactor and the stripper.** With f held
+  at 1 at two sump levels (A40 at 50 %, P1b at about 21 %), the hold reads TT-322005 178.9 C and
+  322E001's bottoms 176.5-176.7 C both times, with X 49.9 %. The plant reads 182.6 and 166.6 C.
+  B-118's miss at 92.3 % is not in 322E003's liquor.
+* **At 111 % the prototype does not match Book2.** TT-322002 holds 164.6 C against the plant's
+  167.5. The wash's live temperature (B-105; 323D001's liquor at 63.6 C against PFD 308's 74 C) takes
+  3.4 K off the liquor under P1's ceiling. The saturation fraction is 1, but the shell's capacity,
+  0.905 at TIC-329005 80 C on the design circulation, leaves 4.4 t/h uncondensed. The loop then runs
+  NH3-rich and hot: AT-322701 3.50, TT-322005 185.4 C, PT-329201 145.3 bar a. The hold's logged duty
+  `q_ccw_kw`, 6 060 kW, is a 17.1 K rise over the design 306 t/h; Book2's TDY-329125 reads 28.8 K.
+* The arms changed the level target (the published reading, on Book2's schedule) as well as the
+  liquor. Their vents and AT-322701 are therefore not compared one for one with Session 81's A0, A40
+  and B0L.
+* No arm holds Book2's band, and no relation changed.
+
