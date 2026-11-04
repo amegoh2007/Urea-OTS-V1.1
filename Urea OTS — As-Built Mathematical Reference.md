@@ -19179,7 +19179,12 @@ CLAUDE.md §4's two searches were made, `References\` first and then the vendor 
 | the SOP's feed ratio, branch on | 104.8 | 5863 | 115.3 / 117.2 | 154.6 at 5850 s | not full | 675 (out) | 555 (in) | 110.69 (out) |
 | the 3 June 2025 band | | | | | | 2 884-4 055 | <= 572 | 137.5-150.5 |
 
-* With the branch off, the full cold start reaches no trip 22.2, fills 322R001 — it does not fill by 16 000 s, and fits tau 1350 s, dead time 540 s and a final 137.45 bar g. Session 52's accepted answer (decision 110) was tau 1 305 s, 555 s and 136.04 bar g, out of the
+*Corrected in Session 86 (§XCVIII.1): LT-322504 is a 1.5 m narrow band whose funnel lip reads 33.3 %. "Not
+full" above means the band never reached its top; the branch-off run's reactor was full and overflowing at
+its lip from 6 420 s. Session 52's "8 000 s" is the band's top (100 %), which 0313003 reproduces.*
+
+* With the branch off, the full cold start reaches no trip 22.2, and fits tau 1350 s, dead time 540 s and a
+  final 137.45 bar g. Session 52's accepted answer (decision 110) was tau 1 305 s, 555 s and 136.04 bar g, out of the
   band on its tau and final.
 * **The SOP's feed ratio does not remove the trip with the branch on.** FFIC-321404 at 2.910 on the engine's
   basis (the SOP's 3.0) holds PT-329201 at 115.3 bar a at 3 000 s. At the reactor's overflow (the liquor
@@ -19402,3 +19407,228 @@ each caught by a test.
 ## XCVII.9 Checks
 
 The full suite on Qt's native platform: 2,033 passed, 5,862 skipped, none failed, 37 min 56 s (the skips are the equivalence suites: `E:\` is not mounted on this machine today, so V1's tree at `E:\Simulator\Urea Simulation` is unreachable; session 82 ran them with none skipped, and they are to be re-run when the drive is back; no physics changed this session); the intro, bridge, start-up, data and run tests also pass under `QT_QPA_PLATFORM=offscreen` set on the command line (307 passed); pyflakes is clean on every touched file; the PyQt6 grep over net, engine, units, control, core, thermo and data prints nothing; no module is over 600 lines (the largest of the intro, model3d.py, is 389); nine deliberate breaks of the new behaviour were each caught by a test.
+
+# Part XCVIII — B-124 closed (decision 168); FT-329403 at the design point; B-118 and B-120 under active closed-loop trims
+
+Session 86 (2026-11-04) ran the process engineer's "Session 84" paste alongside sessions 84 and 85, which
+attached the start-up intro (Part XCVII). It committed Session 83 (2b9c891) and took up the pasted plan:
+a probe of 322R001's fill and the decision on B-124, then B-118 and B-120 under active closed-loop trims
+in the session's scratchpad. Nothing under `ureasim/` changed.
+
+## XCVIII.1 B-124: 322R001's fill, and the cold start re-baselined (decision 168)
+
+**LT-322504 is a narrow band.** It maps the 1.5 m band whose top tap stands 1.0 m above the overflow line
+(UD-AU-322-EC-0006 p6 and p14, `data/unit_322r001.py`). In the engine's frame the funnel's lip, 19.3 m,
+reads 33.3 %, and free overflow at the design flow reads about 36.5 % (a Francis head of 0.048 m). So
+36 % is a full reactor overflowing at its funnel. 100 % is the funnel backed up 1.0 m above its lip,
+with more liquor arriving than HV-322605 passes at its stroke.
+
+**The probe.** The Phase 7 cold start, port side, ran to 10 000 s with the switches below
+(`s84/cs84.py`; `s82/p7_switch82.py` on HEAD; a scratch worktree for 0313003, its stores' keys matched).
+
+| run | engine | reaches the lip (33 %) | 99 % or more | peak | LT-322504 at 8 000 s | at 10 000 s |
+|---|---|---|---|---|---|---|
+| R0 | 0313003 (session 52's engine) | 6 420 s | 7 830 s | 100.0 % at 8 070 s | 100.0 % | 59.5 % |
+| T4 (Session 83) | HEAD, low-N/C branch off | 6 420 s | never | 69.0 % at 9 480 s | 36.3 % | 61.3 % |
+| P1 | HEAD, branch off, B-103 and B-104 off | 6 420 s | never | 74.6 % at 8 670 s | 46.7 % | 53.3 % |
+| P2 | HEAD, branch off, V1's 2 600-tube bundle | 6 390 s | never | 42.2 % at 9 990 s, still rising | 36.1 % | 42.2 % |
+| P3 | HEAD, branch off, B-103 and B-104 off, V1's bundle | 6 390 s | never | 65.9 % at 9 750 s | 36.5 % | 62.7 % |
+
+* **Session 52's "full at 8 000 s" was the band's top.** 0313003 reads 100 % at 8 000 s and 59.5 % at
+  10 000 s. Session 83 read the branch-off run's 36 % as "never full". The reactor was in fact full,
+  overflowing at its lip from 6 420 s, the same time as 0313003's.
+* **What differs is the backup above the lip.** In 0313003 the funnel backs up from 6 900 s, as soon as
+  322E001's sump reaches 100 %. More liquor then reaches 322R001 than HV-322605 passes at its design 60 %,
+  and LT-322504 climbs to the band's top by 7 830 s. On HEAD, with the branch off, the reactor stays at
+  its lip until 322E001's sump drains, then rises to 69 % at 9 480 s.
+* **B-103 and B-104 are not the cause.** 0313003's 322E001 sump clamps at 100 % (V1's clamp) and its
+  discharge through HV-322605 carries no cap. `hold_full` and `tube_ceiling` off on HEAD (P1) give
+  exactly that, and the peak rises only from 69.0 to 74.6 %.
+* **f21f058's bundle is not the cause either.** On V1's 2 600-tube bundle the peak is 42.2 % (P2) and,
+  with B-103 and B-104 also off, 65.9 % (P3).
+* **The change is inside 15e66c2, and every harness switch off restores it.** Run to 9 000 s with the
+  branch off where it exists:
+  - 36fe38c backs up to 97.6 % at 8 010 s, as 0313003 does;
+  - 15e66c2, 2e4d64c, f21f058 and ad75349 stay at the lip at 8 000 s (36.1-36.4 %), rising to
+    51.8-53.0 % by 9 000 s on the last two;
+  - HEAD with every harness switch off and V1's bundle (P4) backs up to 97.5 % at 8 010 s.
+
+  So one or more of 15e66c2's switched decisions holds the reactor at its lip:
+  - 322E001's shell bound (139);
+  - its tubes standing full (140, with B-103);
+  - 323D001's liquor into 322E003 with 323E003's species (141, 146);
+  - 322R001's design drop and flash cap (148, 145).
+
+  Three probes splitting those decisions were running when this was written (`s84/cs/W1_shell`,
+  `W2_wash`, `W3_r001`).
+
+**Decision 166.** The process engineer approved option (a). 322E002's low-N/C branch (decisions 142 and
+147) stays as built, and the Phase 7 cold start's record is re-baselined on the committed engine
+(unchanged since 7a8fa3a; Session 81's port record, `p7/base`):
+
+* trip 22.1 at 107.9 s;
+* PT-329201 111.5 bar a at 2 000 s and 150.7 at 3 000 s, peaking at 154.7 bar a at 3 300 s;
+* trip 22.2 at 3 322 s, with 21.2, 21.8 and 21.10 at 3 322.1 s. It cuts the CO2 and both ammonia pumps,
+  and the loop falls to 79.7 bar a by 16 000 s;
+* LT-322504 at 0 % throughout, since the trip comes before the reactor reaches its lip, and LT-329501 at
+  100 % from 600 s.
+
+Its fit, tau 540 s, dead time 540 s and final 78.61 bar g, is of a tripped trajectory and is not a
+start-up answer. On record with it:
+
+* Session 82's bisect to 15e66c2 and the branch-off switch (§XCV.2);
+* the branch off to 16 000 s: no trip 22.2, tau 1 350 s, dead time 540 s, final 137.45 bar g (§XCVI.1),
+  the reactor at its lip from 6 420 s;
+* the SOP's filling ratio with the branch on: trip 22.2 at 5 863 s;
+* the fill probe above.
+
+The trip 22.2 scenario keeps decision 110's answer: 22.2 is not reached in 48 000 s (§XCIV.6). No test
+pins decision 110's cold start (`tests/` searched), and no relation changes. B-124 is closed and deleted
+from `handoff.md`.
+
+## XCVIII.2 FT-329403 at the design point
+
+The request compared FT-329403 at 100 % with "PFD stream 902's 57.99 t/h and 914's 66.90 t/h".
+CLAUDE.md §4's two searches were made, `References\` first and then the vendor archive.
+
+* **Where FT-329403 stands.**
+  - `References\329-1 mapping and description.md` puts FT-329403, with TT-329101 and PT-329251, on
+    material-balance stream 901 from 320E006, before it divides into 902 (PV-329204 to 329D005), 903
+    (PV-329205A to 329D009), 963 (PV-329207C and HV-329602 to 322D001A/B) and 911 (328C003).
+  - Uhde's loop summary F 329403 (UD-MR-329-EC-0001 rev 1, 04.06.07, page 15; a scan, read off the page
+    image) gives the service as "STMH to 329D005 MP Steam Satur.", on line 300-STMH2-320501-BA13E-W 130
+    (DN 300): an orifice plate FE 329403 with a dP transmitter, mass flow, normal 60.8 t/h (35 to
+    81.0 t/h, range 0-85 t/h), 22.3 bar a and 330.0 C. Its normal flow is PFD 901's 60 848 kg/h at 901's
+    330 C, not 902's 57 989 kg/h at 328 C.
+* **What the engine publishes.** `engine/packet/steam.py` publishes FT-329403 as stream 901, the sum
+  911 + 902 + 903 + 963. On the design seed (one tick, `s84/seed84.py`) it reads 60.850 t/h: 902
+  57.989, 903 1.754, 911 1.105 and 963 0. That is PFD 901 to the kilogram and the loop summary's 60.8.
+* **The two figures in the request.**
+  - 902 is PV-329204's steam into 329D005, 57.99 t/h at the design seed (`STEAM_SYSTEM.MP.m_supply_th`).
+  - PFD 26's stream 914 is condensate, 49 993 kg/h at 147 C and 4.4 bar a (55 011 kg/h in the 1925 MTPD
+    case). The 66.90 t/h is the engine's `STRIP_DES_KGH`, 66 902 kg/h: 902 plus the 8 913 kg/h of
+    329D005's water that 902's superheat boils (decisions 54 and 58), which 322E001's shell condenses.
+    It is not a PFD stream, and the tag rules over the label.
+* **The plant.** Book2's FY-329403 reads 53.45 t/h at 92 % (52.09-55.08), 59.93 at about 102 %
+  (56.98-60.63, n = 34) and 66.26 at 111 % (65.70-66.96). The 1925 MTPD PFD (110 %) gives 901 66.80 t/h.
+  So the plant's FT-329403 follows the PFD's 901 within 1-4 % at both cases.
+* **The engine off design.** On Book2's set points the engine's FT-329403 read 63.00 t/h at 92.3 %
+  (S2, 902 60.70) and 75.67 at 111 % (C1, 902 73.30) in Session 83. At 92.3 % that is above its own
+  100 % value of 60.85; at 111 % it is 13 % above the 1925 MTPD case. Those holds ran on Book2's
+  PIC-329204. With PIC-329204 trimmed 1-2 bar lower to hold TT-322004 (§XCVIII.3), the engine's
+  FT-329403 reads 54.8-55.2 t/h at 92.3 % and 68.9-72.1 at 111 %, near the plant's. So the excess is the
+  engine's stripper steam at the plant's shell pressure, not the meter's stream.
+
+## XCVIII.3 B-118 and B-120 under active closed-loop trims
+
+The process engineer asked for the handles to be operated as the plant operates them, each modulated to
+hold its own target, rather than fixed at Book2's set points while the loop drifts. The harness
+(`s84/opt_run84.py`, generated from Session 83's runner by `s84/mk84.py`; arms in `s84/cfg84.py`) runs
+the committed engine at the fixed 0.1 s step through its own command handlers. Each arm starts from the
+design seed, ramps the CO2 demand at 0.5 %/min, settles 3 h and holds 2 h, with every trim live through
+the hold (`hold_mode` "trim_all"). The loops are velocity-form PIs stepped every 10 s:
+
+| handle | holds | target | bound |
+|---|---|---|---|
+| HIC-322605 | LT-322504 as displayed | 80 % | 5-100 %; kc 0.3 %/%, Ti 1 200 s (HV-322605 passes 3 646 kg/h per % of stroke, 35.8 LT-%/h) |
+| HIC-322602 | LT-329501 as displayed (the spindle solve) | 50 % (30 % in the retuned 111 % arms) | 10-100 %; data gap 1: 7-11 % cannot be held |
+| FFIC-321404B | AT-322701 | Book2's 3.25 | 2.0-2.6 on the engine's basis, starting at Book2's ratio |
+| PIC-329204 | TT-322004 | Book2's median | Book2's set point ± 2 bar |
+| MASTER-329207 | TT-322005 | Book2's median | Book2's set point ± 0.5 bar |
+| HIC-322604 | PT-329201 | Book2's median, bar g + 1.01325 | Book2's opening ± 15 % |
+| TIC-329005 | 322E003's uncondensed gas (the licensor's anti-vent rule) | none vented | Book2's set point, at most 10 K below it |
+| HIC-323605 | 323F010's level | 60 % (the design seed's) | 20-100 % |
+| FIC-328402 | 328D003's level | 50 % | 5-60 t/h |
+| FIC-323418 | LT-323503, only while LIC-323503's output is saturated | 50 % | 0-7.5 m3/h |
+| FIC-329402 | LT-328504, only while LIC-328504's output is saturated | 50 % | 0-3 000 kg/h |
+
+Neither PIC-329204 nor MASTER-329207 may fall while AT-322701 is below 3.0. Cutting the stripper's steam
+on a lean loop is Session 80's collapse path. The guard is a harness rule, not the engine's, and it is a
+ratchet: below 3.0 a handle may rise and not fall. Book2's bands are its 10-90 % ranges: at 92 % TT-322004
+166.20-167.43 C, TT-322005 182.14-183.01 C, PT-329201 137.42-139.68 bar a, AY-322701 3.234-3.262; at
+111 % 171.92-172.59 C, 182.27-183.13 C, 142.48-143.66 bar a and 3.242-3.259. The verdict is
+`analyze.py`'s, over the whole 2 h hold and over its last hour (`s84/an84.py`, `s84/tab84.py`).
+
+| arm | load | verdict 2 h / last 1 h | TT-322004 | TT-322005 | PT-329201 [bar a] | AT-322701 | FT-329403 [t/h] | X [%] | spans AT / TT-322005 [K] / X | handles on a bound | first failure |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| as built | 92.3 % | FAIL / FAIL | 178.9 | 183.4 | 141.5 | 2.76 | 55.1 | 59.6 | 0.10 / 0.6 / 2.4 | PIC low, master high, HIC-604 high | drift +3.83 %/h 324E001.level_pct |
+| P1b | 92.3 % | FAIL / FAIL | 178.9 | 183.5 | 141.5 | 2.76 | 55.1 | 59.6 | 0.10 / 0.6 / 2.6 | PIC low, master high, HIC-604 high | drift +3.84 %/h pk.EVAP_324.E001.LI_324F001 |
+| S2 | 92.3 % | FAIL / FAIL | 168.6 | 181.2 | 140.0 | 3.63 | 60.0 | 61.2 | 1.62 / 8.7 / 26.6 | ratio low, PIC high, master high, HIC-604 high | drift -6.71 %/h pk.STEAM_SYSTEM.LIC_329504.pv |
+| S2 + margin 1.49 | 92.3 % | FAIL / FAIL | 168.2 | 181.3 | 140.1 | 3.68 | 60.0 | 61.8 | 1.61 / 8.6 / 26.5 | ratio low, PIC high, master high, HIC-604 high | drift -6.79 %/h pk.STEAM_SYSTEM.LIC_329504.pv |
+| S2, slip gain 0 | 92.3 % | FAIL / FAIL | 166.4 | 177.2 | 140.4 | 3.23 | 54.8 | 49.9 | 0.02 / 0.3 / 0.2 | master high, HIC-604 high | drift +2.33 %/h 324E001.level_pct |
+| S2, tight LT-322504 | 92.3 % | FAIL / FAIL | 167.3 | 181.7 | 140.0 | 3.87 | 61.1 | 64.2 | 1.92 / 7.6 / 26.6 | ratio low, PIC high, master high, HIC-604 high | drift +2.22 %/h pk.STEAM_SYSTEM.LIC_329504.pv |
+| C1 (margin 1.49) | 111.0 % | trip 21.10, 21.2, 21.8, 22.1, 22.2 at 149 min | | | | | | | | | |
+| C1, retuned | 111.0 % | FAIL / FAIL | 177.0 | 184.7 | 144.0 | 3.07 | 68.9 | 59.4 | 0.51 / 0.3 / 3.7 | master low, HIC-604 high | drift +4.07 %/h 323F010.level_pct |
+| C1, retuned, PIC-329204 fixed | 111.0 % | FAIL / FAIL | 179.3 | 184.7 | 144.0 | 3.25 | 72.1 | 61.2 | 0.79 / 0.4 / 5.6 | master low, HIC-604 high | drift -4.59 %/h 322E001.sump.level_pct |
+
+The arms' patches are Session 82's and 83's scratch prototypes. P1b is TT-322002's ceiling at T_cond and
+the liquor's bubble-point cap. S2 is P1b with V1's feed-deficit rise off and the bottoms' steam slope at
+Book2's 1.26 K/K. C1 is TT-322002's ceiling with 322E003's capacity lifted by the vendor's margin of 1.49
+where it is short (it never exceeds the design capacity, so it is not the 8 000 kW shell).
+
+**At 92.3 %:**
+
+* **Without S2's stripper terms the handles run to their bounds** (as built, P1b). PIC-329204 sits 2 bar
+  below Book2, and TT-322004 still reads 178.9 C. S2's two stripper terms (V1's feed-deficit rise off,
+  Book2's steam slope) are what bring the bottoms down. MASTER-329207 and HIC-322604 are on their upper
+  bounds. The loop is steady (AT-322701 moves 0.04 in the last hour) but NH3-lean, AT 2.77 with the ratio
+  still climbing at 2.30. The arms fail on 324F001's level (+2.2 to +3.8 %/h) and HV-322604's deposition
+  flag. FT-329403 reads 55.1-55.2 t/h, at the band's top edge (55.08) and just outside it.
+* **With S2 the means come to Book2 within 81 minutes, and then B-120's loop mode grows.** At 4 860 s
+  TT-322004 read 166.5 C, TT-322005 182.5 C, AT-322701 3.27 and X 59 %. Through the hold, AT-322701
+  swings 2.74 to 4.35, TT-322005 174.4 to 183.1 C, TT-322004 162.2 to 176.2 C and the conversion 43 to
+  70 %, with AT-322701's peaks 1.2 to 1.4 h apart. The ratio sits on its 2.0 floor at the NH3-rich
+  peaks. 322E001's sump, LT-322504 and 322D001A/B's
+  drums swing with it. The margin changes nothing (S2 + margin).
+* **With V1's slip term off the mode was absent in this arm,** as Session 78 found at 100 % with
+  TT-322004 at 168 C. With 322E001's `SLIP_GAIN` at 0 (V1's STRIP_SLIP_GAIN is 4.0; set before S2
+  recompiles the stripper) the same trims hold a steady loop: AT-322701 moves 0.02, TT-322005 0.3 K and
+  X 0.2 points over the hold. TT-322004 166.42 C, AT-322701 3.235 (3.239 in the last hour) and FT-329403
+  54.76 t/h lie inside Book2's bands, in both windows. The steady state is the cold side B-118 describes,
+  and no hot-branch steady state with the slip off was shown. What remains:
+  - TT-322005 is 177.2 C, 5.4 K cold, with MASTER-329207 on its upper bound;
+  - PT-329201 is 140.4 bar a, 0.7 bar above the band, with HIC-322604 on its upper bound;
+  - 324F001's level drifts +2.3 %/h, and 324F001 has no handle (the separator drains through its leg);
+  - X is 49.9 %, against Session 83's 48.4-49.9 % at Book2's fixed set points.
+* **A tight LT-322504 loop does not damp it** (S2, HIC-322605 kc 1.0, Ti 600 s): verdict FAIL / FAIL; AT-322701
+  spans 1.92 over the hold, as on S2.
+
+**At 111 %:**
+
+* **The first tuning fails.** HIC-322602's moves pump V1's forward-carbamate pulse (the high-pass of the
+  spindle's draw on an 8 min washout, B-78 item 2) into 322E003's sump, from -46 to +39 t/h. The spindle
+  solve then chases a level it has itself disturbed, and LT-329501 swings 0-98 % with the spindle at
+  85-100 %. PIC-329204 runs from bound to bound, and AT-322701 swings 2.4-4.1. LT-322504 stays at 100 %
+  for about 900 s. After ten minutes with 322E003's sump empty and the spindle fully open (8 040 to
+  8 640 s), LT-322504 falls from 92 to 4 % in four minutes (about 1.3 m, to below the funnel's lip),
+  322E003's sump floods and PT-329201 reaches 154.4 bar a. Trips 22.1, 22.2, 21.2, 21.8 and 21.10 latch at
+  8 940 s, 149 minutes in. The as-built arm at 111 % showed the same limit cycle and was stopped at about
+  4 200 s, so its record is not a result.
+* **Retuned** (LT-329501 at 30 %; PIC-329204 kc 0.1 bar/K, Ti 1 800 s, at most 0.02 bar per step; the
+  ratio's Ti 3 600 s; HIC-322605 kc 0.5, Ti 900 s), **the loop holds without a trip.** Over the 2 h hold
+  AT-322701 moves 0.51, TT-322005 0.3 K and X 3.7 points. It is out of band:
+  - TT-322005 184.7 C with MASTER-329207 on its lower bound;
+  - TT-322004 177.0 C, partly the harness's doing: the NH3-lean guard (AT-322701 about 3.0) held
+    PIC-329204 at 19.4 bar a;
+  - PT-329201 144.0 bar a with HIC-322604 on its upper bound;
+  - FT-329403 68.9 t/h against Book2's 66.26;
+  - it fails on 323F010's level (+4.1 %/h over the 2 h) and, in its last hour, 322E001's sump (+2.7 %/h).
+* **With PIC-329204 held at Book2's 21.015 bar a** (the retuned arm otherwise), the ratio trim holds
+  AT-322701 at Book2's 3.25-3.28. TT-322004 then reads 179.3 C (7 K hot) and TT-322005 184.7 C, PT-329201
+  144.0 bar a with MASTER-329207 and HIC-322604 on their bounds, and FT-329403 72.1 t/h. It fails on
+  LT-329501 (-2.8 %/h in its last hour), 323F010 and 322D001A/B's drums.
+
+**The verdicts.** No arm passes the 1 h hold, at 111 % or at 92.3 %. Active control does not close
+B-118 or B-120 on the committed engine or on any of the prototypes:
+
+* At 92.3 % the trims reach Book2's TT-322004, AY-322701 and FT-329403 only with S2's stripper terms
+  and V1's slip term off. Even then the reactor stays 5.4 K cold, PT-329201 0.7 bar above the band, and
+  324F001 fills.
+* At 111 % the loop holds only with slow trims, and runs hot and high-pressure with MASTER-329207 and
+  HIC-322604 on their bounds.
+
+The steam comes nearer the plant on active trims. At 92.3 % FT-329403 reads 54.8 t/h with the slip term
+off (inside Book2's band), 55.1-55.2 as built and on P1b (at the band's top edge), and 60.0 on S2, where
+the mode runs; Session 83's fixed set points gave 63 t/h. On S2 the engine reaches the plant's TT-322004
+with PIC-329204 about 1 bar below the plant's set point. As built, 2 bar below still leaves TT-322004 at
+178.9 C.
