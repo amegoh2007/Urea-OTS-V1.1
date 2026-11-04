@@ -19144,3 +19144,140 @@ under it.
   and B0L.
 * No arm holds Book2's band, and no relation changed.
 
+# Part XCVI — B-124's evidence and full cold starts; 322E001 and 322R001 at 92.3 %; 322E003's capacity at 111 %
+
+Session 83 (2026-11-04) first committed Session 82 (6ac6f08), then took up the process engineer's
+pasted plan, in the session's scratchpad. Nothing under `ureasim/` changed.
+
+## XCVI.1 B-124: the evidence, and the cold start to 16 000 s
+
+CLAUDE.md §4's two searches were made, `References\` first and then the vendor archive.
+
+* **The melt's bubble pressure below N/C 2.6: no datum in either archive.**
+  - `References\fundamentals.md` and the Uhde Operating Manual Part III (`Urea_Operating_Manual_Helwan.md`)
+    describe the NH3-CO2 azeotropy qualitatively.
+  - `Gaps solution.md`, an external report, cites Voskov & Voronin's bubble-point grid (L = 2.5-5.5 at 160,
+    180 and 200 C), but the paper is not in the archive.
+  - The vendor archive's Operating Manual Part I start-up chapters (UD-VT-G00-DC-0014 to -0016) are
+    scans; they were found but not OCR'd.
+* **The plant's start-up runs the loop NH3-rich.**
+  - On the 3 June 2025 start-up (`References\3.6.2025 Synthesis startup.md`) the exact anchors read
+    AY-322701 3.692, 3.317 and 3.164 at 12:08, 13:35 and 16:02. The CO2 came in near 11:15. The 15-second
+    grid between the anchors is interpolated.
+  - PT-329201 peaks at 141.9 bar g (14:21), so there is no overshoot. LT-322504-3 reads 100.2 % at 14:21.
+  - The plant's SOP (`References\Sources\HFC_Stamicarbon_Urea_Plant_SOP_Formatted.docx`) sets the molar feed
+    ratio at N/C 3.0 until the reactor overflows, then at 2.0, with the reactor's N/C held at 2.9-3.1.
+* **The Phase 7 cold start does not follow that procedure.** It carries no script: FFIC-321404 stays at its
+  design set point (2.023 on the engine's basis) from t = 0, and AT-322701 reads about 2.0 for the first
+  hour. That is the region where decision 147's branch adds its largest rise.
+
+| run | trip 22.1 [s] | trip 22.2 [s] | PT-329201 at 3 000 / 8 000 s [bar a] | peak [bar a] | LT-322504 full at | tau [s] | dead time [s] | final [bar g] |
+|---|---|---|---|---|---|---|---|---|
+| session 52 (decision 110) | 134.0 | not reached | 137.9 / not recorded | 149.6 at 3 630 s | 8 000 s | 1 305 | 555 | 136.04 |
+| HEAD (Session 81) | 107.9 | 3322 | 150.7 / 79.8 | 154.7 at 3300 s | not full | 540 (out) | 540 (in) | 78.61 (out) |
+| `low_nc_branch` off | 135.4 | not reached | 136.1 / 141.7 | 148.0 at 3750 s | not full | 1350 (out) | 540 (in) | 137.45 (out) |
+| the SOP's feed ratio, branch on | 104.8 | 5863 | 115.3 / 117.2 | 154.6 at 5850 s | not full | 675 (out) | 555 (in) | 110.69 (out) |
+| the 3 June 2025 band | | | | | | 2 884-4 055 | <= 572 | 137.5-150.5 |
+
+* With the branch off, the full cold start reaches no trip 22.2, fills 322R001 — it does not fill by 16 000 s, and fits tau 1350 s, dead time 540 s and a final 137.45 bar g. Session 52's accepted answer (decision 110) was tau 1 305 s, 555 s and 136.04 bar g, out of the
+  band on its tau and final.
+* **The SOP's feed ratio does not remove the trip with the branch on.** FFIC-321404 at 2.910 on the engine's
+  basis (the SOP's 3.0) holds PT-329201 at 115.3 bar a at 3 000 s. At the reactor's overflow (the liquor
+  reaching 322E001, 3 610 s) the ratio returns to its design 2.023, and the loop climbs to 154.6 bar a and
+  trips 22.2 at 5 863 s.
+* **AT-322701 is the reactor overflow's N/C atom ratio,** so its 2.00 is a stoichiometric carbamate with no
+  free ammonia. It reads 2.00 at 600 s on every engine, 0313003's included, and on the SOP's ratio. The
+  plant reads 3.69 about 53 minutes after its CO2 came in.
+
+
+## XCVI.2 B-118: 322E001 and 322R001 at Book2's 92.3 % set points
+
+**LT-329501 cannot reach Book2's levels.** 322F001's suction is its capacity times the sump level over
+50 % (capped at 1.25). Evaluated on the holds' own motive and pressures, it entrains:
+
+| hold | the sump's need (make + backlog) [t/h] | at Book2's level, spindle at its 10 % floor [t/h] | at Book2's level and the plant's spindle [t/h] | the lowest level 322F001 holds |
+|---|---|---|---|---|
+| 92.3 % (P1b) | 58.9 | 25.9 at 7.05 % | 6.6 at 63 % | about 16 % |
+| 111 % (P1) | 65.7 | 56.9 at 10.8 % | 23.0 at 76 % | about 12.5 % |
+
+The plant holds those levels with its spindle at 63 and 76 %. So the runner cannot settle Book2's level
+by any initialisation or gain: the suction law, on the back-solved geometry of data gap 1, would have
+to change. Session 82's solve stalled at 21-25 % because its capacity ceiling (2.5 times design) was
+reached. Raised to 8, the spindle closes toward its floor and the sump falls toward its lowest
+holdable level.
+
+**322E001 does not turn down.** 322E001's bottoms in the P1b hold (f held at 1), term by term:
+
+    T_bot = T_bot,des + 0.7 dT_steam + dT_bot + dT_strip
+          = 172.0 - 0.86 + 5.82 + 0 = 176.97 C        (logged 176.70; the plant 166.6)
+
+* dT_steam is -1.22 K: PIC-329204 at Book2's 19.22 bar a.
+* dT_bot is V1's feed-deficit rise, dT_load = cap (1 - exp(-raw / cap)), with raw =
+  dT_steam,des (m_des / m - 1) = 6.30 K. The stripper's liquid feed is 0.965 of design at 92.3 % CO2.
+* dT_strip is 0: the gas-liquid excess r_gl = -0.043 is below design.
+* At 111 % the flood branch sets dT_bot at about +7.7 K, so the bottoms read 179.4 C (the plant 172.25).
+* Book2's TT-322004 falls 1.26 K per K of the steam's saturation from 111 to 92.3 %; V1's slope is 0.7.
+
+Against the verified RC100 hold at 100 % — which ran its own scheduled PIC-329204 and LP master (4.96 against
+5.123 bar a), so the comparison is confounded — the 92.3 % hold takes 0.923 of the CO2, and:
+
+* 322E001's duty and HP steam are 1.004 of RC100's (71.3 t/h). 322E001's duty follows its own enthalpy
+  balance (`duty_raw / DUTY_RAW_DES`), and its liquid feed falls only to 0.97, with the LP recycle (308)
+  at 1.11 of RC100's.
+* 322E002's duty is 0.993 of RC100's, its saturation fraction 0.976 against 0.906.
+* The reactor reads 178.9 C against 183.2, with X 49.9 % and AT-322701 3.08.
+
+On like-for-like tags the engine's FT-329403 goes from 75.7 to 64.0 t/h between 111 and 92.3 % (0.85),
+as Book2's FY-329403 goes from 66.3 to 53.5 (0.81). The engine runs 14-20 % high at both loads, a
+level offset to check against the PFD at 100 % (decision 159's class), not a turndown term. The
+bottoms' excess does grow at turndown (+10 K at 92.3 %, +7 K at 111 %).
+
+| arm | 322E001 change | TT-322004 | TT-322005 | X [%] | AT-322701 | FT-329403 [t/h] | 322E002 duty [MW] | LT-329501 [%] | verdict |
+|---|---|---|---|---|---|---|---|---|---|
+| P1b (Session 82) | none | 176.7 | 178.9 | 49.86 | 3.076 | 64.0 | 60.5 | 21.3, falling | FAIL: 324E001 -1.44 %/h, deposition flag |
+| S1 | V1's feed-deficit rise off | 170.9 | 177.8 | 48.49 | 3.085 | 63.1 | 60.0 | 19.0, -2.7 %/h | FAIL: LT-329501 -2.69 %/h, deposition flag |
+| S2 | S1 + the steam slope at Book2's 1.26 K/K | 170.2 | 177.7 | 48.36 | 3.085 | 63.0 | 60.0 | 19.0, -2.7 %/h | FAIL: 322E001's sump -3.12 %/h |
+| Book2 92.3 % | | 166.6 | 182.6 | | 3.25 | FY-329403 53.5 | | 7.05 | |
+
+* Taking V1's feed-deficit rise off cools 322E001's bottoms by 5.8-6.5 K.
+* It does not turn the stripper down: FT-329403 stays at 63 t/h against the plant's 53.5.
+* 322E002 still takes 60 MW, and the reactor cools a further 1.1 K.
+* No re-anchoring that holds 92.3 % was found. The bottoms' temperature term alone is not it.
+* The level fell toward the ejector's floor but did not settle in either arm, so these are unsettled holds.
+
+## XCVI.3 B-120: 322E003's condensing capacity at 111 %
+
+CLAUDE.md §4's two searches:
+
+* **The PFD scales 322E003's duty with load.** 329E004's cooling water (streams 1006/1007) is 462 t/h at
+  30 to 40 C in the 1750 MTPD case (5.36 MW) and 508 t/h in the 1925 MTPD case (5.90 MW). The engine's
+  design is 306 t/h of tempered water at 80 to 95 C (5.33 MW).
+* **The vendor rated the shell at 1.49 times that duty.** Uhde's process data sheet for 322E003
+  (UD-AU-322-EC-0005 rev 00, page 4; a scan, OCR'd and the values read visually) gives a heat duty of
+  8 000 kW, with 460 000 kg/h of circulating water at 80 C in and 95 C out.
+* **The SOP and the start-up record.** The SOP gives the tempered water's rise as about 15 C. The 3 June
+  2025 start-up reads FIC-329409 at 330-336 m3/h, with FV-329409 at 46-49 %.
+* **Book2.** TDY-329125 reads 25.7-28.8 K at FV-329409 41-46 %. FIC-329409's flow is not in Book2.
+
+At 111 % with TIC-329005 at 80 C, `condensation_capacity` gives 0.905. That is its shell's driving force
+over the design's, on a capacity anchored at exactly the design demand. The prototype C1 lifts a capacity
+below 1 by the shell's margin M, to at most 1: rho' = min(rho . M, max(rho, 1)). M = 1.75 fits Book2's
+~102 and ~108 % bands (TDY-329125 over 15 K, over the load, at design circulation). The vendor's rating
+gives 1.49. At 111 % both lift 0.905 to 1, so C1's result is the vendor margin's too. At the design seed
+it moves five results by about 1e-6 (the seed's capacity is 0.9999988). The records disagree on the
+circulation: the plant's ~320 t/h at 28.8 K is about 10.7 MW, above Uhde's 8 000 kW. The engine runs
+PFD streams 1111/1112's 306 t/h; the datasheet's figure is 460 t/h. Decision 151's class keeps a
+datasheet's surplus out of the model, so a margin in the capacity law is a proposal, not that class.
+
+| arm | capacity | f | 322E003 vent [kg/h] | AT-322701 | TT-322005 | TT-322004 | PT-329201 | X [%] | FT-329403 [t/h] | LT-329501 [%] | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| P1 (Session 82) | 0.905 | 1.000 | 4 364 | 3.497 | 185.4 | 179.4 | 145.3 | 66.65 | 75.7 | 24.6 | FAIL: 323D011 +8.11 %/h, deposition flag |
+| C1 | 1.000 | 1.000 | 0 | 3.599 | 185.3 | 179.5 | 145.1 | 66.83 | 75.7 | 20.2, -3.2 %/h | FAIL: 323E011 +11.1 %/h |
+| Book2 111 % | | | none | 3.25 | 182.6 | 172.25 | 143.08 | | FY-329403 66.3 | 10.8 | |
+
+* **With the shell's margin, 322E003 vents nothing at 111 %,** and HV-322604's deposition flag clears.
+* **The loop then keeps the ammonia the vent carried away:** AT-322701 reads 3.60 on FFIC-321404's fixed
+  2.053, TT-322005 185.3 C, PT-329201 145.1 bar a, and 323E011's level rises 11 %/h. The plant holds 3.25
+  by trimming FFIC-321404 on AY-322701, which the harness holds fixed.
+* 322E001 runs 7 K hot, on FT-329403 75.7 t/h against the plant's 66.3.
+* The level was still falling, so this is an unsettled hold.
