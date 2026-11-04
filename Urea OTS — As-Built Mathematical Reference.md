@@ -18726,3 +18726,225 @@ file and the new `.claude/settings.json`); `grep -rn "PyQt6" ureasim/net ureasim
 ureasim/control ureasim/core ureasim/thermo` prints nothing; the engine and the runner are
 deterministic at the fixed step (the five re-run sweep points match their partial records sample for
 sample). No test was run: no source changed.
+
+---
+
+# Part XCIV — B-118 and B-120's narrowed option (b) measured at Book2's 92.3 and 111 % bands (Phase 7)
+
+Session 81 (2026-11-04) measured the two narrowed options (b) that Session 80 recommended, as scratch
+patches in the session's scratchpad, on the process engineer's pasted plan. For B-118, 322E001's
+overhead at its design shell pressure on the turndown ramp and 322E003's liquor bubble-pressure
+margin at AY-322701 3.25 and TIC-329005 90 C, with Book2's 92.3 % band as the acceptance test and the
+Phase 7 cold start and trip 22.2 as the checks. For B-120, 322E003's carbamate make against
+322F001's entrainment at a full spindle and 322E001's H/C slip, at Book2's 111 % band. Nothing under
+`ureasim/` changed; the runners, patches and records are in the session's scratchpad.
+
+## XCIV.1 The harness
+
+`opt_run81.py` is Session 80's `opt_run80.py` with a configurable sample interval and diagnostics
+added to every sample: 322E003's sump bubble pressure, 322E001's overhead fractions and split terms,
+LV-322501's drain, 322E003's make, recondensed backlog and pulse, and 322F001's suction at HIC-322602
+100 % evaluated on the live state (the ejector is a pure function; the plant is not touched).
+`patch81.py` rebinds each candidate where its caller reads it at call time: 322E003's liquor design
+head as `synthesis_loop.LIQUOR_DP_DES_BAR` (the scrubber's 0 bar, the name `_322e003` passes to
+`saturation_fraction`), the liquor's N/C slope as `scrubber.BUB_KN`, 322E001's design overhead
+fraction through a wrapper on `synthesis.stripper_322e001`, and `stripper.SLIP_GAIN`. Session 80's
+92.3 % run re-run on it (A0) reproduces the record: trip 22.1 at 1 860 s, and the eight logged fields compared (AT-322701,
+PT-329201, 322E003's saturation fraction, TT-322002, its vent, X, LT-329501 and HIC-322602) identical
+in every one of the 31 common samples.
+
+The design-pin gate ran 100 ticks from the design seed, patched and unpatched, every numeric leaf of
+every step result compared. Two unpatched runs are identical to the bit. The split wrapper, its load
+capped at 1, is identical to the bit. A margin or a slope is not, and cannot be: after 100 ticks the
+committed seed's 322E003 liquor has a bubble pressure 0.0056 bar above the loop's (f = 0.99991), so any
+positive margin makes f exactly 1 and the seed's trajectory moves by about 1e-5 (the largest change
+a 0.08 kg/h recondensation). `SLIP_GAIN` = 0 moves it by about 1e-7: the seed's slip is 4.5e-5
+(g_hc 0.99996). Book2's pressures are bar g; the plant's bands converted to bar a are PT-329201 138.39
+(92.3 %) and 143.08 (111 %), PIC-329204 19.22 and 21.02, PT-329207 5.12 and 4.91.
+
+## XCIV.2 322E001's overhead on the turndown ramp (B-118)
+
+`trace81_split.py`: the committed engine from the design seed on the design handles, the CO2 demand
+ramped at 0.5 %/min to 90 %, every 10 s the stripper's available NH3 and CO2 (top plus bottoms, after
+hydrolysis), their overhead fractions and the split's terms.
+
+| t [s] | load | AT-322701 | overflow NH3 / CO2 [kmol/h] | f_NH3 | top NH3 | f_CO2 | LT-322504 | 322R001 holdup [kg/h] | suction N | motive N | N into 322E002 | split mod |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 10 | 1.000 | 3.00 | 4 003 / 897 | 0.8546 | 3 572 | 0.8606 | 80.0 | -10 | 1 325 | 2 505 | 7 492 | 1.000 |
+| 610 | 0.950 | 3.07 | 4 139 / 878 | 0.8593 | 3 710 | 0.8647 | 79.9 | -822 | 1 293 | 2 480 | 7 570 | 0.991 |
+| 970 | 0.920 | 3.31 | 4 495 / 844 | 0.8489 | 3 961 | 0.8543 | 79.6 | -8 244 | 1 128 | 2 409 | 7 582 | 0.976 |
+| 1 330 | 0.900 | 3.70 | 5 159 / 812 | 0.8353 | 4 427 | 0.8407 | 78.6 | -24 518 | 669 | 2 341 | 7 517 | 0.962 |
+
+The overhead fraction of NH3 does not carry the excursion: at the design shell pressure it stays at
+0.855-0.835, the split's modulation falling with the CO2 sweep (eta_co2 0.5 + 0.5 L) and its
+composition slip below 0.023. What rises is what the stripper is fed: the reactor overflow's NH3 grows
+29 % (4 003 to 5 159 kmol/h) while its CO2 falls 9 % and the load 10 %. Two things feed it.
+322R001's holdup drains (-24.5 t/h at 1 330 s) because HIC-322605 stays at its design opening while
+the feed falls, and its conversion falls (54.2 to 52.8 %), leaving more free ammonia. 322F001's
+suction nitrogen halves (1 325 to 669 kmol/h) at the design spindle. The nitrogen into 322E002 stays
+at 7 490-7 580 kmol/h while its carbon falls, which is the reactor feed's N/C rising from 3.11 to
+3.96. Both carriers are operator handles, HIC-322605 and HIC-322602, which Session 80's schedule moves
+with load. Session 80's reading that the stripper, at its design shell pressure, gives the loop's
+ammonia back faster than the feed falls is corrected: it gives back the fraction it always does of
+a feed that grows. No re-anchoring of the split follows from the trace.
+
+## XCIV.3 322E003's liquor at Book2's 92.3 % set points (B-118)
+
+At Book2's 92.3 % set points (TIC-329005 90 C, PIC-329204 19.22 bar a, MASTER-329207 5.123 bar a,
+HIC-322604 51.5 %, the ratio 2.0516 on the engine's basis) the deficit is temperature first. The
+law's temperature part is P_T(T) = P_206 exp[(dH/R)(1/T_206 - 1/T)] on PFD 206's own composition,
+and the composition factor is the logged bubble pressure over it.
+
+| state | AT-322701 | TT-322002 [C] | P_bub [bar a] | P_T | composition factor | P_bub - 138.39 |
+|---|---|---|---|---|---|---|
+| RC100's end, 100 %, TIC-329005 80 C, steady | 3.246 | 156.66 | 128.30 | 124.47 | 1.031 | -10.1 |
+| A40 at 900 s, 92.3 % | 3.411 | 169.3 | 159.1 | 149.6 | 1.063 | 20.7 |
+| A40 at 1 500 s | 3.708 | 172.3 | 174.5 | 156.0 | 1.118 | 36.1 |
+| A40 at 2 100 s | 3.234 | 173.7 | 168.7 | 159.1 | 1.060 | 30.3 |
+| A40's hold, TIC-329005 at 90.0 C | 3.078 | 177.9 | 170.1 | 168.55 | 1.009 | 31.7 |
+
+TT-322002 follows the tempered water: the overflow is t_ccw,in + Q / UA_eff (the shell's NTU bridge),
++1 K per K of TIC-329005 at a given duty, plus 12 K per unit of HV-322604's opening deviation (+3.4 K
+at 51.5 %). TIC-329005's PV climbs 0.2-0.3 C/min and reaches 90 C, and the liquor 177.9 C in A40's hold. The
+plant's TT-322002 stays at 165.7-167.5 C in every band: 166.75 C at 92 % with TIC-329005 at 90 C,
+167.5 C at 111 % with it at 80 C. At a steady AT-322701 3.25 the composition factor is 1.031. At TIC-329005 90 C (TT-322002 177.9 C,
+A40's hold) the liquor's bubble pressure is then 173.7 bar a, 35.4 bar above the plant's 138.39 bar
+a: 30.2 bar of temperature and 5.2 of composition. That is the minimum margin m* at AY-322701 3.25
+and TIC-329005 90 C. At the plant's 166.75 C it would be 10.3 bar. No N/C slope closes the deficit,
+since the temperature part alone leaves 30.2 bar. Through the loop's swing the composition factor
+reached 1.118, and the bubble pressure stood 34.5 bar above the live loop pressure. The Extended UNIQUAC model offers
+no independent anchor: it puts PFD 206's bubble point at 78 bar a at 165 C, with a negative slope
+above it.
+
+## XCIV.4 The arms at Book2's 92.3 % set points (B-118)
+
+Each arm starts from the design seed, ramps the CO2 demand at 0.5 %/min to 92.3 %, settles 9 000 s and
+holds 3 600 s on Book2's set points, with HIC-322605 operated by hand and HIC-322602 solved for
+LT-329501 at 50 %. The verdict is Session 80's (`analyze.py`).
+
+| arm | patch | outcome | X [%] | AT-322701 | TT-322005 | TT-322004 | PT-329201 | 322E003 vent [kg/h] | steam [kg/t] | MTPD |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A0 | none | trip 22.1 at 1 860 s; f down to 0.72, up to 7.2 t/h vented, AT-322701 up to 3.44 | - | - | - | - | - | - | - | - |
+| A40 | 322E003 design head 40 bar | hold FAIL: 328D003 bay III +0.53 %/h, HV-322604 deposition flag | 49.89 | 3.078 | 178.9 | 176.5 | 140.8 | 994 (capacity) | 998 | 1 541 |
+| A3s | 322E001 NH3 overhead x L | hold FAIL: 322E001's sump +5.08 %/h (+45.7 % net), deposition flag | 56.83 | 2.598 | 183.4 | 182.3 | 141.5 | 2 458 | 812 | 1 597 |
+| Book2 92.3 % | the plant | steady, no vent | | 3.25 | 182.6 | 166.6 | 138.39 | none | | |
+
+* **A40, the margin above m*.** No saturation venting and no trip. The loop's ~1.1 h mode swings
+  AT-322701 to 3.71 at 1 500 s and 2.91 at 3 300 s, and damps. The hold sits on the cold branch:
+  TT-322005 178.9 C and X 49.9 %. TIC-329005's PV reaches 90 C and TT-322002 177.9 C, the liquor's bubble
+  pressure 29 bar above the loop's 140.8 bar a. 322E003 still passes 1.0 t/h on its condensing
+  capacity (0.956 at the warm tempered water). The saturation fraction is 1 throughout the hold, so
+  a larger margin is inert, and no margin holds Book2's band, and the m* and m* - 1 arms were not
+  run: a smaller margin only restores the venting that tripped A0.
+* **A3s, the split scaled with load.** It overshoots: the venting stops by 2 700 s only because the
+  loop runs NH3-lean, with AT-322701 2.60 and the stripper's bottoms at 182.3 C. Then 322E003 vents
+  again (2.5 t/h) and 322E001's sump fills. Since the split is not the carrier (§XCIV.2), no
+  gentler scaling was searched.
+
+## XCIV.5 B-120 at Book2's 111 % set points
+
+From the design seed, ramped to 111 % at 0.5 %/min, settled 9 000 s and held 3 600 s on the plant's
+own set points:
+
+* TIC-329005 80 C, PIC-329204 21.02 bar a, MASTER-329207 4.913 bar a, HIC-322604 56 %;
+* the ratio 2.053 on the engine's basis;
+* HIC-322605 by hand, and HIC-322602 solved for LT-329501 at 50 % (B0) or at the plant's 10.8 %
+  (B0L).
+
+The sump's balance closes to within 50 kg/h: 322E003's make, plus the recondensed backlog, plus what
+322R001 returns, equals 322F001's suction. 322F001's suction at a full spindle is evaluated on the
+live state, at the live level. B0r, the same run as B0 on the rebuilt runner, reproduces B0's hold
+verdict exactly.
+
+| arm | LT-329501 target | slip gain | slip / g_hc | reactor feed H/C | 322R001 off-gas [t/h] | make / backlog / from 322R001 / suction [t/h] | full-spindle suction | HIC-322602 | LT-329501 true / shown [%] | vent [kg/h] | TT-322002 | AT-322701 | TT-322005 | TT-322004 | PT-329201 | X [%] | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| B0 (B0r) | 50 % | 4.0, V1's | 0.328 / 0.706 | 0.594 | 49.3 | 63.7 / 4.5 / 4.9 / 73.1 | 66.1 | 95.4 % | 49.0 | 4 509 | 110.8 | 3.445 | 185.6 | 179.7 | 145.7 | 65.96 | FAIL: 323E011 -7.71 %/h, deposition |
+| B0g0 | 50 % | 0 | (no effect) | 0.550 | 26.7 | 51.4 / 2.4 / 14.7 / 68.3 | 66.1 | 98.5 % | 49.0 | 2 386 | 108.7 | 3.029 | 184.9 | 168.2 | 144.4 | 61.13 | FAIL: 324E001 -2.82 %/h, deposition |
+| B0L | 10.8 % | 4.0 | 0.080 / 0.954 | 0.429 | 23.7 | 42.9 / 3.6 / -0.6 / 46.0 | 22.5 | 58.7 % | 16.6 / 19.6 | 3 519 | 180.2 | 3.216 | 184.9 | 172.0 | 144.3 | 63.43 | FAIL: 324E001 -3.32 %/h, deposition |
+| B0g0L | 10.8 % | 0 | (no effect) | 0.441 | 22.1 | 45.7 / 4.3 / -0.6 / 49.5 | 24.0 | 58.0 % | 17.7 / 21.5 | 4 209 | 181.9 | 3.085 | 184.8 | 173.1 | 144.1 | 61.71 | FAIL: 324E001 -2.51 %/h, deposition |
+| Book2 111 % | | | | | | | | 76 % | 10.8 shown | none | 167.5 | 3.25 | 182.6 | 172.25 | 143.08 | | |
+
+* **The sump does not drain at the plant's own set points, at either level.** Near the plant's level
+  (B0L) the make, 42.9 t/h, is about twice 322F001's full-spindle entrainment at that level
+  (22.5 t/h). HIC-322602 settles at 58.7 %, more closed than the plant's 76 %; the level, at 16.6 %,
+  was still closing toward 10.8 %. The sump drained only under Session 80's stripper-steam cut: in
+  RC110 the off-gas fell from 33 to 15 t/h at 25 minutes, and with the make below the full-spindle
+  entrainment of 67-72 t/h at a 50 % sump it emptied within a minute (§XCIII.9).
+* **The H/C slip is a branch of the engine's 50 % sump, not of the plant's turn-up.** 322F001's suction
+  is its capacity times the level over its normal 50 % (capped at 1.25). Held at 50 %, it recirculates
+  73 t/h. The reactor feed's H/C then rises to 0.59 and g_hc falls to 0.71; V1's slip gain sends 99 %
+  of the stripper's NH3 and CO2 overhead, and the off-gas doubles (49 t/h). At the plant's level the
+  reactor feed's H/C is 0.43, the slip 0.08 and the off-gas 24 t/h. Zeroing the slip gain changes
+  little there: AT-322701 goes from 3.22 to 3.09.
+* **At the plant's level the engine comes close to Book2's 111 % band but misses it on 322E003's
+  liquor.** AT-322701 is 3.22 against 3.25 and TT-322004 172.0 against 172.25 C. It misses on
+  TT-322005 (+2.3 K), PT-329201 (+1.2 bar) and 322E003's vent of 3.5-4.2 t/h. The liquor runs at
+  TT-322002 180-182 C, where the plant's stands at 167.5 C: the same discrepancy as at 92.3 %
+  (§XCIV.3).
+* No arm holds Book2's 111 % band.
+
+## XCIV.6 The Phase 7 cold start and trip 22.2
+
+The Phase 7 runner, port side only (V1's source tree is gone, §XCIV.7), on the committed engine
+(d047fd8) and with the 40 bar margin. Both cold starts fail the trend's band. The committed engine
+has moved from the answer decision 110 accepted in session 52, and no Phase 7 cold start is recorded
+between the two (handoff B-124).
+
+| run | trip 22.1 | trip 22.2 | PT-329201 at 1 000 / 2 000 / 3 000 s [bar a] | peak | at 16 000 s | fit: tau / dead time / final |
+|---|---|---|---|---|---|---|
+| session 52 (decision 110) | 134.0 s | not reached | 45.1 / 95.4 / 137.9 | 149.6 at 3 630 s | 136.9 | 1 305 s / 555 s / 136.04 bar g |
+| committed, d047fd8 | 107.9 s | 3 322 s | 48.1 / 111.5 / 150.7 | 154.7 at 3 300 s (322R001's PT 157.6) | 79.7 | 540 s / 540 s / 78.61 bar g |
+| 40 bar margin | 107.9 s | 3 291 s | 48.7 / 111.9 / 151.0 | 154.5 at 3 270 s | 83.5 | 585 s / 525 s / 82.43 bar g |
+
+The band is tau 2 884-4 055 s, dead time at most 572 s and final 137.5-150.5 bar g. On the committed
+engine:
+
+* PT-329201 rises faster than in session 52 and overshoots to 155 bar a;
+* trip 22.2 cuts the CO2 and both ammonia pumps, and the loop settles at 79.7 bar a;
+* LT-322504 stays at 0 % throughout (full at 8 000 s in session 52), and LT-329501 is at 100 % from
+  600 s.
+
+The margin changes the cold start little, because 322E003's sump is full from 600 s.
+
+The trip 22.2 scenario (both tempered-water pumps stopped at 60 s) still gives decision 110's answer on the committed engine: trip 22.1 latches on the flood steam at 93.9 s and 22.2 is not reached in 48 000 s, PT-329201 creeping from 140.7 to 148.3 bar a at 43 200 s and 150.0 at 48 000 s (session 52: 148.2), faster over the last 80 minutes (0.35 bar per 1 000 s against 0.02).
+
+## XCIV.7 The archive and V1's source moved
+
+The process engineer moved `References` to `D:\Work\Urea Simulation Docs\References` (2026-11-04),
+and CLAUDE.md §4 now names it. `D:\Work\Urea Simulation`, with V1's `backend`, is no longer there.
+Copies exist in `D:\New folder`, `D:\Simulator backup`, `E:\Ahmed PC` (main.py 669 044 bytes,
+2026-08-20) and `E:\Simulator\Urea Simulation` (main.py 920 232 bytes, 2026-09-18, the folder
+written on 2026-11-04). `tests/equivalence/v1_loader.py` still names the old path, so the V1
+equivalence suite cannot load V1 until the process engineer names its home. Session 81 ran only the
+port side.
+
+# Part XCV — V1's source tree named (A-24)
+
+Session 82 (2026-11-04) took up three decisions of the process engineer, on a pasted plan.
+
+## XCV.1 V1's source tree named (A-24, closed)
+
+The process engineer named `E:\Simulator\Urea Simulation` V1's source tree on 2026-11-04 (decision
+165). Its `backend\main.py` is 920 232 bytes, written 2026-09-18 00:41, and its
+`backend\.boot_pin_cache.json`, written 00:45, carries the key `81269104...d56c` that
+`ureasim/data/synthesis_pin.py` pins. The copies in `D:\New folder`, `D:\Simulator backup` and
+`E:\Ahmed PC` hold an older `main.py` (669 044 bytes, 2026-08-20) and are not used.
+
+These follow it, and nothing else changed:
+
+* `tests/equivalence/v1_loader.py`: `V1_ROOT` and its docstring;
+* `tests/phase7/drivers.py`: `V1_BACKEND`, the Phase 7 runner's V1 side;
+* `tests/units/synthesis/test_co2_compressor.py`: V1's `frontend/co2_compressor.js`;
+* the default sources of `tools/analyse_step_sim.py` and `tools/convert_overlays.py`;
+* CLAUDE.md §0 and §4 item 3.
+
+Citations of where a document was read keep the path it was read from: the scenario notes, the header
+of `docs/step_sim_dataflow.md` and the provenance line of `ureasim/data/screen_layout.py`.
+
+Verified on the tree:
+
+* `v1_available()` is true;
+* `tests/data/test_synthesis_pin.py` hashes V1's present model sources to the cache's key and finds
+  every pinned value the cache's to the bit;
+* `tests/data/test_synthesis_pin.py` and `tests/equivalence/test_stripper_equivalence.py` pass,
+  102 tests, none skipped.

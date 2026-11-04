@@ -8,10 +8,10 @@ built, B-18, B-37 and B-20 decided and closed, trip 21.2's hand switches and AI-
 screens, the plant DCS's readback applied — the cold start reaches 79.7 bar a in 16 000 s, still
 short of the start-up band (session 50); B-94 closed on PFD 734's departure form, the steady state
 3080 of 3188, 322E003 on its own liquor and a full sump, 323P008's trip from AC4 PC23, B-95 closed
-as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70); an external report on five data-gap rows audited against the code, 322C001's head volume and the urea-melt Henry constant closed (decision 153, session 71); 322E001 on its 2,950-tube replacement (decision 154), the turnaround's plugged tubes derating 322E002, 322E003 and 323E010 (decision 155), five loops and AI-329701's range on the plant DCS's faceplates of 24 October 2026 (decision 156), `Scenarios6.docx` put to the plant (session 72); the plugged tubes' conductances re-anchored on the bundle in service (decision 157), LV-322501's failure case read tick by tick — SV32351 / SV32352 lift at their set (decision 158) — the vacuum bleeds kept on the 1750 MTPD basis (decision 159), TIC-328008 and FFIC-335406 on their faceplates (decision 160), the dynamic audits built and their one finding, B-117, signed off as built, `Scenarios6.docx` 47 of 71; Sections A, B and C empty, 11 data gaps open (sessions 73 and 74); the load range 70-115 % studied on the committed engine for the load-optimisation workbook (`D:\Work\Urea_Plant_Load_Optimization_70_to_115.xlsx`): 100 % verified on both objectives, the engine's turndown, 323F010's barometric leg and a stripper cut's loop oscillation raised as B-118 to B-120, no relation changed (sessions 75 and 76); the workbook retried on the process engineer's control document with HIC-322605 operated by hand: 100 % verified on both objectives, 105 % near-steady, the turndown unchanged, B-118 and B-119 updated and B-121 raised, no relation changed (session 77); a pasted analysis of B-118 to B-121 checked and measured as scratch patches, 105 % verified with FIC-328402 raised 10 %, two errors in session 77's record corrected, B-119 decided (b) and built — 323F010 draining on its own head through N2, its leg taller than any column the vacuum holds (decision 161) (session 78); B-122 decided (b) and built — 323F010's pressure step solved itself where its holdup boils (decision 162) — and closed, the dynamic audit's two restored for every node; B-121 traced to the LP section's vents, not unit 328; B-118's N/C excursion traced to the reactor's real feed and 322E003's vent to its saturation fraction; B-123 raised and signed off as built, V1's thermo memo kept (decision 163); the synthesis loop's harness kept on the linearised step (session 79); every controller and hand station given a load relation (72 entries) and the schedule run from 70 to 115 % on both objectives with slow supervisory trims, then re-held at 100-110 %: 100 % verified on both objectives and 105 % on the steam objective, no steady state below 100 % or at 110-115 %, B-118 and B-120 updated, FFIC-321404's ratio found on the engine's basis (the plant's 2.115 is 2.05 here); B-121 closed on option (a), PIC-323202 and the unit 328 pair operator moves (decision 164); the load-optimisation workbook rebuilt with the 72-entry schedule; the Sonnet + Opus advisor workflow added to `CLAUDE.md` (session 80)
+as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70); an external report on five data-gap rows audited against the code, 322C001's head volume and the urea-melt Henry constant closed (decision 153, session 71); 322E001 on its 2,950-tube replacement (decision 154), the turnaround's plugged tubes derating 322E002, 322E003 and 323E010 (decision 155), five loops and AI-329701's range on the plant DCS's faceplates of 24 October 2026 (decision 156), `Scenarios6.docx` put to the plant (session 72); the plugged tubes' conductances re-anchored on the bundle in service (decision 157), LV-322501's failure case read tick by tick — SV32351 / SV32352 lift at their set (decision 158) — the vacuum bleeds kept on the 1750 MTPD basis (decision 159), TIC-328008 and FFIC-335406 on their faceplates (decision 160), the dynamic audits built and their one finding, B-117, signed off as built, `Scenarios6.docx` 47 of 71; Sections A, B and C empty, 11 data gaps open (sessions 73 and 74); the load range 70-115 % studied on the committed engine for the load-optimisation workbook (`D:\Work\Urea_Plant_Load_Optimization_70_to_115.xlsx`): 100 % verified on both objectives, the engine's turndown, 323F010's barometric leg and a stripper cut's loop oscillation raised as B-118 to B-120, no relation changed (sessions 75 and 76); the workbook retried on the process engineer's control document with HIC-322605 operated by hand: 100 % verified on both objectives, 105 % near-steady, the turndown unchanged, B-118 and B-119 updated and B-121 raised, no relation changed (session 77); a pasted analysis of B-118 to B-121 checked and measured as scratch patches, 105 % verified with FIC-328402 raised 10 %, two errors in session 77's record corrected, B-119 decided (b) and built — 323F010 draining on its own head through N2, its leg taller than any column the vacuum holds (decision 161) (session 78); B-122 decided (b) and built — 323F010's pressure step solved itself where its holdup boils (decision 162) — and closed, the dynamic audit's two restored for every node; B-121 traced to the LP section's vents, not unit 328; B-118's N/C excursion traced to the reactor's real feed and 322E003's vent to its saturation fraction; B-123 raised and signed off as built, V1's thermo memo kept (decision 163); the synthesis loop's harness kept on the linearised step (session 79); every controller and hand station given a load relation (72 entries) and the schedule run from 70 to 115 % on both objectives with slow supervisory trims, then re-held at 100-110 %: 100 % verified on both objectives and 105 % on the steam objective, no steady state below 100 % or at 110-115 %, B-118 and B-120 updated, FFIC-321404's ratio found on the engine's basis (the plant's 2.115 is 2.05 here); B-121 closed on option (a), PIC-323202 and the unit 328 pair operator moves (decision 164); the load-optimisation workbook rebuilt with the 72-entry schedule; the Sonnet + Opus advisor workflow added to `CLAUDE.md` (session 80); B-118's and B-120's narrowed option (b) measured at Book2's 92.3 and 111 % bands as scratch patches, neither band held and no relation changed. B-118: 322E001's overhead fraction flat on the ramp, the excursion an operator handles' effect, and 322E003's liquor hot on the tempered water. B-120: near the plant's 111 % level the H/C slip is small and 322E003 vents on the same hot liquor. The Phase 7 cold start was found tripping 22.2 on the committed engine (B-124). V1's source tree and the References archive were moved (A-24, CLAUDE.md §4) (session 81); A-24 closed, V1's source tree named at `E:\Simulator\Urea Simulation`, its boot pin's test and the stripper's equivalence run on it (decision 165, session 82)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
-**Predecessor:** `D:\Work\Urea Simulation` (V1 — reference only, never edited from here)
-**Last updated:** 2026-11-04 (sessions 75 to 80)
+**Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; at `D:\Work\Urea Simulation` until 2026-11-04, decision 165)
+**Last updated:** 2026-11-04 (sessions 75 to 82)
 
 ---
 
@@ -834,6 +834,14 @@ steam system (`steam/`).
       steam objective; B-118 and B-120 updated; B-121 closed on option (a) (decision 164); the
       load-optimisation workbook rebuilt with the schedule; the Sonnet + Opus advisor workflow added
       to `CLAUDE.md` and `.claude/settings.json` (session 80, As-Built Part XCIII)
+- [x] B-118's and B-120's narrowed option (b) measured as scratch patches at Book2's 92.3 and 111 %
+      bands; neither holds, and no relation changed. The Phase 7 cold start was re-run, and its trip
+      22.2 on the committed engine raised as B-124. V1's moved source tree raised as A-24, and
+      CLAUDE.md §4 pointed at the archive's new home (session 81, As-Built Part XCIV)
+- [x] A-24 closed: V1's source tree named at `E:\Simulator\Urea Simulation` (decision 165);
+      `tests/equivalence/v1_loader.py`, the Phase 7 runner's V1 side, two tools' defaults and
+      CLAUDE.md §0 and §4 follow it; the boot pin's test and the stripper's equivalence
+      module run on it, 102 passed and none skipped (session 82, As-Built §XCV.1)
 
 ---
 
@@ -5205,6 +5213,57 @@ runners, configs and records are in the session's scratchpad.
   `"advisorModel": "opus"` setting.
 * **Checks.** No source changed, so no test was run; the PyQt6 grep prints nothing.
 
+### Session 81 — B-118 and B-120's narrowed option (b) measured; the cold start's trip 22.2
+
+Session 81 (2026-11-04) first committed Session 80 (d047fd8). The process engineer approved the
+Sonnet + Opus advisor workflow as written, its Stage 4 Opus sub-agent kept as the one exception to
+§3. The session then measured B-118's and B-120's narrowed option (b) on a pasted plan, as scratch
+patches in its scratchpad (As-Built Part XCIV). Nothing under `ureasim/` changed. The References
+archive was moved by the process engineer to `D:\Work\Urea Simulation Docs\References`, and
+CLAUDE.md §4 now names it. V1's source tree is no longer at `D:\Work\Urea Simulation`, so the
+session ran the port side only (A-24).
+
+* **The harness.**
+  - `opt_run81.py` adds diagnostics to Session 80's runner.
+  - `patch81.py` rebinds each candidate where its caller reads it.
+  - Session 80's 92.3 % run is reproduced: the trip at the same tick, eight logged fields identical.
+  - The split patch keeps the design seed to the bit. A margin moves it by about 1e-5: the committed
+    seed's 322E003 liquor has a bubble pressure 0.0056 bar above the loop's.
+* **B-118, 322E001's overhead.** Its NH3 overhead fraction stays at 0.855-0.835 on the ramp to 90 %,
+  while the reactor overflow's NH3 grows 29 %. The growth comes from 322R001's holdup draining at a
+  fixed HIC-322605 and from 322F001's suction halving at its design spindle. Session 80's attribution
+  to the stripper is corrected. Scaling the overhead with load sends the loop NH3-lean (AT-322701
+  2.60, TT-322004 182.3 C).
+* **B-118, 322E003's margin.** At Book2's 92.3 % set points TT-322002 follows the tempered water to
+  174-178 C, where the plant's holds 166.75 C. At AY-322701 3.25 the liquor's bubble pressure
+  stands 35.4 bar above the plant's 138.39 bar a: 30.2 bar of temperature, 5.2 of composition. A 40 bar margin stops the saturation
+  venting and leaves the reactor cold: TT-322005 178.9 C, X 49.9 %, 998 kg/t.
+* **B-120 at 111 %.** On the plant's set points with 322E003's sump near the plant's level, the sump
+  does not drain: the make (42.9 t/h) is about twice 322F001's full-spindle entrainment there
+  (22.5 t/h), with HIC-322602 at 58.7 % against the plant's 76 %. The H/C slip (g_hc 0.71, the
+  off-gas doubled) is a branch of a sump held at 50 %; at the plant's level it is 0.08. AT-322701
+  (3.22) and TT-322004 (172.0 C) match the plant. 322E003 still vents 3.5 t/h, its liquor at
+  180 C against the plant's 167.5 C, as at 92.3 %. The sump drains only under a stripper-steam
+  cut.
+* **Phase 7.** The committed engine's cold start trips 22.2 at 3 322 s and ends at 79.7 bar a.
+  Session 52 accepted 136.04 bar g with 22.2 not reached (decision 110). This is raised as B-124,
+  for a bisect. The trip 22.2 scenario still gives decision 110's answer, 22.2 not reached in 48 000 s (PT-329201 150.0 bar a at the end, 148.2 in session 52).
+* **Checks.** No source changed, so no test was run; the PyQt6 grep prints nothing.
+
+### Session 82 — A-24 closed
+
+Session 82 (2026-11-04) took up three decisions of the process engineer, on a pasted plan.
+
+* **A-24 closed** (decision 165, As-Built §XCV.1). The process engineer named
+  `E:\Simulator\Urea Simulation` V1's source tree: `backend\main.py` 920 232 bytes of
+  2026-09-18, its boot-pin cache keyed `81269104...d56c`, the key `ureasim/data/synthesis_pin.py`
+  carries. `tests/equivalence/v1_loader.py` (`V1_ROOT`), `tests/phase7/drivers.py` (the runner's
+  V1 side), `tests/units/synthesis/test_co2_compressor.py`, the default sources of
+  `tools/analyse_step_sim.py` and `tools/convert_overlays.py`, and CLAUDE.md §0 and §4 item 3 now
+  name it. `v1_available()` is true, the pin's key is the hash of V1's present source, and
+  `tests/data/test_synthesis_pin.py` with `tests/equivalence/test_stripper_equivalence.py` pass,
+  102 tests, none skipped.
+
 ## 5. Design decisions on record
 
 1. **PyQt6, not PyQt5.** Qt6 is current, has proper high-DPI scaling for the 1366×720 stage,
@@ -6012,3 +6071,8 @@ runners, configs and records are in the session's scratchpad.
      from 3.5 bar a — holds the LP vents shut at 105 and 110 % and takes 3.1 t/h off 343; FIC-328402
      and FIC-329402 scaled together on load balance 328D003 and keep 328C003 from filling or
      draining. Both are entries on existing faceplates; no relation changes (As-Built §XCIII.10).
+165. **V1's source tree named at `E:\Simulator\Urea Simulation`** (2026-11-04, handoff A-24,
+     session 82): the tree whose `backend\main.py` is 920 232 bytes of 2026-09-18 and whose
+     boot-pin cache carries the key `ureasim/data/synthesis_pin.py` pins. Every equivalence test and
+     the Phase 7 runner's V1 side load V1 from it; the older copies (`main.py` 669 044 bytes,
+     2026-08-20) are not used. No relation changes (As-Built §XCV.1).

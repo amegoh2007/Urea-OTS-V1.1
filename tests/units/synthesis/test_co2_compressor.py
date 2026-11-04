@@ -81,7 +81,7 @@ def test_no_process_screen_reaches_the_demand_decided_divergence():
     import pathlib
 
     from ureasim.data.screen_layout import OVERLAYS
-    js = pathlib.Path(r"D:/Work/Urea Simulation/frontend/co2_compressor.js")
+    js = pathlib.Path(r"E:/Simulator/Urea Simulation/frontend/co2_compressor.js")
     if js.exists():
         assert "type: 'co2_set'" in js.read_text(encoding="utf-8", errors="replace")
     assert all(e.get("cmd") != "co2_set" for els in OVERLAYS.values() for e in els)

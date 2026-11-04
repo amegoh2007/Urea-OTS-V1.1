@@ -8,7 +8,7 @@ any file. They override habit, convenience and any "quicker way" that conflicts 
 ## 0. What this workspace is
 
 `Urea Simulator V1.1` is a **ground-up rewrite** of the Urea Plant Operator Training Simulator
-(OTS) that lives in `D:\Work\Urea Simulation`. The old project grew organically ("vibe coded"):
+(OTS) that lives in `E:\Simulator\Urea Simulation`. The old project grew organically ("vibe coded"):
 a 12,500-line `main.py` with a 4,100-line `step_sim()` function, five near-duplicate `main_*.py`
 backups, ~40 `debug_*.py` scratch files, and a browser HMI in hand-written HTML/JS.
 
@@ -174,15 +174,17 @@ a Qt layout method gets none.
 
 **Mandatory search for plant data and references (2026-10-01).** For every plant datum and every
 reference — a dimension, a duty, a set point, a span, a vendor rating, a trend, a licensor chart —
-always search `D:\Work\Urea Simulation\References\` **and every one of its subfolders**
+always search `D:\Work\Urea Simulation Docs\References\` **and every one of its subfolders**
 (`Sources\`, `Datasheets\`, `DCS Trends\`, `Gaps Closure\` and any other), not only the files
 named below, and **then** invoke the `/soft-copy-search` skill on the vendor archive. Both
 searches are made every time, in that order, before a datum is taken from V1 or logged as a gap;
-when `References\` already holds the datum, the archive search is its cross-check.
+when `References\` already holds the datum, the archive search is its cross-check. The archive
+was moved there from `D:\Work\Urea Simulation\References\` on 2026-11-04; earlier records cite
+the old path.
 
 Resolution order for any datum:
 
-1. `D:\Work\Urea Simulation\References\` — primary archive. In particular:
+1. `D:\Work\Urea Simulation Docs\References\` — primary archive. In particular:
    - `Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md` — **the strict design basis**
      (stream table, 100 % load, 1750 MTPD). Anchor every design point here.
    - `Combined_1925_MTPD_100% load_PFD TablesProcess_Data.md` — alternate load case.
@@ -192,7 +194,7 @@ Resolution order for any datum:
    - `References\Gaps Closure\` — closure memos for previously-open modelling gaps.
 2. `skill: soft-copy-search` — the Helwan Fertilizers Company vendor-document archive. Use it
    when the datum is equipment-specific and not in `References\`.
-3. The V1 source, `D:\Work\Urea Simulation\backend\` — acceptable **only** for values that V1
+3. The V1 source, `E:\Simulator\Urea Simulation\backend\` — acceptable **only** for values that V1
    itself back-solved or anchored. When you take one, copy its provenance comment with it.
 
 If none of the three yields the datum: **stop, do not guess, log it in `handoff.md` §Open Data

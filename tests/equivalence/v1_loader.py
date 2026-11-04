@@ -15,7 +15,7 @@ So V1 modules are loaded **by explicit file path** into a private namespace pref
 V1 internal imports
 -------------------
 V1's own modules import each other by bare name (`import props_nh3co2h2o as _props`).
-For those to resolve, `D:\\Work\\Urea Simulation\\backend` must be on `sys.path` while a V1
+For those to resolve, `E:\\Simulator\\Urea Simulation\\backend` must be on `sys.path` while a V1
 module executes. `load()` adds it, and registers the loaded module under **both** its bare
 V1 name and its `v1_`-prefixed alias, so a later V1 module finds the same object rather
 than re-executing it.
@@ -45,7 +45,7 @@ from pathlib import Path
 from types import ModuleType
 
 #: Root of the V1 project. Reference only — nothing here ever writes to it.
-V1_ROOT = Path(r"D:\Work\Urea Simulation")
+V1_ROOT = Path(r"E:\Simulator\Urea Simulation")
 
 #: V1's Python package directory. V1 modules import each other by bare name from here.
 V1_BACKEND = V1_ROOT / "backend"
