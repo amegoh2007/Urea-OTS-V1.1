@@ -19459,8 +19459,14 @@ with more liquor arriving than HV-322605 passes at its stroke.
   - 323D001's liquor into 322E003 with 323E003's species (141, 146);
   - 322R001's design drop and flash cap (148, 145).
 
-  Three probes splitting those decisions were running when this was written (`s84/cs/W1_shell`,
-  `W2_wash`, `W3_r001`).
+  Three probes on HEAD split them (to 8 500 s, the branch off):
+  - 322E001's shell bound off (decision 139): LT-322504 peaks at 91.2 % at 7 740 s, 88.4 % at 8 000 s;
+  - the wash line and 323E003's species off: 36.0 % at 8 000 s;
+  - 322R001's design drop and flash cap off: 36.3 % at 8 000 s.
+
+  **The change is decision 139.** 322E001's duty bounded by its shell's LMTD (B-102, session 63)
+  keeps the reactor at its lip during the fill. B-103/B-104 add a few points of the rest (P4 97.5 %).
+  Decision 168 accepts the start as built, decision 139 included.
 
 **Decision 166.** The process engineer approved option (a). 322E002's low-N/C branch (decisions 142 and
 147) stays as built, and the Phase 7 cold start's record is re-baselined on the committed engine
