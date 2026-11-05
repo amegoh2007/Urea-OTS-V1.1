@@ -206,7 +206,9 @@ The simulator is **one plant with a single local console** (2026-10-22, `project
 decision 149): `python run.py` (or `launch.bat`) starts the headless engine on the loopback
 interface and the console attached to it over `ureasim/hmi/bridge.py`. Behind the start-up intro the
 plant is held at its design seed until the operator presses 100% LOAD (2026-11-04, `project.md`
-decision 166; `--no-intro` runs it from the start). Three rules follow, and
+decision 166; `--no-intro` runs it from the start). A plant reset or restored while frozen publishes its
+rehearsed first tick, the plant unstepped (2026-11-04, decision 169), so a held console is never blank.
+Three rules follow, and
 none of them is optional:
 
 1. **The engine owns the plant; a console owns nothing.** A console renders the snapshot it

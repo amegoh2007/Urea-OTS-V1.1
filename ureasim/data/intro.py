@@ -236,6 +236,34 @@ class Startup:
     )
 
 
+@dataclass(frozen=True)
+class Render:
+    """How the splash window is drawn: on the GPU where there is one, else by the CPU rasterizer.
+
+    The intro is redrawn about 60 times a second, and its cost on the CPU rasterizer grows with the window's
+    pixels (a full-screen window at 125 % display scaling is 2.3 million of them). A GPU canvas costs the
+    main thread about the same whatever the window's size, which keeps the frame inside its 16.6 ms when
+    something else is using the CPU. The canvas is used only where a hardware OpenGL context can be made;
+    everywhere else, and when the switch below says so, the window draws itself as it always did.
+    """
+
+    samples: int = 4
+    env_switch: str = "UREASIM_INTRO_RENDERER"
+    no_gl_platforms: tuple[str, ...] = ("offscreen", "minimal", "vnc", "linuxfb")
+    software_renderers: tuple[str, ...] = (
+        "GDI Generic", "Microsoft Basic Render", "llvmpipe", "softpipe", "swrast", "Software Rasterizer")
+    min_gl_version: tuple[int, int] = (2, 0)
+    settle_s: float = 1.0
+    source: str = (
+        "design choice (no plant datum). samples=4 matches the raster picture's edge energy within 0.5 % "
+        "(measured, session 87: gradient energy 5.08 against 5.06; none, 8 gives 5.75, 5.00); "
+        "env_switch=raster is the kill switch for a machine whose driver misbehaves; the platforms are the "
+        "Qt plugins with no OpenGL; the renderers are the software ones a driver-less Windows, a VM or a "
+        "remote session reports, which would be slower than the CPU rasterizer; settle_s is how long a "
+        "canvas has to make its context before the splash falls back to drawing itself"
+    )
+
+
 #: The engine command each start key sends. The plant is built at the design seed (the 1750 MTPD
 #: design basis, 100 % load) and held by the engine's own freeze (``freeze``, ``on`` always stated,
 #: because a missing ``on`` toggles); the 100 % LOAD button releases that hold. The command is the
@@ -255,6 +283,7 @@ STRINGS = Strings()
 BUTTON = ButtonLayout()
 START_OPTION = StartOption()
 STARTUP = Startup()
+RENDER = Render()
 
 # The six sections in the order the console's tab bar first reaches them (`screen_layout.SCREENS`: 321-1,
 # 322-2, 322-1, 329-1, 323-1, 323-2, 328-1, 328-2, 324-1, 324-1b), so the intro lights them as the operator

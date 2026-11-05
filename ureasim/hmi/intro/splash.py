@@ -10,6 +10,11 @@ Process utility
 Shown before the main console. It never reads the plant, so it cannot show a stale value; it shows one
 line of status text that the application passes in (``set_status``), and nothing else live.
 
+The frame is drawn by the window itself, or, where the machine has a GPU to give it, by a ``GLCanvas`` child
+that fills the window (``canvas.py``, handoff A-26): the same painter and the same operations either way, so
+the picture is the same and only the cost of drawing it moves. ``opengl`` forces the choice; left as None
+it is the canvas module's own test of the machine.
+
 The scene ends on a "100% LOAD" button. Pressing it (click, or Enter / Space) raises
 ``start_requested("load_100")``; the application starts the simulator at that load and calls
 ``mark_ready`` when the console is up; the splash then raises ``reveal`` (show the console now, it is
@@ -26,14 +31,19 @@ Typical use (see INTEGRATION.md for the full recipe)::
 
 from __future__ import annotations
 
-from PyQt6.QtCore import QElapsedTimer, Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QGuiApplication, QKeyEvent, QMouseEvent, QPainter, QPaintEvent
+import logging
+
+from PyQt6.QtCore import QCoreApplication, QElapsedTimer, QEvent, Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QGuiApplication, QKeyEvent, QMouseEvent, QPaintDevice, QPainter, QPaintEvent
 from PyQt6.QtWidgets import QWidget
 
-from ureasim.data.intro import START_OPTION, STAGE, STRINGS, TICK_MS
+from ureasim.data.intro import RENDER, START_OPTION, STAGE, STRINGS, TICK_MS
+from ureasim.hmi.intro.canvas import GLCanvas, opengl_available
 from ureasim.hmi.intro.painter import IntroPainter
 from ureasim.hmi.intro.scene import ButtonState, build_frame, button_contains, to_design, view_rect
 from ureasim.hmi.intro.sequencer import Event, IntroSequencer, Phase
+
+log = logging.getLogger(__name__)
 
 # Share of the screen the windowed intro may occupy, so it never overflows a small laptop panel.
 _SCREEN_FILL = 0.92
@@ -49,7 +59,8 @@ class IntroSplash(QWidget):
     reveal = pyqtSignal()
     finished = pyqtSignal()
 
-    def __init__(self, parent: QWidget | None = None, *, fullscreen: bool = False) -> None:
+    def __init__(self, parent: QWidget | None = None, *, fullscreen: bool = False,
+                 opengl: bool | None = None) -> None:
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_OpaquePaintEvent, True)
@@ -66,6 +77,9 @@ class IntroSplash(QWidget):
         self._timer.setTimerType(Qt.TimerType.PreciseTimer)
         self._timer.setInterval(TICK_MS)
         self._timer.timeout.connect(self._on_tick)
+        self._canvas: GLCanvas | None = None
+        if opengl_available() if opengl is None else opengl:
+            self._canvas = GLCanvas(self, self._draw)
 
     # -- application-facing API -------------------------------------------------------------
 
@@ -162,7 +176,16 @@ class IntroSplash(QWidget):
                 return
         if self._seq.phase is Phase.FADING:
             self.setWindowOpacity(self._seq.opacity)
+        if self._canvas is not None and not self._canvas.isValid() and self._now() > RENDER.settle_s:
+            self._drop_canvas()
         self.update()
+
+    def _drop_canvas(self) -> None:
+        """The canvas could not make its OpenGL context: the window draws itself from here on."""
+        log.warning("the intro's OpenGL canvas is not valid; drawing on the CPU")
+        self._canvas.hide()
+        self._canvas.deleteLater()
+        self._canvas = None
 
     def _button_state(self) -> ButtonState:
         if self._seq.busy:
@@ -171,15 +194,44 @@ class IntroSplash(QWidget):
 
     # -- Qt overrides -----------------------------------------------------------------------
 
-    def paintEvent(self, event: QPaintEvent | None) -> None:  # noqa: N802
+    def _draw(self, device: QPaintDevice) -> None:
+        """One frame on ``device``: this window, or the canvas that stands in for it."""
         w, h = float(self.width()), float(self.height())
         view = view_rect(w, h)
         ops = build_frame(
             self._seq.scene_time, view, status=self._status, wall=self._seq.wall_time, button=self._button_state()
         )
-        p = QPainter(self)
+        p = QPainter(device)
         self._painter.paint(p, ops, view, w, h)
         p.end()
+
+    def paintEvent(self, event: QPaintEvent | None) -> None:  # noqa: N802
+        if self._canvas is None:
+            self._draw(self)
+
+    def update(self) -> None:  # noqa: A003
+        """Ask for a repaint of whatever draws the frame: the canvas when there is one."""
+        if self._canvas is not None:
+            self._canvas.update()
+        else:
+            super().update()
+
+    def repaint(self) -> None:
+        """Paint now, because the application is about to block the event loop for seconds.
+
+        A ``QOpenGLWidget`` renders when its window's update request is delivered, not inside its own
+        ``repaint()`` (measured: no frame is drawn by it), so with a canvas the request is delivered here.
+        """
+        if self._canvas is not None:
+            self._canvas.update()
+            QCoreApplication.sendPostedEvents(self, QEvent.Type.UpdateRequest)
+        else:
+            super().repaint()
+
+    def resizeEvent(self, event) -> None:  # noqa: N802, ANN001
+        if self._canvas is not None:
+            self._canvas.setGeometry(self.rect())
+        super().resizeEvent(event)
 
     def keyPressEvent(self, event: QKeyEvent | None) -> None:  # noqa: N802
         if event is not None:

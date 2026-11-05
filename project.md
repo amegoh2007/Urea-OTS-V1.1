@@ -11,7 +11,7 @@ short of the start-up band (session 50); B-94 closed on PFD 734's departure form
 as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70); an external report on five data-gap rows audited against the code, 322C001's head volume and the urea-melt Henry constant closed (decision 153, session 71); 322E001 on its 2,950-tube replacement (decision 154), the turnaround's plugged tubes derating 322E002, 322E003 and 323E010 (decision 155), five loops and AI-329701's range on the plant DCS's faceplates of 24 October 2026 (decision 156), `Scenarios6.docx` put to the plant (session 72); the plugged tubes' conductances re-anchored on the bundle in service (decision 157), LV-322501's failure case read tick by tick — SV32351 / SV32352 lift at their set (decision 158) — the vacuum bleeds kept on the 1750 MTPD basis (decision 159), TIC-328008 and FFIC-335406 on their faceplates (decision 160), the dynamic audits built and their one finding, B-117, signed off as built, `Scenarios6.docx` 47 of 71; Sections A, B and C empty, 11 data gaps open (sessions 73 and 74); the load range 70-115 % studied on the committed engine for the load-optimisation workbook (`D:\Work\Urea_Plant_Load_Optimization_70_to_115.xlsx`): 100 % verified on both objectives, the engine's turndown, 323F010's barometric leg and a stripper cut's loop oscillation raised as B-118 to B-120, no relation changed (sessions 75 and 76); the workbook retried on the process engineer's control document with HIC-322605 operated by hand: 100 % verified on both objectives, 105 % near-steady, the turndown unchanged, B-118 and B-119 updated and B-121 raised, no relation changed (session 77); a pasted analysis of B-118 to B-121 checked and measured as scratch patches, 105 % verified with FIC-328402 raised 10 %, two errors in session 77's record corrected, B-119 decided (b) and built — 323F010 draining on its own head through N2, its leg taller than any column the vacuum holds (decision 161) (session 78); B-122 decided (b) and built — 323F010's pressure step solved itself where its holdup boils (decision 162) — and closed, the dynamic audit's two restored for every node; B-121 traced to the LP section's vents, not unit 328; B-118's N/C excursion traced to the reactor's real feed and 322E003's vent to its saturation fraction; B-123 raised and signed off as built, V1's thermo memo kept (decision 163); the synthesis loop's harness kept on the linearised step (session 79); every controller and hand station given a load relation (72 entries) and the schedule run from 70 to 115 % on both objectives with slow supervisory trims, then re-held at 100-110 %: 100 % verified on both objectives and 105 % on the steam objective, no steady state below 100 % or at 110-115 %, B-118 and B-120 updated, FFIC-321404's ratio found on the engine's basis (the plant's 2.115 is 2.05 here); B-121 closed on option (a), PIC-323202 and the unit 328 pair operator moves (decision 164); the load-optimisation workbook rebuilt with the 72-entry schedule; the Sonnet + Opus advisor workflow added to `CLAUDE.md` (session 80); B-118's and B-120's narrowed option (b) measured at Book2's 92.3 and 111 % bands as scratch patches, neither band held and no relation changed. B-118: 322E001's overhead fraction flat on the ramp, the excursion an operator handles' effect, and 322E003's liquor hot on the tempered water. B-120: near the plant's 111 % level the H/C slip is small and 322E003 vents on the same hot liquor. The Phase 7 cold start was found tripping 22.2 on the committed engine (B-124). V1's source tree and the References archive were moved (A-24, CLAUDE.md §4) (session 81); A-24 closed, V1's source tree named at `E:\Simulator\Urea Simulation`, its boot pin's test and the stripper's equivalence run on it (decision 165, session 82); B-124 bisected to 15e66c2, 322E002's low-N/C branch (decisions 142, 147) taking the NH3-lean cold start to trip 22.2; B-118's and B-120's TT-322002 prototype measured at Book2's 92.3 and 111 % bands, no band held and no relation changed (session 82); B-124's evidence gathered and the full cold start run (the branch off: no trip 22.2, tau 1350 s, dead time 540 s, final 137.45 bar g, 322R001 at its funnel's lip from 6 420 s), 322E001's turndown traced at 92.3 %, 322E003 on the vendor's margin at 111 %, no band held and no relation changed (session 83); B-124 closed on option (a), 322E002's low-N/C branch kept and decision 110's cold-start record re-baselined on the committed engine (decision 168), the fill probe reading LT-322504's narrow band (36 % a full reactor at its lip; session 52's full at 8 000 s the band's top, the backup above the lip moved with 322E001's shell bound (decision 139, B-102, in 15e66c2): with it off LT-322504 peaks at 91.2 % at 7 740 s, while B-103/B-104 and the bundle alone do not restore it); FT-329403 found on stream 901 at the design point (60.85 t/h, Uhde's loop summary 60.8); B-118 and B-120 measured under active closed-loop trims, no band held, B-120's mode absent with V1's stripper slip off (session 86)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; at `D:\Work\Urea Simulation` until 2026-11-04, decision 165)
-**Last updated:** 2026-11-04 (sessions 75 to 86; session 86 closed B-124 on option (a), decision 168, and measured B-118 and B-120 under active closed-loop trims; session 84 attached the start-up intro and holds the plant until the operator presses 100% LOAD, decision 166; session 85 decided and closed its six open points, decision 167)
+**Last updated:** 2026-11-04 (sessions 75 to 87; session 87 closed A-26 and A-27, decision 169, and raised A-28; session 86 closed B-124 on option (a), decision 168, and measured B-118 and B-120 under active closed-loop trims; session 84 attached the start-up intro and holds the plant until the operator presses 100% LOAD, decision 166; session 85 decided and closed its six open points, decision 167)
 
 ---
 
@@ -655,6 +655,15 @@ steam system (`steam/`).
       fonts and a font warm-up); the bridge's staleness watchdog armed strictly only after the first
       packet (`FIRST_PACKET_STALE_MS`); the sections in the console's tab order; the flyby's drawing
       choices signed off; the logo resampled 2x; and a one-to-one test file for every intro module
+- [x] The intro's frame rate and a held plant's packet closed (session 87, decision 169, As-Built Part XCIX):
+      A-26 - the intro painted on a multisampled `QOpenGLWidget` canvas where a hardware OpenGL 2.0 context
+      exists and by the CPU rasterizer elsewhere (`hmi/intro/canvas.py`, `RENDER`, the kill switch
+      `UREASIM_INTRO_RENDERER=raster`): main-thread paint 7.5 ms windowed and 8.2 ms fullscreen at 125 %
+      scaling (CPU 11.5 and 14.2), 60 fps held through 4 busy processes of 20 logical in both modes and
+      fullscreen through 8, windowed not at 8; the fixed-stage layer, the azimuth cache and worker threads
+      measured and rejected. A-27 - a plant reset or restored while frozen publishes its rehearsed first tick,
+      the plant not stepped (`engine/rehearsal.py`), proved through the real bridge and console at the 5 s
+      watchdog; the held start at launch stays silent (decisions 166 and 167). A-28 raised
 
 ### Phase 7 — Verification
 - [x] V1-vs-V1.1 steady-state comparison at 1750 MTPD / 100 % load (session 48, As-Built §LXIV.6):
@@ -5441,6 +5450,41 @@ scratchpad (As-Built Part XCVIII). Nothing under `ureasim/` changed.
     retuned arms hold out of band.
 * **Checks.** No source changed; the PyQt6 grep prints nothing.
 
+### Session 87 — handoff A-26 and A-27 decided and closed: the intro on a GPU canvas, a frozen plant's packet
+
+Session 87 (2026-11-04) took the process engineer's directive closing A-26 and A-27, so that Section A would be
+empty. It first committed sessions 84 and 85 (5e4f99f). The advisor (Opus) was consulted on the plan before any
+edit and on the result before the close. Session 86, which ran alongside, had taken decision 168 and As-Built Part
+XCVIII, so this session is decision 169 and Part XCIX. Nothing the plant computes changed.
+
+* **A-27, a frozen plant's packet** (decision 169). A reset or a restored exercise left the engine with no results
+  and so no packet, and a console that hears nothing for 5 s blanks. The engine now rehearses the plant's first tick
+  on a copy (`engine/rehearsal.py`), lazily where the packet is built, drops it on an accepted command and on the
+  first real tick, and shows the plant's own clock; the plant is not stepped. Asked about the directive's "and
+  initial frozen hold", the process engineer kept decisions 166 and 167: the launch plant stays silent. Fresh-process
+  runs with and without the rehearsal give equal states and packets after 60 ticks, for a reset and for a restored
+  off-design exercise. Proved through a real `EngineBridge` and `MainWindow` over loopback at the 5 s watchdog
+  (135 ms to the reset's packet, 98 ms to the restored one, six seconds live, no DISCONNECTED), with the watchdog's
+  blanking of a silent engine and of a closed link kept; eight deliberate breaks caught.
+* **A-26, the intro's frame rate** (decision 169). Profiled on the real window and decided by measurement, the
+  renderers alternating in one sitting at idle and under 2, 4 and 8 busy processes: the fixed-stage wire layer
+  (slower, 33 to 36 % softer), a cache per azimuth (6 MB a frame, 2.2 GB for 360 poses, 11 poses a second), worker
+  threads (the GIL is held, 0.96 times one thread) and a cosmetic pen (no gain) were rejected; a GPU canvas was
+  adopted with the CPU rasterizer as the fallback. Main-thread paint 7.5 ms windowed, 8.2 ms fullscreen; 60 fps held
+  through 4 busy processes of 20 in both modes and fullscreen through 8, where the CPU rasterizer drops to 58 fps
+  at 4 and 42 fps at 8 fullscreen; windowed at 8 neither renderer holds 60 fps (51.0 and 50.8). Not claimed: the
+  whole frame, which is GPU-bound at 13.5 and 15.6 ms unthrottled; a GPU in use by something else, untested. The
+  real start-up path, the exit fade, the status line painted before a blocking step and the picture were checked
+  under the canvas.
+* **Retraction.** An early conversation figure that the GPU path was slower (13.4 against 8.8 ms) came from a harness
+  that overrode `paintEvent` on a `QOpenGLWidget` and so never drew the scene; none of it is on record.
+* **A-28 raised.** The silent-engine run found the console live again between watchdog blanks, on the server's
+  replay of the dead engine's last packet; not changed.
+* **Checks.** pyflakes clean on every file touched, the PyQt6 grep empty, every module under 600 lines; the
+  affected groups 770 passed and 13 skipped on the native platform, 279 passed and 4 skipped offscreen; the full
+  suite on the native platform 2,070 passed, 5,862 skipped (the equivalence suites, `E:\` not mounted today; session
+  82 ran them with none skipped, to be re-run when the drive is back), none failed.
+
 ## 5. Design decisions on record
 
 1. **PyQt6, not PyQt5.** Qt6 is current, has proper high-DPI scaling for the 1366×720 stage,
@@ -6291,3 +6335,23 @@ scratchpad (As-Built Part XCVIII). Nothing under `ureasim/` changed.
        band's top; the backup above the lip moved with 322E001's shell bound (decision 139, B-102, in 15e66c2): with it off LT-322504 peaks at 91.2 % at 7 740 s, while B-103/B-104 and the bundle alone do not restore it.
      The trip 22.2 scenario keeps decision 110's answer. No test pins the record, and no relation
      changes (As-Built §XCVIII.1).
+169. **A-26 and A-27 closed: the intro painted on a GPU canvas where there is one, and a frozen plant's first
+     tick rehearsed so its console has a packet** (2026-11-04, session 87, the process engineer's directive,
+     handoffs A-26 and A-27). (1) The start-up intro is painted through a multisampled `QOpenGLWidget` child
+     (`hmi/intro/canvas.py`) where a hardware OpenGL 2.0 context can be made off screen, and by the window itself
+     on every other platform, on a software renderer, when `UREASIM_INTRO_RENDERER` is `raster`, and when the
+     canvas has no valid context a second after it shows. The painter, the scene and the data are the same either
+     way, the picture matches within 3 in 255 and the edge energy within 0.5 %, the start-up path, the exit fade
+     and the status line painted before a blocking step are checked under it, and the layering rule stands (only
+     `painter.py`, `canvas.py`, `splash.py` and `__main__.py` import Qt). The fixed-stage layer, a cache per
+     azimuth and worker threads were measured and rejected. The claim is bounded by what was measured: 60 fps
+     through 4 busy processes of 20 logical in both window modes and fullscreen through 8, the main thread's
+     paint at 7.5 ms windowed and 8.2 ms fullscreen; the whole frame is GPU-bound at 13.5 and 15.6 ms, a GPU in
+     use by something else was not tested, and windowed under 8 busy processes neither renderer holds 60 fps.
+     (2) A plant reset or restored while the engine is frozen publishes its first tick, rehearsed on a copy of
+     the plant, labelled with the plant's own time and not stepped (`engine/rehearsal.py`), so the console's 5 s
+     watchdog stays for a dead link and never fires on a held engine; an accepted command on the held plant is
+     shown, a refused one changes nothing. The plant held behind the start-up intro stays silent until 100% LOAD
+     (the process engineer, asked, kept decisions 166 and 167 for it: the start-up controller reads the first
+     packet as the plant running, and the thermo memo is not warmed). No relation changes; fresh-process runs show
+     no trace of the rehearsal on the ticks that follow (As-Built Part XCIX).

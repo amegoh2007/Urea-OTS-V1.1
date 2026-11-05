@@ -25,6 +25,10 @@ may scale it, so three things keep a repaint cheap, none of them changing what i
   string and size frame after frame;
 * the QLineF objects a batch needs are kept and refilled, not made anew: making 1,900 a frame took
   2 ms, refilling them 0.8 ms.
+
+The painter draws on any paint device: the window itself, or the multisampled ``QOpenGLWidget`` canvas of
+``canvas.py`` where the machine has a GPU (handoff A-26), which moves the fill off the CPU and makes the cost
+of a frame independent of the window's size. It is the same code and the same operations either way.
 """
 
 from __future__ import annotations

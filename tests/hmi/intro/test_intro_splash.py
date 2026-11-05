@@ -1,6 +1,9 @@
 """Tests of ureasim/hmi/intro/splash.py: the start button, signal order, skip, paint.
 
-Skipped where PyQt6 is not installed. The clock is replaced by a variable, so no test waits.
+Skipped where PyQt6 is not installed. The clock is replaced by a variable, so no test waits. The splash
+here draws itself (``opengl=False``): dozens of shown windows each holding a GPU context would exhaust a
+driver, and the picture must not depend on the machine running the tests. The GPU canvas has its own
+tests in ``test_intro_canvas.py``.
 """
 
 from __future__ import annotations
@@ -31,7 +34,7 @@ class _Rig:
     def __init__(self) -> None:
         self.now = 0.0
         self.log: list[str] = []
-        self.splash = IntroSplash()
+        self.splash = IntroSplash(opengl=False)
         self.splash.resize(_W, _H)
         self.splash._now = lambda: self.now  # type: ignore[method-assign]
         self.splash.start_requested.connect(lambda key: self.log.append(f"start:{key}"))
@@ -130,7 +133,7 @@ def test_after_a_skip_the_button_starts_the_simulator(app) -> None:
 
 def test_the_painter_is_warmed_before_the_window_is_shown(app) -> None:
     """The font database and the logo are paid for in the constructor, not in the middle of the animation."""
-    assert "hfc-logo" in IntroSplash()._painter._pixmaps
+    assert "hfc-logo" in IntroSplash(opengl=False)._painter._pixmaps
 
 
 def test_pressing_twice_starts_once(app) -> None:

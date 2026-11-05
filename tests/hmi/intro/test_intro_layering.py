@@ -1,6 +1,6 @@
 """CLAUDE.md section 1 rule 3 for the intro: the scene, the sequencer and the data import no Qt.
 
-Only ``painter.py``, ``splash.py`` and ``__main__.py`` may import PyQt6; the rest of the intro must
+Only ``painter.py``, ``canvas.py``, ``splash.py`` and ``__main__.py`` may import PyQt6; the rest of the intro must
 stay drivable with no display. The asset the painter loads must also be present and intact.
 """
 
@@ -20,7 +20,7 @@ from ureasim.data.intro import LOGO
 _INTRO_DIR = Path(__file__).resolve().parents[3] / "ureasim" / "hmi" / "intro"
 _QT_FREE = ("ops.py", "timeline.py", "camera.py", "model3d.py", "flyby.py", "scene.py", "sequencer.py")
 _DATA_MODULES = (data_module, flyby_data_module, plant_data_module)
-_QT_ALLOWED = ("painter.py", "splash.py", "__main__.py")
+_QT_ALLOWED = ("painter.py", "canvas.py", "splash.py", "__main__.py")
 
 
 def _imports(path: Path) -> set[str]:

@@ -29,7 +29,9 @@ The console opens on the Helwan Fertilizers start-up intro. The plant is built a
 seed, the 1750 MTPD design basis, while the intro plays, and it starts when you press **100% LOAD**
 (click the button, or press Enter or Space). Any key or click before the button appears skips the
 animation without starting the plant. `--no-intro` skips the intro and runs the plant from the start;
-`--fullscreen-intro` plays it full screen.
+`--fullscreen-intro` plays it full screen. The intro is drawn on the GPU where the machine has one
+(a hardware OpenGL 2.0 context) and by the CPU everywhere else; set the environment variable
+`UREASIM_INTRO_RENDERER=raster` to force the CPU if a driver misbehaves.
 
 Or from a shell:
 

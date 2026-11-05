@@ -8,7 +8,9 @@ Pinned:
 * every command is the engine's to answer (decision 149): a simulator control and a faceplate in
   any section reach the plant, and a refusal is the plant's;
 * the console packet is published on V1's paths with the engine's status, and a trend's backfill
-  is answered over the protocol.
+  is answered over the protocol;
+* a plant frozen and then reset or restored goes on publishing a packet every pass (handoff A-27), its
+  clock where the reset or the exercise put it, and is not stepped.
 """
 
 from __future__ import annotations
@@ -129,6 +131,41 @@ def test_the_packet_status_and_history_reach_the_console(tmp_path):
         assert teacher.of_kind(Kind.EXERCISES)[-1]["names"] == ["start-of-shift"]
         await teacher.close()
         await obs.close()
+        host.stop()
+        await server.stop()
+    asyncio.run(scenario())
+
+
+def test_a_frozen_plant_goes_on_publishing_every_pass_after_a_reset_or_a_restore(tmp_path):
+    """Ten packets a second while held, so a console's watchdog is fed; none from a stepping plant."""
+    async def collect(console: Client, seconds: float) -> list[dict]:
+        end = asyncio.get_running_loop().time() + seconds
+        while (left := end - asyncio.get_running_loop().time()) > 0:
+            try:
+                await console.pump(len(console.inbox) + 1, timeout=left)
+            except (AssertionError, TimeoutError):
+                break
+        return [m["state"] for m in console.of_kind(Kind.SNAPSHOT) if m["state"]]
+
+    async def scenario():
+        server, port, host = await _serve(tmp_path)
+        console = await Client.connect(port)
+        while not [m for m in console.of_kind(Kind.SNAPSHOT) if m["state"]]:
+            await console.pump(len(console.inbox) + 1, timeout=60.0)
+        for i, cmd in enumerate(({"type": "snapshot_save", "name": "start"}, {"type": "freeze", "on": True},
+                                 {"type": "reset_sim"}), start=1):
+            await console.send(protocol.command(i, cmd))
+            assert (await _ack(console, i))["ok"], cmd
+        console.inbox.clear()
+        seed = await collect(console, 1.2)
+        assert len(seed) >= 8 and {s["t_sim"] for s in seed} == {0.0} and host.session.plant.clock.tick == 0
+        await console.send(protocol.command(4, {"type": "snapshot_load", "name": "start"}))
+        assert (await _ack(console, 4))["ok"]
+        console.inbox.clear()
+        restored = await collect(console, 1.2)
+        tick = host.session.plant.clock.tick
+        assert len(restored) >= 8 and {s["t_sim"] for s in restored} == {tick * 0.1}
+        await console.close()
         host.stop()
         await server.stop()
     asyncio.run(scenario())

@@ -19,6 +19,16 @@ reserves for the instructor:
 
 Every answer is (accepted, reason), the reason a refusal's, so it reaches the console that asked.
 
+A held plant is not a silent one (handoff A-27)
+-----------------------------------------------
+A packet is built from the results of a tick, and a plant that was just reset or restored has none, so
+the engine would publish nothing until it first stepped. Held by ``freeze``, that is for ever, and a
+console that hears nothing for five seconds reads the link as dead and blanks. A reset or a restored
+exercise therefore shows its first tick, rehearsed on a copy (`engine.rehearsal`), with the plant's own
+clock: the plant is not stepped, and the packet is the one its first real tick will publish. The plant
+at the engine's launch is the exception: it is held behind the start-up intro and publishes nothing
+until it is released (`project.md` decision 166), which the start-up controller counts on.
+
 The health block
 ----------------
 V1 staples a ``_health`` block on every packet it pushes so a console can tell a crashed engine (a
@@ -34,6 +44,7 @@ and ``handle_cmd``'s ``set_sim_mode`` / ``reset_sim`` branches; the rest the rew
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 import time
@@ -47,11 +58,14 @@ from ureasim.engine.command import SIMULATOR_COMMANDS, apply_command
 from ureasim.engine.historian import Historian
 from ureasim.engine.packet import build_packet
 from ureasim.engine.plant import build_plant
+from ureasim.engine.rehearsal import Rehearsal, rehearse
 from ureasim.engine.scheduler import Scheduler
 from ureasim.engine.simulator import Simulator
 from ureasim.engine.state import PlantState
 
 __all__ = ["EXERCISE_DIR_ENV", "STALLED_AFTER_S", "EngineSession"]
+
+log = logging.getLogger(__name__)
 
 #: The environment variable naming where exercises are saved; ``~/ureasim-exercises`` without it.
 EXERCISE_DIR_ENV = "UREASIM_EXERCISES"
@@ -72,6 +86,9 @@ class EngineSession:
         self.simulator = Simulator(step=self._step)
         self.historian = Historian()
         self.frozen = False
+        self._installed = False                  # a plant was reset or restored: it may show a rehearsal
+        self._rehearsal: Rehearsal | None = None
+        self._rehearsal_failed = False
         self.exercise_dir = Path(exercise_dir or os.environ.get(EXERCISE_DIR_ENV)
                                  or Path.home() / "ureasim-exercises")
         self._health = {"ok": True, "error": None, "type": None, "traceback": None,
@@ -92,6 +109,7 @@ class EngineSession:
 
     def _step(self, dt: float) -> None:
         self.scheduler.tick(dt)
+        self._rehearsal = None                   # the plant has results of its own now
         now = time.time()
         self._last_step_wall = now
         self.historian.maybe_sample(lambda: self.packet(now, health=False), self.t_plant, now)
@@ -133,13 +151,37 @@ class EngineSession:
 
     def packet(self, t_wall: float | None = None, *, health: bool = True) -> dict:
         """The console packet after the last tick, on V1's key paths, with the health block
-        unless ``health`` is false; empty before the plant's first tick."""
-        if not self.scheduler.results:
+        unless ``health`` is false; empty before the plant's first tick, except that a plant reset or
+        restored shows its rehearsed first tick (module docstring)."""
+        shown = self._shown()
+        if shown is None:
             return {}
+        plant, results, tears_read = shown
         t_wall = time.time() if t_wall is None else t_wall
-        return build_packet(self.plant, self.scheduler.results, self.scheduler.tears_read,
-                            sim_mode=self.simulator.pacing, t_wall=t_wall,
+        return build_packet(plant, results, tears_read, sim_mode=self.simulator.pacing, t_wall=t_wall,
                             health=self.health(t_wall) if health else None)
+
+    def _shown(self) -> tuple[PlantState, dict, Any] | None:
+        """The plant, results and tears a packet is built from: the last tick's, or the rehearsal's
+        for a plant reset or restored that has not stepped; None for a plant that has shown nothing."""
+        if self.scheduler.results:
+            return self.plant, self.scheduler.results, self.scheduler.tears_read
+        if not self._installed or self._rehearsal_failed:
+            return None
+        if self._rehearsal is None:
+            try:
+                self._rehearsal = rehearse(self.schedule, self.plant)
+            except Exception:  # noqa: BLE001 - a plant that cannot tick shows nothing, as it always did
+                log.exception("the first tick of the installed plant could not be rehearsed")
+                self._rehearsal_failed = True
+                return None
+        r = self._rehearsal
+        return r.plant, r.results, r.tears_read
+
+    def _forget_rehearsal(self) -> None:
+        """The plant changed under its rehearsal: the next packet rehearses it again."""
+        self._rehearsal = None
+        self._rehearsal_failed = False
 
     def published_state(self) -> dict:
         """What the server sends every console: the packet, now."""
@@ -171,6 +213,8 @@ class EngineSession:
         if kind in SIMULATOR_COMMANDS:
             return self._simulator_command(kind, cmd)
         result = apply_command(self.plant, cmd, self.scheduler.results)
+        if result.ok:
+            self._forget_rehearsal()             # a held plant shows what the command did
         return result.ok, result.reason
 
     def _simulator_command(self, kind: str, cmd: Mapping[str, Any]) -> tuple[bool, str]:
@@ -207,3 +251,5 @@ class EngineSession:
         self.scheduler = Scheduler(self.schedule, plant)
         self.simulator.owed_ns = 0
         self.historian = Historian()
+        self._installed = True
+        self._forget_rehearsal()

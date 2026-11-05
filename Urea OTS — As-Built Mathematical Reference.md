@@ -19353,7 +19353,8 @@ jagged; `max_segment` up to 60 removes at most 21 % of the edges (1,988 to 1,563
 (the rings are 12-sided); one stroked `QPainterPath` per batch gave no gain over `drawLines`; a cosmetic pen saved
 2 ms but its width does not follow the window; `QStaticText` saved 0.5 ms but 1,148 bytes of the frame differ from
 `drawText`; baking the logo and titles changes the text weight (Qt blends antialiased text onto an opaque target and
-onto a transparent bitmap differently, up to 76 in 255), so only the opaque paper is baked.
+onto a transparent bitmap differently, up to 76 in 255), so only the opaque paper is baked. Session 87 closed A-26 with a GPU canvas
+(Part XCIX.1), after measuring the fixed-stage layer and the threaded raster and rejecting both.
 
 ## XCVII.4 The first packet and the staleness watchdog (point 2)
 
@@ -19638,3 +19639,219 @@ off (inside Book2's band), 55.1-55.2 as built and on P1b (at the band's top edge
 the mode runs; Session 83's fixed set points gave 63 t/h. On S2 the engine reaches the plant's TT-322004
 with PIC-329204 about 1 bar below the plant's set point. As built, 2 bar below still leaves TT-322004 at
 178.9 C.
+
+# Part XCIX — The intro on the GPU (A-26) and a frozen engine's packet (A-27) (decision 169)
+
+Session 87 (2026-11-04) took the process engineer's directive closing A-26 and A-27, the two items session 85 left
+open. The advisor (Opus) was consulted on the plan before any edit and on the result before the close. No relation
+of the plant changed: A-26 is the intro's drawing and A-27 is what the engine publishes while a plant is held. Both
+were built so that nothing the plant computes moves (a test and a four-process run hold that for A-27).
+
+## XCIX.1 A-26: the intro's frame rate, windowed and fullscreen (decision 169)
+
+**What was asked.** 60 fps or better, 16.6 ms a frame and 10 ms as the target, windowed and fullscreen at 125 %
+display scaling, with everything below `painter.py` Qt-free, the offscreen test platform unchanged, and the wire
+raster attacked by a GPU canvas, a fixed-stage layer, or both, whichever profiling favoured.
+
+**How it was measured.** The real `IntroSplash` under its own 16 ms timer, the hold phase after a 2 s settle, 6 s a
+run, three runs a cell with the two renderers alternating inside the cell so the machine's drift reaches both alike,
+on the development machine (i7-12700H, 20 logical processors, Intel Iris Xe, on AC power, 125 % scaling, display
+60 Hz). Load is *k* busy-loop processes. The metric is the `paintEvent` time on the main thread (median, 95th
+percentile, worst), the 95th percentile of the interval between frames, and the frames in three runs that came more
+than 25 ms after the one before. The figures of session 85 (15.0 ms, 17.5 ms and 52 fps fullscreen) were taken on a
+machine in another state: the same code measured 10.0 and 12.6 ms hours later, so no closure is claimed from an idle
+figure and every cell below is an A/B in one sitting. The raster delivered rate is 62.7 fps because it is paced by
+the 16 ms timer; the GPU canvas is paced by the display's vertical sync, 60.2 fps.
+
+**What was tried, in order, and why the GPU canvas stands.**
+
+| candidate | measured | outcome |
+|---|---|---|
+| fixed-stage wire layer: the wires at 1366 x 720, pixel ratio 1, composited scaled onto the device-resolution window | windowed 125 %: wires direct 3.94 ms, layer 2.70 + scaled composite 1.66 = 4.36 ms; fullscreen: 5.81 against 3.76 + 2.55 = 6.31 ms; 100 %: 2.90 against 2.83 + 0.38; edge energy 1.77 to 1.13 (-36 %) and 1.50 to 1.00 (-33 %) at 125 % | rejected: slower, and softer |
+| a cache per quantised orbit azimuth | one device-resolution frame is 6.1 MB (9.2 MB fullscreen), 360 steps 2.2 GB, and 360 steps in the 32 s orbit is 11 poses a second, which stutters at 60 fps; the bob and the flow dots have other periods | rejected on arithmetic |
+| worker threads for the wire raster | `QPainter.drawLines` holds the GIL: two threads 0.96 times one, four threads 0.99 times | rejected |
+| a cosmetic pen for the thin batches | 2.39 ms against the hairline rule's 2.17 ms for the 12 batches at 125 %, ink +0.3 % | rejected: no gain |
+| a GPU canvas, a multisampled `QOpenGLWidget` painted through the same `IntroPainter` | below | adopted, with the CPU rasterizer as the fallback |
+
+The unthrottled cost of a frame is the same on both: the GPU canvas is bound by the GPU and the compositor at 13.5 ms
+windowed (74 fps) and 15.6 ms fullscreen (64 fps), the rasterizer by the CPU at 12.3 ms (81 fps) and 15.1 ms (66 fps).
+What the canvas changes is where the cost falls. The main thread's share becomes about the same at any window size,
+and the machine's CPU stays free for the rest of the application. The baked paper still pays on the GPU (7.2 to 7.8
+ms a frame against 8.3 to 9.0 without it), so the painter is unchanged.
+
+**The result** (median of three runs, hold phase; paint = `paintEvent` on the main thread; "late" = frames more
+than 25 ms after the one before, summed over the three runs):
+
+| window | load k | renderer | fps | paint median | p95 | worst | interval p95 | late |
+|---|---|---|---|---|---|---|---|---|
+| windowed | 0 | CPU | 62.7 | 11.5 | 13.3 | 18.9 | 16.6 | 0 |
+| windowed | 0 | GPU | 60.2 | 7.5 | 8.5 | 10.2 | 17.2 | 0 |
+| fullscreen | 0 | CPU | 62.1 | 14.2 | 16.3 | 21.5 | 17.5 | 0 |
+| fullscreen | 0 | GPU | 60.2 | 8.2 | 9.5 | 13.1 | 16.9 | 0 |
+| windowed | 2 | CPU | 62.7 | 12.3 | 14.9 | 22.2 | 16.6 | 0 |
+| windowed | 2 | GPU | 60.2 | 7.7 | 9.0 | 13.1 | 17.0 | 0 |
+| fullscreen | 2 | CPU | 60.8 | 14.8 | 17.9 | 23.3 | 19.1 | 0 |
+| fullscreen | 2 | GPU | 60.2 | 8.7 | 10.1 | 14.5 | 16.9 | 0 |
+| windowed | 4 | CPU | 61.7 | 13.2 | 18.1 | 28.7 | 19.3 | 5 |
+| windowed | 4 | GPU | 60.2 | 7.6 | 10.1 | 21.8 | 17.2 | 1 |
+| fullscreen | 4 | CPU | 58.1 | 15.3 | 19.3 | 26.0 | 20.8 | 4 |
+| fullscreen | 4 | GPU | 60.2 | 8.6 | 11.1 | 21.5 | 16.9 | 0 |
+| windowed | 8 | CPU | 51.0 | 18.2 | 24.2 | 29.1 | 25.5 | 64 |
+| windowed | 8 | GPU | 50.8 | 16.0 | 19.9 | 24.6 | 24.7 | 41 |
+| fullscreen | 8 | CPU | 42.4 | 21.6 | 27.5 | 32.4 | 29.7 | 250 |
+| fullscreen | 8 | GPU | 60.1 | 14.5 | 18.9 | 23.5 | 20.4 | 1 |
+
+**What is claimed, and what is not.**
+
+* The target of 10 ms holds for the main thread's paint time: 7.5 ms windowed and 8.2 ms fullscreen at idle on the
+  GPU canvas (95th percentile 8.5 and 9.5 ms). It does not hold for the whole frame, which is bound by the GPU and
+  the compositor at 13.5 and 15.6 ms unthrottled (above); at 60 Hz that leaves 1 ms of margin fullscreen on this
+  integrated GPU.
+* 60 fps is held through *k* = 4 of the 20 logical processors in both window modes on the GPU canvas (interval 95th
+  percentile 17.2 ms at worst, one late frame in 3 runs), where the CPU rasterizer drops to 58.1 fps fullscreen and
+  has 5 late frames windowed and 4 fullscreen. At *k* = 8 the windowed intro holds 60 fps on neither renderer (51.0 and 50.8 fps), and the
+  fullscreen one holds it on the GPU canvas alone (60.1 against 42.4 fps). So the claim is 60 fps to *k* = 4 in
+  both modes, and fullscreen to *k* = 8 on a GPU; it is not an unconditional 60 fps.
+* A GPU that something else is using was not tested.
+
+**First seconds** (frames from the first paint to 3.7 s, the scan phase, two runs): GPU windowed 60.4 and 60.5 fps with
+no frame late; GPU fullscreen 61.2 and 57.9 fps with none and two late frames; CPU 62.8 fps in every run and none late.
+The first frame is painted 58 to 65 ms after `play()` on the GPU canvas (78 to 96 ms on the CPU), with the first two
+intervals 31 to 43 ms windowed from shader compilation, and one interval of 154 ms about 0.15 s into the first
+fullscreen run (the scene is still the faint backdrop then). They are one-off.
+
+**Where it is used.** `ureasim/hmi/intro/canvas.py` holds the canvas and the probe. `opengl_available()` is decided
+once: false on the Qt platforms with no OpenGL (`offscreen`, `minimal`, `vnc`, `linuxfb`), false when the environment
+variable `UREASIM_INTRO_RENDERER` is `raster` (the kill switch, in the README), and otherwise the answer of an
+off-screen context: version 2.0 or later and a renderer that is not a software one (GDI Generic, the Microsoft Basic
+Render Driver, llvmpipe, softpipe, swrast, a software rasterizer), which on a driver-less machine, a virtual machine
+or a remote session would be slower than the CPU. The probe takes about 165 ms. `IntroSplash` creates the canvas as a
+child that fills it, takes no mouse events and calls back into the splash's own paint routine, so the painter, the
+scene and the data are the raster path's. If the canvas has no valid context 1 s after the window shows (`RENDER.
+settle_s`) the splash deletes it and draws itself. The constants are `RENDER` in `data/intro.py`. Layering is as it
+was: the scene, the flyby, the camera, the sequencer and the data import no Qt (`test_intro_layering.py`, which now
+lists `canvas.py` with the Qt modules); `painter.py`, `canvas.py`, `splash.py` and `__main__.py` are the four that do.
+
+**Three behaviours the move changed, each checked.**
+
+* `repaint()` on a `QOpenGLWidget` paints nothing at once (the widget renders when its window's update request is
+  delivered), and the start-up controller paints its status line with `repaint()` before a step blocks the event loop.
+  The splash now asks the canvas to update and delivers the update request itself. Checked on the screen: with the
+  GUI thread blocked, 2,990 footer pixels changed after `set_status` and `repaint()` on the canvas, 3,141 on the
+  rasterizer.
+* The exit fade is `setWindowOpacity` on a frameless window now hosting a GL child. Checked on the screen: the patch
+  of paper reads 247 at full opacity and 103 at 0.3 and returns to 247 (rasterizer 231, 99, 231, on another frame).
+* The picture. At the hold frame at 125 % the canvas reads edge energy 5.08 against the rasterizer's 5.06, ink 110.9
+  million against 111.2, a mean difference of 1.11 in 255 and 1.3 % of the pixels differing by more than 32 (text
+  and the finest edges); without multisampling the edge energy is 5.75 (aliased), at 8 samples 5.00. A test holds
+  the canvas to 3 in 255, 5 % of the edge energy and 2 % of the ink.
+
+**The real start-up path under the canvas** (`run._run_with_intro` driven by script, a screen grab from a plain thread
+every 0.6 s): press, "Building screens", "Starting engine", "Connecting to the engine", "Starting the plant", the
+console shown with a live packet (heartbeat 12) and the intro finished, no bridge blank during the start-up; the grabs
+show the status line and the busy button on screen while the console builds. The same script on the CPU rasterizer
+gives the same sequence (heartbeat 13).
+
+**One finding that shaped the tests.** With about 60 shown GL splash windows alive in one test process, a later
+`splash.grab()` crashed the interpreter (a Windows access violation). A script with seven live GL windows and a grab
+ran clean. One splash exists in service, but the existing splash tests, which build a window each and never close
+it, now draw on the rasterizer (`IntroSplash(opengl=False)`), so no test depends on the machine's GPU; the canvas has
+its own tests (`test_intro_canvas.py`): the renderer names, each reason for no canvas, the probe made once and its
+failure logged, the fallback when a canvas has no context, and, where a GPU exists and skipped elsewhere, the
+canvas's frame against the rasterizer's, its mouse transparency and `repaint()` against `update()`.
+
+**Retracted.** An early figure given in conversation, 13.4 ms for the GPU path against 8.8 ms for the rasterizer,
+came from a harness that overrode `paintEvent` on the `QOpenGLWidget`, which is not how one is painted (`paintGL`), so
+it did not draw the scene. Nothing from that harness is in this part.
+
+## XCIX.2 A-27: a reset or a restored exercise while the engine is frozen (decision 169)
+
+**The fault.** `EngineSession._install` (`reset_sim`, `snapshot_load`) builds a new `Scheduler` whose `results` are
+empty, and `packet()` returned `{}` until the next tick. A running plant steps within a tenth of a second, but a
+frozen one never does, so the engine published nothing for as long as it was held. The console's bridge, once it
+has had a packet, is on the strict 5 s watchdog (`STALE_MS`) and blanks every indicator on silence, which is right
+for a dead link and wrong for a live engine held by its instructor. Session 85 had seen this on the engine only.
+
+**The decision (process engineer, 2026-11-04, session 87).** The engine publishes a packet for the plant it has
+been given and does not step the plant to do it. The directive named the held start at launch as well; asked, the
+process engineer kept decision 166 and A-25 point 2 for it, so the plant behind the start-up intro still publishes
+nothing until 100% LOAD releases it (the start-up controller reads the first packet as the plant running), and the
+thermo memo is still not warmed there. Reset and restore are the cases.
+
+**The mechanism (`ureasim/engine/rehearsal.py`, `ureasim/engine/session.py`).**
+
+* A packet is built from the results of a tick, so the plant's first tick is *rehearsed*: its state is copied the
+  way an exercise save and restore copy it (`snapshot.encode_state` and `decode_state`), the scheduler ticks the
+  copy once, and the copy's clock is put back to the plant's. The plant itself is never ticked: its clock, tears,
+  controllers and historian are as they were (a test holds the plant's encoded state equal before and after).
+* The packet carries the plant's own time, `t_sim` 0.0 after a reset and the exercise's own time after a restore;
+  `server.publish` already sent `t_plant` with it, so the two clocks agree.
+* The rehearsal is made lazily, where the packet is built, and only for a plant installed since the engine started.
+  Made at install time it would be missed when a `reset_sim` and a `freeze` are drained in one gap, the plant
+  frozen before a packet is asked for; a test drains them in that order.
+* It is kept until the plant changes under it: an accepted plant command (a set point, a valve) drops it and the next
+  packet rehearses the plant as it now stands, so a held console shows what the command did; a refused command
+  changes nothing and does not. The first real tick drops it for good.
+* A plant that cannot be rehearsed publishes nothing, as before, logs the fault once, and is not retried every pass.
+
+**What it costs and what it leaves.**
+
+| | measured |
+|---|---|
+| rehearsal after `reset_sim`, thermo memo warm | 16.7 ms (the copy 2.7 ms, the tick 11.2 ms, the packet 2.7 ms) |
+| rehearsal after `snapshot_load` of an off-design state, memo warm | 56 to 82 ms |
+| the same packet rebuilt each pass while held | 1.9 ms |
+| first rehearsal in a fresh process, memo cold | 1.4 to 1.5 s, the cost the first real tick pays (a plant is not reset cold in service: the memo is warm by then) |
+
+*No trace.* Four fresh processes, each running the plant 60 ticks after the install, with and without the rehearsal:
+the plant's encoded state and the packet hash are equal to the last digit for `reset_sim` (state 8f923f70198c3ff9,
+packet 1079badf752a2c87) and for `snapshot_load` of a 20 s off-design exercise (state c62f5ed1b55d9aa2, packet
+a9a01a36b5e040c1). The twin computes the same first tick the plant is about to, so the thermo memo holds what the
+plant's own tick would have put there. *Equality.* The packet shown for a held plant equals the packet its first real
+tick publishes, but for `t_sim`, at the seed and 5 ticks in (`tests/engine/test_rehearsal.py`,
+`tests/engine/test_session.py`). What the console shows is therefore the plant's first tick, one step (0.1 s) ahead of
+its state and labelled with the plant's time: below any instrument's resolution at the design seed, and one step of
+its dynamics for a restored exercise.
+
+**Through the console (`tests/hmi/test_console_while_frozen.py`).** The engine (`EngineSession`, `EngineHost`,
+`StationServer`) on its own thread and loop, a real `EngineBridge` and `MainWindow` on loopback TCP, at the real
+`STALE_MS` of 5000 ms, with the strict window in force before any wait (the engine is started running, since a console
+that has never had a packet is on the 30 s allowance and would pass for the wrong reason):
+
+* freeze, `snapshot_save` at a known plant time, run on, freeze, `reset_sim`: the reset plant's packet (`t_sim` 0.0)
+  is on the console 135 ms after the command was sent, and over the next six seconds, past the watchdog, the console
+  has more than 30 packets, no DISCONNECTED, the engine label FROZEN, a bound readout other than `--`, and the plant
+  not one tick on;
+* `snapshot_load` of the saved exercise: its own `t_sim` on the console 98 ms after the command, and the same six
+  seconds;
+* released, the plant steps on from where it was put and the label reads RUNNING;
+* with the link up and the engine's thread stopped, the console blanks 5.0 to 6.5 s later with "no data from the
+  engine", every readout `--`;
+* a closed link blanks it at once with the socket's reason, not after the watchdog.
+
+The three scenarios take about 13 s, 5 s and under a second. `tests/net/test_engine_host.py` holds the host's side:
+about ten packets a second after a freeze and a reset and after a restore, `t_sim` where the plant was put, the
+plant not stepped. Eight deliberate breaks of the fix (no preview, the launch plant previewed, install keeping an old
+rehearsal, a command leaving it stale, a refused command rebuilding it, a failing rehearsal retried every call, the
+copy keeping its own clock, the plant itself ticked) were each caught by a test, the refused command's only after the
+counting test was strengthened; a ninth, dropping the rehearsal on the first tick, changes memory only and no
+behaviour.
+
+**Found on the way: a silent engine looks live between blanks (handoff A-28, not changed).** After the watchdog
+fires, the bridge reconnects, and `StationServer` replays its last published packet to any console that connects.
+With the engine's thread stopped and the server up, the console's state followed: blank at 5.1 s, live with the dead
+engine's last packet at 6.1 s, blank at 11.2 s, live again at 12.2 s, so it shows stale values as live for about five
+seconds in six, which the bridge's own rule (a console that keeps the last values looks live and is not) forbids. The
+watchdog test above passes because it asserts at the first blank. The replay is meant for a console that joins a
+running engine, where the packet is a tenth of a second old; it carries no age. Raised as A-28 for the process
+engineer's decision.
+
+## XCIX.3 Checks
+
+The full suite on Qt's native platform, on the final tree: 2,070 passed, 5,862 skipped, none failed, 22 min 15 s (the 5,862 skips are the equivalence suites: `E:\` is not mounted on this machine today, so V1's tree at `E:\Simulator\Urea Simulation` is unreachable; session 82 ran them with none skipped, and they are to be re-run when the drive is back; no physics changed this session). The affected groups on Qt's native platform (`tests/hmi`, `tests/net`, `tests/data`, `tests/test_run.py` and the
+engine session, rehearsal, snapshot and scheduler tests): 770 passed, 13 skipped (V1's tree, `E:\`, is not mounted
+today). The intro, bridge, start-up, console-while-frozen and `run.py` tests on the offscreen platform: 279 passed, 4
+skipped (the three tests that need a GPU and the probe, which needs a platform with OpenGL). `pyflakes` is clean on
+every file touched; the PyQt6 grep over `net`, `engine`, `units`, `control`, `core` and `thermo` prints nothing; the
+new modules are `rehearsal.py` (71 lines), `canvas.py` (116) and tests, and none of `session.py` (255), `splash.py`
+(255) or `data/intro.py` (315) is near 600 lines.
