@@ -220,19 +220,19 @@ def test_a_lost_raising_starves_the_users_b73():
     """B-73, decided 2026-10-02. 322E002's raising lost: with every user at its design draw the
     header fell through 3.5 bar a in 14 s to 2.11 bar a in five minutes. On their valves the
     users draw less as it falls — the motive steam with it, FV-329401 opening against it — so it
-    bottoms at 3.65 bar a and is at 3.95 bar a in five minutes, the motive at 79 % of design,
-    FV-329401 at 58.9 % on its Neldisc passing 4029 kg/h (decided 2026-10-15; PV-329207C on its
+    bottoms at 3.65 bar a and is at 3.96 (3.95 before decision 178) bar a in five minutes, the motive at 79 % of design,
+    FV-329401 at 59.0 (58.9 before decision 178) % on its Neldisc passing 4014 (4029 before decision 178) kg/h (decided 2026-10-15; PV-329207C on its
     Mark One, decision 150; on V1's valves 4.09 bar a, FV-329401 at 83 % passing 4119). One
     minimum, no ringing."""
     out = _run_b73(3005, raise_at=5)
     p = [r.p_lp_bara for r, _, _, _ in out]
-    assert (min(p), p[145], p[-1]) == (pytest.approx(3.6524, abs=1e-4),
-                                       pytest.approx(3.6698, abs=1e-4),
-                                       pytest.approx(3.9541, abs=1e-4))
+    assert (min(p), p[145], p[-1]) == (pytest.approx(3.6525, abs=1e-4),
+                                       pytest.approx(3.6700, abs=1e-4),
+                                       pytest.approx(3.9619, abs=1e-4))
     _, lp, _, op = out[-1]
     assert (lp["924"], lp["927"], lp["931"], op) == (
-        pytest.approx(308.7, abs=0.1), pytest.approx(965.8, abs=0.1),
-        pytest.approx(4029.2, abs=0.1), pytest.approx(58.88, abs=0.01))
+        pytest.approx(309.3, abs=0.1), pytest.approx(967.7, abs=0.1),
+        pytest.approx(4013.7, abs=0.1), pytest.approx(59.00, abs=0.01))
     assert _reversals(p, 1e-6) == 1
 
 
@@ -240,13 +240,19 @@ def test_the_flood_draws_the_9_bar_header_b73():
     """XV-322915 opened at design: the flood draws 329D009's header to 8.575 bar a in ten seconds;
     PIC-329205's integral (its DCS row, decided 2026-10-28) restores it to 8.999 in five minutes,
     passing 999.9 kg/h — its rating at 9.0 bar a is 1000 (V1's proportional split held 8.765 and
-    975 kg/h); one turn on the 9-bar header, the LP header settling without ringing."""
+    975 kg/h); one turn on the 9-bar header, the LP header settling without ringing: since decision 178 (FV-329401
+    on its L-series row) it dips to 5.00709 bar a at 15 s, its one counted turn, rises to 5.01415 at 150 s, a turn
+    whose steps lie below the count's floor, and eases to 5.01361 at 300 s (on the chord it settled with no turn)."""
     out = _run_b73(3005, flood_at=5)
     p9 = [r.p_9_bara for r, _, _, _ in out]
     assert (p9[105], p9[-1]) == (pytest.approx(8.5752, abs=1e-4), pytest.approx(8.9987, abs=1e-4))
     assert out[-1][2]["flood"] == pytest.approx(999.87, abs=0.01)
     assert _reversals(p9, 1e-7) == 1
-    assert _reversals([r.p_lp_bara for r, _, _, _ in out], 1e-7) == 0
+    p_lp = [r.p_lp_bara for r, _, _, _ in out]
+    assert _reversals(p_lp, 1e-7) == 1
+    assert (min(p_lp), max(p_lp), p_lp[-1]) == (pytest.approx(5.007091, abs=1e-6),
+                                               pytest.approx(5.014152, abs=1e-6),
+                                               pytest.approx(5.013612, abs=1e-6))
 
 
 def _both(draws_at, n=3000):

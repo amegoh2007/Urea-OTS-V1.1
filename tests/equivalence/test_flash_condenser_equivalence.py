@@ -585,7 +585,7 @@ def test_pv_323203_on_its_vendor_trim_decided_divergence(v1):
     V1's 0.60 %/bar on both sides, so the valve is the only difference. PFD 701 up 10 % at tick 10:
     bit-exact until PIC-323203 first moves the stroke, tick 11; the Neldisc's steeper gain about its
     design stroke then holds the node lower — an hour on, V1 at 1.3380 bar a on 31.11 %, the port at
-    1.2784 on 26.66 %, both venting the 883 kg/h the constant capacity leaves."""
+    1.2992 (1.2784 before decision 178) on 27.36 (26.66 before decision 178) %, both venting the 883 kg/h the constant capacity leaves."""
     s = _v1_state(v1)
     cond = fc.FlashCondenser(**{**fc.V1_CONDENSER, "pv_323203": fc.PV_323203_TRIM})
     loops = (fc.pic_323203(), fc.lic_323503(), fc.fic_323418())
@@ -601,11 +601,11 @@ def test_pv_323203_on_its_vendor_trim_decided_divergence(v1):
             parted = k
     assert parted == 11
     assert (s.r3232_e011_P, cond.p_bara) == (pytest.approx(1.3380, abs=1e-4),
-                                             pytest.approx(1.2784, abs=1e-4))
+                                             pytest.approx(1.2992, abs=1e-4))
     assert (a["pic"], b.pic_op_pct) == (pytest.approx(31.11, abs=0.01),
-                                        pytest.approx(26.66, abs=0.01))
+                                        pytest.approx(27.36, abs=0.01))
     assert (a["vent"], b.m_702_kgh) == (pytest.approx(882.93, abs=0.01),
-                                        pytest.approx(882.92, abs=0.01))
+                                        pytest.approx(882.93, abs=0.01))
 
 
 def test_the_tank_pumped_to_its_floor_decided_divergence(v1):

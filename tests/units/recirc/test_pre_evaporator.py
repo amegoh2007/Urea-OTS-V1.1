@@ -92,7 +92,7 @@ def test_tic_323012_on_its_dcs_row_holds_its_set_point():
         temps.append(sep.step(tic, pic, R323_M319_DES, d.F004_T_SP_C, dict(d.W_S319), *NO_BLOW,
                               d.HIC_323605_DES_PCT, P_LP_BARA, d.P_324E002_DES_BARA, 1.0).t_c)
     assert (temps[599], temps[-1]) == (pytest.approx(99.471, abs=1e-3),
-                                       pytest.approx(100.9844, abs=1e-4))
+                                       pytest.approx(100.9846, abs=1e-4))
     assert max(temps) < 101.0
 
 
@@ -343,7 +343,7 @@ def test_at_its_heel_the_separator_holds_the_liquor_that_passes_it_b98_b101(monk
     kg on each 1 s tick. V1's explicit species step drains each species at the old holdup's fraction
     and floors water and urea at zero, and which of the two survives is a tick's parity: the liquor
     read 0.000 % urea and a 372.5 C bubble point (pure water) with PV-329208 on the chord, before
-    decision 170, and reads 98.58 % urea, no water and 88.25 C after it. The
+    decision 170, and reads 98.58 % urea, no water and 88.24 (88.25 before decision 178) C after it. The
     backward step, taken where the drain and the vapour pass more than the stage holds — from
     5251 s, the same to the bit until then — draws both at the step's end composition: 72.06 % urea
     at 5400 s (72.04 on the chord) [73.31], and at two hours 80.03 / 79.77 % on alternate ticks (79.77 /
@@ -355,10 +355,10 @@ def test_at_its_heel_the_separator_holds_the_liquor_that_passes_it_b98_b101(monk
     assert ours[5250] == theirs[5250]
     assert theirs[5400].w["H2O"] == 0.0
     assert theirs[5400].w["Urea"] == pytest.approx(0.98577, abs=1e-5)
-    assert theirs[5400].t_bub_c == pytest.approx(88.247, abs=0.01)
+    assert theirs[5400].t_bub_c == pytest.approx(88.237, abs=0.01)
     r = ours[5400]
     assert (r.w["Urea"] * 100.0, r.m_317_kgh) == (pytest.approx(72.062, abs=1e-3),
-                                                 pytest.approx(98707.6, abs=0.1))
+                                                 pytest.approx(98709.8, abs=0.1))
     assert (ours[7199].w["Urea"] * 100.0, ours[7200].w["Urea"] * 100.0) == (
         pytest.approx(80.032, abs=1e-3), pytest.approx(79.767, abs=1e-3))
     assert ours[7200].m_317_kgh == pytest.approx(92748.9, abs=0.1)
@@ -430,7 +430,7 @@ def test_pv_329208_on_its_vendor_trim_holds_the_chest_on_a_falling_header():
 
 def test_hv_323605_on_its_vendor_trim():
     """Decision 23's class, decided 2026-10-17: HV-323605 on Metso's DN 400 Neldisc passes the
-    design overhead at 64.08 % and on its normal case's xT 0.38; V1's linear trim at 50 % on the
+    design overhead at 64.62 (64.08 before decision 178) % and on its normal case's xT 0.38; V1's linear trim at 50 % on the
     globe valve's xT. Both pass it exactly at the design state. With the 324E002 shell at 0.25 bar a
     the Neldisc is choked — below 0.298 bar a at the design separator — and passes 1.016 times the
     design overhead, where V1's passes 1.149; the separator at 0.60 bar a, 1.326 and 1.493 times."""
@@ -439,7 +439,7 @@ def test_hv_323605_on_its_vendor_trim():
     v1 = pe.vapour_outlet_kgh(d.HIC_323605_DES_PCT_V1, d.F010_P_BARA, d.P_324E002_DES_BARA, t, mw,
                               pe.V1_VENT)
     assert des == pytest.approx(d.MEVAP_DES_KGH, rel=1e-12) and v1 == pytest.approx(des, rel=1e-12)
-    assert d.HIC_323605_DES_PCT == pytest.approx(64.079, abs=1e-3) and d.HV605_XT == 0.38
+    assert d.HIC_323605_DES_PCT == pytest.approx(64.615, abs=1e-3) and d.HV605_XT == 0.38
     deep = (pe.vapour_outlet_kgh(d.HIC_323605_DES_PCT, d.F010_P_BARA, 0.25, t, mw),
             pe.vapour_outlet_kgh(d.HIC_323605_DES_PCT_V1, d.F010_P_BARA, 0.25, t, mw, pe.V1_VENT))
     assert [x / d.MEVAP_DES_KGH for x in deep] == [pytest.approx(1.016, abs=1e-3),

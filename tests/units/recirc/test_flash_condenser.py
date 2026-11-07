@@ -87,10 +87,10 @@ def test_the_design_point_holds_to_the_bit():
     assert created == 0.0
 
 
-@pytest.mark.parametrize("stroke, p_settled", [(10.0, 1.14653), (50.0, 1.07874)])
+@pytest.mark.parametrize("stroke, p_settled", [(10.0, 1.14782), (50.0, 1.08459)])
 def test_the_stroke_and_the_dew_point_set_the_node(stroke, p_settled):
     """The node settles where what the condenser leaves on its dew point is what PV-323203 passes,
-    G - cap(P) = m_702(P) (B-30, decided 2026-10-15): on the Neldisc 1.147 bar a at 10 %, 1.079 at
+    G - cap(P) = m_702(P) (B-30, decided 2026-10-15): on the Neldisc 1.148 (1.147 before decision 178) bar a at 10 %, 1.085 (1.079 before decision 178) at
     50 %, venting 208 and 1178 kg/h (1.148 and 1.105 on V1's linear trim), where V1's constant
     capacity left the stroke alone to set it, 1.81 and 1.03."""
     r, _, _, _, _ = _run(1800.0, pic_man=stroke)
@@ -138,14 +138,14 @@ def test_below_v1s_capacity_the_node_holds_on_its_dew_point():
 def test_below_v1s_capacity_pic_323203_trims_the_node_back_to_its_set_point():
     """The same cut in AUTO. V1's node stood at 0.896 bar a with the vent shut, below the absorber
     it vents to. On the dew point the node dips to 1.106 bar a, PIC-323203 closes PV-323203 from
-    21.6 to 13.2 % in ten minutes, and the node climbs back towards 1.13 (1.123 after half an hour;
+    21.6 to 13.6 (13.2 before decision 178) % in ten minutes, and the node climbs back towards 1.13 (1.123 after half an hour;
     on V1's linear trim 25 to 16 %, 1.121)."""
     r, at, first, _, _ = _run(1800.0, m701=_step(0.9), trace=(60.0, 600.0))
-    assert (at[60.0].p_bara, at[60.0].pic_op_pct) == (pytest.approx(1.10568, abs=1e-5),
-                                                       pytest.approx(19.444, abs=1e-3))
-    assert (at[600.0].p_bara, at[600.0].pic_op_pct) == (pytest.approx(1.11284, abs=1e-5),
-                                                         pytest.approx(13.211, abs=1e-3))
-    assert r.p_bara == pytest.approx(1.12258, abs=1e-5) and "node floor" not in first
+    assert (at[60.0].p_bara, at[60.0].pic_op_pct) == (pytest.approx(1.10554, abs=1e-5),
+                                                       pytest.approx(19.730, abs=1e-3))
+    assert (at[600.0].p_bara, at[600.0].pic_op_pct) == (pytest.approx(1.11318, abs=1e-5),
+                                                         pytest.approx(13.565, abs=1e-3))
+    assert r.p_bara == pytest.approx(1.12256, abs=1e-5) and "node floor" not in first
 
 
 def test_a_shut_vent_stands_on_the_condensers_ceiling():
@@ -212,8 +212,8 @@ def test_pic_323203_holds_the_node_on_its_span_gain():
     PIC-323203 shuts the vent and the node stands at 1.1615 bar a, where the condenser takes the
     whole gas (V1's constant capacity reached 1.30 on 16.46 %)."""
     r, at, _, _, _ = _run(3600.0, m701=_step(1.1), trace=(60.0,))
-    assert at[60.0].p_bara == pytest.approx(1.15354, abs=1e-5)
-    assert r.p_bara == pytest.approx(1.13057, abs=1e-5)
+    assert at[60.0].p_bara == pytest.approx(1.15435, abs=1e-5)
+    assert r.p_bara == pytest.approx(1.13060, abs=1e-5)
     assert r.pic_op_pct == pytest.approx(_stroke_passing(r), abs=1e-2)
     r, at, _, _, _ = _run(3600.0, pic_sp=1.30, trace=(600.0,))
     assert at[600.0].p_bara == pytest.approx(1.16150, abs=1e-5)
@@ -247,18 +247,18 @@ def _coupled(seconds: float, m314=None, pic_man: float = None, trace: tuple = ()
 
 def test_the_flash_tank_and_the_condenser_hold_a_cut():
     """A 10 % cut in the column bottoms. The lower node flashes more out of 323F004 and condenses
-    less, and PIC-323203 trims the vent: 1.122 bar a after half an hour, PV-323203 at 6.6 %
-    passing 126 kg/h, 323F004 flashing 4006 kg/h (on V1's linear trim 1.121, 8.6 % and 147 kg/h;
+    less, and PIC-323203 trims the vent: 1.123 (1.122 before decision 178) bar a after half an hour, PV-323203 at 7.2 (6.6 before decision 178) %
+    passing 124 (126 before decision 178) kg/h, 323F004 flashing 4005 (4006 before decision 178) kg/h (on V1's linear trim 1.121, 8.6 % and 147 kg/h;
     1.12236 bar a and 4004.2 kg/h on V1's 5075 kg drum, B-100).
     (On V1's constant capacity the vent shut and the node settled at 1.129 bar a, where the flash
     alone equalled the capacity.)"""
     at = _coupled(1800.0, m314=lambda t: R323_M314_DES * (0.9 if t > 10.0 else 1.0),
                   trace=(1800.0,))
     b2, r = at[1800.0]
-    assert r.p_bara == pytest.approx(1.12246, abs=1e-5)
-    assert (r.pic_op_pct, r.m_702_kgh) == (pytest.approx(6.614, abs=1e-3),
-                                           pytest.approx(125.78, abs=0.01))
-    assert b2.m_701_kgh == pytest.approx(4005.7, abs=0.1)
+    assert r.p_bara == pytest.approx(1.12256, abs=1e-5)
+    assert (r.pic_op_pct, r.m_702_kgh) == (pytest.approx(7.167, abs=1e-3),
+                                           pytest.approx(123.97, abs=0.01))
+    assert b2.m_701_kgh == pytest.approx(4005.3, abs=0.1)
 
 
 def test_the_flash_tank_and_the_condenser_cap_a_shut_vent():
@@ -277,7 +277,8 @@ def test_the_flash_tank_and_the_condenser_cap_a_shut_vent():
 
 def test_the_flash_lost_runs_the_tank_to_its_heel_and_323p008_loses_suction():
     """The 323F004 flash stops, 323P008's low-level trip off (B-93 is the next test): 3136 kg/h
-    still arrives. PIC-323203 shuts the vent 44 s later (66 s from V1's 25 %, on its linear trim)
+    still arrives. PIC-323203 shuts the vent 46 s later (44 s before decision 178; 66 s from V1's 25 %, on its
+    linear trim)
     and the node falls until the condenser
     takes no more than the gas left, 0.875 bar a (V1's constant capacity: 0.695 bar a, the node
     standing where the vent left it). FIC-323418 keeps drawing its 3561.5 kg/h set point, and
@@ -287,7 +288,7 @@ def test_the_flash_lost_runs_the_tank_to_its_heel_and_323p008_loses_suction():
     r, _, first, created, (pic, lic, fic) = _run(4 * 3600.0, dt=1.0,
                                                  m701=lambda t: 0.0 if t > 60.0 else M701,
                                                  trip=False)
-    assert first["vent shut"] == 104.0 and "node floor" not in first
+    assert first["vent shut"] == 106.0 and "node floor" not in first
     assert r.p_bara == pytest.approx(0.87533, abs=1e-5)
     assert first["suction lost"] == first["tank floor"] == 1993.0
     assert r.suction_lost and r.m_kg == e.D011_M_FLOOR_KG

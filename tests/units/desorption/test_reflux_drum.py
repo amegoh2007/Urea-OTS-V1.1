@@ -79,16 +79,16 @@ def test_tv_328002_on_its_vendor_trim():
 
 
 def test_a_cut_in_328c002s_overhead():
-    """737 cut a fifth: less to condense, so TIC-328002 closes TV-328002 to 45.7 % on its Neldisc
+    """737 cut a fifth: less to condense, so TIC-328002 closes TV-328002 to 48.5 (45.7 before decision 178) % on its Neldisc
     and the drum settles 1.7 K cooler (39.5 % and 2 K on V1's linear trim); LIC-328501 draws less,
-    6722 kg/h to 323E003 ten minutes on."""
+    6721 (6722 before decision 178) kg/h to 323E003 ten minutes on."""
     drum, out, made = _run(1200, over=dict(m737=0.8 * t.C002_M737_DES_KGH))
     r = out[-1]
-    assert (r.t_c, r.p_bara, r.level_pct) == (pytest.approx(59.303, abs=1e-3),
-                                              pytest.approx(2.6254, abs=1e-4),
-                                              pytest.approx(48.316, abs=1e-3))
+    assert (r.t_c, r.p_bara, r.level_pct) == (pytest.approx(59.848, abs=1e-3),
+                                              pytest.approx(2.6203, abs=1e-4),
+                                              pytest.approx(48.318, abs=1e-3))
     assert (r.tic_op_pct, r.m_776_kgh, r.m_775_kgh) == (
-        pytest.approx(45.731, abs=1e-3), pytest.approx(6721.76, abs=0.01), 1675.0)
+        pytest.approx(48.541, abs=1e-3), pytest.approx(6720.86, abs=0.01), 1675.0)
     assert abs(made) < 1e-6
 
 
@@ -121,7 +121,7 @@ def test_328c002s_overflow_arrives():
     r = out[-1]
     assert r.in_kgh == d.D001_IN_DES_KGH + 2000.0
     assert (r.level_pct, r.m_776_kgh) == (pytest.approx(53.781, abs=1e-3),
-                                          pytest.approx(10620.81, abs=0.01))
+                                          pytest.approx(10620.65, abs=0.01))
     assert abs(made) < 1e-6
 
 

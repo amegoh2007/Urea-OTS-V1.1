@@ -219,18 +219,18 @@ def test_a_lost_324e006_breaks_stage_2s_vacuum_b66():
     # As-Built §LXII.4): the implicit pressure step's deep trial vacuums boil a little less;
     # 0.151562 before LV-324501A took its equal-percentage sheet (decision 150); 0.151977 with
     # PV-329212 on the chord, before Valmet's S-Disc table ran between its printed points (decision 170).
-    assert r2.p_bara == pytest.approx(0.151560, abs=1e-6)
+    assert r2.p_bara == pytest.approx(0.151903, abs=1e-6)
     r1, r2, tr = run[-1]
     assert r2.p_bara == pytest.approx(0.258704, abs=1e-6)
     assert r2.t_c == pytest.approx(143.874, abs=1e-3)
-    assert (r2.vacuum_op_pct, r2.false_air_kgh) == (pytest.approx(73.414, abs=1e-3),
-                                                    pytest.approx(12.0272, abs=1e-3))
+    assert (r2.vacuum_op_pct, r2.false_air_kgh) == (pytest.approx(73.410, abs=1e-3),
+                                                    pytest.approx(12.0256, abs=1e-3))
     _, p_crit = em.interpolated("324F004", r2.p_bara, 4.1)
     assert p_crit == pytest.approx(0.5404, abs=1e-4)
     assert em.unchoked_fraction(tr.p_324e006_bara, p_crit) == pytest.approx(0.0136, abs=1e-4)
     s = tr.streams_kgh
-    assert (s["712"], s["721"], s["722"]) == (pytest.approx(17.247, abs=1e-3), 0.0,
-                                              pytest.approx(1127.951, abs=1e-3))
+    assert (s["712"], s["721"], s["722"]) == (pytest.approx(17.245, abs=1e-3), 0.0,
+                                              pytest.approx(1127.949, abs=1e-3))
     assert r1.p_bara == pytest.approx(0.33, abs=1e-6)
     assert _pulses([r2.p_bara for _, r2, _ in run], 1e-5) == 0
     assert _pulses(shell, 1e-5) == 0

@@ -138,22 +138,22 @@ def test_the_two_stages_together_hold_the_design():
 def test_a_feed_pump_trip_sends_stage_2_the_melt_its_leg_drains_b63():
     """Handoff B-63, decided 2026-10-02. 323P003 stops: stage 1 makes no melt, while its leg
     drains the melt it holds — 71.5 t/h at 96.05 % urea after 30 s, B-62 boiling it. Stage 2 takes
-    the feed at the leg's strength and finishes it: 1265 kg/h of the feed's water and 659 of its
+    the feed at the leg's strength and finishes it: 1273 (1265 before decision 178) kg/h of the feed's water and 655 (659 before decision 178) of its
     own holdup's boil off (662 on the chord, before decision 170), the melt at 141.9 C and 97.79 %
     (the chests on their vendor trims). The leg runs dry onto stage 1's heel
     at 350 s; stage 2 boils its last, LIC-324501 shuts LV-324501A at 638 s with the level at 21.6 %
     (its equal percentage passing little at low stroke, decision 150), and the melt holds 1496 kg
-    at 98.40 % urea and 161.40 C (161.75 on the chord), the chest isolated at its saturation. The melt never
+    at 98.40 % urea and 161.41 (161.40 before decision 178) C (161.75 on the chord), the chest isolated at its saturation. The melt never
     falls below its 140 C design, where V1 — the strength stage 1 made, 0 — boiled the whole leg
     as water to -83 C in a minute."""
     run = _chain(12005, cut_at=5)
     r1, r2 = run[300]
-    assert r1.w_melt == 0.0 and r1.w["Urea"] == pytest.approx(0.96054, abs=1e-5)
-    assert r1.m_401_kgh == pytest.approx(71534.39, abs=0.01)
-    assert r2.feed_urea_kgh == pytest.approx(68718.27, abs=0.01)
-    assert (r2.m_vap_kgh, r2.m_boil_kgh) == (pytest.approx(1264.94, abs=0.01),
-                                             pytest.approx(658.87, abs=0.01))
-    assert (r2.t_c, r2.w_melt) == (pytest.approx(141.8909, abs=1e-4),
+    assert r1.w_melt == 0.0 and r1.w["Urea"] == pytest.approx(0.96043, abs=1e-5)
+    assert r1.m_401_kgh == pytest.approx(71538.71, abs=0.01)
+    assert r2.feed_urea_kgh == pytest.approx(68714.39, abs=0.01)
+    assert (r2.m_vap_kgh, r2.m_boil_kgh) == (pytest.approx(1272.97, abs=0.01),
+                                             pytest.approx(654.54, abs=0.01))
+    assert (r2.t_c, r2.w_melt) == (pytest.approx(141.8821, abs=1e-4),
                                    pytest.approx(0.97793, abs=1e-5))
     assert all(r.converged and r.t_c >= 140.0 for _, r in run)
     assert next(k for k in range(400, 12005) if run[k][1].m_402_kgh == 0.0) == 6376
@@ -161,4 +161,4 @@ def test_a_feed_pump_trip_sends_stage_2_the_melt_its_leg_drains_b63():
     assert r1.m_401_kgh == 0.0 and r2.m_402_kgh == 0.0 and r2.m_vap_kgh == 0.0 == r2.m_boil_kgh
     assert (r2.m_kg, r2.w["Urea"], r2.t_c) == (pytest.approx(1496.39, abs=0.01),
                                                pytest.approx(0.98396, abs=1e-5),
-                                               pytest.approx(161.3953, abs=1e-4))
+                                               pytest.approx(161.4070, abs=1e-4))

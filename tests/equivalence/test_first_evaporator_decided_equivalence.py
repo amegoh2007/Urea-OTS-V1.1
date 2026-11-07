@@ -191,11 +191,11 @@ def test_pv_329203_on_its_vendor_trim_decided_divergence(v1):
     capacities as its curve, from its 39.31 % design stroke and the normal case's xT 0.52, where
     V1 runs the chest valve linear from 73.80 %. The seed's chest moves 3e-7 bar on the first
     tick on both, and the two trims answer that within 2e-8 bar until the LP header falls 10 % at
-    0.5 s; after five minutes the chest stands at 3.4881 bar a on V1's valve and 3.6289 on the
-    vendor's, the melt at 128.198 and 129.391 C — the Neldisc, low on its curve, holds the chest."""
+    0.5 s; after five minutes the chest stands at 3.4881 bar a on V1's valve and 3.6156 (3.6289 before decision 178) on the
+    vendor's, the melt at 128.198 and 129.277 (129.391 before decision 178) C — the Neldisc, low on its curve, holds the chest."""
     parted, hist = _both(v1, h._step(v1, 5, p_lp=0.9 * P_LP_BARA), 3001, "PV-329203",
                          vendor_trim=True)
     assert parted == 1
     assert abs(hist[4]['chest'][0] - hist[4]['chest'][1]) < 2e-8
-    assert hist[3000]["chest"] == (pytest.approx(3.4881, abs=1e-4), pytest.approx(3.6289, abs=1e-4))
-    assert hist[3000]["T"] == (pytest.approx(128.1984, abs=1e-4), pytest.approx(129.3905, abs=1e-4))
+    assert hist[3000]["chest"] == (pytest.approx(3.4881, abs=1e-4), pytest.approx(3.6156, abs=1e-4))
+    assert hist[3000]["T"] == (pytest.approx(128.1984, abs=1e-4), pytest.approx(129.2766, abs=1e-4))

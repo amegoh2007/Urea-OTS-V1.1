@@ -1719,6 +1719,7 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 346 | The dynamic audits | — | `tests/engine/test_dynamic_audit.py` | **recorded** 2026-10-28: 14 tests, green — the holdups' balances over a disturbance, the trip paths, the updated controllers' transfers, a FAST shutdown with no node ringing, freeze-snapshot-reload-resume, a seeded malfunction fuzz; B-117 signed off as built (§LXXXVIII.5) |
 | 347 | PV-329204, PV-329207A / B, PV-329208 and PV-329212 on Valmet's S-Disc table through their sheets' printed points (decision 170) | the chord between the printed points and from the last to wide open (decisions 108, 153) | `data/control_valves_metso` ``S_DISC_RELATIVE_CV``, ``_s_disc``; every unit's ``*_OP_DES_PCT`` through ``design_stroke_pct`` | **`[DECIDED DIVERGENCE]`** 2026-11-06: every printed point and the rated capacity kept, the table's shape between them; design strokes 55.9717 % (PV-329207B, 54.9630 on the chord), 27.2640 % (PV-329208, 27.2232) and 54.6843 % (PV-329212, 54.6805), PV-329204's 44.1 % and PV-329207A's full stroke unchanged; the chord rebuilt through ``_neldisc`` for the test, both ways in `test_decision_170_both_sides`; the nine conventional Neldiscs keep the chord (§CI.1) |
 | 348 | Trip 22.2 named as the simulator's own on the console (decision 174) | V1's faceplate and refusals: "TRIP 22.2", "trip 22.2" | `data/unit_322_loop` ``TRIP_LABELS``, ``trip_label``; `engine/command_payload` ``_trip_name``; `hmi/faceplates/pump` ``interlock_text`` | **`[DECIDED DIVERGENCE]`** 2026-11-06: "22.2 (simulator)" wherever the console names the trip; the trip's logic and set points V1's (§CIII.3) |
+| 349 | The nine conventional Neldiscs on Valmet's L-series Cv rows through their sheets' printed points (decision 178) | the chord between the printed points and from the last to wide open (decisions 108, 153) | `data/control_valves_metso` ``L_SERIES_CV``, ``_l_series``, ``_through_table``; each unit's design stroke through ``design_stroke_pct`` | **`[DECIDED DIVERGENCE]`** 2026-11-07: every printed point and the rated capacity kept; design strokes +0 to +0.54 stroke-%; both sides pinned in `tests/data/test_control_valves_metso.py` (§CIII.10) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -20493,6 +20494,10 @@ on the committed engine gain 0 alone trades a mode that does not appear there fo
 
 ## CIII.9 The process engineer's answers of 2026-11-07: B-120 (b2), and data gap 7's L1 table proposed
 
+*Corrected the same day: the comparison below read the rows log-linearly between their 10 % nodes. Read
+linearly, as the built trim reads them, the rows reproduce every printed point within 1.5 %, all but PV-323203's
+44.6 % within 0.4 % (§CIII.10's table). The proposal was built as decision 178 (§CIII.10).*
+
 **B-120 (decision 177).** Option (b2): V1's stripper slip gain stays 4.0 in the committed tree, and is set to 0 in the
 same change as B-118's stripper and reactor turndown change, once that is decided, both sides measured. B-120 is
 closed; its evidence (CIII.7) and its build are carried by B-118.
@@ -20536,3 +20541,112 @@ design stroke lies below its last printed point, so the design point does not de
 the nine valves on these rows as decision 170 put the five balanced ones on 2SL120EN's table — every printed point and
 the rated capacity kept, the table's shape between the points and from the last to wide open, both sides measured —
 for the process engineer's review. Until then decision 153 stands and the module is unchanged.
+
+## CIII.10 Decision 178 built: the nine conventional Neldiscs on Valmet's L-series rows; data gap 7 closed
+
+On the process engineer's paste of 2026-11-07 ("Data Gap 7, Decision 178 — Build & Close"). Valmet's three pages were
+archived offline (`D:\Work\reports\Valmet_Cv_table_L1_LANSI150_read_2026-11-07.html`, `..._L1_LANSI300_...`,
+`..._L2_LANSI150_...`). `control_valves_metso`: the rows the nine sheets name are `L_SERIES_CV` (Cv at 10 ... 100 % opening
+by ASME class and DN; source in the module); decision 170's construction is factored out unchanged as `_through_table`
+(the affine map of a vendor table onto each segment between the sheet's anchors), `_s_disc` calls it on the S-Disc
+table and `_l_series` on the L-series row normalised on its full-open Cv. The five balanced valves' characteristics are
+bit-identical to the commit before (checked against `git show 422b6b4`). PV-323203 keeps its rated FpCv 634.57 and its
+FpCv points, the DN 125 row (Cv 840) giving only the shape.
+
+The rows against the sheets, linear between the rows' nodes (`test_the_l_series_rows_are_what_the_sheets_print`):
+
+| valve | row | printed points: travel %, deviation of the row (linear) from the sheet |
+|---|---|---|
+| FV-329401 | ASME 150 DN 200 (Cv 3050) | 14.1 -0.32 %; 26 -0.03 %; 52.9 -0.01 % |
+| FV-329409 | ASME 300 DN 150 (Cv 1240) | 9.1 +0.29 %; 46.4 -0.17 %; 63.5 -0.02 % |
+| HV-323605 | ASME 150 DN 400 (Cv 13700) | 65.1 +0.07 %; 78.1 +0.08 % |
+| PV-323202A | ASME 150 DN 300 (Cv 7300) | 13.2 -0.04 %; 37.8 -0.15 %; 65.9 -0.15 % |
+| PV-323202B | ASME 150 DN 250 (Cv 4870) | 16.5 +0.29 %; 42.4 +0.14 %; 60.3 +0.08 % |
+| PV-323203 | ASME 150 DN 125 (Cv 840) | 20.4 +0.31 %; 44.6 +1.49 % |
+| PV-329202 | ASME 150 DN 200 (Cv 3050) | 20.6 -0.01 %; 34.3 +0.03 %; 52.9 -0.01 % |
+| PV-329203 | ASME 150 DN 250 (Cv 4870) | 17.1 -0.14 %; 39.4 -0.10 %; 61 -0.17 % |
+| TV-328002 | ASME 150 DN 200 (Cv 3050) | 21.2 -0.24 %; 55 +0.11 %; 90.5 -0.08 % |
+
+Both sides (`test_decision_178_both_sides`; the chord rebuilt through `_neldisc`); every printed point and the design
+flow pass to the bit on both:
+
+| valve | capacity fraction at 20 / 30 / 50 / 70 / 90 % travel: the chord -> the L-series trim | design stroke % (chord -> trim) |
+|---|---|---|
+| FV-329401 | 0.057 -> 0.055 / 0.100 -> 0.093 / 0.212 -> 0.204 / 0.508 -> 0.397 / 0.836 -> 0.744 | 26.0000 -> 26.0000 |
+| FV-329409 | 0.086 -> 0.070 / 0.136 -> 0.116 / 0.254 -> 0.245 / 0.494 -> 0.465 / 0.831 -> 0.817 | 46.8464 -> 46.9871 |
+| HV-323605 | 0.105 -> 0.055 / 0.158 -> 0.093 / 0.264 -> 0.204 / 0.410 -> 0.398 / 0.780 -> 0.744 | 64.0789 -> 64.6152 |
+| PV-323202A | 0.062 -> 0.055 / 0.101 -> 0.093 / 0.228 -> 0.205 / 0.431 -> 0.399 / 0.810 -> 0.744 | not wired |
+| PV-323202B | 0.060 -> 0.055 / 0.103 -> 0.093 / 0.213 -> 0.204 / 0.464 -> 0.398 / 0.821 -> 0.744 | not wired |
+| PV-323203 | 0.086 -> 0.086 / 0.157 -> 0.144 / 0.334 -> 0.298 / 0.600 -> 0.510 / 0.867 -> 0.909 | 21.6370 -> 21.9365 |
+| PV-329202 | 0.056 -> 0.055 / 0.096 -> 0.093 / 0.210 -> 0.204 / 0.508 -> 0.397 / 0.836 -> 0.744 | 32.9244 -> 33.1398 |
+| PV-329203 | 0.059 -> 0.055 / 0.100 -> 0.093 / 0.217 -> 0.205 / 0.461 -> 0.399 / 0.820 -> 0.744 | 39.3096 -> 39.3233 |
+| TV-328002 | 0.056 -> 0.055 / 0.108 -> 0.093 / 0.218 -> 0.204 / 0.461 -> 0.397 / 0.750 -> 0.744 | 55.0375 -> 55.0653 |
+
+**The re-pin.** The full suite was run once under a scratch pytest plugin that records every `pytest.approx` pair
+(`rec91plugin.py`), its `!=` corrected to the real comparison after one intro test misread through it, and re-pinned
+at each literal's own decimals, the old value kept in each docstring as "(old before decision 178)" — through a
+parametrize decorator or a local name where the pin is passed that way — and rounded quotations restated likewise.
+Outside the V1 equivalence: 66 values in 22 tests (the units on these valves: the flash gas node and condenser, the
+pre-evaporator, the rectifying column, the reflux drum, the second desorber, the second evaporator, the vacuum train,
+the steam network, the tempered water), and two exact compares: PIC-323203 shuts 323F004's vent 46 s after the flash
+is lost (44 before), and in the 9-bar flood the LP header now dips to 5.00709 bar a at 15 s, rises to 5.01415 at
+150 s and eases to 5.01361 at 300 s, one counted turn where it settled with none (FV-329401's row), its dip, peak and
+end now pinned. Within it, on `E:`: 48 values in 18 tests (the valves' own decided divergences, the vacuum condenser's
+trip through the train, the synthesis loop's decided module through the steam headers) and three exact compares (the
+CO2 cut's 139.5422 / 140.8893 bar a, the cold ends' 1092.1 / 1236.0 kg/h, trip 22.2 at tick 1906 under the melt's rise,
+1928 before). Docstrings restated twice read "new (old before decision 178) (older before decision 170)". Data gap 7's
+row is deleted; 8 data gaps remain.
+
+## CIII.11 Decision 179: the dynamic audit applies decision 163 on 323F010
+
+`tests/engine/test_dynamic_audit.py::test_a_fast_shutdown_with_lv_322501_wide_open_stays_stable` failed on 323F010:
+three successive reversals of its step where the audit allows two. Measured: at tick 805 PT-323204 parks on 0.50585
+bar a — the thermo memo's pressure-bin edge, its quantum 1e-4 bar — and alternates by 1.5-3.3e-7 bar
+(0.00015-0.0003 mbar), steps of 3e-6 bar/tick flattening into the turn; the solver converges to 1e-10 bar, so it is not
+the solver's. It is decision 163's chatter (accepted up to +/-0.012 mbar in a quiet boil, period-two +/-0.22 mbar under a
+surge), 50 times smaller. The process engineer chose to apply decision 163 in the audit: on 323F010 only a reversal is
+counted above 0.012 mbar (`MEMO_CHATTER_BAR`), and any third successive reversal at the general floor
+(`REVERSAL_FLOOR_BAR`, 1e-7 bar) must stay below it (here at most 0.0034 mbar); every other node keeps the 1e-7 floor
+and the limit of two. Two-reversal alternations of up to 0.29 mbar under the blow-through are within the existing
+limit, as before.
+
+## CIII.12 B-118: the engine at Book2's 69.3 % dwell set points
+
+Session 88 found that the engine had never run the plant's own 69.3 % dwell handles. Two arms through session 86's
+runner, copied (`s91/opt_run91.py`, a "ramp_to" mode added: a handle moved from its design value to a target in step
+with the load ramp, then held; `mk91b.py`): the load to 69.3 % at 0.5 %/min, a 1 h settle and a 3 h hold; PIC-329204
+16.6 bar g, TIC-329005 94.1 C, HIC-322602 40 %, HIC-322605 36.1 %, HIC-322604 46.5 %; the ratio trimmed on AY-322701
+3.19 (between 2.0 and 2.6), the levels trimmed as in §CIII.7; MASTER-329207 at design (Book2's value not given).
+
+| arm | trip 22.1 | TT-322005 C | conversion % | LT-322504 | LT-329501 | 322R001 off-gas t/h | AY-322701 |
+|---|---|---|---|---|---|---|---|
+| as built, gain 4 | 2 100 s, on the ramp | 183.0 -> 167.6 | 54.2 -> 37.3 | 100 % from about 900 s | 50 -> 100 % | 22 -> 44 (peak) | 2.85-3.03 |
+| S2's prototype, gain 0 | 2 040 s, on the ramp | 183.0 -> 166.3 | 54.2 -> 34.5 | 100 % from about 1 140 s | 50 -> 100 % | 22 -> 48 (peak) | 2.94-3.19 |
+
+At the trip the handles were about half way to Book2's values (HIC-322605 47 %, HIC-322602 55 %, PIC-329204 18.5 bar a).
+The sequence in both: HIC-322605 closing with the load backs 322R001 up to its band's top; the reactor cools and its
+conversion falls, its off-gas doubles; with 322F001's suction falling as HIC-322602 closes, 322E003's sump fills and
+TT-322015 runs past H2. On this engine Book2's dwell handles, moved with the load, do not prevent the flood: trip 22.1
+comes sooner than on the design handles (57-59 minutes, §CIII.7). Not measured: the plant's path to its dwell (Book2
+holds the dwell's values, not the operators' order of moves) and MASTER-329207 at Book2's value. B-118 stays open; the
+70 % dwell remains its acceptance test.
+
+The process engineer's reading of the trip (2026-11-07, handoff B-118's note for the next session): the blind ramp
+moved HIC-322605 toward Book2's raw 36.1 % where the plant's HVGT-322605 runs at about 50 % at 100 % load and the
+engine's HV-322605 at 60.0 % (`unit_322r001.HIC605_DES_PCT`), so the reactor's outlet was pinched harder than the
+plant's; HIC-322602 was ramped open loop instead of trimmed on LT-329501; MASTER-329207 stayed at design. The next
+B-118 session takes the targets relative to each anchor, trims the spindle on LT-329501 and reads PT-329207's dwell
+median from Book2.
+
+## CIII.13 Tests and checks for decisions 178 and 179
+
+* **The proof run**, normal pytest on the final code after every re-pin (no recorder): `tests/core`, `tests/thermo`,
+  `tests/units`, `tests/engine`, `tests/phase7`, `tests/net`, `tests/hmi`, `tests/docs`, `tests/control` and
+  `tests/test_run.py`: 1 800 passed, none failed (19 min 24 s); `tests/equivalence` and `tests/data` on `E:`: 6 216
+  passed, none failed (44 min 10 s). Every group of the suite has run on the final code, none skipped for V1's tree.
+* `tests/data/test_control_valves_metso.py`: 34 tests, among them the nine trims on their rows to the bit, the rows
+  against the sheets (within 1.5 %), both sides of decision 178 at five travels and the seven wired design strokes.
+* `tests/engine/test_dynamic_audit.py`: decision 179 on 323F010 only, `REVERSAL_FLOOR_BAR` and `MEMO_CHATTER_BAR` named.
+* pyflakes is clean on every touched file; the PyQt6 grep over net, engine, units, control, core, thermo and data prints
+  nothing; `data/control_valves_metso.py` is 357 lines.
+* Not done: the console was not driven by hand; B-118's next arms (the note in its handoff item) were not started.

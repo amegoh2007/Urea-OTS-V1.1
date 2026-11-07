@@ -59,6 +59,15 @@ from ureasim.units.synthesis.condenser_holdup import E002_SPAN_KG
 
 DT = 0.1
 
+#: The dynamic audits' floor on a step reversal [bar]: smaller steps are rounding, not ringing.
+REVERSAL_FLOOR_BAR = 1.0e-7
+
+#: Decision 163 (handoff B-123, 2026-10-31): 323F010's bubble point is V1's thermo memo's, which chatters
+#: at a pressure-bin edge below PT-323204's resolution, by up to +/-0.012 mbar in a quiet boil; accepted
+#: as built. On 323F010 the audit counts a reversal only above it, and a third successive reversal at the
+#: general floor must stay below it (the process engineer's answer of 2026-11-07, session 91).
+MEMO_CHATTER_BAR = 0.012e-3
+
 
 def _plant(settle: int = 20) -> Scheduler:
     sched = Scheduler(*build_plant())
@@ -340,7 +349,9 @@ def _pressures(r: dict) -> dict:
 def test_a_fast_shutdown_with_lv_322501_wide_open_stays_stable():
     """Trip 21.2 by its switch and LV-322501 forced wide open, two minutes at FAST on irregular
     passes: no step faults; no pressure node rings — never more than two successive reversals of
-    its step (decision 78); stage 1's and stage 2's fixed points settle, or stage 2 takes its
+    its step (decision 78; on 323F010 above decision 163's accepted memo chatter, 0.012 mbar, which a
+    third reversal stays below: since decision 178 the blow-through parks PT-323204 on a memo pressure-bin
+    edge, 0.50585 bar a, and it alternates there by 0.00015-0.0003 mbar); stage 1's and stage 2's fixed points settle, or stage 2 takes its
     bracketed root (decision 144), on every tick; and the blow-through lifts SV32351 / SV32352 at
     their 6.01 bar a set (B-114: 35 ticks lifted, PT-323201 to 6.0205)."""
     sched = Scheduler(*build_plant())
@@ -363,10 +374,15 @@ def test_a_fast_shutdown_with_lv_322501_wide_open_stays_stable():
         xs = [s[0][name] for s in seen]
         assert all(math.isfinite(x) for x in xs), name
         steps = [b - a for a, b in zip(xs, xs[1:])]
-        run = longest = 0
+        floor = MEMO_CHATTER_BAR if name == "323F010" else REVERSAL_FLOOR_BAR
+        run = longest = fine_run = 0
         for a, b in zip(steps, steps[1:]):
-            run = run + 1 if a * b < 0.0 and min(abs(a), abs(b)) > 1.0e-7 else 0
+            run = run + 1 if a * b < 0.0 and min(abs(a), abs(b)) > floor else 0
             longest = max(longest, run)
+            fine_run = fine_run + 1 if a * b < 0.0 and min(abs(a), abs(b)) > REVERSAL_FLOOR_BAR else 0
+            if fine_run > 2 and name == "323F010":
+                # Decision 163's chatter: below the floor it is not counted, and it stays below it.
+                assert max(abs(a), abs(b)) < MEMO_CHATTER_BAR, name
         assert longest <= 2, name
     lifted = [s for s in seen if s[3]]
     assert lifted and max(s[0]["PT-323201"] for s in seen) >= SV32351_SET_BARA

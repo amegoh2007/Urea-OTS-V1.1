@@ -222,16 +222,16 @@ def test_tv_328002_on_its_vendor_trim_decided_divergence(v1):
     design seed both duties are 4357 kW and the strokes differ, so the two part on the first tick's
     TIC-328002 output and nothing else. 737 cut a fifth at 5 s: ten minutes on V1's TV-328002 has
     closed 10.5 points, to 39.50 %, and its drum stands at 59.050 C; the Neldisc closes 9.3 points,
-    to 45.73 %, and its drum stands at 59.303 C, 328E004 taking 3446 kW against V1's 3442. Neither
+    to 48.54 (45.73 before decision 178) %, and its drum stands at 59.848 (59.303 before decision 178) C, 328E004 taking 3446 kW against V1's 3442. Neither
     side makes liquid."""
     r = _both(v1, lambda k: _design(m737=(0.8 * t.C002_M737_DES_KGH if k >= 10
                                           else t.C002_M737_DES_KGH)),
               1200, 0.5, None, ALL, port=(rd.RefluxDrum(), rd.RefluxDrumLoops()))
     assert r.parted == 0
     assert (r.a["tic"], r.b.tic_op_pct) == (pytest.approx(39.496, abs=1e-3),
-                                            pytest.approx(45.731, abs=1e-3))
+                                            pytest.approx(48.541, abs=1e-3))
     assert (r.s.a328_d001_T, r.drum.t_c) == (pytest.approx(59.050, abs=1e-3),
-                                             pytest.approx(59.303, abs=1e-3))
+                                             pytest.approx(59.848, abs=1e-3))
     assert abs(r.made) < 1e-6 and abs(r.made_v1) < 1e-6
 
 

@@ -201,13 +201,13 @@ def test_a_neldisc_runs_on_its_printed_points(valve):
     # its printed points, so its design stroke is 54.6843 % (54.6805 % on the chord; both sides are
     # pinned in test_control_valves_metso.py). PV-329203 is conventional and keeps the chord.
     assert cvd.design_stroke_pct(valve, pfd) == pytest.approx(
-        39.3096 if valve.tag == "PV-329203" else 54.6843, abs=1e-4)
+        39.3233 if valve.tag == "PV-329203" else 54.6843, abs=1e-4)
 
 
 @pytest.mark.parametrize("valve, flow, stroke", [
-    (cvd.FV_329401, 6495.0, 26.0), (cvd.PV_329202, 9027.0, 32.9244),
+    (cvd.FV_329401, 6495.0, 26.0), (cvd.PV_329202, 9027.0, 33.1398),
     (cvd.PV_329204, 57989.0, 44.1), (cvd.PV_329207B, 16707.0, 55.9717),
-    (cvd.PV_329208, 11230.0, 27.2640), (cvd.FV_329409, 306000.0, 46.8464)], ids=lambda x: getattr(x, "tag", x))
+    (cvd.PV_329208, 11230.0, 27.2640), (cvd.FV_329409, 306000.0, 46.9871)], ids=lambda x: getattr(x, "tag", x))
 def test_metsos_sheets_25_to_32_run_on_their_printed_points(valve, flow, stroke):
     """Decision 108's class (session 52; wired 2026-10-15, session 53): every printed travel is
     returned exactly, and the design stroke is where the normal case passes the PFD's flow — PFD

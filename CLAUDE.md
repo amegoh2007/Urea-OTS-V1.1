@@ -447,9 +447,11 @@ none of them is optional:
    the bubble point and a root pinned on a memo bin's edge being what the linearisation cannot
    carry, the linearised step kept to the bit elsewhere (decision 162, decision 78's class);
    V1's thermo memo kept as ported where a stage chatters on its bin edges below its
-   transmitter's resolution (decision 163, B-123);
-   a balanced Neldisc's trim on the vendor's published S-Disc table through its sheet's printed points,
-   every printed point and the rated capacity kept (decision 170);
+   transmitter's resolution (decision 163, B-123), the dynamic audit not counting that chatter as ringing
+   (decision 179);
+   a Neldisc's trim on the vendor's published table for its sheet's valve series (the S-Disc table for a balanced
+   valve, the L-series Cv rows for a conventional one) through its sheet's printed points, every printed point
+   and the rated capacity kept (decisions 170, 178);
    a trip no plant logic draws kept as the simulator's own protection, named so wherever the console names it, its
    logic and set points V1's (decision 174);
    and no approximation of

@@ -79,8 +79,8 @@ def test_the_sources_are_weighted_by_the_pfds_own_volumes():
     assert f(1.0, 1.2, 3.2) == pytest.approx(4.2186, abs=1e-4)
 
 
-@pytest.mark.parametrize("tt_322004, p_bara", [(160.0, 3.96652), (172.0, 4.10000),
-                                               (180.0, 4.18406)])
+@pytest.mark.parametrize("tt_322004, p_bara", [(160.0, 3.96453), (172.0, 4.10000),
+                                               (180.0, 4.18171)])
 def test_a_hotter_stripper_raises_the_column_pressure(tt_322004, p_bara):
     """Decided 2026-09-26 (As-Built §XXVIII.6): the flash source reads the LIVE TT-322004. V1's store-key typo
     read 172.0 for ever, and its column could not see the stripper at all."""
@@ -158,7 +158,7 @@ def test_on_the_span_gains_the_closed_loop_settles_below_the_cap():
     t = [r.t_c for r in tail]
     assert max(abs(x - 135.0) for x in t) < 1e-8
     pv = [r.pic_op_pct for r in tail]
-    assert max(pv) - min(pv) < 1e-3 and pv[-1] == pytest.approx(32.924, abs=1e-3)
+    assert max(pv) - min(pv) < 1e-3 and pv[-1] == pytest.approx(33.140, abs=1e-3)
     assert max(r.m_305_kgh for r in tail) < d.M305_DES_KGH
 
 
@@ -196,7 +196,7 @@ def test_the_blowthrough_loads_the_column_by_its_own_volume():
     assert first.p_target_bara == rc.column_pressure_target_bara(
         first.flash_gas_ratio, first.heater_gas_ratio, d.E003_P_DES_BARA, blow_m3h)
     last = _blown(30.0)[-1]
-    assert last.p_bara == pytest.approx(5.4531, abs=1e-4) and not last.relief_lifted
+    assert last.p_bara == pytest.approx(5.4486, abs=1e-4) and not last.relief_lifted
 
 
 def test_sv32351_pops_at_set_and_reseats_on_its_blowdown():
@@ -233,8 +233,8 @@ def test_pv_329202_on_its_vendor_trim_holds_the_chest_on_a_falling_header():
     """Decision 108's class, applied 2026-10-15: PV-329202 on Metso's DN 200 Neldisc from its
     32.92 % design stroke, where V1 runs it linear from 77.79 % (the harness proves V1's ==).
     The LP header 10 % down from 0.5 s: after five minutes V1's valve stands wide at 95.6 %, the
-    chest at 3.8084 bar a and the column at 134.200 C; the Neldisc, at 38.3 %, holds the chest at
-    3.8940 and the column at 134.936 C."""
+    chest at 3.8084 bar a and the column at 134.200 C; the Neldisc, at 39.3 (38.3 before decision 178) %, holds the chest at
+    3.8909 (3.8940 before decision 178) and the column at 134.900 (134.936 before decision 178) C."""
     def run(chest):
         col = rc.RectifyingColumn(chest=chest)
         tic, pic, lic = rc.tic_323007(), rc.pic_329202(chest), rc.lic_323501()
@@ -244,6 +244,6 @@ def test_pv_329202_on_its_vendor_trim_holds_the_chest_on_a_falling_header():
         return col.chest_p_bara, col.t_c, pic.op
     assert run(rc.V1_CHEST) == (pytest.approx(3.8084, abs=1e-4), pytest.approx(134.200, abs=1e-3),
                                 pytest.approx(95.61, abs=0.01))
-    assert run(rc.PV_329202_CHEST) == (pytest.approx(3.8940, abs=1e-4),
-                                       pytest.approx(134.936, abs=1e-3),
-                                       pytest.approx(38.32, abs=0.01))
+    assert run(rc.PV_329202_CHEST) == (pytest.approx(3.8909, abs=1e-4),
+                                       pytest.approx(134.900, abs=1e-3),
+                                       pytest.approx(39.31, abs=0.01))

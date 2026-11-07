@@ -38,11 +38,11 @@ def test_the_design_point():
 
 
 def test_the_valves_and_controllers():
-    """LV-323501 linear from 56.65 %, FL 0.9319; PV-329202's Neldisc from 32.92 %, xT 0.53; the
+    """LV-323501 linear from 56.65 %, FL 0.9319; PV-329202's Neldisc from 33.14 (32.92 before decision 178) %, xT 0.53; the
     cascade on span, TIC-323007 0.075 bar/K and PIC-329202 10.83 %/bar."""
     assert (c003.LV501_CHAR, c003.LV501_FL) == ("linear", 0.9319)
     assert c003.LV501_OP_DES_PCT == pytest.approx(56.6495, abs=1e-4)
-    assert (c003.PV_329202_OP_DES_PCT, c003.PV_329202_XT) == (pytest.approx(32.9244, abs=1e-4),
+    assert (c003.PV_329202_OP_DES_PCT, c003.PV_329202_XT) == (pytest.approx(33.1398, abs=1e-4),
                                                               0.53)
     assert c003.TIC_323007_KC == pytest.approx(0.075, rel=1e-15)
     assert c003.PIC_329202_KC == pytest.approx(10.8333, abs=1e-4)

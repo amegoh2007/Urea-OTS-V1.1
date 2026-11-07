@@ -59,12 +59,12 @@ def test_the_tempered_water_holds_its_design():
 
 def test_both_pumps_stopped_the_circulation_decays_on_its_lag():
     """No head: FT-329409 falls on its 3 s lag while FIC-329409 opens FV-329409 against it — from
-    its Neldisc's 46.85 % to 88.7 % in 30 s (V1's valve, from 60 %, is wide open by then)."""
+    its Neldisc's 46.85 % to 88.9 (88.7 before decision 178) % in 30 s (V1's valve, from 60 %, is wide open by then)."""
     loop = CcwLoop(p329p006a=False)
     for _ in range(300):
         c = loop.step(1.0, 0.0, DT)
     assert c.pump_frac == 0.0 and c.m_ccw_kgh < 1.0e-3 * CCW_KGH_DES
-    assert c.fv_329409_pct == pytest.approx(88.718, abs=1e-3)
+    assert c.fv_329409_pct == pytest.approx(88.859, abs=1e-3)
     loop = CcwLoop(p329p006a=False, **V1_FV_329409)
     for _ in range(300):
         c = loop.step(1.0, 0.0, DT)
@@ -75,8 +75,8 @@ def test_fv_329409_on_its_vendor_trim():
     """Decision 108's class, decided 2026-10-15: FV-329409 on Metso's DN 150 Neldisc from 46.85 %,
     where its normal case passes 306 t/h at the sheet's 95 C (V1 linear from 60 %; the harness
     proves V1's ``==``). FIC-329409's set point cut 10 %: five minutes on, V1's valve at 57.76 % with
-    294.68 t/h, the Neldisc at 45.23 % with 292.09; after an hour 54.02 % and 42.83 %, both on
-    275.5 t/h. Ten points opened by hand: V1's valve passes 357.0 t/h, the Neldisc 438.0."""
+    294.68 t/h, the Neldisc at 45.50 (45.23 before decision 178) % with 291.16 (292.09 before decision 178); after an hour 54.02 % and 43.95 (42.83 before decision 178) %, both on
+    275.5 t/h. Ten points opened by hand: V1's valve passes 357.0 t/h, the Neldisc 427.1 (438.0 before decision 178)."""
     seen = {}
     for name, loop in (("v1", CcwLoop(**V1_FV_329409)), ("port", CcwLoop())):
         loop.fic_sp = 306.0 * 0.9
@@ -85,11 +85,11 @@ def test_fv_329409_on_its_vendor_trim():
             if k in (3000, 36000):
                 seen[name, k] = (loop.fic_pv, loop.fic_op)
     assert seen["v1", 3000] == (pytest.approx(294.677, abs=1e-3), pytest.approx(57.762, abs=1e-3))
-    assert seen["port", 3000] == (pytest.approx(292.090, abs=1e-3),
-                                  pytest.approx(45.227, abs=1e-3))
+    assert seen["port", 3000] == (pytest.approx(291.156, abs=1e-3),
+                                  pytest.approx(45.501, abs=1e-3))
     assert seen["v1", 36000][1] == pytest.approx(54.023, abs=1e-3)
-    assert seen["port", 36000][1] == pytest.approx(42.833, abs=1e-3)
-    for loop, flow in ((CcwLoop(**V1_FV_329409), 357.0), (CcwLoop(), 437.977)):
+    assert seen["port", 36000][1] == pytest.approx(43.949, abs=1e-3)
+    for loop, flow in ((CcwLoop(**V1_FV_329409), 357.0), (CcwLoop(), 427.149)):
         loop.fic_mode, loop.fic_op = "MAN", loop.fic_op + 10.0
         for _ in range(600):
             loop.step(1.0, 0.0, DT)

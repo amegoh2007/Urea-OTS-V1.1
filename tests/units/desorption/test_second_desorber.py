@@ -191,15 +191,15 @@ def test_fv_329401_on_its_vendor_trim_holds_the_stripping_steam_on_a_sagging_hea
     """Decision 108's class, decided 2026-10-15: FV-329401 on Metso's DN 200 Neldisc from its
     26.0 % design stroke and its normal case's xT 0.53, where V1 runs it linear from 50 % on the
     globe's 0.75 (the harness proves V1's ``==``). The LP header at 4.5 bar a: 30 s on, V1's valve
-    passes 5291 kg/h at 53.9 %, the Neldisc 5775 at 28.4 %; after half an hour V1's 6426 at 68.2 %,
-    the Neldisc 6494.5 at 30.9 %. At 4.1 bar a V1's valve is wide open on 5690 kg/h and 17.8 uS/cm
-    of ammonia reaches AI-328701; the Neldisc holds 6457 kg/h at 45.7 % and 7.0 uS/cm."""
+    passes 5291 kg/h at 53.9 %, the Neldisc 5632 (5775 before decision 178) at 28.8 (28.4 before decision 178) %; after half an hour V1's 6426 at 68.2 %,
+    the Neldisc 6493.9 (6494.5 before decision 178) at 32.5 (30.9 before decision 178) %. At 4.1 bar a V1's valve is wide open on 5690 kg/h and 17.8 uS/cm
+    of ammonia reaches AI-328701; the Neldisc holds 6462 (6457 before decision 178) kg/h at 47.5 (45.7 before decision 178) % and 7.0 uS/cm."""
     v1, port = _sagging_header(True, 4.5), _sagging_header(False, 4.5)
     assert v1[0] == (pytest.approx(5291.2, abs=0.1), pytest.approx(53.863, abs=1e-3))
-    assert port[0] == (pytest.approx(5775.2, abs=0.1), pytest.approx(28.391, abs=1e-3))
+    assert port[0] == (pytest.approx(5632.0, abs=0.1), pytest.approx(28.832, abs=1e-3))
     assert v1[1] == (pytest.approx(6426.2, abs=0.1), pytest.approx(68.243, abs=1e-3))
-    assert port[1] == (pytest.approx(6494.5, abs=0.1), pytest.approx(30.921, abs=1e-3))
+    assert port[1] == (pytest.approx(6493.9, abs=0.1), pytest.approx(32.535, abs=1e-3))
     v1, port = _sagging_header(True, 4.1), _sagging_header(False, 4.1)
     assert v1[1] == (pytest.approx(5690.4, abs=0.1), 100.0) and v1[2] == pytest.approx(17.75, abs=0.01)
-    assert port[1] == (pytest.approx(6456.9, abs=0.1), pytest.approx(45.717, abs=1e-3))
-    assert port[2] == pytest.approx(7.04, abs=0.01)
+    assert port[1] == (pytest.approx(6462.2, abs=0.1), pytest.approx(47.459, abs=1e-3))
+    assert port[2] == pytest.approx(6.99, abs=0.01)

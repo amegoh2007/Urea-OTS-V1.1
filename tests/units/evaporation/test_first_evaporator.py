@@ -71,7 +71,7 @@ def test_a_lost_header_dilutes_the_melt():
 
 def test_a_lost_feed_boils_the_held_melt_as_it_drains_b62():
     """Handoff B-62, decided 2026-10-01. 323P003 stops. The chest's duty, no longer spent on the
-    feed, boils the held melt: about 1.14 t/h after a minute, the melt at 150.15 C and 96.81 %,
+    feed, boils the held melt: about 1.14 t/h after a minute, the melt at 150.02 (150.15 before decision 178) C and 96.81 %,
     holding at its own boiling point as it concentrates. The chest fills to the 5.013 bar a
     header; at 151.82 C (PV-329203 on its vendor trim) the melt's equilibrium at the vacuum is
     97.06 % and it
@@ -82,8 +82,8 @@ def test_a_lost_feed_boils_the_held_melt_as_it_drains_b62():
                       TV, 0.1)
         if k == 600:
             assert (r.t_c, r.m_boil_kgh, unit.w["Urea"]) == (
-                pytest.approx(150.1493, abs=1e-4), pytest.approx(1135.67, abs=0.01),
-                pytest.approx(0.96814, abs=1e-5))
+                pytest.approx(150.0177, abs=1e-4), pytest.approx(1179.89, abs=0.01),
+                pytest.approx(0.96803, abs=1e-5))
         assert r.converged
     assert unit.m_kg == 1.0 and r.m_401_kgh == 0.0
     assert r.m_vap_kgh == 0.0 == r.m_boil_kgh
