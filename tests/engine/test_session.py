@@ -5,7 +5,9 @@ snapshots together for the station server. Pinned: the wall clock paid in whole 
 pacing; freeze; the operator's command reaching the plant and a refusal carrying its reason; an
 exercise saved, the plant moved on, the exercise restored and replaying; reset to the seed; the
 console packet published with V1's health block, recorded in the historian on V1's paths and
-read back as a trend's backfill; a physics fault held in the health block until a clean pass.
+read back as a trend's backfill; a physics fault held in the health block until a clean pass; the
+exercises shipped with the simulator listed and restored beside the instructor's, never written or
+shadowed (decision 171).
 
 A held plant is not a silent one (handoff A-27, decision 169): a plant reset or restored while frozen
 shows its rehearsed first tick, with its own clock, and is not stepped; the first tick it takes later
@@ -244,3 +246,52 @@ def test_the_first_real_tick_replaces_the_rehearsal(tmp_path):
     s.frozen = False
     s.advance(300_000_000)
     assert s.published_state()["t_sim"] == pytest.approx(0.3) and s.scheduler.results
+
+
+# -- the shipped exercises beside the instructor's (decision 171) --------------------------------------------
+
+
+def _two_folders(tmp_path) -> tuple[EngineSession, object, object]:
+    """A shipped folder holding one saved state and an instructor's folder holding another, both real."""
+    shipped, own = tmp_path / "shipped", tmp_path / "own"
+    shipped.mkdir()
+    s = EngineSession(own, shipped_dir=shipped)
+    s.simulator.run(10)
+    assert s.handle({"type": "snapshot_save", "name": "drill"}) == (True, "")
+    (own / "drill.json").replace(shipped / "steady.json")             # a state shipped with the simulator
+    s.simulator.run(10)
+    assert s.handle({"type": "snapshot_save", "name": "drill"}) == (True, "")
+    return s, shipped, own
+
+
+def test_the_shipped_exercises_are_listed_and_restored_beside_the_instructors(tmp_path):
+    s, shipped, own = _two_folders(tmp_path)
+    assert s.exercises() == ["drill", "steady"]
+    assert s.handle({"type": "snapshot_load", "name": "steady"}) == (True, "")
+    assert s.plant.clock.tick == 10                                   # the shipped one
+    assert s.handle({"type": "snapshot_load", "name": "drill"}) == (True, "")
+    assert s.plant.clock.tick == 20                                   # the instructor's own
+    assert sorted(p.name for p in shipped.iterdir()) == ["steady.json"]   # nothing written there
+
+
+def test_a_save_never_writes_the_shipped_folder_or_shadows_a_shipped_name(tmp_path):
+    s, shipped, own = _two_folders(tmp_path)
+    before = (shipped / "steady.json").read_bytes()
+    ok, reason = s.handle({"type": "snapshot_save", "name": "steady"})
+    assert not ok and "shipped" in reason and "another name" in reason
+    assert (shipped / "steady.json").read_bytes() == before and not (own / "steady.json").exists()
+    (own / "steady.json").write_bytes((own / "drill.json").read_bytes())   # a copy put there by hand
+    assert s.exercises() == ["drill", "steady"]                       # listed once
+    assert s.handle({"type": "snapshot_load", "name": "steady"}) == (True, "")
+    assert s.plant.clock.tick == 10                                   # a shipped name is the shipped file
+
+
+def test_without_a_shipped_folder_the_instructors_folder_is_the_only_one(tmp_path, monkeypatch):
+    monkeypatch.delenv(session_module.EXERCISE_DIR_ENV, raising=False)
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
+    monkeypatch.setenv("HOME", str(tmp_path))
+    s = EngineSession()
+    assert s.shipped_dir is None and s.exercise_dir == tmp_path / "ureasim-exercises"
+    assert s.exercises() == []
+    monkeypatch.setenv(session_module.EXERCISE_DIR_ENV, str(tmp_path / "env"))
+    assert EngineSession(shipped_dir=tmp_path / "shipped").exercise_dir == tmp_path / "env"

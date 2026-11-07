@@ -1717,6 +1717,8 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 344 | The vacuum bleeds on the design basis (decision 159) | — | `data/unit_324_train` (unchanged) | **recorded** 2026-10-28: the 8-10 October trend at 112.5 % load leaves the 1750 MTPD design strokes standing; the data-gap row closed (§LXXXVIII.3) |
 | 345 | TIC-328008 and FFIC-335406 on their faceplates (decision 160) | V1's 240 kg/h per mol% and 110 s; V1's PI master on the ratio, 0.5 and 60 s | `data/unit_328d001` ``TIC_328008_KC``, ``H2O_737_WT_PER_MOL``; `data/unit_335` ``FFIC_335406_RAT_*``, ``FFIC_335406_OUT_*``; `units/finishing/uf85_dosing` ``ffic_335406(station=)`` | **`[DECIDED DIVERGENCE]`** 2026-10-28: 84.59 kg/h per mol% and 60 s; a ratio station on RAT H 0.0080 and OUT H 0.80 t/h, the PFD's 0.0081260 its seed; V1's on the harnesses, both sides in `test_reflux_drum_decided_equivalence.py` and `test_uf85_dosing_equivalence.py` (§LXXXVIII.4) |
 | 346 | The dynamic audits | — | `tests/engine/test_dynamic_audit.py` | **recorded** 2026-10-28: 14 tests, green — the holdups' balances over a disturbance, the trip paths, the updated controllers' transfers, a FAST shutdown with no node ringing, freeze-snapshot-reload-resume, a seeded malfunction fuzz; B-117 signed off as built (§LXXXVIII.5) |
+| 347 | PV-329204, PV-329207A / B, PV-329208 and PV-329212 on Valmet's S-Disc table through their sheets' printed points (decision 170) | the chord between the printed points and from the last to wide open (decisions 108, 153) | `data/control_valves_metso` ``S_DISC_RELATIVE_CV``, ``_s_disc``; every unit's ``*_OP_DES_PCT`` through ``design_stroke_pct`` | **`[DECIDED DIVERGENCE]`** 2026-11-06: every printed point and the rated capacity kept, the table's shape between them; design strokes 55.9717 % (PV-329207B, 54.9630 on the chord), 27.2640 % (PV-329208, 27.2232) and 54.6843 % (PV-329212, 54.6805), PV-329204's 44.1 % and PV-329207A's full stroke unchanged; the chord rebuilt through ``_neldisc`` for the test, both ways in `test_decision_170_both_sides`; the nine conventional Neldiscs keep the chord (§CI.1) |
+| 348 | Trip 22.2 named as the simulator's own on the console (decision 174) | V1's faceplate and refusals: "TRIP 22.2", "trip 22.2" | `data/unit_322_loop` ``TRIP_LABELS``, ``trip_label``; `engine/command_payload` ``_trip_name``; `hmi/faceplates/pump` ``interlock_text`` | **`[DECIDED DIVERGENCE]`** 2026-11-06: "22.2 (simulator)" wherever the console names the trip; the trip's logic and set points V1's (§CIII.3) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -19855,3 +19857,682 @@ skipped (the three tests that need a GPU and the probe, which needs a platform w
 every file touched; the PyQt6 grep over `net`, `engine`, `units`, `control`, `core` and `thermo` prints nothing; the
 new modules are `rehearsal.py` (71 lines), `canvas.py` (116) and tests, and none of `session.py` (255), `splash.py`
 (255) or `data/intro.py` (315) is near 600 lines.
+
+# Part C — The load workbook's gaps researched: Book2's load dwells below 92 % and the licensor's load procedure (session 88)
+
+Session 88 (2026-11-05) ran the process engineer's directive to resolve the gaps of the load workbook
+(`D:\Work\Urea_Plant_Load_Optimization_70_to_115.xlsx`, Parts LXXXIX and XCIII) by research. No equation was ported or
+changed, nothing under `ureasim/` was touched, and no decision was taken. The research notes are in the session
+scratchpad (`research_notes/Load workbook gap closure/`, notes 01-04, scripts in `s88/`); the report is
+`D:\Work\reports\Load workbook gap closure.md`.
+
+## C.1 The workbook's basis
+
+The workbook was built at 7a8fa3a. `git diff --stat 7a8fa3a 97f6372` over `ureasim/units`, `control`, `core`, `thermo`,
+`data` and `engine` shows only the start-up intro's data and the frozen plant's rehearsal (decisions 166-169), neither
+on a transient's path. The engine values on the sheets stand; the basis note now says so.
+
+## C.2 Book2's load dwells below 92 %
+
+Book2 (`References/DCS Trends/Book2.xlsx`, 2023-07-07 to 2023-09-07, 5 280 samples about 16.8 min apart) was read
+before as bands at 92.3, 102.5, 108.6 and 111 %, its lower samples taken for transients. Two planned load cuts dwell
+for hours below 92 %:
+
+* 2023-07-25: 106 % to 70 % at 06:40, held at 69.8-70.8 % to 09:45, at 59-62 % from 10:18 to 13:40, at 63-67 % to
+  15:37 and at 78-81 % from 16:11 to 18:25; 92 % by 19:16.
+* 2023-08-19: 100 % to 66.8-69.4 %, held from 08:06 to 13:09; 101 % by 14:16.
+
+A band holds the samples within +/-2.5 % of its column in contiguous runs of at least 4 samples (about 1 h), so ramp
+samples are excluded (`s88/bands88.py`). Medians:
+
+| tag | 60.7 % (n 13) | 69.3 % (n 28) | 80.4 % (n 9) | 94.2 % (n 135) | 100.3 % (n 7) |
+|---|---|---|---|---|---|
+| TT-322005 [C] | 181.76 | 181.49 | 182.29 | 182.37 | 182.77 |
+| TT-322004 [C] | 162.95 | 161.98 | 165.25 | 166.29 | 167.67 |
+| AY-322701 [-] | 3.26 | 3.19 | 3.19 | 3.25 | 3.21 |
+| FFIC-321404B [-] | 2.27 | 2.12 | 2.12 | 2.11 | 2.07 |
+| PIC-329204 [bar g] | 16.20 | 16.59 | 17.59 | 18.20 | 19.00 |
+| PT-329207 [bar g] | 4.40 | 4.40 | 4.18 | 4.08 | 4.05 |
+| TIC-329005 [C] | 104.99 | 94.08 | 95.09 | 89.98 | 86.48 |
+| HV-322602 [%] | 34.48 | 40.03 | 54.26 | 59.00 | 63.00 |
+| HVGT-322605 [%] | 34.46 | 36.14 | 41.11 | 47.83 | 50.24 |
+| HIC-322604 [%] | 45.00 | 46.54 | 51.00 | 51.00 | 55.01 |
+| PT-329201 [bar g] | 134.24 | 132.11 | 136.49 | 136.83 | 139.98 |
+| LT-329501 [%] | 0.09 | 11.45 | 1.00 | 10.32 | 28.88 |
+| FY-329403 [t/h] | 42.35 | 40.39 | 56.04 | 54.14 | 57.75 |
+
+Checked on the process side (least-squares slope and span over each window, its transition sample dropped): near
+70 % TT-322005 moves at most 0.24 K/h within 0.95 K and AY-322701 within 0.07, while PT-329201 drifts up to
++1.15 bar/h (2023-08-19), TT-322004 -0.71 K/h and FY-329403 -2.6 t/h per hour (2023-07-25); the 80.4 % window is
+the return to load (load +0.6 %/h, TT-322004 +1.8 K/h). The 92 % run of 2023-07-18 (10.4 h) moves at most 0.03
+per hour. These are dwells, the reactor top steady and no trip, not steady states by the workbook's hold
+criterion. The 94.2 % band draws on the same 18-20 July samples as the 92.3 % band.
+
+75, 85 and 115 % have no dwell; Book2's highest load is 112.27 %. The plant keeps the reactor top inside the licensor's
+180-183 C from 60.7 to 111 %, where the engine at 70-80 % trips 22.1 with TT-322005 at 165-167 C or 22.2 with the loop
+NH3-lean (Part XCIII). The workbook's 70 % relations differ from the plant's 69.3 % moves: HV-322602 10.9 % against
+40.0 %, HVGT-322605 41.4 % against 36.1 %, HIC-322604 62.9 % against 46.5 %, TIC-329005 111.5 C against 94.1 C,
+PIC-329204 16.3 against 17.6 bar a. The engine has not been run on the plant's 69.3 % or 80.4 % set points.
+
+## C.3 The licensor's load procedure
+
+Uhde's Operating Manual Part III (UD-VT-G00-DC-0003 rev. 00, ten scanned files mapped by the archive's TOC,
+UD-AM-G00-AB-0022 pages 18-19) was rendered at 200 dpi and read with Windows OCR, sections 0, 1, 2, 4, 5, 6, 7 and 8:
+
+* page 4-16 (4.1.5.2): the synthesis is started on 70 % of the design CO2, a fill step before the reactor
+  overflows;
+* pages 4-18 to 4-20 (4.1.5.4-5): TIC-329005 to about 80 C once the scrubber condenses; PI-329201 to about 136 bar by
+  the LP drums' master; 329D005 at about 17.0 bar before the overflow; LI-322504 about 50 % on HIC-322605; the stripper
+  outlet 168-173 C; feed N/C 2.0, reactor N/C 2.9-3.1;
+* page 4-28 (4.1.5.9): the load raised in 10 % steps, the reactor N/C 2.9-3.1, PI-329201 near 141 bar on PIC-329207,
+  PIC-329204 for 7.9 wt% NH3 and 168-173 C at the stripper outlet, HV-322604 against inert accumulation and 322C001's
+  overload, the scrubber run for its largest water rise (about 15 C at 245 m3/h), 322E003's level on the spindle;
+* page 6-3 (6.1.2): a planned stop first cuts the load to 70 %, the feed N/C at 2.0, in the reverse of 4.1.5;
+* page 1-82: PIC-329204 between 17.0 and 20.0 bar, dependent on the plant capacity; page 1-58: the ejector "also
+  self-regulating to a certain extent"; page 1-24: biuret rises below design capacity;
+* pages 7-51 to 7-56 (7.2.4): the analysis-based conversion urea / (urea + 1.365 CO2) in wt%, worked to 58.8 % at the
+  reactor outlet with N/C 2.89, and the stripping efficiency urea / (urea + 1.765 NH3), 0.80 in the example.
+
+Both 70 % statements are transitional, on the way to the overflow or to the stop. No minimum load is stated, and
+no set point for 75-95 % or above 100 %. The open literature (CRU Nitrogen+Syngas,
+UreaKnowHow round table "Problem No. 24: Why is the minimum urea plant load 60%?", 2014) puts the usual floor near
+60 %, consistent with Book2's 60.7 % hold; it enters no cell.
+
+## C.4 The workbook as finalized
+
+* The plant-practice block (rows 89-104 of both objective sheets) filled at 70 % (69.3 %, two dwells), 80 % (80.4 %, the
+  return to load) and 95 % (94.2 %, the 92.5-97.5 % band, the same July samples as the 90 % column's) in the cells' own style; a dated note (row 176) and a re-check sentence on the basis
+  note (row 160).
+* New sheet "Plant holds (Book2)": every load dwell from 60.7 to 111 %, median and 10-90 % range, the runs' dates, an
+  approximate specific steam (FY-329403 over load x 1 750 t/d: 957, 980, 799, 956, 793, 788, 790, 802 and 819 kg/t
+  from 60.7 to 111 %), and the licensor's references of C.3.
+* New sheet "Gap register": ten workbook gaps (W1-W10) and the eleven data gaps (D1-D11), each with the engine's
+  record, the evidence and a status: 3 resolved, 6 awaiting B-118 or B-120, 11 with no source, 1 open (W9, the
+  plant's 69.3 % and 80.4 % set points not yet run).
+* No engine value and no existing formula changed: 417 formulas (403 before), none in error on Excel's full
+  recalculation; the charts kept; the original saved as `s88/Urea_Plant_Load_Optimization_70_to_115.orig.xlsx`.
+
+## C.5 Data gaps
+
+No file under `References\` is newer than 2026-10-25. The manual's section 7 (Operational Checks: corrosion,
+maintenance, leak detection, analysis, the radioactive level calibration) and section 8 print no interlock limit, a
+negative result added to data gaps 2, 5, 6 and 8. Book2's holds add two operating points to data gap 1 (LT-329501
+11 % at HV-322602 40 %, 1 % at 54 %), not the geometry. The other six gaps had no new lead.
+
+## C.6 Checks
+
+The session's commits came first: f1e470b (session 86's decision-139 record, staged on HEAD alone) and 97f6372
+(session 87's A-26 and A-27 work; its affected tests 276 passed, the PyQt6 grep empty). After them the tree held only
+this session's edits to `handoff.md`, `project.md` and this reference; no code changed, so no test was re-run.
+
+# Part CI — Open gaps: resolution routes researched, and the Neldisc S-Disc table checked against the sheets (session 89)
+
+Session 89 (2026-11-06) took the process engineer's directive to find solutions that resolve every open gap
+(A-28, B-118, B-120 and the 11 open data gaps). The research ran inline, CLAUDE.md excluding sub-agents; its report
+is `D:\Work\reports\Open gaps resolution routes.md`. The advisor (Opus) reviewed the routes before the report was
+written, and again before the build. The process engineer approved the report's Neldisc route ("Adopt, measure both"), built as decision 170 (CI.1, CI.5); the other routes (CI.2, CI.3) changed nothing.
+
+## CI.1 Neldisc: Valmet's S-Disc table reproduces the five balanced valves (data gap 7)
+
+Valmet bulletin 2SL120EN (4/2022, public) is the Neldisc with the flow-balancing trim, the "S-Disc"; its Table 2 gives
+Cv / Cv max at 10-100 % opening for ASME 150, 300 and 600. The Metso sizing sheets (`UD-MR-G00-DZ-0031-009`, PDF pages
+29-33, read from the page images) print "BALANCED NELDISC, valve serie S-L-ANSI150" on PV-329207A, PV-329207B,
+PV-329208 and PV-329212, and "S-L-ANSI300" on PV-329204. Their printed points against Table 2 (the class's column):
+
+| Valve | Column | Deviation at the three printed points |
+|---|---|---|
+| PV-329212 | ASME 150 | +0.7, +0.6, +0.4 % |
+| PV-329207A | ASME 150 | -0.2, -0.2, -0.1 % |
+| PV-329208 | ASME 150 | +1.0, +0.2, -0.1 % |
+| PV-329207B | ASME 150 | +1.2, -0.8, -1.2 % on the catalogue Cv 2580 (+6.7, +4.6, +4.2 % on its FpCv 2447.16) |
+| PV-329204 | ASME 300 | +0.4, -0.2, -1.3 % on the catalogue Cv 1640 (+2.6, +2.0, +0.9 % on its FpCv 1604.25) |
+
+* The module's linear chord (decision 108, kept by decision 153) departs from Table 2 above each valve's last printed
+  travel by -2.9 to +4.6 % of rated Cv (PV-329207B +4.6 % at 70 %, PV-329212 -2.9 % at 90 %). Every design stroke lies
+  below the last printed point, so the design point does not depend on it.
+* **Correction to §LXXXVI.4.** Session 71's "the sheets print up to 30 % less than the bulletin" compared FV-329401's
+  0.228 at 52.9 % with 0.326. 0.326 is Table 2's ASME 150 value at 52.9 %, the S-Disc's, and FV-329401 is a
+  conventional (unbalanced) Neldisc. Against FV-329401, PV-329202 and PV-329203 the S-Disc table is 28-36 % high;
+  the finding was a family mismatch, not a disagreement between the sheets and the vendor's curve.
+* Bulletin 2LW22EN (1/2024, public), the conventional Neldisc, says "nearly equal percentage" and prints full-open Cv
+  by size, with no Cv-against-opening table. The nine conventional valves still have no table. Indicative only, not a
+  datum: a pooled ln-quadratic fit through their 15 printed points, anchored at 100 % = 1.0 (rms residual 5 %), puts the
+  chord 13-22 % above the curve at 70-80 % travel for FV-329401, PV-329202 and PV-329203.
+* Adopted as decision 170 (CI.5), superseding decision 153 for these five valves, with both sides measured (CLAUDE.md §5.6). The
+  route stated here, normalising on the catalogue Cv with Fp kept separate, was replaced by anchoring on the printed points.
+
+## CI.2 The vendor archive, again
+
+The vendor TOC (`TOC_UD_AM_G00_AB_0022_000_01_HL.pdf`, 1 730 pages, every page with a text layer) was extracted and
+searched in full.
+
+* Its "Performance Curves" rows belong to machines (301K001, 303, 309K001, 335K001-007); no ejector has one.
+* The urea-unit loop diagrams `UD-MR-321` to `-329-FS-0001`, not recorded as read before, are loop wiring: instrument,
+  junction box, remote I/O board and channel, AC4 database tag. The unit 322 file was opened (66 pages, scanned); it
+  carries no alarm limit, hysteresis or tap datum. The other six are the same series and were not opened.
+* Unopened scanned leads: `UD-MR-G00-DZ-0009-006` (instrument hook-up details), `UD-MR-G00-AB-0278` and
+  `UD-MR-G00-LD-0001` (typical hook-ups), `UD-AU-329-DZ-0014-024` (instrument and setpoint list of package 329U001).
+  Hook-ups show a transmitter's connection, not tap spacing. The instrument drawings among the 1 567 `DZ` rows of the
+  urea units were not searched one by one.
+
+## CI.3 A-28 and the routes
+
+A-28 option (a) needs two additions: the age is a wall-clock monotonic stamp set in `StationServer.publish`, not the
+plant time (a frozen plant publishes at 10 Hz with its clock held), and the hello handler's replay of `_status` ages
+under the same rule (it can read "ENGINE RUNNING" over an empty snapshot). B-118 and B-120 wait on the process
+engineer's B-120 decision, B-118's narrowed items being measured with V1's slip term off. The report groups the data
+gaps by who acts: one DCS readback session (2, 5, 8, 9), vendor requests (1, 3, 11), a site walk-down (4, 10), a decision
+(6; and 7 and 11 as above).
+
+## CI.4 Checks
+
+The public bulletins' text was read with PyMuPDF (the web fetch tool could not); copies are in `D:\Work\reports\` beside the report and are proposed for `References\Gaps Closure`. The build's checks are in CI.5.
+
+## CI.5 The build: decision 170, both sides measured
+
+Approved by the process engineer ("Adopt, measure both") and built 2026-11-06. One change to the route CI.1 stated:
+the trim is not normalised on the catalogue Cv. It is anchored on the sheet's printed points, which keeps every printed
+capacity and the rated FpCv (so PV-329204's and PV-329207B's full-open capacity does not rise 2.2 and 5.4 %) and
+makes the Fp question moot.
+
+* **The trim.** `control_valves_metso._s_disc(rated, cases, ansi_class)`, ``S_DISC_RELATIVE_CV`` (the 150 and 300 columns).
+  With T(h) Table 2, linear between its nodes and zero at h = 0 (an assumption: the table starts at 10 %), and the anchors
+  shut, the printed points and wide open, each segment is y(h) = y_a + (T(h) - T(h_a)).(y_b - y_a) / (T(h_b) - T(h_a)).
+  Every printed point is reproduced to the bit, the table's 10 % nodes are added between them (a node on a printed
+  point, as PV-329207B's 10.0 %, is the printed point), travel and capacity are strictly rising (the inverse divides by
+  both steps). The five valves: PV-329204 on ASME 300, the others on ASME 150 (the sheets' valve series); the nine
+  conventional Neldiscs keep `_neldisc`, the chord.
+* **The curves**, capacity as a fraction of rated at 20, 30, 50, 70 and 90 % travel, chord then S-Disc:
+  PV-329204 0.1440 0.2275 0.4192 0.6701 0.8954 then 0.1289 0.2063 0.4118 0.6736 0.9018;
+  PV-329207A 0.0888 0.1446 0.3280 0.5459 0.8486 then 0.0858 0.1397 0.2947 0.5377 0.8719;
+  PV-329207B 0.1166 0.1905 0.3383 0.5627 0.8542 then 0.0907 0.1471 0.3089 0.5537 0.8763;
+  PV-329208 0.0894 0.1467 0.3130 0.5568 0.8523 then 0.0864 0.1402 0.2949 0.5378 0.8720;
+  PV-329212 0.0984 0.1476 0.3067 0.5413 0.8466 then 0.0866 0.1410 0.2969 0.5401 0.8726.
+  The largest departure on a 5 % grid is 0.046 of rated (PV-329207B at 40 %: 0.264 on the chord, 0.218 now).
+* **The design strokes**, where the normal case passes the PFD flow: PV-329207B 54.9630 to 55.9717 % (its design flow lies
+  between the printed 10 and 58 %), PV-329208 27.2232 to 27.2640 %, PV-329212 54.6805 to 54.6843 %; PV-329204's 44.1 % is a
+  printed point and PV-329207A is anchored on its full stroke, so neither moves. The chord rebuilt through `_neldisc` equals
+  the old trim to the bit (asserted).
+* **The design seed.** The port's `steady_state` scenario, 900 s from the design seed, on HEAD's chord and on the new trim
+  (3 268 packet leaves, 15 samples): of 24 914 leaf-samples above 1 in magnitude, closure terms apart, the largest relative
+  departure is 1.96 %, PIC-329207B's output (the seed's shift, 54.9 to 55.9-56); 56 leaf-samples differ by more than 0.1 % and 15
+  by more than 1 %. Every flow and pressure holds to the packet's rounding.
+* **The suite.** The full run on the native platform: 2 122 passed, 1 failed, 5 862 skipped (the equivalence suites, `E:` not
+  mounted); the failure, in `test_dynamic_audit`, passed on HEAD's chord and is the 29th pin, and that module then re-ran 14 passed.
+  The full suite was not run again after that pin. The PyQt6 grep below `hmi` prints nothing.
+* **The dynamic pins.** 29 tests in six modules (`test_pre_evaporator`, `test_steam_network`, `test_header_control`,
+  `test_second_evaporator`, `test_vacuum_train`, `test_dynamic_audit`) failed on the new trim and passed on HEAD's chord (HEAD's module loaded by
+  a plugin in their place), so each failure is this change's and none is older. Every pinned value was re-measured. The
+  larger moves, from the new curve's lower capacity at 30 % travel: the +10 t/h LP-header answer has PV-329207B carry the load
+  at 33.7 % (30.4 %), cutting the export to 9.5 t/h (10.4) with PV-329207C admitting 2.4 t/h (3.1); the 10 % header sag
+  holds PV-329208 at 30.0 % with the chest at 2.4808 bar a (2.5073) and the separator at 98.646 C (98.890); the sagging-header
+  runs boil 18.1 and 43.9 kg/h (11.5 and 31.1); the less-steam run boils 1.9 kg/h past its bubble point (0); the dynamic audit's disturbed minute drains 322E001's sump
+  316.59 kg (317.36), its closures and booked changes exact as before.
+* **Four qualitative moves, for the record.** (1) B-122's linearised-step ringing demonstration falls from 11 successive
+  reversals to 2 on this state: a linearised step's ringing depends on the separator's state, and what B-122 asserts, the
+  solved step not ringing, holds (at most one turning point, 2.8e-7 bar a a tick at its sharpest, where it was inside
+  1e-7). (2) In the opened-vent run PT-323204 ends 0.3866 bar a (0.3884). (3) The heel run drains to 1 kg at 5 261 s on the
+  backward step and 5 262 s on V1's explicit one (5 260 on both). (4) V1's explicit species step, at the heel, floors one
+  of its two species and which one is a tick's parity: it read a pure-water liquor (0 % urea, 372.5 C) and now reads 98.58 %
+  urea, no water, 88.25 C; the backward step's alternating 79.77 / 80.03 % swap parity.
+* **Not run.** The V1-side equivalence and decided-equivalence suites need `E:`, which is not mounted. V1 keeps its own valve
+  law on the harness switches, so its side does not move, but the decided-equivalence modules assert the rewrite's
+  vendor-trim numbers and may hold moved pins: `test_pre_evaporator_equivalence`, `test_second_evaporator_equivalence`
+  and `_decided_equivalence`, `test_steam_network_equivalence` and `_decided_equivalence`, `test_vacuum_train_decided_equivalence`,
+  `test_scheduler_equivalence`, `test_synthesis_loop_equivalence` and `_decided_equivalence`. Re-run them when the drive is back
+  (handoff A-29).
+* **Provenance and abscissa.** The five valves' `source` strings now cite Valmet 2SL120EN Table 2 beside the Metso page.
+  The trim's abscissa is the sheets' percent of full travel, not their degree row (the two are not linear in each other); the
+  1.3 % agreement at the printed points is the evidence that Table 2's opening basis is percent of travel.
+
+# Part CII — The start-up intro's LOAD button: the plant started from a saved exercise (decision 171, session 90)
+
+Session 90 (2026-11-06) was a side session started by session 88 on the process engineer's request of 2026-11-05: a
+"load" button on the start-up intro that loads the saved exercise files. Session 88 had written steady states into
+the repository's `scenarios` folder (each held 15 minutes with every transmitter within 1 % and no trip), in the
+product's own exercise format (`engine/snapshot.py`, "ureasim-exercise" version 1). The session ran in the main
+checkout beside session 88 and session 89, the parallel "Open gaps" session, which took decision 170, Part CI and
+A-29 meanwhile; this is decision 171, Part CII and A-30. The advisor (Opus) was consulted on the plan before any edit
+and on the result before the documents. No relation changed; in the engine only `EngineSession`'s exercise folders
+changed.
+
+## CII.1 What was asked, and what the process engineer decided
+
+The brief: a second pill, "LOAD", beside "100% LOAD", with a start key of its own; after it the console asks the
+engine for its exercises, the operator chooses one over the intro, the engine restores it, and only then is the held
+plant released; the hand-over ends on the first packet after the release, because a plant restored while held
+publishes its rehearsed first tick (decision 169); the start-up wait does not run while the chooser is open; the
+repository's `scenarios` folder is offered by default; 100% LOAD behaves as before. Three points went to the process
+engineer, who answered them twice on 2026-11-06, differently here and in session 88; asked which answers stood, the
+process engineer settled them in this session:
+
+* **Cancel, or no saved exercise:** the intro goes back to its two buttons with the reason on its status line, and
+  nothing starts until the operator presses one.
+* **A refused exercise** (a file the present model will not take): the chooser opens again with the engine's reason,
+  the plant still held. The brief had the hand-over end with the reason, which would show a console whose plant is
+  held and publishes nothing, blank within 30 s and reconnecting until the instructor pressed RUN.
+* **SAVE writes the instructor's folder**, outside the repository (CLAUDE.md section 6's clean tree), and LOAD lists
+  the shipped `scenarios` beside it.
+
+## CII.2 The intro's last frame
+
+`data/intro.py` gives each pill its own `StartOption` (key, label, width, label and icon offsets, glyph, and whether it
+restores an exercise); `ButtonLayout` keeps what the pills share and gains the gap. `START_OPTIONS` orders them left
+to right.
+
+| Pill | Key | Width x height | Glyph | x (design px) | Restores an exercise |
+|---|---|---|---|---|---|
+| 100% LOAD | `load_100` | 250 x 56 (unchanged) | play triangle, icon_dx -81 | 113 to 363 | no |
+| LOAD | `load_exercise` | 160 x 56 | folder, icon_dx -46 | 387 to 547 | yes |
+
+The row is centred on the text column (cx 330, 434 units wide, gap 24). Each breathing ring reaches ring_gap + 2 = 7
+units from its pill at the top of its breath, plus half its 2-unit stroke, so neighbouring rings stay 8 units apart.
+Both pills, rings included, lie inside the flyby's "text column" clear zone (x 56 to 604, y 56 to 566), where the
+wireframe is at its floor, and left of the stage's centre. The labels, measured with the painter's own font, sit clear
+of their glyphs and 12 units inside their pills.
+
+`scene.button_at(x, y)` names the pill under a design-space point (None between and beside them); `button_rect(key)`
+is a pill's hit area, the 100% LOAD pill's by default; `build_frame(button=...)` takes one `ButtonState` for every
+pill or one per key. The splash lights the pill under the pointer, takes one press at a time (the sequencer's gate)
+and announces the pressed pill's key on its `START` event; both pills are drawn working once one is pressed. Enter and
+Space press 100% LOAD only, so "PRESS ENTER TO START" and the keyboard start are as before; LOAD has no key. A press
+the application withdraws (`splash.rearm(status)`, the sequencer's `cancel_start`, allowed only while starting and
+before the console is ready) puts the buttons back, live, with the status line given.
+
+## CII.3 The hand-over after LOAD (`hmi/startup.py`)
+
+```
+press LOAD -> build the console (hidden) -> wait for the engine -> connect the bridge
+   -> LIST:    ask for the exercises (exercise_list)                    the wait for the engine runs
+   -> CHOOSE:  the chooser over the intro                               nothing sent; the wait stopped
+   -> RESTORE: snapshot_load {name}                                     the wait restarted, whole
+   -> RELEASE: freeze, on false (decision 166's release), once the restore is accepted
+   -> RUNNING: the release accepted; the next non-empty packet ends the hand-over
+   Cancel, or no exercise -> IDLE: the intro's buttons back, nothing sent, the wait stopped;
+                             the next press goes on from the console and link already up
+```
+
+* **The release waits for the restore.** It goes out only on the restore's acceptance, so a plant is never released
+  from the design seed while an exercise is on its way.
+* **The end waits for the release's acceptance.** A restored plant publishes its rehearsed first tick while held
+  (decision 169); the server can send a pass's packet before that pass's ack, and rehearsed packets keep coming until
+  the first real tick. Gating on the acceptance makes all of them harmless. The rehearsal is the packet the first real
+  tick publishes, so a rehearsed packet that follows the acceptance shows the released plant.
+* **The wait.** `STARTUP.packet_timeout_s` (45 s) runs over the list step, stops when the chooser opens or the buttons
+  come back, and starts again, whole, at the choice or the next press, so the operator's time is never charged to the
+  engine.
+* **Reconnects.** The held engine publishes nothing, so a link the chooser or the waiting buttons keep open is dropped
+  and reconnected by the bridge's first-packet watchdog (`FIRST_PACKET_STALE_MS`, 30 s), every 30 s. Each step's
+  message goes out once per link and again on the next: the list asked again, the chosen exercise restored again (a
+  second restore of the same file leaves the held plant where the first did), the release sent again; IDLE sends
+  nothing. `QTcpSocket.abort()` on a connected socket emits `disconnected` at once (measured), so the controller sees
+  every drop.
+* **A refused exercise** opens the chooser again over the intro with `STARTUP.refused` ("The engine refused exercise
+  {name}: {reason}") as its note and on the status line; a refused `snapshot_load` installs nothing, so the plant is
+  held and untouched; the wait stops again. A refused release still ends the wait with the engine's reason.
+* **Cancel, or no saved exercise** (an empty list, or one the server refused), calls `splash.rearm` with
+  `STARTUP.no_choice` ("No exercise chosen") or `STARTUP.no_exercises` ("No saved exercise to load", with the server's
+  reason when it gave one). The plant is still the launch plant, held and silent. The console is not built again: the
+  next press, 100% LOAD or LOAD, sends its first message on the link that is up, or on the next one.
+* **100% LOAD** keeps its steps: the release once per link, the first non-empty packet the end, a refusal or a silent
+  engine the console shown with the reason. Only its send moved into a helper; its tests are unchanged and pass.
+
+## CII.4 The chooser (`hmi/exercise_chooser.py`)
+
+A `QDialog` opened with `open()`, not `exec()`, over the intro: a nested event loop would run the bridge's slots inside
+it. It lists the names the engine sent, in the engine's order, the first selected; LOAD, Enter and a double-click
+choose the selected name, CANCEL, Escape and closing the window choose none, and the answer is given once. A note (the
+refusal) stands above the list with `CHOOSER.retry`, "Choose another exercise, or CANCEL to go back to the start
+buttons." It is dumb in CLAUDE.md section 4a's sense: it opens no file dialog and reads no folder (a test reads its
+imports); the engine restores by name. The controller takes the chooser as a callable, as the instructor's panel takes
+its `confirm`, so the tests hand in their own. Full screen on the GPU canvas (decision 169) the chooser is the active
+modal window and the topmost at its centre: `WindowFromPoint` at its centre returned its own window, and a desktop grab
+shows it over the intro.
+
+## CII.5 The exercise folders (`engine/session.py`, `run.py`)
+
+`EngineSession(exercise_dir, shipped_dir)`: `exercise_dir` is the instructor's folder as before (`UREASIM_EXERCISES`,
+else `~/ureasim-exercises`); `shipped_dir`, when given, is a folder of exercises shipped with the simulator, read and
+never written. `exercises()` lists every valid name of both, each once; `snapshot_load` restores a shipped name from
+the shipped folder, any other from the instructor's; `snapshot_save` refuses a shipped name ("... is an exercise
+shipped with the simulator: save under another name") and writes the instructor's folder. A shipped name therefore
+always means the verified file: no save shadows it, and a copy put in the instructor's folder by hand is listed once
+and not restored. Without `shipped_dir` the session behaves exactly as before. `run.py` passes `SCENARIO_DIR`, the
+repository's `scenarios`, on both of its paths (the intro and `--no-intro`), so the intro's LOAD and the instructor's
+RESTORE list the same exercises and SAVE never writes the repository. On this machine `UREASIM_EXERCISES` is set
+nowhere (user, machine, process), `launch.bat` sets none, and `~/ureasim-exercises` does not exist. Every file in
+`scenarios/` loads on the present model with `snapshot.load(path, build_plant()[1])`, pinned by a test that reads no
+file's contents and skips when the folder is empty; `scenarios/` is to be committed with this work, or that test and
+the real-link scenario tests skip.
+
+## CII.6 Measured on the real path
+
+The real `run.py` intro path, scripted on this machine, windowed (times from the script's start):
+
+| Event | t [s] |
+|---|---|
+| LOAD pressed | 2.31 |
+| the chooser shown, five names | 2.57 |
+| load105_steam chosen | 3.08 |
+| the restore accepted (audit "snapshot_load") | 3.54 |
+| the release accepted (audit "freeze") | 4.46 |
+| ENGINE RUNNING | 4.50 |
+| the console shown | 4.64 |
+
+Three seconds later the console's clock read 25 863.8 s against the file's 25 860.2 s: the plant ran on from the
+exercise, not from the design seed's 0. A second scripted run took CANCEL in the chooser (six names by then): both
+buttons came back live with "NO EXERCISE CHOSEN" and "PRESS ENTER TO START", one console built; Enter then released the
+design seed on that console (its clock 2.4 s 1.5 s after it showed). Once the chooser closes on CANCEL the splash is
+the active window and holds the keyboard focus, windowed and full screen alike, so the operator's own Enter reaches it
+(the scripted Enter is delivered to the widget either way). Over the real link
+(`tests/hmi/test_start_from_exercise.py`) a hand-over takes about 2 s; with the bridge's first-packet watchdog cut to
+1 s and the chooser open 2.5 s the link was dropped and reconnected while the operator decided, and the hand-over
+still reached the running console from the scenario.
+
+A-30 was found writing those tests' teardown: `EngineBridge.close()` schedules a reconnect through the abort's
+`disconnected`; a probe's bridge was connected again 1.5 s after `close()` (handoff A-30, not changed).
+
+## CII.7 Tests and checks
+
+* `tests/hmi/test_startup.py`: 14 new tests of the LOAD path over fakes (nothing sent before the choice;
+  restore, then release, then the packet after the release's acceptance; a refusal reopening the chooser, and Cancel
+  after it; a refused release; Cancel back to the buttons, then 100% LOAD or LOAD on the same console; no saved
+  exercise; a refused list; the wait stopped while the chooser or the buttons wait; a list that never comes; each
+  step once per link; 100% LOAD not listening for exercises); its 11 earlier tests unchanged.
+* `tests/hmi/test_exercise_chooser.py` (new, 12); `tests/hmi/test_start_from_exercise.py` (new, 4 over a real link,
+  built as run.py builds it with a shipped folder beside the instructor's: a scenario to a running console; a refused
+  file, then the scenario; the watchdog's drops while the chooser is open; Cancel, then 100% LOAD to the design seed).
+* `tests/engine/test_session.py` (3 new: both folders listed and restored; a save never writes or shadows a shipped
+  name; no shipped folder, the instructor's alone); `tests/test_run.py` (4 new: the shipped folder, the list over
+  the protocol, SAVE refused under a shipped name and written outside the repository, every scenario loading).
+* `tests/hmi/intro/test_intro_sequencer.py` (2 new), `test_intro_scene.py` (6 new, the centring test rewritten for the
+  row), `test_intro_splash.py` (7 new), `test_intro_painter.py` (4 new cases), `tests/data/test_intro.py` (3 new, the
+  start-command test rewritten for two options).
+* 25 deliberate breaks of the final code's new behaviour, all but one caught by a test (among them: the end on
+  any packet after LOAD, the release at the choice, the wait left running under the chooser, a step not re-sent after
+  a reconnect, a refusal giving up or releasing, Cancel releasing the plant, a second console built on the next press,
+  a save written over a shipped name, the instructor's copy restored for a shipped name, Enter pressing the hovered
+  pill, rings that overlap). The one not caught removes `_back_to_buttons`'s stop of the wait, which every path into
+  it has already made (the list's arrival, the reopened chooser): an equivalent change, kept as the method's own
+  guarantee.
+* The full suite on the native platform, before the process engineer's answers were built: 2,117 passed, 5,862
+  skipped (the equivalence suites: `E:` is not mounted), none failed, 31 min 33 s. The affected groups on the final
+  code (`tests/hmi`, `tests/net`, `tests/data`, `tests/docs`, `tests/test_run.py`, `tests/engine/test_session.py`):
+  828 passed, 13 skipped (V1's tree absent), none failed, with session 89's uncommitted physics edits in the tree.
+* pyflakes is clean on every touched file; the PyQt6 grep over net, engine, units, control, core, thermo and data
+  prints nothing; every touched file is at or under 600 lines (the largest module `scene.py`, 440; the largest test `tests/hmi/test_startup.py`, 489).
+
+## CII.8 What did not change
+
+No relation; no bridge, protocol or server code; in the engine only `EngineSession`'s exercise folders (CII.5). The
+intro's scene, flyby and timeline are as before apart from the button row; the sequencer gains only the withdrawn
+press. CLAUDE.md section 4a records the LOAD button as the one exercise restore outside the Instructor menu, at the
+process engineer's request, and the chooser among the dumb renderers.
+
+# Part CIII — Session 91: the open items researched again; A-28 and A-30 built, trip 22.2 named, 322E001's U closed, B-120 (b) measured (decisions 172 to 176)
+
+Session 91 (2026-11-06) took up every open item of `handoff.md` on the process engineer's request ("resolve all open
+items", run as `/deep-research`, inline: CLAUDE.md section 3 bars sub-agents). Session 89's routes report
+(`D:\Work\reports\Open gaps resolution routes.md`) was not re-derived; this session searched what it had left
+unopened, asked the process engineer the four decisions the routes needed, and built or measured what the answers
+allowed. The answers (2026-11-06): A-28 and A-30 option (a), built; B-120 option (b), measured with 70-80 % load kept in
+scope; trip 22.2 kept as the simulator's own trip and named so; 322E001's U closed; the Valmet bulletins downloaded,
+a DCS readback checklist written, no mail drafted. The advisor (Opus) was consulted before the work and on the plan.
+
+## CIII.1 A-28: a silent engine's last packet is not replayed (decision 172)
+
+`StationServer` (`ureasim/net/server.py`) replayed `_latest`, the last packet published, to every console that said
+`hello`, with no age. A console whose engine stopped publishing was therefore blanked by the bridge's 5 s watchdog,
+reconnected 0.5 s later, and was handed the dead engine's last values as live (session 87: blank 5.1 s, live 6.1 s,
+blank 11.2 s, live 12.2 s). Built on option (a), with session 89's two additions:
+
+* `publish` stamps the packet on a monotonic wall clock (`clock=time.monotonic`, injectable; never the plant time,
+  which a frozen plant holds); `snapshot_age_s()` is the packet's age, None before the first publish.
+* The `hello` handler replays the packet and the stored status only when the packet is at most
+  `data.engine.SNAPSHOT_REPLAY_MAX_AGE_S` (1.0 s, ten publish passes of `DT_S`) old. Older, it sends the status
+  "ENGINE SILENT — no packet for N s" (fault) and an empty snapshot, and marks the connection silenced.
+* The engine's next publish sends a silenced connection the stored status again, then the packet: the engine host
+  sends a status only when it changes, so without it the silence would stay on a live console's status bar.
+* An engine that has never published (the plant held behind the start-up intro, decision 166) is answered as before:
+  its stored status and an empty snapshot, under the bridge's 30 s first-packet watchdog. A running or frozen engine
+  publishes every pass (decision 169's rehearsal included), so its packet is at most a pass old.
+
+Measured on the real loopback link (`tests/hmi/test_console_while_frozen.py`): with the engine's thread stopped, the
+first blank comes at the watchdog as before, and through two more reconnect cycles no packet with content reaches the
+console, each reconnect showing ENGINE SILENT.
+
+## CIII.2 A-30: a closed bridge does not reconnect (decision 173)
+
+`EngineBridge.close()` stopped its timers and aborted the socket; the abort emits `disconnected` at once and
+`_on_disconnected` scheduled a retry, so a closed bridge was connected again 1.5 s later. `close()` now sets
+`_closed` before the abort, `_schedule_retry` declines while it is set, and `connect_to` clears it, the pattern
+`_refused` already follows. The console's own shutdown was never affected (the application exits after it). The LOAD
+tests' own stop of `_retry` after `close()` (§CII.6) is now redundant, and kept.
+
+## CIII.3 Trip 22.2 named as the simulator's own (decision 174); data gap 6 closed
+
+The archive draws no synthesis high-high pressure trip: AC4's PC22 has no 22.2 and XV-322902 is commanded from the
+Safeguard SG1, whose PC20 trips on 320K002's own causes (§LXXIII.7); the Operating Manual III prints no interlock
+limit (Part C). The process engineer decided to keep V1's trip, its logic and its 155.0 / 148.0 bar a unchanged, as
+the simulator's own protection, and to name it so. `data.unit_322_loop.TRIP_LABELS` maps the packet key "22_2" to
+"22.2 (simulator)", and `trip_label` is read by the pump faceplate's interlock line ("TRIP 21.2, 22.2 (simulator)
+ACTIVE") and by the engine's refusals and acknowledgements ("320K002 is tripped by trip 22.2 (simulator), latched",
+"reset trip 22.2 (simulator)"). The packet's keys, the instructor's trip list and every other trip's wording are
+unchanged. Register row 348. The data gap's row is deleted.
+
+## CIII.4 322E001's service coefficient closed by decision (decision 175); data gap 11 closed
+
+The replacement bundle's process data sheet (Stamicarbon A4-101124) prints its duty and terminal temperatures but not
+its coefficient or corrected MTD, and refers to the proprietary equipment data sheet A4-93540, not in the folder
+(session 72). Its terminal-temperature U.A is 1 325.7 kW/K against V1's bundle's 1 160.5; per square metre the two
+agree within 0.65 %. The process engineer closed the row on that agreement: decision 154's bound, the design duty
+times the two U.A's ratio 1.142, stands as built, and A4-93540 is a confirmation, no longer a gap.
+
+## CIII.5 The searches
+
+* **Connectors.** Gmail was searched for any vendor or DCS answer (Körting, Valmet, Metso, Stamicarbon, A4-93540,
+  the ejector tags, the transmitter tags): nothing. Extended web searches for a Neldisc L-series opening table and
+  Körting's HP ejector characteristics found no datum.
+* **Neldisc (gap 7).** The nine conventional valves' sheets (UD-MR-G00-DZ-0031-009, items 19-27, PDF pages 20-28,
+  scans read from the images) print valve series L-ANSI150 (FV-329409 L-ANSI300; PV-323203's field written over by
+  hand, "L4K...", DN 200 x 150, FpCv 634.57). Valmet's public bulletins 2L622EN (4/2023, 650 195 bytes) and 2L623EN
+  (655 729 bytes), downloaded with the process engineer's permission, are the L6 series: a full-open Cv by size and
+  class, no opening table; L6 DN200 ASME 150 is Cv 1 080 against the L series' 3 050 on the sheets, another family.
+  The finding is negative for L6 only; a Valin-hosted L1 / L2 datasheet was seen in the search and not downloaded.
+  The row keeps its route (NELPROF output).
+* **Loop diagrams (gaps 2, 5, 8).** UD-MR-321, -323, -324 and -329-FS-0001 (27, 59, 11 and 56 pages, scans) are loop
+  wiring only — instrument, junction box, I/O board and channel, AC4 tag — as unit 322's (Part CI): no limit or
+  hysteresis.
+* **LT-329505 (gap 10).** The lower tap is traced: the P&ID (page 8 of `References/Merged_Searchable_PIDs.pdf`) draws
+  LIC-329505's lower leg from the bottom of a DN700 condensate pot under 324E001's N3 and N7, drained by LV-329505
+  into 250-CPL1-329011; the line's isometric UD-RL-100-MB-0312 (four sheets, as-built stamp) puts the pot's 700 x 25
+  NS weldolet at EL +10651 (sheet 2, item 5), a DN25 line falling to LT329505 at EL +7308. With the upper tap at
+  N5, EL +15129 (§LXXIV.5), the taps are 4 478 mm apart; loop summary L 329505 (UD-MR-329-EC-0001 rev 1, 04.06.07,
+  PDF page 84, located by Windows OCR over its 194 pages) prints B44 "Nozzle distance 3000 mm", lower fluid LP
+  condensate (PN 10), upper LP steam saturated (PN 40), range 0-100 %, 922 kg/m3 at 4.1 bar a and 144 C. The
+  conflict is logged and not resolved: the transmitter's calibration decides which span its 0-100 % covers, and it is
+  on the DCS readback checklist. LI-329505 stays on V1's holdup ratio. (Isometric UD-RL-100-MB-0519, line
+  25-AIP20-329505, is unit 329's line number 329505, a service line, not this transmitter.)
+* **LT-324501 (gap 4).** Line 200-US6-324020-EC07DB-D80's isometric UD-RL-100-MB-0180 runs from 324F003/N2 at EL
+  +14535 down the barometric leg to unit 335 and carries item 22, "80 L324501 LEVEL INSTRUMENT LT 324501", on a 200 x
+  80 NS weldolet, flange F16, at EL +8495 (Y 514350, X 106078), verified on the image. No second process connection
+  is drawn; the reference connection and the calibration remain, on the checklist.
+* **The DCS readback checklist** (`D:\Work\reports\DCS readback checklist.md`) names the views one plant visit can
+  photograph for gaps 2, 4, 5, 8, 9 and 10, and the vendor requests that remain (Körting, Valmet).
+
+## CIII.6 A-29: the V1-side suites run on decision 170, and closed
+
+`E:` was mounted (Crucial X6), its `backend\main.py` 920 232 bytes of 2026-09-18, decision 165's tree; the older copies
+on `D:` (669 044 bytes) were not used. The modules A-29 named were run (`test_pre_evaporator_equivalence`,
+`test_second_evaporator_equivalence` and `_decided_equivalence`, `test_steam_network_equivalence` and
+`_decided_equivalence`, `test_vacuum_train_decided_equivalence`, `test_scheduler_equivalence`,
+`test_synthesis_loop_equivalence` and `_decided_equivalence`, `tests/phase7/test_deviations.py`).
+
+* The first run (43 min) was contaminated by this session's own edit while it ran: `unit_322_loop` had been imported
+  before `trip_label` was added, and modules imported later failed (81 import errors). It is not evidence; the
+  lesson is that a long run's tree is not edited until it ends.
+* The clean run: 19 failed, 216 passed (1 h 08 min). In the listed modules the equivalence proper passes; every
+  failure is a pin of a decided-equivalence comparison, or of `test_the_tempered_water_lost`, on a coupled run.
+* **The whole of `tests/equivalence` and `tests/data`** was then run on `E:`, since decision 170 reaches every harness
+  that reads the steam headers or the stages: 6 204 passed and 1 failed (41 min 33 s). The one was
+  `test_vacuum_condenser_decided_equivalence`'s trip through the train, whose inputs are the stages' vapour after
+  a 323P003 trip (stage 2's 1 293.781 kg/h now 1 288.018, PV-329212 on the S-Disc table) and whose V1 and port
+  trains both run on them; re-pinned the same way, the module's 15 tests pass.
+* **V1's side.** Where a moved pin is V1's (`p_v1` in the synthesis loop's decided module), the harness's
+  `run_both` feeds V1's transcription the port's live MP and LP header pressures (`plant.units["329"]`), which
+  decision 170's steam valves move; the same pins moved with decisions 131, 150 and 151 (their docstrings record
+  it). No V1 module or V1 constant moved.
+* **The re-pin.** A test stops at its first failed assert, so the moved values were recorded in one pass by a
+  scratch pytest plugin that replaces `pytest.approx` with a recorder (each pair logged, the comparison passed);
+  four exact compares were read from the failures, and two values behind them by a second recorder run. Each value
+  is re-pinned at its literal's own decimals, and each docstring restates it with the old one, "(old before
+  decision 170)". The 19 pass. The largest moves are 322E001's tubes standing full (the reactor's discharge ten
+  minutes on, 37.7 to 26.3 t/h, and the tubes' take, 32.7 to 20.5 t/h: LV-322501's drain at 10 % is that
+  scenario's most sensitive quantity, 12.2 t/h on the LPCC's 1.5 mbar, decision 150) and the melt below its
+  azeotrope (trip 22.2 at tick 1928, 1907 before; a pressure there 147.5897 to 147.7020 bar a).
+
+| module | test | moved pins (old -> new) |
+|---|---|---|
+| `second_evaporator_decided_equivalence` | `test_pv_329212_on_its_vendor_trim_decided_divergence` | 5.7619 -> 5.7394; 139.3903 -> 139.3046 |
+| `synthesis_loop_decided_equivalence` | `test_308s_composition_reaches_322e003_a_line_residence_late_decided_divergence` | 164.896 -> 164.896 |
+| `synthesis_loop_decided_equivalence` | `test_322e001s_duty_bounded_by_its_shell_decided_divergence` | 3.1299 -> 3.1302; 145.2576 -> 145.2592 |
+| `synthesis_loop_decided_equivalence` | `test_322e001s_full_sump_holds_its_excess_back_decided_divergence` | 2222.94 -> 2223.74; 141.997 -> 141.995; 141.0409 -> 141.0387 |
+| `synthesis_loop_decided_equivalence` | `test_322e001s_tubes_standing_full_hold_the_liquor_back_in_the_reactor_decided_divergence` | 8392.5 -> 8403.2; 0.9659 -> 0.9671; 32700.1 -> 20458.1; 37670.7 -> 26284.6; 85.941 -> 85.943; 165.58 -> 165.59; 146.6672 -> 146.6701; 140.0162 -> 140.0065; capped tick 2182 -> 2181 (exact) |
+| `synthesis_loop_decided_equivalence` | `test_323d001s_liquor_reaches_322e003_as_it_is_decided_divergence` | 0.40142 -> 0.40137; 0.41417 -> 0.41412; 164.133 -> 164.141; 163.414 -> 163.422; 0.53956 -> 0.53947; 0.53783 -> 0.53773; 140.7116 -> 140.7109; 140.7174 -> 140.7167 |
+| `synthesis_loop_decided_equivalence` | `test_a_full_sump_holds_its_excess_in_the_scrubber_decided_divergence` | 7511.96 -> 7512.33; 7618.91 -> 7619.18 |
+| `synthesis_loop_decided_equivalence` | `test_sv32251_and_sv32252_relieve_the_loop_decided_divergence` | 159.312 -> 159.313; 157.6905 -> 157.6919; 209260.5 -> 209261.0; 106131.1 -> 106131.3 |
+| `synthesis_loop_decided_equivalence` | `test_the_forward_pulse_is_drawn_from_the_sump_decided_divergence` | 3228.4 -> 3228.7; 2727.62 -> 2727.97 |
+| `synthesis_loop_decided_equivalence` | `test_the_loop_condenses_no_more_than_its_bubble_point_decided_divergence` | 122.666 -> 122.557 |
+| `synthesis_loop_decided_equivalence` | `test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence` | 2.6152 -> 2.6159; 2.5154 -> 2.5162; 162.971 -> 162.928; 135.091 -> 135.139; 0.72328 -> 0.72390; 74.27 -> 73.05; 198.83 -> 198.32; 141.021 -> 141.022; 147.5897 -> 147.7020; 141.7173 -> 141.7010; trip tick 1907 -> 1928 (exact) |
+| `synthesis_loop_decided_equivalence` | `test_the_reactor_liquor_stands_at_its_bubble_point_decided_divergence` | 130.511 -> 130.511 |
+| `synthesis_loop_decided_equivalence` | `test_the_recondensed_backlog_returns_to_the_sump_decided_divergence` | 141.71 -> 141.66; 3650.42 -> 3649.33; 3766.32 -> 3765.41 |
+| `synthesis_loop_decided_equivalence` | `test_the_residual_credit_scales_with_the_load_decided_divergence` | 1521.7 -> 1522.1; 141.4877 -> 141.4864; 141.5007 -> 141.4994 |
+| `synthesis_loop_decided_equivalence` | `test_the_saturation_fraction_solved_on_the_tick_decided_divergence` | 3743.1 -> 3742.0; 227254.4 -> 227569.2; 171.31 -> 171.24; 152.5162 -> 152.5168; 131846.5 -> 131924.6; 176.48 -> 176.45; 0.5141 -> 0.5146; 131859.8 -> 131937.8; 141.3565 -> 141.3566 |
+| `synthesis_loop_decided_equivalence` | `test_the_trips_as_ac4_executes_them_decided_divergence` | co2 (139.5473, 140.8885) -> (139.5461, 140.8892) (exact) |
+| `synthesis_loop_decided_equivalence` | `test_the_vapour_inventory_node_decided_divergence` | 141.3408 -> 141.3400; 140.6794 -> 140.6789; 137393.41 -> 137389.59; 75.27 -> 75.19; 2110.9 -> 2110.8 |
+| `synthesis_loop_equivalence` | `test_the_tempered_water_lost` | 141.0434 -> 141.0419 |
+| `vacuum_condenser_decided_equivalence` | `test_the_trip_through_the_train_decided_divergence` | 1293.781 -> 1288.018; 135.027 -> 136.653; 32.150 -> 31.998; 29.048 -> 29.068; 54.009 -> 54.011 |
+| `vacuum_train_decided_equivalence` | `test_the_cold_ends_lagged_on_their_water_decided_divergence` | [109.6, 1099.3, 1241.8] -> [109.6, 1098.6, 1239.0] (exact) |
+
+## CIII.7 B-120 option (b): V1's stripper slip gain against Book2's bands (decision 176)
+
+Decided by the process engineer on 2026-11-06: option (b), the gain measured against Book2's bands before any change,
+70-80 % load in scope. The gain is `unit_322e001.SLIP_GAIN` (V1's STRIP_SLIP_GAIN, 4.0), the volatile breakthrough
+`f + SLIP_GAIN * slip * (1 - f)` on NH3 and CO2 with `slip = max(1 - g_nc, 0) + max(1 - g_hc, 0)`, exactly 0 at the
+design (`units/synthesis/stripper.py`), so the design point does not depend on it. Each load ran the same trims at
+4.0 and at 0, through session 86's runner (`opt_run84.py`, the gain set on the stripper's module before the run and
+read back from the plant's stripper in each log), from the design seed: the ramp at 0.5 %/min, a 3 h settle, a 3 h
+hold. The arms: 100 %, PIC-329204 on TT-322004 at 168 C and HIC-322605 on LT-322504 (B-120's own trigger); 92.3 %,
+session 86's trims on Book2's medians, on the committed engine and on S2's prototype; 111 %, session 86's retuned
+trims (C1t), on the committed engine and with C1's capacity margin; 70 %, the design handles with HIC-322605,
+HIC-322602 and the levels trimmed (B-118 evidence, not B-120's test). Scratch scripts: `s91/mk91.py`, `an91.py`.
+
+Means over the 3 h hold (spans in brackets); Book2's 10-90 % bands: 92.3 % TT-322004 166.20-167.43, TT-322005
+182.14-183.01, PT-329201 137.42-139.68, AT-322701 3.234-3.262; 111 % 171.92-172.59, 182.27-183.13, 142.48-143.66,
+3.242-3.259.
+
+| load | gain | AT-322701 | TT-322004 C | TT-322005 C | PT-329201 bar a | conversion % | AT peaks, gaps h | end |
+|---|---|---|---|---|---|---|---|---|
+| 100 | 4 | 2.884 (0.009) | 169.4 (0.1) | 178.3 (0.1) | 140.54 (0.03) | 48.1 (0.2) | 0, [] | held, no trip |
+| 100 | 0 | 2.885 (0.010) | 169.4 (0.1) | 178.3 (0.1) | 140.55 (0.03) | 48.2 (0.2) | 0, [] | held, no trip |
+| 92.3 | 4 | 2.775 (0.135) | 178.9 (0.5) | 183.5 (0.7) | 141.74 (1.41) | 59.8 (2.3) | 0, [] | held, no trip |
+| 92.3 | 0 | 2.924 (0.091) | 179.2 (0.3) | 171.1 (0.9) | 141.17 (0.94) | 40.7 (0.9) | 0, [] | held, no trip |
+| 92.3, S2 | 4 | 3.670 (1.624) | 167.3 (14.7) | 181.2 (8.7) | 139.83 (2.50) | 62.1 (26.7) | 2, [1.53] | held, no trip |
+| 92.3, S2 | 0 | 3.238 (0.024) | 166.4 (0.1) | 177.2 (0.4) | 140.46 (0.53) | 50.0 (0.4) | 0, [] | held, no trip |
+| 111 | 4 | 3.044 (0.506) | 176.6 (5.8) | 184.8 (0.4) | 144.05 (0.83) | 59.2 (4.6) | 3, [0.35, 0.9] | held, no trip |
+| 111 | 0 | 2.994 (0.021) | 177.8 (0.8) | 184.9 (0.3) | 144.31 (0.54) | 57.9 (0.2) | 0, [] | held, no trip |
+| 111, C1 | 4 | 3.036 (0.521) | 176.5 (5.6) | 184.8 (0.4) | 144.08 (0.83) | 59.1 (3.8) | 2, [0.55] | held, no trip |
+| 111, C1 | 0 | 2.995 (0.031) | 177.7 (0.9) | 184.9 (0.3) | 144.31 (0.56) | 57.9 (0.4) | 0, [] | held, no trip |
+| 70 | 4 | — | — | — | — | — | — | trip 22.1 at 3540 s, on the ramp |
+| 70 | 0 | — | — | — | — | — | — | trip 22.1 at 3420 s, on the ramp |
+
+* **The gain drives the mode.** At 92.3 % on S2, gain 4 swings AT-322701 by 1.62 with peaks 1.5 h apart, TT-322005
+  by 8.7 K and the conversion by 26.7 points; gain 0 holds AT-322701 within 0.02 and TT-322004, AT-322701 and
+  FT-329403 (54.9 t/h) in Book2's band, TT-322005 5 K cold and PT-329201 0.8 bar high, as session 86 found before
+  decision 170. At 111 % gain 4 swings TT-322004 by 5.6-5.8 K (irregular AT peaks) and gain 0 by 0.8-0.9 K, the
+  means within 1.3 K of each other and neither in band.
+* **At 100 % this arm did not test the gain:** TT-322004 reached only 169.4 C, short of B-120's 168 C trigger;
+  both gains held steady and agree within 0.02 on every mean. Session 78 measured the 168 C case itself, gain 0
+  holding it steady (§XCI.3).
+* **On the committed engine at 92.3 %** neither gain oscillates, PIC-329204 (17.22 bar a), MASTER-329207 (5.62)
+  and HIC-322604 (66.5 %) on their bounds in both, but gain 0 runs the reactor 12.4 K colder (TT-322005 171.1 C
+  against 183.5, conversion 40.7 % against 59.8): gain 0 alone puts the as-built engine on B-118's cold branch.
+* **At 70 %** both gains trip 22.1 on the ramp within two minutes of each other (322E003's sump full, TT-322015
+  171-175 C, TT-322005 162 C, conversion 29-30 %): B-118's collapse is not the slip term.
+
+No relation changed: the gain stays at V1's 4.0. The options (handoff B-120): (a) keep it; (b1) gain 0 as a decided
+divergence now; (b2) gain 0 built with B-118's stripper change once that is decided. (b2) is recommended, because
+on the committed engine gain 0 alone trades a mode that does not appear there for a 12.4 K colder reactor.
+
+## CIII.8 Tests and checks
+
+* **New and restated tests.** `tests/net/test_server.py`: a console connecting to a silent engine is told so and shown
+  nothing, and the next publish restores the status once; a packet within the replay age is replayed with its
+  status; an engine that has never published is answered as before; the replay age is ten publish passes.
+  `tests/hmi/test_bridge.py`: a closed bridge does not reconnect, past the retry delays. `tests/hmi/
+  test_console_while_frozen.py`: the silent engine kept blank through two more reconnect cycles, each told ENGINE
+  SILENT. `tests/hmi/faceplates/test_pump.py`: trip 22.2 named as the simulator's own. `tests/engine/test_command.py`:
+  the three refusal and acknowledgement strings restated.
+* **Mutations.** Each fix reverted in place and its new tests run, the file restored byte for byte: no replay gate
+  (2 fail, one on the real link), no status restore (1 fails), no closed flag (1 fails).
+* **The groups.** `tests/net`, `tests/hmi`, `tests/docs`, `tests/control`, `tests/engine/test_command.py`,
+  `test_session.py`, `test_dynamic_audit.py`, `tests/test_run.py` and `tests/data/test_faceplates.py`: 677 passed,
+  none failed (3 min 17 s). `tests/equivalence` and `tests/data` on `E:`: 6 204 passed, 1 failed (41 min 33 s), re-pinned
+  (CIII.6), its module then 15 passed. `tests/core`, `tests/thermo`, `tests/units`, `tests/engine` and `tests/phase7`:
+  1 200 passed, none failed (15 min 2 s). Every group of the suite has run on the final code, none skipped for
+  V1's tree.
+* pyflakes is clean on every touched file; the PyQt6 grep over net, engine, units, control, core, thermo and data
+  prints nothing; every touched module is at or under 600 lines (`net/server.py` 468, `hmi/bridge.py` 364,
+  `data/unit_322_loop.py` 193).
+* **Scratch, not in the repository.** The B-120 arms (`s91/mk91.py`, `launch91.sh`, `an91.py`, the runs; session 86's
+  runner unchanged), the approx recorder (`rec91plugin.py`) and the re-pin scripts (`repin91.py`, `fixdoc91.py`) are in
+  the session scratchpad. The two Valmet bulletins (L6 series) are copied to `D:\Work\reports`, beside
+  this session's reports, `Open items resolved session 91.md` and `DCS readback checklist.md`; none is in the tree.
+* **Not done.** Nothing is committed (the tree also holds sessions 88 to 90's uncommitted work). The console was not
+  driven by hand. B-120's build waits on the process engineer's choice among (a), (b1) and (b2).
+
+## CIII.9 The process engineer's answers of 2026-11-07: B-120 (b2), and data gap 7's L1 table proposed
+
+**B-120 (decision 177).** Option (b2): V1's stripper slip gain stays 4.0 in the committed tree, and is set to 0 in the
+same change as B-118's stripper and reactor turndown change, once that is decided, both sides measured. B-120 is
+closed; its evidence (CIII.7) and its build are carried by B-118.
+
+**Data gap 7, inspection and proposal only.** The Valin-hosted Neles bulletin 2L121EN (9/2017, series L1 and L2,
+1 189 918 bytes, copied to `D:\Work\reports`) covers DN 450-1200 at ASME 150 and DN 400-900 at ASME 300 and prints
+the full-open Cv ("Cv 90 deg") alone: it neither covers the nine conventional valves (DN 150-400) nor prints a
+characteristic. Valmet publishes the family's Cv by relative opening on its site, one page per series code, and the
+codes are the sheets' own: `L1_LANSI150.html` and `L1_LANSI300.html` (www.valmet.com/globalassets/flow-control/services/,
+read 2026-11-07; the L2 pages print the same rows). The rows used (Cv at 10, 20 ... 100 % opening):
+
+| DN, class | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 | 100 % |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 125, ASME 150 | 25 | 54.6 | 92 | 140 | 202 | 284 | 394 | 542 | 757 | 840 |
+| 200, ASME 150 | 76.8 | 168 | 283 | 432 | 622 | 874 | 1212 | 1668 | 2268 | 3050 |
+| 250, ASME 150 | 123 | 269 | 453 | 691 | 995 | 1398 | 1939 | 2669 | 3622 | 4870 |
+| 300, ASME 150 | 184 | 403 | 680 | 1037 | 1492 | 2097 | 2909 | 4003 | 5429 | 7300 |
+| 400, ASME 150 | 346 | 756 | 1274 | 1944 | 2797 | 3931 | 5454 | 7506 | 10189 | 13700 |
+| 150, ASME 300 | 42 | 87 | 144 | 213 | 304 | 422 | 576 | 757 | 1013 | 1240 |
+
+The full-open values are the nine sheets' maximum Cv exactly (PV-323203's 840 is the DN125 row; its sheet's rated
+634.57 is the FpCv of its 200 x 150 installation), and the large-size rows' full-open values are 2L121EN's "Cv 90 deg".
+Against the sheets' printed points (relative capacity, the table read log-linearly between its points;
+`neldisc_l1_check.py` in the session scratchpad):
+
+| valve | printed points: travel %, deviation of the table from the sheet | the chord above the table, above the last point |
+|---|---|---|
+| HV-323605 | 65.1 -1.3 %; 78.1 -0.7 % | +2 % at 80, +5 % at 90 |
+| PV-323202A | 13.2 -7.0 %; 37.8 -1.5 %; 65.9 -1.4 % | +8 % at 70, +13 % at 80, +9 % at 90 |
+| PV-323202B | 16.5 -5.9 %; 42.4 -1.1 %; 60.3 -0.1 % | +16 % at 70, +17 % at 80, +10 % at 90 |
+| PV-323203 | 20.4 +0.3 %; 44.6 -0.2 % (on its Cv 840; on its FpCv -25 %) | on the FpCv chord: +38 % at 60 to -4 % at 90 |
+| TV-328002 | 21.2 -1.9 %; 55.0 -1.3 %; 90.5 -0.3 % | none (last point 90.5 %) |
+| FV-329401 | 14.1 -7.6 %; 26.0 -3.1 %; 52.9 -1.2 % | +20 % at 60, +28 % at 70, +23 % at 80, +12 % at 90 |
+| FV-329409 | 9.1 +0.3 %; 46.4 -1.6 %; 63.5 -1.1 % | +6 % at 70, +9 % at 80, +2 % at 90 |
+| PV-329202 | 20.6 -0.9 %; 34.3 -2.2 %; 52.9 -1.2 % | +20 % at 60, +28 % at 70, +23 % at 80, +12 % at 90 |
+| PV-329203 | 17.1 -5.5 %; 39.4 -0.5 %; 61.0 -0.7 % | +16 % at 70, +17 % at 80, +10 % at 90 |
+
+The table reproduces every printed point within -7.6 to +0.3 %, the largest at the low travels, where its 10 % step is
+coarse; above the last printed point the module's chord passes up to 28 % more than the vendor's characteristic. Every
+design stroke lies below its last printed point, so the design point does not depend on it. **Proposed, not built:**
+the nine valves on these rows as decision 170 put the five balanced ones on 2SL120EN's table — every printed point and
+the rated capacity kept, the table's shape between the points and from the last to wide open, both sides measured —
+for the process engineer's review. Until then decision 153 stands and the module is unchanged.

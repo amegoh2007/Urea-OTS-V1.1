@@ -206,8 +206,14 @@ The simulator is **one plant with a single local console** (2026-10-22, `project
 decision 149): `python run.py` (or `launch.bat`) starts the headless engine on the loopback
 interface and the console attached to it over `ureasim/hmi/bridge.py`. Behind the start-up intro the
 plant is held at its design seed until the operator presses 100% LOAD (2026-11-04, `project.md`
-decision 166; `--no-intro` runs it from the start). A plant reset or restored while frozen publishes its
-rehearsed first tick, the plant unstepped (2026-11-04, decision 169), so a held console is never blank.
+decision 166; `--no-intro` runs it from the start), or presses LOAD, which restores a saved exercise
+the operator chooses from the engine's list before the same release (2026-11-06, decision 171; the
+list is the instructor's folder, `UREASIM_EXERCISES` or `~/ureasim-exercises`, which SAVE writes, and
+the repository's shipped `scenarios`, which nothing writes, so training saves stay out of the tree). A plant
+reset or restored while frozen publishes its rehearsed first tick, the plant unstepped (2026-11-04,
+decision 169), so a held console is never blank; an engine that has stopped publishing is never shown as
+live: the server replays no packet older than `data.engine.SNAPSHOT_REPLAY_MAX_AGE_S` to a console that
+connects, and says the engine is silent (2026-11-06, decision 172).
 Three rules follow, and
 none of them is optional:
 
@@ -219,15 +225,18 @@ none of them is optional:
    exposes — exactly what V1's operator screens allowed; re-classifying a plant control would
    change what a trainee is being taught, which §5 forbids. The controls that are not plant
    equipment — malfunctions, pacing, freeze, reset, exercise save and restore, and the
-   battery-limit `co2_set` — live in the Instructor menu's panel. No command is refused for who
+   battery-limit `co2_set` — live in the Instructor menu's panel. The one exception is the
+   start-up intro's LOAD button, an exercise restore before the plant first runs, at the process
+   engineer's explicit request of 2026-11-05 (decision 171). No command is refused for who
    sent it; whether the plant will *accept* it — a latched trip, an interlock, a closed valve —
    is the engine's answer, and it travels back to the console's status bar with its process
    reason. Station roles, the station token, the roster and unit assignment by section were the
    multi-station deployment's (decisions 72, 124 and 125) and are retired.
 3. **Faceplates and the instructor's panel are dumb (2026-10-03).** Everything under
-   `ureasim/hmi/faceplates/` and `ureasim/hmi/instructor/` renders the published packet and
-   emits commands over the bridge, nothing else: no new logic, no local state, no decision
-   the server or the engine owns. Which command a control sends is data
+   `ureasim/hmi/faceplates/` and `ureasim/hmi/instructor/`, and the intro's exercise chooser
+   (`ureasim/hmi/exercise_chooser.py`, decision 171: the engine's names, no file read), renders
+   what the engine published and emits commands over the bridge, nothing else: no new logic, no
+   local state, no decision the server or the engine owns. Which command a control sends is data
    (`ureasim/data/faceplates.py`), pinned by a test to the engine handler that takes it.
    **The trend window plots the engine historian and keeps no samples (2026-10-03).**
    `ureasim/hmi/trend/` asks for its whole visible window over the protocol and repaints the
@@ -439,6 +448,10 @@ none of them is optional:
    carry, the linearised step kept to the bit elsewhere (decision 162, decision 78's class);
    V1's thermo memo kept as ported where a stage chatters on its bin edges below its
    transmitter's resolution (decision 163, B-123);
+   a balanced Neldisc's trim on the vendor's published S-Disc table through its sheet's printed points,
+   every printed point and the rated capacity kept (decision 170);
+   a trip no plant logic draws kept as the simulator's own protection, named so wherever the console names it, its
+   logic and set points V1's (decision 174);
    and no approximation of
    the physics bought for a pacing target (decision 88). A
    new mechanism still goes to the process engineer, with both sides measured.

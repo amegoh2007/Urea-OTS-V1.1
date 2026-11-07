@@ -13,9 +13,15 @@ reserves for the instructor:
     freeze         hold the plant clock, or release it
     reset_sim      the plant back to its design seed, the trends restarted (V1's
                    ``reset_simulation``)
-    snapshot_save  the exercise saved under a name (`engine.snapshot`)
+    snapshot_save  the exercise saved under a name (`engine.snapshot`), in the instructor's folder
     snapshot_load  an exercise restored by name, checked against the present model; the trends
                    restart, since the plant clock has jumped
+
+Exercises live in the instructor's folder (``UREASIM_EXERCISES``, or ``~/ureasim-exercises``), which
+SAVE writes, and, when one is given, a folder of exercises shipped with the simulator (the repository's
+``scenarios``, verified steady states) that is listed and restored beside it and never written. A
+shipped name always means the shipped file: a save under it is refused, so no instructor's file shadows
+a verified state, and the repository stays clean of training saves (`project.md` decision 171).
 
 Every answer is (accepted, reason), the reason a refusal's, so it reaches the console that asked.
 
@@ -80,7 +86,8 @@ _NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$")
 class EngineSession:
     """One plant served to the consoles."""
 
-    def __init__(self, exercise_dir: str | os.PathLike | None = None) -> None:
+    def __init__(self, exercise_dir: str | os.PathLike | None = None,
+                 shipped_dir: str | os.PathLike | None = None) -> None:
         self.schedule, plant = build_plant()
         self.scheduler = Scheduler(self.schedule, plant)
         self.simulator = Simulator(step=self._step)
@@ -91,6 +98,8 @@ class EngineSession:
         self._rehearsal_failed = False
         self.exercise_dir = Path(exercise_dir or os.environ.get(EXERCISE_DIR_ENV)
                                  or Path.home() / "ureasim-exercises")
+        #: The exercises shipped with the simulator, read and never written; None without them.
+        self.shipped_dir = Path(shipped_dir) if shipped_dir else None
         self._health = {"ok": True, "error": None, "type": None, "traceback": None,
                         "sim_t": None, "since": None, "count": 0}
         self._last_step_wall = time.time()
@@ -199,11 +208,22 @@ class EngineSession:
         return {"paths": self.historian.paths(), "rings": self.historian.stats()}
 
     def exercises(self) -> list[str]:
-        """The saved exercises' names, for the instructor's panel: every ``<name>.json`` in the
-        exercise directory whose name a ``snapshot_load`` would take."""
-        if not self.exercise_dir.is_dir():
-            return []
-        return sorted(p.stem for p in self.exercise_dir.glob("*.json") if _NAME.match(p.stem))
+        """The saved exercises' names, for the intro's LOAD and the instructor's panel: every
+        ``<name>.json`` whose name a ``snapshot_load`` would take, in the shipped folder and the
+        instructor's, each name once."""
+        names: set[str] = set()
+        for folder in self._folders():
+            if folder.is_dir():
+                names.update(p.stem for p in folder.glob("*.json") if _NAME.match(p.stem))
+        return sorted(names)
+
+    def _folders(self) -> tuple[Path, ...]:
+        """Where an exercise is looked for, the shipped folder first: a shipped name is the shipped file."""
+        return (self.exercise_dir,) if self.shipped_dir is None else (self.shipped_dir, self.exercise_dir)
+
+    def _shipped(self, name: str) -> bool:
+        """Whether ``name`` is an exercise shipped with the simulator."""
+        return self.shipped_dir is not None and (self.shipped_dir / f"{name}.json").is_file()
 
     # ---- commands ----
 
@@ -237,9 +257,13 @@ class EngineSession:
             path = self.exercise_dir / f"{name}.json"
             try:
                 if kind == "snapshot_save":
+                    if self._shipped(name):
+                        return False, f"{name!r} is an exercise shipped with the simulator: save under another name"
                     self.exercise_dir.mkdir(parents=True, exist_ok=True)
                     snapshot.save(self.plant, str(path), note=str(cmd.get("note", "")))
                 else:
+                    if self._shipped(name):
+                        path = self.shipped_dir / f"{name}.json"
                     self._install(snapshot.load(str(path), build_plant()[1]))
             except (snapshot.SnapshotError, OSError) as exc:
                 return False, str(exc)

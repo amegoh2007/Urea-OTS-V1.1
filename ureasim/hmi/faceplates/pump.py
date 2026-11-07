@@ -21,6 +21,7 @@ from PyQt6.QtCore import QObject
 from PyQt6.QtWidgets import QLineEdit, QWidget
 
 from ureasim.data.faceplates import PUMP_TRIPS
+from ureasim.data.unit_322_loop import trip_label
 from ureasim.hmi.faceplates.base import Faceplate
 from ureasim.hmi.state_access import get_path
 
@@ -28,7 +29,8 @@ __all__ = ["PumpFaceplate", "interlock_text"]
 
 
 def interlock_text(state: Mapping[str, Any], pump_id: str) -> str:
-    """What holds a feed pump, as V1's faceplate words it; ``n/a`` for a pump with no trips."""
+    """What holds a feed pump, as V1's faceplate words it, trip 22.2 named as the simulator's own
+    (decision 174); ``n/a`` for a pump with no trips."""
     keys = PUMP_TRIPS.get(pump_id)
     if keys is None:
         return "n/a"
@@ -37,9 +39,9 @@ def interlock_text(state: Mapping[str, Any], pump_id: str) -> str:
     active = [k for k in keys if latched.get(k) and live.get(k)]
     held = [k for k in keys if latched.get(k) and not live.get(k)]
     if active:
-        return "TRIP " + ", ".join(k.replace("_", ".") for k in active) + " ACTIVE"
+        return "TRIP " + ", ".join(trip_label(k) for k in active) + " ACTIVE"
     if held:
-        return ("TRIP " + ", ".join(k.replace("_", ".") for k in held)
+        return ("TRIP " + ", ".join(trip_label(k) for k in held)
                 + " LATCHED (clears on START)")
     return "CLEAR"
 

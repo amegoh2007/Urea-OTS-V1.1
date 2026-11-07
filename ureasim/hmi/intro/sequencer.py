@@ -17,6 +17,10 @@ Phases::
 
     PLAYING --(scene over, or skip)--> AWAITING --(start pressed)--> STARTING
     STARTING --(application ready)--> FADING --(opacity 0)--> DONE
+    STARTING --(start withdrawn)--> AWAITING
+
+A press can be withdrawn by the application while it starts (``cancel_start``): after LOAD the operator
+may choose no exercise, and the buttons are then live again, nothing started.
 
 Events, each raised once and in this order:
 
@@ -126,6 +130,20 @@ class IntroSequencer:
             return False
         self._phase = Phase.STARTING
         self._start_pending = True
+        return True
+
+    def cancel_start(self) -> bool:
+        """The application did not start the simulator from the press: the buttons are live again.
+        Returns whether the press was withdrawn.
+
+        Process utility: after LOAD the operator may choose no exercise (Cancel, or nothing to load), and
+        a plant must not start that nobody asked for; the operator presses 100% LOAD or LOAD again. Only a
+        press that is starting and whose console is not yet ready can be withdrawn.
+        """
+        if self._phase is not Phase.STARTING or self._ready:
+            return False
+        self._phase = Phase.AWAITING
+        self._start_pending = False
         return True
 
     def advance(self, now: float) -> list[Event]:

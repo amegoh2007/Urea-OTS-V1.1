@@ -2,8 +2,9 @@
 
 Pinned: every constant group names its source (CLAUDE.md section 1 rule 7); the stage is the DCS screens'
 stage; the timeline's windows are ordered and end by the hold; the logo's file and regions agree; the
-sections stand in the console's tab order with the scope table's names; the start key sends an engine
-command the engine handles; the start-up waits and the hairline threshold are the ones their sources give.
+sections stand in the console's tab order with the scope table's names; each start key sends an engine
+command the engine handles, and LOAD's restore is the engine's own; the start-up waits and the hairline
+threshold are the ones their sources give.
 """
 
 from __future__ import annotations
@@ -17,15 +18,19 @@ import pytest
 from ureasim.data import intro
 from ureasim.data.intro import (
     BUTTON,
+    CHOOSER,
     HAIRLINE_MAX_PX,
+    LOAD_OPTION,
     LOGO,
     PALETTE,
+    RESTORE_COMMAND,
     RIBBON,
     SECTIONS,
     STAGE,
     STARTUP,
     START_COMMANDS,
     START_OPTION,
+    START_OPTIONS,
     STRINGS,
     TICK_MS,
     TIMELINE,
@@ -34,7 +39,8 @@ from ureasim.data.intro import (
 from ureasim.data.screen_layout import SCREENS
 from ureasim.engine.command import SIMULATOR_COMMANDS
 
-_GROUPS = (STAGE, PALETTE, TIMELINE, LOGO, TITLE, RIBBON, STRINGS, BUTTON, START_OPTION, STARTUP)
+_GROUPS = (STAGE, PALETTE, TIMELINE, LOGO, TITLE, RIBBON, STRINGS, BUTTON, START_OPTION, LOAD_OPTION, STARTUP,
+           CHOOSER)
 
 
 @pytest.mark.parametrize("group", _GROUPS, ids=lambda g: type(g).__name__)
@@ -139,16 +145,43 @@ def test_the_start_key_sends_the_engines_own_release_with_on_stated() -> None:
     assert command["on"] is False
 
 
-def test_there_is_one_start_command_for_each_start_option() -> None:
-    assert set(START_COMMANDS) == {START_OPTION.key} == {"load_100"}
+def test_there_is_one_start_command_for_each_start_option_and_each_is_the_release() -> None:
+    assert set(START_COMMANDS) == {o.key for o in START_OPTIONS} == {"load_100", "load_exercise"}
+    assert all(dict(START_COMMANDS[o.key]) == {"type": "freeze", "on": False} for o in START_OPTIONS)
+
+
+def test_100_percent_load_is_first_and_only_load_restores_an_exercise() -> None:
+    """Enter presses the first option; the start from a saved exercise is LOAD's alone (decision 171)."""
+    assert START_OPTIONS == (START_OPTION, LOAD_OPTION)
+    assert not START_OPTION.restores_exercise and LOAD_OPTION.restores_exercise
+    assert (START_OPTION.label, LOAD_OPTION.label) == ("100% LOAD", "LOAD")
+    assert len({o.key for o in START_OPTIONS}) == len(START_OPTIONS)
+    assert {o.icon for o in START_OPTIONS} == {"play", "folder"}
+
+
+def test_the_restore_command_is_the_engines_own_snapshot_load() -> None:
+    """The instructor's RESTORE: an engine command that exists, the exercise named when it is sent."""
+    assert dict(RESTORE_COMMAND) == {"type": "snapshot_load"}
+    assert RESTORE_COMMAND["type"] in SIMULATOR_COMMANDS
 
 
 def test_the_start_up_waits_are_ordered_and_the_status_texts_are_set() -> None:
     assert 0 < STARTUP.poll_ms <= STARTUP.watch_ms <= 1000
     assert STARTUP.engine_timeout_s == 60.0  # run.py's own wait for the engine
     assert STARTUP.packet_timeout_s > 30.0  # the bridge's first-packet allowance; pinned in tests/hmi/test_startup.py
-    assert all(t.strip() for t in (STARTUP.building, STARTUP.engine, STARTUP.connecting, STARTUP.releasing))
+    assert all(t.strip() for t in (STARTUP.building, STARTUP.engine, STARTUP.connecting, STARTUP.releasing,
+                                   STARTUP.listing, STARTUP.choosing, STARTUP.no_choice, STARTUP.no_exercises))
+    assert STARTUP.restoring.format(name="load100_steam").endswith("load100_steam")
+    refusal = STARTUP.refused.format(name="load100_steam", reason="cannot read it")
+    assert "load100_steam" in refusal and refusal.endswith("cannot read it")
+    assert "chosen" in STARTUP.no_choice and "exercise" in STARTUP.no_exercises          # the status says why
     assert STRINGS.starting.strip()
+
+
+def test_the_chooser_has_its_texts_and_a_usable_size() -> None:
+    assert all(t.strip() for t in (CHOOSER.title, CHOOSER.prompt, CHOOSER.retry, CHOOSER.load, CHOOSER.cancel))
+    assert CHOOSER.cancel in CHOOSER.retry and "start buttons" in CHOOSER.retry  # Cancel's outcome, stated
+    assert CHOOSER.min_width >= 300 and CHOOSER.min_height >= 200
 
 
 def test_the_hairline_threshold_sits_between_one_and_two_device_pixels() -> None:

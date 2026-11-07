@@ -185,3 +185,31 @@ def test_busy_covers_the_working_and_fading_phases_only() -> None:
     _run(seq, TIMELINE.hold + 1.1, TIMELINE.hold + 3.0)
     assert seq.phase is Phase.DONE and not seq.busy
     assert seq.advance(TIMELINE.hold + 9.0) == []
+
+
+# -- a start withdrawn (decision 171: no exercise chosen after LOAD) ------------------------------------------
+
+
+def test_a_withdrawn_start_makes_the_buttons_live_again_and_the_next_press_starts() -> None:
+    seq = _to_awaiting()
+    now = TIMELINE.hold + 1.0
+    assert seq.press_start(now)
+    assert [e for _, e in _run(seq, now, now + 0.05)] == [Event.START]
+    assert seq.cancel_start()
+    assert seq.phase is Phase.AWAITING and seq.awaiting_start and not seq.busy
+    assert [e for _, e in _run(seq, now + 0.05, now + 3.0)] == []          # nothing starts by itself
+    assert seq.press_start(now + 3.0)
+    assert [e for _, e in _run(seq, now + 3.0, now + 3.05)] == [Event.START]  # a second START, once
+    seq.mark_ready()
+    events = [e for _, e in _run(seq, now + 3.05, now + 5.0)]
+    assert events == [Event.REVEAL, Event.FINISHED]
+
+
+def test_only_a_start_in_progress_and_not_ready_can_be_withdrawn() -> None:
+    seq = IntroSequencer()
+    assert not seq.cancel_start()                                          # playing
+    seq = _to_awaiting()
+    assert not seq.cancel_start() and seq.phase is Phase.AWAITING          # nothing pressed
+    seq.press_start(TIMELINE.hold + 1.0)
+    seq.mark_ready()
+    assert not seq.cancel_start() and seq.phase is Phase.STARTING          # the console is up: too late

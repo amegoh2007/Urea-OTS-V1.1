@@ -16,12 +16,15 @@ the process refuses, with its reason.
 
 The start-up intro
 ------------------
-The console opens on the HFC intro (`ureasim.hmi.intro`), which ends on a 100% LOAD button. The
-engine is built while the intro plays and held at its design seed, the 1750 MTPD design basis: its
-plant clock does not move and it publishes nothing. Pressing the button builds the console,
+The console opens on the HFC intro (`ureasim.hmi.intro`), which ends on two buttons, 100% LOAD and
+LOAD. The engine is built while the intro plays and held at its design seed, the 1750 MTPD design
+basis: its plant clock does not move and it publishes nothing. Pressing 100% LOAD builds the console,
 connects it and releases the hold with the engine's own ``freeze`` command
-(`ureasim.hmi.startup`); the console is shown when the first packet arrives. ``--no-intro`` skips
-all of it and runs the plant from the start, which keeps the edit-and-run cycle short.
+(`ureasim.hmi.startup`); the console is shown when the first packet arrives. LOAD first offers the
+saved exercises, restores the one chosen, and only then releases the plant; Cancel goes back to
+the two buttons (decision 171).
+``--no-intro`` skips all of it and runs the plant from the start, which keeps the edit-and-run cycle
+short.
 
 The engine
 ----------
@@ -29,7 +32,9 @@ The engine runs the plant (`ureasim.engine.session`) on its own physics thread
 (`ureasim.net.engine_host`): the design seed at start, stepped in fixed 0.1 s steps at the
 instructor's pacing, the console packet published ten times a second, each command applied between
 two ticks and answered with the plant's reason when it is refused. Exercises are saved under
-``~/ureasim-exercises`` unless ``UREASIM_EXERCISES`` names another folder.
+``~/ureasim-exercises`` unless ``UREASIM_EXERCISES`` names another folder; the exercises shipped in
+the repository's ``scenarios`` folder, verified steady states, are listed and restored beside them
+and never written, by the intro's LOAD and the instructor's panel alike (decision 171).
 """
 
 from __future__ import annotations
@@ -40,11 +45,17 @@ import logging
 import socket
 import sys
 import threading
+from pathlib import Path
 
 from ureasim.net.server import DEFAULT_HOST, DEFAULT_PORT, StationServer
 
 #: Reported to the console in `welcome`, so it can tell which build it is attached to.
 ENGINE_NAME = "ureasim-1.1"
+
+#: The exercises shipped with the simulator: the repository's verified steady states, which the intro's LOAD
+#: button and the instructor's panel offer beside the instructor's own folder, and which SAVE never writes
+#: (decision 171; CLAUDE.md section 6 keeps training saves out of the repository).
+SCENARIO_DIR = Path(__file__).resolve().parent / "scenarios"
 
 
 def _parse_args(argv=None) -> argparse.Namespace:
@@ -83,7 +94,7 @@ async def _serve(port: int, ready: threading.Event | None = None, hold: bool = F
 
     server = StationServer()
     bound = await server.start(DEFAULT_HOST, port)
-    session = EngineSession()
+    session = EngineSession(shipped_dir=SCENARIO_DIR)
     session.frozen = hold
     engine = EngineHost(session, server, ENGINE_NAME)
     engine.start()

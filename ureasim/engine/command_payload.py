@@ -20,6 +20,7 @@ from __future__ import annotations
 import math
 from typing import Mapping
 
+from ureasim.data.unit_322_loop import trip_label
 from ureasim.engine.state import PlantState
 
 
@@ -58,7 +59,8 @@ def _trip(plant: PlantState, key: str):
 
 
 def _trip_name(key: str) -> str:
-    return "trip " + key.replace("_", ".")
+    """A synthesis trip as a refusal names it: "trip 21.2", "trip 22.2 (simulator)" (decision 174)."""
+    return "trip " + trip_label(key)
 
 
 def _needs(cmd: Mapping, mode: str, **fields: str) -> None:

@@ -65,7 +65,8 @@ Where this stage departs from V1 — each a decided divergence, run both ways in
     solved on the stage's energy balance (`stage_fixed_point`), where V1 leaves the last sweep.
 
 PV-329212 runs on its vendor trim (decision 23's class, decided 2026-10-14): Metso's DN 80
-balanced Neldisc, Cv 150, its printed capacities as its curve, from its 54.68 % design stroke, where
+balanced Neldisc, Cv 150, its printed capacities and Valmet's S-Disc shape between them as its curve
+(decision 170, 2026-11-06), from its 54.68 % design stroke, where
 V1 runs the chest valve linear from 65.56 % (`steam_chest.ChestValve`).
 
 Sources
@@ -183,7 +184,7 @@ def tic_324002() -> ProcessLoop:
         op_lo=0.0, op_hi=P_MP_BARA, sp_lo=0.0, sp_hi=200.0)
 
 
-#: PV-329212 as the port runs it, on its vendor's trim (DN 80 balanced Neldisc, Cv 150, from 54.68 %; decided 2026-10-14),
+#: PV-329212 as the port runs it, on its vendor's trim (DN 80 balanced Neldisc, Cv 150, from 54.68 %; decided 2026-10-14; the S-Disc shape since decision 170),
 #: and as V1 runs it, linear from V1's stroke — which the equivalence harness keeps.
 PV_329212_CHEST = ChestValve(PV_329212_OP_DES_PCT, PV_329212.characteristic, PV_329212_XT)
 V1_CHEST = ChestValve(E003_OP_DES_PCT)

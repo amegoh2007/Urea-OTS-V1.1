@@ -27,8 +27,12 @@ are passed to `run.py`.
 
 The console opens on the Helwan Fertilizers start-up intro. The plant is built and held at its design
 seed, the 1750 MTPD design basis, while the intro plays, and it starts when you press **100% LOAD**
-(click the button, or press Enter or Space). Any key or click before the button appears skips the
-animation without starting the plant. `--no-intro` skips the intro and runs the plant from the start;
+(click the button, or press Enter or Space). **LOAD**, beside it, starts the plant from a saved
+exercise instead: pick one from the list the engine offers and press LOAD; the plant is released
+once the exercise is restored. If the engine refuses the file the list comes back with its reason;
+CANCEL, or no saved exercise, takes you back to the two buttons. Any key or click before the
+buttons appear skips the animation without starting the plant. `--no-intro` skips the intro and
+runs the plant from the start;
 `--fullscreen-intro` plays it full screen. The intro is drawn on the GPU where the machine has one
 (a hardware OpenGL 2.0 context) and by the CPU everywhere else; set the environment variable
 `UREASIM_INTRO_RENDERER=raster` to force the CPU if a driver misbehaves.
@@ -52,8 +56,9 @@ The engine runs the plant on its own physics thread: the design seed at start, f
 steps at the instructor's pacing, the console packet (V1's WebSocket key paths) published to
 the console ten times a second, each command applied between two ticks and answered with the
 plant's reason when it is refused. Exercises are saved under `~/ureasim-exercises` unless
-`UREASIM_EXERCISES` names another folder. The status bar shows whether the engine is running,
-frozen or faulted.
+`UREASIM_EXERCISES` names another folder; the verified steady states shipped in the repository's
+`scenarios` folder are listed beside them, by the intro's LOAD and the instructor's panel alike,
+and never overwritten. The status bar shows whether the engine is running, frozen or faulted.
 
 A console that loses its link goes blank and says why — it does not keep showing the last
 values it received.

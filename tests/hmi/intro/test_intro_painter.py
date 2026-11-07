@@ -14,11 +14,22 @@ from PyQt6.QtCore import QLineF, Qt
 from PyQt6.QtGui import QColor, QImage, QPainter
 from PyQt6.QtWidgets import QApplication
 
-from ureasim.data.intro import BUTTON, HAIRLINE_MAX_PX, PALETTE, STAGE, STRINGS, TIMELINE, TITLE
+from ureasim.data.intro import (
+    BUTTON,
+    HAIRLINE_MAX_PX,
+    LOAD_OPTION,
+    PALETTE,
+    STAGE,
+    START_OPTION,
+    START_OPTIONS,
+    STRINGS,
+    TIMELINE,
+    TITLE,
+)
 from ureasim.hmi.intro import painter as painter_module
 from ureasim.hmi.intro.ops import Circle, GradientRect, Line, Lines, Rect, Static, Text
 from ureasim.hmi.intro.painter import IntroPainter
-from ureasim.hmi.intro.scene import ButtonState, build_frame, button_rect, view_rect
+from ureasim.hmi.intro.scene import ButtonState, ButtonStates, build_frame, button_rect, view_rect
 
 
 @pytest.fixture(scope="module")
@@ -27,7 +38,7 @@ def app():
 
 
 def _render(
-    t: float, w: int = int(STAGE.width), h: int = int(STAGE.height), status: str = "", button: ButtonState = ButtonState.IDLE
+    t: float, w: int = int(STAGE.width), h: int = int(STAGE.height), status: str = "", button: ButtonStates = ButtonState.IDLE
 ) -> QImage:
     image = QImage(w, h, QImage.Format.Format_ARGB32)
     image.fill(QColor("white"))
@@ -125,7 +136,7 @@ def test_button_states_paint_their_own_fill(app) -> None:
 def test_the_play_triangle_and_the_label_are_drawn(app) -> None:
     r = button_rect()
     image = _render(TIMELINE.hold)
-    tx, ty = int(r.cx + BUTTON.icon_dx), int(r.cy)
+    tx, ty = int(r.cx + START_OPTION.icon_dx), int(r.cy)
     assert _near(image.pixelColor(tx, ty), PALETTE.orange, tolerance=40)
     whites = sum(
         1
@@ -139,6 +150,39 @@ def test_the_play_triangle_and_the_label_are_drawn(app) -> None:
 def test_no_button_before_it_arrives(app) -> None:
     r = button_rect()
     assert not _near(_render(TIMELINE.button_in[0] - 0.05).pixelColor(int(r.x + 22), int(r.cy)), PALETTE.teal_deep)
+
+
+def test_the_load_pill_its_folder_and_its_label_are_drawn_where_the_hit_test_says(app) -> None:
+    r = button_rect(LOAD_OPTION.key)
+    image = _render(TIMELINE.hold)
+    assert _near(image.pixelColor(int(r.x + 12), int(r.cy)), PALETTE.teal_deep)      # the pill, left of the folder
+    assert not _near(image.pixelColor(int(r.right + 12), int(r.cy)), PALETTE.teal_deep)
+    assert _near(image.pixelColor(int(r.cx + LOAD_OPTION.icon_dx), int(r.cy + 1)), PALETTE.orange, tolerance=40)
+    whites = sum(
+        1
+        for x in range(int(r.cx - 20), int(r.cx + 50))
+        for y in range(int(r.cy - 12), int(r.cy + 12))
+        if _near(image.pixelColor(x, y), PALETTE.white, tolerance=20)
+    )
+    assert whites > 40
+
+
+def test_hovering_one_pill_lights_that_pill_only(app) -> None:
+    load, full = button_rect(LOAD_OPTION.key), button_rect()
+    image = _render(TIMELINE.hold, button={LOAD_OPTION.key: ButtonState.HOVER})
+    assert _near(image.pixelColor(int(load.x + 12), int(load.cy)), PALETTE.teal)
+    assert _near(image.pixelColor(int(full.x + 22), int(full.cy)), PALETTE.teal_deep)
+
+
+@pytest.mark.parametrize("option", START_OPTIONS, ids=lambda o: o.key)
+def test_every_label_fits_its_pill_clear_of_its_icon(app, option) -> None:
+    """Measured with the painter's own font: the label stays off the rounded end and clear of the glyph."""
+    r = button_rect(option.key)
+    width, _ascent, _descent = painter_module._text_metrics(round(BUTTON.label_size), True, BUTTON.label_spacing, option.label)
+    left, right = r.cx + option.label_dx - width / 2.0, r.cx + option.label_dx + width / 2.0
+    icon_left = r.cx + option.icon_dx - 1.1 * BUTTON.icon_half_height
+    icon_right = r.cx + option.icon_dx + 1.1 * BUTTON.icon_half_height
+    assert r.x + 12.0 <= icon_left and icon_right + 8.0 <= left and right <= r.right - 12.0, (option.key, left, right)
 
 # -- frame cost (session 85, handoff A-25 point 1) ---------------------------------------------------------
 

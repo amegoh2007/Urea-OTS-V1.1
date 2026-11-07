@@ -65,30 +65,32 @@ def test_a_unit_draws_on_the_pfds_basis():
 
 
 def test_the_lp_header_answers_its_users():
-    """B-68: 324E001's chest 10 t/h up. The header falls to 4.84 bar a in 4.5 s; PV-329207B cuts
-    the turbine's export to 10.4 t/h and PV-329207C admits 3.1 t/h of supply steam by 30 s; in five
-    minutes the header is back at 4.92 bar a, B carrying the load at 30.4 % on its Neldisc
-    (decided 2026-10-15; 25.6 % on V1's valve), C on its Mark One (decision 150)."""
+    """B-68: 324E001's chest 10 t/h up. The header falls to 4.85 bar a in 4.5 s; PV-329207B cuts
+    the turbine's export to 9.5 t/h and PV-329207C admits 2.4 t/h of supply steam by 30 s; in five
+    minutes the header is back at 4.93 bar a, B carrying the load at 33.7 % on its Neldisc
+    (decided 2026-10-15; 25.6 % on V1's valve), C on its Mark One (decision 150). With Valmet's
+    S-Disc table between B's printed points (decision 170, 2026-11-06) the valve passes less at 30 %
+    travel than the chord did: 4.84 bar a, 10.4 and 3.1 t/h, 4.92 bar a and 30.4 % before it."""
     up = dict(D.users_lp_kgh)
     up["919"] += 10000.0
     _, out = _run(3000, lambda k: replace(D, users_lp_kgh=up) if k >= 5 else D)
-    assert out[50].p_lp_bara == pytest.approx(4.8393, abs=1e-4)
+    assert out[50].p_lp_bara == pytest.approx(4.8534, abs=1e-4)
     r = out[300]
     assert (r.p_lp_bara, r.flows_kgh["932"], r.flows_kgh["963"]) == (
-        pytest.approx(4.8091, abs=1e-4), pytest.approx(10355.6, abs=0.1),
-        pytest.approx(3106.0, abs=0.1))
+        pytest.approx(4.8323, abs=1e-4), pytest.approx(9549.0, abs=0.1),
+        pytest.approx(2419.3, abs=0.1))
     r = out[2999]
-    assert (r.p_lp_bara, r.strokes_pct["PV-329207B"]) == (pytest.approx(4.9237, abs=1e-4),
-                                                          pytest.approx(30.352, abs=1e-3))
+    assert (r.p_lp_bara, r.strokes_pct["PV-329207B"]) == (pytest.approx(4.9297, abs=1e-4),
+                                                          pytest.approx(33.667, abs=1e-3))
 
 
 def test_nothing_holds_the_lp_header_up():
     """B-70: 322E002's raising lost with the users at their design draws. PV-329207C wide open
     admits 39.4 t/h on its Mark One (decision 150), short of the 52 t/h the users take: the header
-    falls through V1's 3.5 bar a floor at 13.5 s and to 1.96 bar a in five minutes; 322D001's level rises, LV-329504 still making
+    falls through V1's 3.5 bar a floor at 13.6 s (13.5 s before decision 170) and to 1.96 bar a in five minutes; 322D001's level rises, LV-329504 still making
     up."""
     _, out = _run(3000, lambda k: replace(D, raise_kgh=0.0) if k >= 5 else D)
-    assert next(k for k in range(3000) if out[k].p_lp_bara < 3.5) == 135
+    assert next(k for k in range(3000) if out[k].p_lp_bara < 3.5) == 136
     r = out[2999]
     assert (r.p_lp_bara, r.flows_kgh["963"]) == (pytest.approx(1.9553, abs=1e-4),
                                                  pytest.approx(39370.7, abs=0.1))
@@ -106,7 +108,7 @@ def test_a_drum_drains_to_its_heel_not_past_it():
     assert next(k for k in range(12000) if out[k].levels_pct["LIC-329502"] == 0.0) == 6980
     assert net.m_d005_kg == pytest.approx(1.0, abs=1e-9)
     r = out[-1]
-    assert r.flows_kgh["904"] == pytest.approx(60379.6, abs=0.1)
+    assert r.flows_kgh["904"] == pytest.approx(60379.3, abs=0.1)
     assert r.water_residual_kgh["329D005"] == pytest.approx(0.0, abs=1e-6)
 
 
@@ -127,17 +129,18 @@ def test_a_full_drum_overflows():
 def test_trip_21_2():
     """The stripper stops on trip 21.2: PIC-329204's set point to 10 bar g; HV-329601 forced open
     at once, venting 15.9 t/h on its Mark One (decision 150), the operator blocked; 329D005 at
-    16.8 bar a after 30 s (the Neldisc on PV-329204, decided 2026-10-15, shuts it faster than V1's
-    valve), 13.0 after five minutes, HV-329601 then shut and the operator's again."""
+    16.7 bar a after 30 s (16.8 on PV-329204's chord, before decision 170, 2026-11-06; the Neldisc,
+    decided 2026-10-15, shuts it faster than V1's valve), 13.0 after five minutes, HV-329601 then
+    shut and the operator's again."""
     net, out = _run(3000, lambda k: replace(D, strip_kgh=0.0) if k >= 5 else D, trip_at=5)
     r = out[6]
     assert (r.strokes_pct["HV-329601"], r.hv_329601_blocked) == (100.0, True)
-    assert r.flows_kgh["HV-329601"] == pytest.approx(15934.8, abs=0.1)
+    assert r.flows_kgh["HV-329601"] == pytest.approx(15934.5, abs=0.1)
     assert net.pic_329204.sp_bara == pytest.approx(11.01325, abs=1e-12)    # 10 bar g (B-6)
-    assert out[300].p_hp_bara == pytest.approx(16.7586, abs=1e-4)
+    assert out[300].p_hp_bara == pytest.approx(16.7484, abs=1e-4)
     r = out[2999]
     assert (r.p_hp_bara, r.strokes_pct["HV-329601"], r.hv_329601_blocked) == (
-        pytest.approx(13.0102, abs=1e-4), 0.0, False)
+        pytest.approx(12.9932, abs=1e-4), 0.0, False)
 
 
 def test_sv32952_relieves_329d009():
@@ -224,7 +227,7 @@ def test_a_lost_raising_starves_the_users_b73():
     out = _run_b73(3005, raise_at=5)
     p = [r.p_lp_bara for r, _, _, _ in out]
     assert (min(p), p[145], p[-1]) == (pytest.approx(3.6524, abs=1e-4),
-                                       pytest.approx(3.6694, abs=1e-4),
+                                       pytest.approx(3.6698, abs=1e-4),
                                        pytest.approx(3.9541, abs=1e-4))
     _, lp, _, op = out[-1]
     assert (lp["924"], lp["927"], lp["931"], op) == (
@@ -256,19 +259,22 @@ def _both(draws_at, n=3000):
 
 def test_the_butterflies_on_metsos_trims():
     """Decision 108's class, decided 2026-10-15: PV-329204 on its Neldisc from 44.1 %, PV-329207B
-    from 54.96 %, PV-329207A on its full stroke's 165 770 kg/h (the harness proves V1's ``==``).
+    from 55.97 %, PV-329207A on its full stroke's 165 770 kg/h (the harness proves V1's ``==``).
     The stripper 10 % up: V1's PV-329204 opens to 53.1 % in 30 s and 329D005 dips to 19.176 bar a,
-    the Neldisc to 46.2 % and 19.346 bar a; after five minutes 19.582 and 19.648. The LP users
-    15 t/h down: V1's PV-329207A vents 8.4 t/h at 30 s, the header at 5.194 bar a; the Neldisc 6.4
-    t/h at 5.175, PV-329207B exporting 25.3 t/h against 23.3; after five minutes the Neldisc vents
-    1.6 t/h at 1.9 % (V1 5.7 t/h at 6.7 %) and exports 30.1 t/h (V1 26.0)."""
+    the Neldisc to 46.4 % and 19.315 bar a; after five minutes 19.582 and 19.640. The LP users
+    15 t/h down: V1's PV-329207A vents 8.4 t/h at 30 s, the header at 5.194 bar a; the Neldisc 6.0
+    t/h at 5.177, PV-329207B exporting 25.7 t/h against 23.3; after five minutes the Neldisc vents
+    1.4 t/h at 1.8 % (V1 5.7 t/h at 6.7 %) and exports 30.3 t/h (V1 26.0). (Decision 170,
+    2026-11-06, put Valmet's S-Disc table between the two balanced valves' printed points; on the
+    chord: PV-329207B from 54.96 %, 46.2 % and 19.346 bar a, 19.648 after five minutes, 6.4 t/h at
+    5.175 and 25.3 t/h exported, 1.6 t/h at 1.9 % and 30.1 t/h exported.)"""
     v1, port = _both(lambda k: replace(D, strip_kgh=D.strip_kgh * 1.1) if k >= 5 else D)
     assert (v1[300].p_hp_bara, v1[300].strokes_pct["PV-329204"]) == (
         pytest.approx(19.1755, abs=1e-4), pytest.approx(53.091, abs=1e-3))
     assert (port[300].p_hp_bara, port[300].strokes_pct["PV-329204"]) == (
-        pytest.approx(19.3455, abs=1e-4), pytest.approx(46.207, abs=1e-3))
+        pytest.approx(19.3153, abs=1e-4), pytest.approx(46.384, abs=1e-3))
     assert (v1[-1].p_hp_bara, port[-1].p_hp_bara) == (pytest.approx(19.5823, abs=1e-4),
-                                                      pytest.approx(19.6480, abs=1e-4))
+                                                      pytest.approx(19.6403, abs=1e-4))
     down = dict(D.users_lp_kgh)
     down["919"] -= 15000.0
     v1, port = _both(lambda k: replace(D, users_lp_kgh=down) if k >= 5 else D)
@@ -276,12 +282,12 @@ def test_the_butterflies_on_metsos_trims():
         pytest.approx(5.1944, abs=1e-4), pytest.approx(8411.7, abs=0.1),
         pytest.approx(23258.2, abs=0.1))
     assert (port[300].p_lp_bara, port[300].flows_kgh["PV-329207A"],
-            port[300].flows_kgh["932"]) == (pytest.approx(5.1751, abs=1e-4),
-                                            pytest.approx(6419.9, abs=0.1),
-                                            pytest.approx(25260.3, abs=0.1))
+            port[300].flows_kgh["932"]) == (pytest.approx(5.1772, abs=1e-4),
+                                            pytest.approx(5960.0, abs=0.1),
+                                            pytest.approx(25720.1, abs=0.1))
     assert (v1[-1].flows_kgh["PV-329207A"], v1[-1].strokes_pct["PV-329207A"]) == (
         pytest.approx(5688.1, abs=0.1), pytest.approx(6.692, abs=1e-3))
     assert (port[-1].flows_kgh["PV-329207A"], port[-1].strokes_pct["PV-329207A"],
-            port[-1].flows_kgh["932"]) == (pytest.approx(1584.5, abs=0.1),
-                                           pytest.approx(1.871, abs=1e-3),
-                                           pytest.approx(30075.4, abs=0.1))
+            port[-1].flows_kgh["932"]) == (pytest.approx(1387.7, abs=0.1),
+                                           pytest.approx(1.822, abs=1e-3),
+                                           pytest.approx(30274.1, abs=0.1))

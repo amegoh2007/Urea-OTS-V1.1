@@ -20,7 +20,8 @@ from ureasim.units.steam.header_control import (
 def test_the_design_seeds():
     """At design every loop sits on its seed: PV-329204 at its Metso design stroke, 44.1 %
     (decided 2026-10-15; V1's 50 %), PV-329205A at its vendor stroke, the trio's A and C shut, B
-    on PV-329207B's 54.96 % (V1's 50 % bias)."""
+    on PV-329207B's 55.97 % (V1's 50 % bias; the chord's 54.96 % before decision 170, 2026-11-06,
+    put Valmet's S-Disc table between its sheet's printed points)."""
     assert SUPPLY_BIAS_PCT == pytest.approx(50.0, abs=1e-12)
     assert Pic329204().step(19.7, False, 0.1) == pytest.approx(44.1, abs=1e-12)
     assert v1_pic_329204().step(19.7, False, 0.1) == pytest.approx(50.0, abs=1e-12)
@@ -28,7 +29,7 @@ def test_the_design_seeds():
     assert Pic329205(table=False).step(9.0, 0.1) == (
         pytest.approx(n.PV205A_OP_DES_PCT, abs=1e-12), 0.0)
     assert Pic329207().step(5.01325, 0.1) == (0.0, n.PV207B_OP_DES_PCT, 0.0)
-    assert n.PV207B_OP_DES_PCT == pytest.approx(54.963, abs=1e-3)
+    assert n.PV207B_OP_DES_PCT == pytest.approx(55.9717, abs=1e-3)
     assert v1_pic_329207().step(5.01325, 0.1) == (0.0, 50.0, 0.0)
 
 

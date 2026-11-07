@@ -6,7 +6,21 @@ import math
 
 import pytest
 
-from ureasim.data.intro import BUTTON, LOGO, PALETTE, RIBBON, SECTIONS, START_OPTION, STAGE, STRINGS, TIMELINE, TITLE
+from ureasim.data.intro import (
+    BUTTON,
+    LOAD_OPTION,
+    LOGO,
+    PALETTE,
+    RIBBON,
+    SECTIONS,
+    START_OPTION,
+    START_OPTIONS,
+    STAGE,
+    STRINGS,
+    TIMELINE,
+    TITLE,
+)
+from ureasim.data.intro_flyby import CLEAR_ZONES
 from ureasim.hmi.intro import scene
 from ureasim.hmi.intro.ops import Circle, GradientRect, Image, Line, Lines, Polygon, Rect, RoundRect, Static, Text, flatten
 from ureasim.hmi.intro.scene import ButtonState
@@ -139,7 +153,7 @@ def test_letters_wipe_left_to_right() -> None:
 def test_hold_frame_carries_every_text_of_the_intro() -> None:
     texts = {t.text for t in _texts(_frame(TIMELINE.hold, _stage_view()))}
     assert {STRINGS.title_1, STRINGS.title_2, STRINGS.subtitle, STRINGS.version, STRINGS.start_hint} <= texts
-    assert START_OPTION.label in texts
+    assert {o.label for o in START_OPTIONS} <= texts
     assert {s.number for s in SECTIONS} <= texts and {s.name for s in SECTIONS} <= texts
 
 
@@ -264,10 +278,69 @@ def test_button_arrives_after_the_last_section_is_lit() -> None:
     assert TIMELINE.button_in[1] <= TIMELINE.hold
 
 
-def test_button_rect_is_centred_on_the_text_column_and_sized_from_the_data() -> None:
-    r = scene.button_rect()
-    assert r.cx == pytest.approx(TITLE.cx) and r.cy == pytest.approx(BUTTON.center_y)
-    assert (r.w, r.h) == (BUTTON.width, BUTTON.height)
+def test_the_row_of_buttons_is_centred_on_the_text_column_and_each_pill_sized_from_its_option() -> None:
+    rects = [scene.button_rect(o.key) for o in START_OPTIONS]
+    assert (rects[0].x + rects[-1].right) / 2.0 == pytest.approx(TITLE.cx)
+    for option, r in zip(START_OPTIONS, rects):
+        assert r.cy == pytest.approx(BUTTON.center_y) and (r.w, r.h) == (option.width, BUTTON.height)
+    assert scene.button_rect() == scene.button_rect(START_OPTION.key)          # 100% LOAD by default
+    assert [o.key for o in START_OPTIONS] == ["load_100", "load_exercise"]      # 100% LOAD left, LOAD beside it
+
+
+def test_the_pills_and_their_breathing_rings_never_overlap() -> None:
+    """Each ring reaches ring_gap + 2 from its pill at the top of its breath, plus half its 2-unit stroke."""
+    reach = BUTTON.ring_gap + 2.0 + 1.0
+    rects = [scene.button_rect(o.key) for o in START_OPTIONS]
+    for a, b in zip(rects, rects[1:]):
+        assert a.right + reach < b.x - reach
+        assert b.x - a.right == pytest.approx(BUTTON.gap)
+
+
+def test_the_buttons_lie_inside_the_text_columns_clear_zone_left_of_the_flyby() -> None:
+    """The wireframe fades out of the text column (``intro_flyby.CLEAR_ZONES``), so it never crosses a pill."""
+    zone = next(z for z in CLEAR_ZONES if z.name == "text column")
+    reach = BUTTON.ring_gap + 2.0 + 1.0
+    for option in START_OPTIONS:
+        r = scene.button_rect(option.key)
+        assert zone.x0 <= r.x - reach and r.right + reach <= zone.x1, option.key
+        assert zone.y0 <= r.y - reach and r.bottom + reach <= zone.y1, option.key
+        assert r.right + reach < 0.5 * STAGE.width
+
+
+def test_the_hit_test_names_the_button_under_the_point() -> None:
+    full, load = scene.button_rect(), scene.button_rect(LOAD_OPTION.key)
+    assert scene.button_at(full.cx, full.cy) == START_OPTION.key
+    assert scene.button_at(load.cx, load.cy) == LOAD_OPTION.key
+    assert scene.button_at(load.right - 1, load.bottom - 1) == LOAD_OPTION.key
+    gap_x = (full.right + load.x) / 2.0
+    assert scene.button_at(gap_x, full.cy) is None and not scene.button_contains(gap_x, full.cy)
+    assert scene.button_contains(load.cx, load.cy) and not scene.button_contains(load.right + 2, load.cy)
+    assert scene.button_at(load.cx, load.bottom + 2) is None
+
+
+def test_a_hovered_pill_is_lit_and_its_neighbour_left_waiting() -> None:
+    ops = _frame(TIMELINE.hold, _stage_view(), button={LOAD_OPTION.key: ButtonState.HOVER})
+    fills = [o for o in ops if isinstance(o, RoundRect) and o.width == 0.0]
+    assert [f.color for f in fills] == [PALETTE.teal_deep, PALETTE.teal]       # 100% LOAD idle, LOAD lit
+    assert fills[1].rect == scene.button_rect(LOAD_OPTION.key)
+
+
+def test_once_a_start_is_pressed_both_pills_work_and_stop_breathing() -> None:
+    ops = _frame(TIMELINE.hold, _stage_view(), status="s", button=ButtonState.BUSY)
+    rounds = [o for o in ops if isinstance(o, RoundRect)]
+    assert len(rounds) == len(START_OPTIONS) and all(o.color == PALETTE.slate and o.width == 0.0 for o in rounds)
+    texts = {t.text for t in _texts(ops)}
+    assert STRINGS.start_hint not in texts and {o.label for o in START_OPTIONS} <= texts
+
+
+def test_the_load_pill_carries_a_folder_and_100_percent_load_its_play_triangle() -> None:
+    ops = _frame(TIMELINE.hold, _stage_view())
+    full, load = scene.button_rect(), scene.button_rect(LOAD_OPTION.key)
+    inside = lambda o, r: all(r.x <= x <= r.right and r.y <= y <= r.bottom for x, y in o.points)  # noqa: E731
+    glyphs = [o for o in ops if isinstance(o, Polygon) and o.color == PALETTE.orange]
+    assert [len(g.points) for g in glyphs if inside(g, full)] == [3]
+    assert [len(g.points) for g in glyphs if inside(g, load)] == [6]
+    assert START_OPTION.icon == "play" and LOAD_OPTION.icon == "folder"
 
 
 def test_hit_test_agrees_with_the_drawn_pill() -> None:
@@ -332,7 +405,7 @@ def test_the_text_column_stands_in_the_left_third_and_leaves_the_flyby_the_rest(
     half = LOGO.width / 2.0
     assert TITLE.cx + half < 0.5 * STAGE.width
     assert TITLE.cx - half >= 0.0
-    r = scene.button_rect()
-    assert r.right < 0.5 * STAGE.width
+    for option in START_OPTIONS:
+        assert scene.button_rect(option.key).right < 0.5 * STAGE.width
     title_half = TITLE.divider_half_width
     assert TITLE.cx + title_half < 0.5 * STAGE.width

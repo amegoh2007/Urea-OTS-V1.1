@@ -139,11 +139,12 @@ def test_the_holdups_close_on_their_own_flows(disturbed):
 def test_the_loop_books_what_its_holdups_hold(disturbed):
     """The accumulation each synthesis holdup publishes, which PT-329201's node takes as the loop's
     liquid growth, sums over the minute to the holdup's own change: no uncompensated drift between
-    what the node books and what the vessels hold (322E001's sump lost 317.36 kg)."""
+    what the node books and what the vessels hold (322E001's sump lost 316.59 kg; 317.36 with the
+    balanced Neldiscs on the chord, before decision 170, 2026-11-06)."""
     for tag, booked in disturbed.booked.items():
         change = disturbed.end[tag] - disturbed.start[tag]
         assert booked == pytest.approx(change, abs=1.0e-6), tag
-    assert disturbed.end["322E001"] - disturbed.start["322E001"] == pytest.approx(-317.358,
+    assert disturbed.end["322E001"] - disturbed.start["322E001"] == pytest.approx(-316.590,
                                                                                     abs=1e-3)
 
 

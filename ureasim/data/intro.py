@@ -156,27 +156,40 @@ class RibbonLayout:
 
 @dataclass(frozen=True)
 class ButtonLayout:
-    """The start button under the subtitle, in design pixels."""
+    """The start buttons under the subtitle, in design pixels: one row of pills centred on the text column.
+
+    What differs between two pills (width, label and icon offsets, icon) is each ``StartOption``'s own.
+    """
 
     center_y: float = 522.0
-    width: float = 250.0
     height: float = 56.0
+    gap: float = 24.0
     label_size: float = 19.0
     label_spacing: float = 4.0
-    label_dx: float = 14.0
-    icon_dx: float = -81.0
     icon_half_height: float = 7.0
     ring_gap: float = 5.0
     rise: float = 8.0
-    source: str = "design choice (no plant datum)"
+    source: str = (
+        "design choice (no plant datum); gap is wider than two breathing rings reach towards each other, "
+        "2 x (ring_gap + 2), so the rings of neighbouring pills never touch"
+    )
 
 
 @dataclass(frozen=True)
 class StartOption:
-    """The one way the intro offers to start the simulator."""
+    """One way the intro offers to start the simulator: a pill on its last frame.
+
+    ``restores_exercise`` marks the option that restores a saved exercise, chosen by the operator, before the
+    held plant is released; every option ends with its ``START_COMMANDS`` release.
+    """
 
     key: str = "load_100"
     label: str = "100% LOAD"
+    width: float = 250.0
+    label_dx: float = 14.0
+    icon_dx: float = -81.0
+    icon: str = "play"
+    restores_exercise: bool = False
     source: str = (
         "request of the process engineer (2026-11-02): the intro ends with a '100% load' button that "
         "starts the simulator; 100 % load is the 1750 MTPD design basis of project.md section 1"
@@ -217,13 +230,22 @@ class Startup:
     the console, connects it and releases the hold, and the console is shown when its first packet
     arrives. These are the texts the intro shows meanwhile and the longest the application waits for
     each step before it shows the console anyway, so the status bar tells the operator what is wrong
-    instead of the intro waiting for ever.
+    instead of the intro waiting for ever. After LOAD the console first asks the engine for its saved
+    exercises and the operator chooses one; the wait for the engine stops while the chooser is open or,
+    no exercise chosen, the buttons are live again (the operator's time is not the engine's), and starts
+    again, whole, at the choice or the next press.
     """
 
     building: str = "Building screens"
     engine: str = "Starting engine"
     connecting: str = "Connecting to the engine"
     releasing: str = "Starting the plant"
+    listing: str = "Reading the saved exercises"
+    choosing: str = "Choose an exercise"
+    restoring: str = "Loading exercise {name}"
+    refused: str = "The engine refused exercise {name}: {reason}"
+    no_choice: str = "No exercise chosen"
+    no_exercises: str = "No saved exercise to load"
     poll_ms: int = 50
     watch_ms: int = 250
     engine_timeout_s: float = 60.0
@@ -264,13 +286,39 @@ class Render:
     )
 
 
-#: The engine command each start key sends. The plant is built at the design seed (the 1750 MTPD
-#: design basis, 100 % load) and held by the engine's own freeze (``freeze``, ``on`` always stated,
-#: because a missing ``on`` toggles); the 100 % LOAD button releases that hold. The command is the
-#: engine's existing one, the one the instructor's RUN button sends, so no new engine behaviour exists.
+@dataclass(frozen=True)
+class Chooser:
+    """The list of saved exercises the LOAD button opens over the intro."""
+
+    title: str = "Load an exercise"
+    prompt: str = "The plant starts from the saved exercise you choose."
+    retry: str = "Choose another exercise, or CANCEL to go back to the start buttons."
+    load: str = "LOAD"
+    cancel: str = "CANCEL"
+    min_width: int = 420
+    min_height: int = 320
+    source: str = (
+        "request of the process engineer (2026-11-05): a load button on the intro that loads the saved "
+        "exercise files; the names are the engine's (`EngineSession.exercises`), the layout a design choice; "
+        "a refused exercise reopens the chooser with the engine's reason, and Cancel goes back to the start "
+        "buttons (the process engineer, 2026-11-06)"
+    )
+
+
+#: The engine command each start key sends to release the held plant. The plant is built at the design seed
+#: (the 1750 MTPD design basis, 100 % load) and held by the engine's own freeze (``freeze``, ``on`` always
+#: stated, because a missing ``on`` toggles); the 100 % LOAD button releases that hold. The LOAD button sends
+#: the same release once the exercise the operator chose is restored. The command is the engine's existing
+#: one, the one the instructor's RUN button sends, so no new engine behaviour exists.
+_RELEASE = MappingProxyType({"type": "freeze", "on": False})
 START_COMMANDS = MappingProxyType({
-    "load_100": MappingProxyType({"type": "freeze", "on": False}),
+    "load_100": _RELEASE,
+    "load_exercise": _RELEASE,
 })
+
+#: The engine command the LOAD button sends for the exercise the operator chose, its ``name`` added: the
+#: instructor's RESTORE (``ureasim/hmi/instructor/panel.py``), the engine's own ``snapshot_load``.
+RESTORE_COMMAND = MappingProxyType({"type": "snapshot_load"})
 
 
 STAGE = Stage()
@@ -282,7 +330,23 @@ RIBBON = RibbonLayout()
 STRINGS = Strings()
 BUTTON = ButtonLayout()
 START_OPTION = StartOption()
+LOAD_OPTION = StartOption(
+    key="load_exercise",
+    label="LOAD",
+    width=160.0,
+    label_dx=14.0,
+    icon_dx=-46.0,
+    icon="folder",
+    restores_exercise=True,
+    source=(
+        "request of the process engineer (2026-11-05): a 'load' button on the intro, beside 100% LOAD, that "
+        "starts the simulator from a saved exercise file instead of the design seed; geometry a design choice"
+    ),
+)
+#: The pills on the intro's last frame, left to right: 100% LOAD first, the default that Enter presses.
+START_OPTIONS: tuple[StartOption, ...] = (START_OPTION, LOAD_OPTION)
 STARTUP = Startup()
+CHOOSER = Chooser()
 RENDER = Render()
 
 # The six sections in the order the console's tab bar first reaches them (`screen_layout.SCREENS`: 321-1,

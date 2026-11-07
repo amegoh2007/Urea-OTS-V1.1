@@ -33,15 +33,111 @@ def test_the_catalogue():
         assert "UD-MR-G00-DZ-0031-009" in valve.source, tag
 
 
-@pytest.mark.parametrize("valve", list(mv.METSO_VALVES.values()), ids=lambda v: v.tag)
-def test_each_trim_is_its_printed_points(valve):
-    """Shut to the rated capacity wide open, through every printed (travel, capacity), never
-    falling (decision 108)."""
+#: The five balanced Neldiscs (the sheets' valve series S-L-ANSI150 / S-L-ANSI300), on Valmet's S-Disc
+#: table between their printed points since decision 170 (2026-11-06); the other nine keep the chord.
+BALANCED = {"PV-329204": 300, "PV-329207A": 150, "PV-329207B": 150, "PV-329208": 150,
+            "PV-329212": 150}
+
+
+@pytest.mark.parametrize("valve", [v for t, v in mv.METSO_VALVES.items() if t not in BALANCED],
+                         ids=lambda v: v.tag)
+def test_each_conventional_trim_is_its_printed_points(valve):
+    """Shut to the rated capacity wide open, through every printed (travel, capacity), linear
+    between, never falling (decision 108): the nine conventional Neldiscs, for which no table is
+    published, are unchanged."""
     points = valve.characteristic
+    assert points == mv._neldisc(valve.rated, valve.cases)
     assert points[0] == (0.0, 0.0) and points[-1] == (1.0, 1.0)
     assert list(points[1:-1]) == [(c.stroke_pct / 100.0, c.capacity / valve.rated)
                                   for c in valve.cases]
     assert all(b[0] >= a[0] and b[1] >= a[1] for a, b in zip(points, points[1:]))
+
+
+@pytest.mark.parametrize("tag", sorted(BALANCED))
+def test_a_balanced_trim_keeps_every_printed_point(tag):
+    """Decision 170: shut to wide open, through every printed (travel, capacity) to the bit, with
+    the table's 10 % nodes added between them, and strictly rising in travel and capacity (the
+    inverse divides by both steps)."""
+    valve = mv.METSO_VALVES[tag]
+    points = valve.characteristic
+    assert points[0] == (0.0, 0.0) and points[-1] == (1.0, 1.0)
+    printed = [(c.stroke_pct / 100.0, c.capacity / valve.rated) for c in valve.cases]
+    assert all(p in points for p in printed)
+    assert all(b[0] > a[0] and b[1] > a[1] for a, b in zip(points, points[1:]))
+    assert len(points) > len(valve.cases) + 2
+
+
+def _table_two(ansi_class, h):
+    """Valmet 2SL120EN Table 2's Cv / Cv_max at fractional opening ``h``, linear between nodes."""
+    knots = [(0.0, 0.0)] + [((i + 1) / 10.0, f)
+                            for i, f in enumerate(mv.S_DISC_RELATIVE_CV[ansi_class])]
+    for (h0, f0), (h1, f1) in zip(knots, knots[1:]):
+        if h <= h1:
+            return f0 + (f1 - f0) * (h - h0) / (h1 - h0)
+    return 1.0
+
+
+def test_table_two_is_what_the_sheets_print():
+    """The evidence for decision 170: at the three printed travels of each balanced valve, Valmet's
+    Table 2 (the sheet's ANSI class) is within 1.3 % of the sheet's capacity, on the catalogue Cv for
+    the two valves installed in a larger line (PV-329204 Cv 1640, PV-329207B Cv 2580; their rated
+    FpCv is 2.2 and 5.4 % lower, and the trim is anchored on the printed points, so the rated FpCv
+    stays the full-open capacity)."""
+    catalogue_cv = {"PV-329204": 1640.0, "PV-329207B": 2580.0}
+    worst = 0.0
+    for tag, ansi_class in BALANCED.items():
+        valve = mv.METSO_VALVES[tag]
+        cv = catalogue_cv.get(tag, valve.rated)
+        for c in valve.cases:
+            deviation = (c.capacity / cv) / _table_two(ansi_class, c.stroke_pct / 100.0) - 1.0
+            worst = max(worst, abs(deviation))
+    assert worst < 0.014
+
+
+#: Both sides of decision 170 (2026-11-06), at travels 0.2, 0.3, 0.5, 0.7, 0.9: the capacity fraction
+#: of the chord that decision 108 built (the old trim, rebuilt through `_neldisc`) and of the
+#: S-Disc trim that replaced it, and the design stroke each puts on the PFD's flow (None where the
+#: valve is anchored on its full-stroke capacity, PV-329207A).
+TRAVELS = (0.2, 0.3, 0.5, 0.7, 0.9)
+BOTH_SIDES = {
+    "PV-329204": ((0.144028, 0.227477, 0.419168, 0.670112, 0.895393),
+                  (0.128858, 0.206272, 0.411769, 0.673612, 0.901761), (57989.0, 44.1, 44.1)),
+    "PV-329207A": ((0.088787, 0.144628, 0.327966, 0.545925, 0.848642),
+                   (0.085840, 0.139728, 0.294664, 0.537656, 0.871905), None),
+    "PV-329207B": ((0.116591, 0.190491, 0.338291, 0.562650, 0.854217),
+                   (0.090710, 0.147082, 0.308888, 0.553655, 0.876337), (16707.0, 54.9630, 55.9717)),
+    "PV-329208": ((0.089369, 0.146654, 0.313028, 0.556841, 0.852280),
+                  (0.086408, 0.140211, 0.294931, 0.537834, 0.871954), (11230.0, 27.2232, 27.2640)),
+    "PV-329212": ((0.098403, 0.147605, 0.306693, 0.541252, 0.846644),
+                  (0.086640, 0.141041, 0.296915, 0.540103, 0.872591), (4158.0, 54.6805, 54.6843)),
+}
+
+
+@pytest.mark.parametrize("tag", sorted(BOTH_SIDES))
+def test_decision_170_both_sides(tag):
+    """The chord is the old trim, to the bit, and it passes the same printed points; the S-Disc
+    trim moves the capacity between them by up to 0.046 of rated (PV-329207B at 40 %: the chord
+    is 0.264 where the table gives 0.218) and the design stroke of PV-329207B by +1.0 stroke-%;
+    flows at every printed point and at the design are unchanged."""
+    import dataclasses
+
+    from ureasim.control.valve import cv_fraction
+    valve = mv.METSO_VALVES[tag]
+    chord_fractions, new_fractions, design = BOTH_SIDES[tag]
+    chord = dataclasses.replace(valve, characteristic=mv._neldisc(valve.rated, valve.cases))
+    assert [cv_fraction(h, chord.characteristic) for h in TRAVELS] == pytest.approx(
+        chord_fractions, abs=1e-6)
+    assert [cv_fraction(h, valve.characteristic) for h in TRAVELS] == pytest.approx(
+        new_fractions, abs=1e-6)
+    for c in valve.cases:
+        h = c.stroke_pct / 100.0
+        assert cv_fraction(h, valve.characteristic) == pytest.approx(
+            cv_fraction(h, chord.characteristic), abs=1e-12)
+    if design is not None:
+        from ureasim.data.valve_sizing import design_stroke_pct
+        flow, old, new = design
+        assert design_stroke_pct(chord, flow) == pytest.approx(old, abs=1e-4)
+        assert design_stroke_pct(valve, flow) == pytest.approx(new, abs=1e-4)
 
 
 def test_the_densities_the_sheets_do_not_print():

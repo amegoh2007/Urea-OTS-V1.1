@@ -197,19 +197,25 @@ def test_a_neldisc_runs_on_its_printed_points(valve):
             c.stroke_pct, abs=1e-9)
     from ureasim.data.unit_329 import STEAM_PFD_KGH
     pfd = STEAM_PFD_KGH["919" if valve.tag == "PV-329203" else "920"]
+    # PV-329212 is a balanced S-Disc: since decision 170 (2026-11-06) the table's shape runs between
+    # its printed points, so its design stroke is 54.6843 % (54.6805 % on the chord; both sides are
+    # pinned in test_control_valves_metso.py). PV-329203 is conventional and keeps the chord.
     assert cvd.design_stroke_pct(valve, pfd) == pytest.approx(
-        39.3096 if valve.tag == "PV-329203" else 54.6805, abs=1e-4)
+        39.3096 if valve.tag == "PV-329203" else 54.6843, abs=1e-4)
 
 
 @pytest.mark.parametrize("valve, flow, stroke", [
     (cvd.FV_329401, 6495.0, 26.0), (cvd.PV_329202, 9027.0, 32.9244),
-    (cvd.PV_329204, 57989.0, 44.1), (cvd.PV_329207B, 16707.0, 54.9630),
-    (cvd.PV_329208, 11230.0, 27.2232), (cvd.FV_329409, 306000.0, 46.8464)], ids=lambda x: getattr(x, "tag", x))
+    (cvd.PV_329204, 57989.0, 44.1), (cvd.PV_329207B, 16707.0, 55.9717),
+    (cvd.PV_329208, 11230.0, 27.2640), (cvd.FV_329409, 306000.0, 46.8464)], ids=lambda x: getattr(x, "tag", x))
 def test_metsos_sheets_25_to_32_run_on_their_printed_points(valve, flow, stroke):
     """Decision 108's class (session 52; wired 2026-10-15, session 53): every printed travel is
     returned exactly, and the design stroke is where the normal case passes the PFD's flow — PFD
     931, 918, 902, 932, 926 and 322E003's 306 t/h. FV-329401's and PV-329204's PFD rows are their
-    normal cases' own flows, so their strokes are the printed 26.0 and 44.1 %."""
+    normal cases' own flows, so their strokes are the printed 26.0 and 44.1 %. PV-329207B and
+    PV-329208 are balanced S-Discs: decision 170 (2026-11-06) puts Valmet's table between their
+    printed points, which moves their design strokes from the chord's 54.9630 and 27.2232 % to 55.9717
+    and 27.2640 % (both sides pinned in test_control_valves_metso.py)."""
     for c in valve.cases:
         assert 100.0 * stroke_for_cv_fraction(c.capacity / valve.rated,
                                               valve.characteristic) == pytest.approx(

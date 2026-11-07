@@ -110,8 +110,9 @@ table's gain per cent of PT-329208's span, without the chest-gain scale V1 multi
 and TIC-323012, which has no table row, on its sibling TIC-323007's row on its own spans — V1's
 own retune limit-cycles behind the faster slave (As-Built §XL.2).
 
-Two valves on their vendors' trims (decision 23's class): PV-329208 on Metso's Neldisc from
-27.22 % (decided 2026-10-15), and HV-323605 on Metso's DN 400 Neldisc from 64.08 %, its printed
+Two valves on their vendors' trims (decision 23's class): PV-329208 on Metso's balanced Neldisc from
+27.26 % (decided 2026-10-15; 27.22 % on the chord before decision 170, 2026-11-06, which put Valmet's
+S-Disc table between its printed points), and HV-323605 on Metso's DN 400 Neldisc from 64.08 %, its printed
 capacities as its curve and its normal case's xT 0.38 (decided 2026-10-17), where V1 runs both
 linear — HV-323605 from 50 % on the globe valve's xT. HIC-323605 is seeded at its design stroke.
 ``PreEvaporator(chest=V1_CHEST, vent=V1_VENT)`` is V1's, which the equivalence harness keeps.
@@ -243,8 +244,8 @@ def tic_323012() -> ProcessLoop:
         op_lo=0.0, op_hi=P_LP_BARA, sp_lo=TIC_323012_SP_LO_C, sp_hi=TIC_323012_SP_HI_C)
 
 
-#: PV-329208 as the port runs it, on its vendor's trim (Metso's Neldisc from 27.22 %, decided
-#: 2026-10-15), and as V1 runs it, linear from V1's stroke — which the equivalence harness keeps.
+#: PV-329208 as the port runs it, on its vendor's trim (Metso's Neldisc from 27.26 %, decided
+#: 2026-10-15; the S-Disc shape since decision 170), and as V1 runs it, linear from V1's stroke — which the equivalence harness keeps.
 PV_329208_CHEST = ChestValve(PV_329208_OP_DES_PCT, PV_329208.characteristic, PV_329208_XT)
 V1_CHEST = ChestValve(E010_OP_DES_PCT)
 

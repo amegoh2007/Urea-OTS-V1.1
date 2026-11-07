@@ -1,4 +1,4 @@
-"""Tests of ureasim/hmi/intro/splash.py: the start button, signal order, skip, paint.
+"""Tests of ureasim/hmi/intro/splash.py: the start buttons and their keys, signal order, skip, paint.
 
 Skipped where PyQt6 is not installed. The clock is replaced by a variable, so no test waits. The splash
 here draws itself (``opengl=False``): dozens of shown windows each holding a GPU context would exhaust a
@@ -15,9 +15,9 @@ pytest.importorskip("PyQt6")
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication
 
-from ureasim.data.intro import START_OPTION, STRINGS, TIMELINE
+from ureasim.data.intro import LOAD_OPTION, START_OPTION, STRINGS, TIMELINE
 from ureasim.hmi.intro import IntroSplash
-from ureasim.hmi.intro.scene import button_rect, pixel_scale, view_rect
+from ureasim.hmi.intro.scene import ButtonState, button_rect, pixel_scale, view_rect
 from ureasim.hmi.intro.sequencer import Phase
 
 _W, _H = 683, 360
@@ -52,9 +52,9 @@ class _Rig:
         assert self.splash._seq.phase is Phase.AWAITING
         return self
 
-    def button_px(self) -> tuple[float, float]:
+    def button_px(self, key: str = START_OPTION.key) -> tuple[float, float]:
         view, s = view_rect(_W, _H), pixel_scale(_W, _H)
-        r = button_rect()
+        r = button_rect(key)
         return (r.cx - view.x) * s, (r.cy - view.y) * s
 
 
@@ -159,10 +159,10 @@ def test_a_console_ready_before_the_press_reveals_right_after_it(app) -> None:
 
 def test_pressing_the_button_clears_its_hover_state(app) -> None:
     rig = _Rig().at_button()
-    rig.splash._set_hover(True)
-    assert rig.splash._hover
+    rig.splash._set_hover(START_OPTION.key)
+    assert rig.splash._hover == START_OPTION.key
     rig.splash._click_at(*rig.button_px())
-    assert not rig.splash._hover  # pressing clears it
+    assert rig.splash._hover is None  # pressing clears it
 
 
 def test_paint_event_renders_and_the_button_states_differ(app) -> None:
@@ -170,13 +170,91 @@ def test_paint_event_renders_and_the_button_states_differ(app) -> None:
     idle = rig.splash.grab().toImage()
     ratio = idle.devicePixelRatio()  # 1.25 on a 125 % display: the grab is in device pixels
     assert idle.width() == round(_W * ratio) and idle.height() == round(_H * ratio)
-    rig.splash._set_hover(True)
+    rig.splash._set_hover(START_OPTION.key)
     hover = rig.splash.grab().toImage()
     assert hover != idle
-    rig.splash._set_hover(False)
+    rig.splash._set_hover(LOAD_OPTION.key)
+    hover_load = rig.splash.grab().toImage()
+    assert hover_load not in (idle, hover)
+    rig.splash._set_hover(None)
     rig.splash._click_at(*rig.button_px())
     rig.tick(rig.now + 0.02)  # START: busy, status line shown
     assert rig.splash.grab().toImage() not in (idle, hover)
+
+
+def test_a_click_on_load_raises_its_own_start_key(app) -> None:
+    rig = _Rig().at_button()
+    rig.splash._click_at(*rig.button_px(LOAD_OPTION.key))
+    rig.tick(rig.now + 0.02)
+    assert rig.log == [f"start:{LOAD_OPTION.key}"] and LOAD_OPTION.key == "load_exercise"
+    rig.splash.mark_ready()
+    rig.tick(rig.now + 0.02)
+    assert rig.log == ["start:load_exercise", "reveal"]
+
+
+def test_enter_still_presses_100_percent_load_not_load(app) -> None:
+    rig = _Rig().at_button()
+    rig.splash._set_hover(LOAD_OPTION.key)               # the pointer resting on LOAD does not redirect Enter
+    rig.splash._key(Qt.Key.Key_Return.value)
+    rig.tick(rig.now + 0.02)
+    assert rig.log == ["start:load_100"]
+
+
+def test_one_press_is_taken_whichever_button_it_was(app) -> None:
+    rig = _Rig().at_button()
+    rig.splash._click_at(*rig.button_px(LOAD_OPTION.key))
+    rig.splash._click_at(*rig.button_px())
+    rig.splash._key(Qt.Key.Key_Return.value)
+    for i in range(1, 4):
+        rig.tick(rig.now + 0.5 * i)
+    assert rig.log == ["start:load_exercise"]
+
+
+def test_a_click_between_the_two_buttons_does_nothing(app) -> None:
+    rig = _Rig().at_button()
+    (x0, y), (x1, _) = rig.button_px(), rig.button_px(LOAD_OPTION.key)
+    view, s = view_rect(_W, _H), pixel_scale(_W, _H)
+    gap_x = ((button_rect().right + button_rect(LOAD_OPTION.key).x) / 2.0 - view.x) * s
+    assert x0 < gap_x < x1
+    rig.splash._click_at(gap_x, y)
+    rig.tick(rig.now + 0.1)
+    assert rig.log == [] and rig.splash._seq.awaiting_start
+
+
+def test_the_pointer_lights_the_button_under_it_and_both_work_after_a_press(app) -> None:
+    rig = _Rig().at_button()
+    rig.splash._set_hover(LOAD_OPTION.key)
+    assert rig.splash._button_state() == {LOAD_OPTION.key: ButtonState.HOVER}
+    rig.splash._set_hover(None)
+    assert rig.splash._button_state() == {}
+    rig.splash._click_at(*rig.button_px(LOAD_OPTION.key))
+    rig.tick(rig.now + 0.02)
+    assert rig.splash._button_state() is ButtonState.BUSY
+
+
+def test_rearm_puts_the_buttons_back_with_the_reason_and_the_next_press_starts_again(app) -> None:
+    """After LOAD the operator chose no exercise: the buttons are live again, nothing started."""
+    rig = _Rig().at_button()
+    rig.splash._click_at(*rig.button_px(LOAD_OPTION.key))
+    rig.tick(rig.now + 0.02)
+    assert rig.splash._button_state() is ButtonState.BUSY
+    rig.splash.rearm("No exercise chosen")
+    assert rig.splash._seq.awaiting_start and rig.splash._status == "No exercise chosen"
+    assert rig.splash._button_state() == {}                           # both pills waiting again
+    rig.tick(rig.now + 2.0)
+    assert rig.log == ["start:load_exercise"] and rig.splash.isVisible()
+    rig.splash._key(Qt.Key.Key_Return.value)                          # now 100% LOAD
+    rig.tick(rig.now + 0.02)
+    assert rig.log == ["start:load_exercise", "start:load_100"]
+
+
+def test_rearm_does_nothing_once_the_console_is_ready(app) -> None:
+    rig = _Rig().at_button()
+    rig.splash._click_at(*rig.button_px())
+    rig.tick(rig.now + 0.02)
+    rig.splash.mark_ready()
+    rig.splash.rearm("late")
+    assert not rig.splash._seq.awaiting_start and rig.splash._status != "late"
 
 
 def test_status_text_repaints(app) -> None:

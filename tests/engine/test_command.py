@@ -105,9 +105,9 @@ def test_the_tempered_water_pumps_have_no_interlock(plant):
 def test_a_trip_resets_only_once_its_cause_has_gone(plant):
     trips = plant.units["SYN-TRIPS"]
     trips.i_22_2.latched, trips.i_22_2.live = True, True
-    _refused(plant, r"trip 22\.2 not reset: the cause is still live", type="trip_reset", id="22_2")
+    _refused(plant, r"trip 22\.2 \(simulator\) not reset: the cause is still live", type="trip_reset", id="22_2")
     trips.i_22_2.live = False
-    assert _ok(plant, type="trip_reset").text == "reset trip 22.2"
+    assert _ok(plant, type="trip_reset").text == "reset trip 22.2 (simulator)"
     _refused(plant, "holds no latch", type="trip_reset", id="22_1")
 
 
@@ -148,7 +148,7 @@ def test_a_latched_trip_22_2_refuses_the_co2_demand(plant):
     is refused with the trip's name, zero is not, and once it is reset the demand is taken."""
     trips = plant.units["SYN-TRIPS"]
     trips.i_22_2.latched = True
-    r = _refused(plant, r"320K002 is tripped by trip 22\.2, latched", type="co2_set", value=50.0)
+    r = _refused(plant, r"320K002 is tripped by trip 22\.2 \(simulator\), latched", type="co2_set", value=50.0)
     assert r.reason.endswith("before restoring the CO2 demand")
     _ok(plant, type="co2_set", value=0.0)
     trips.i_22_2.latched = False

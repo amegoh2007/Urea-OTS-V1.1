@@ -30,6 +30,17 @@ ack — and echoes the audit event — when the engine has answered, so a refusa
 plant's, never a timeout's. A handler that answers at once (a test's, or none attached) is taken
 as it is.
 
+A silent engine's last packet is not replayed (handoff A-28, decision 172)
+--------------------------------------------------------------------------
+A console that connects is sent the last packet and engine status at once, so it is not blank until
+the next publish. That packet is a tenth of a second old while the engine runs, and while it is
+frozen, since a held plant still publishes every pass. An engine that has stopped publishing — a
+physics pass longer than the console's watchdog, or its thread dead — would otherwise put its last
+values back on the console as live after every watchdog blank. So a packet older than
+``SNAPSHOT_REPLAY_MAX_AGE_S`` of wall-clock time is not replayed: the console gets an empty snapshot
+and an ENGINE SILENT fault in place of the stored status, which the next publish restores. An engine
+that has never published (the plant held behind the start-up intro) is answered as before.
+
 History and the exercise list
 -----------------------------
 A `history` or `history_paths` request goes to the history handler the host attaches, answered
@@ -52,8 +63,10 @@ import inspect
 import ipaddress
 import logging
 import math
+import time
 from typing import Any, Callable, Mapping
 
+from ureasim.data.engine import SNAPSHOT_REPLAY_MAX_AGE_S
 from ureasim.net import protocol
 from ureasim.net.protocol import FrameReader, Kind, ProtocolError
 
@@ -111,6 +124,7 @@ class _Station:
         self.host = host
         self.name = peer
         self.ready = False              # True once `hello` has been accepted
+        self.silenced = False           # True once told the engine is silent, until the next publish
         self.dropped = 0                # snapshots skipped for back-pressure
         self._queued = 0
 
@@ -158,10 +172,15 @@ class StationServer:
         answer, and it must reach the operator with its reason.
     engine_name
         Reported in `welcome`, so a console can tell which engine build it is attached to.
+    clock
+        The wall clock a published packet's age is measured on [s]: monotonic, so neither the
+        plant's own clock, which a frozen plant holds, nor a change of the system time moves it.
+        A test passes its own.
     """
 
     def __init__(self, command_handler: CommandHandler | None = None,
-                 engine_name: str = "unattached"):
+                 engine_name: str = "unattached",
+                 clock: Callable[[], float] = time.monotonic):
         self._stations: set[_Station] = set()
         self._command_handler = command_handler
         self._history_handler: HistoryHandler | None = None
@@ -171,6 +190,9 @@ class StationServer:
         self._seq = 0
         self._latest: dict[str, Any] = {}
         self._latest_t_plant = 0.0
+        self._clock = clock
+        #: When the engine last published, on `clock`; None before its first publish.
+        self._latest_at: float | None = None
         self._status: tuple[str, str] | None = None
 
     # ----------------------------------------------------------------------------------
@@ -224,9 +246,23 @@ class StationServer:
             frame = protocol.encode(protocol.snapshot(self._seq, t_plant, state))
         self._latest = dict(state)
         self._latest_t_plant = t_plant
+        self._latest_at = self._clock()
         for station in list(self._stations):
             if station.ready:
+                if station.silenced:
+                    # The engine speaks again: the status this console was told in place of the
+                    # stored one is withdrawn. The engine host sends a status only when it changes,
+                    # so without this the silence would stay on a live console's status bar.
+                    station.silenced = False
+                    if self._status is not None:
+                        station.send(protocol.status(*self._status))
                 station.send_snapshot(frame)
+
+    def snapshot_age_s(self) -> float | None:
+        """Wall-clock seconds since the engine last published; None before its first publish."""
+        if self._latest_at is None:
+            return None
+        return self._clock() - self._latest_at
 
     def publish_status(self, text: str, level: str) -> None:
         """Send engine health, and remember it for a console that connects later."""
@@ -329,7 +365,15 @@ class StationServer:
         log.info("console ready: %s", station.describe())
 
         # Bring the console up to date immediately: the current state and the current
-        # engine health, so it is not blank until the next publish.
+        # engine health, so it is not blank until the next publish. Not an engine's last packet
+        # once it has stopped publishing (module docstring, handoff A-28): the console stays
+        # blank and says why.
+        age = self.snapshot_age_s()
+        if age is not None and age > SNAPSHOT_REPLAY_MAX_AGE_S:
+            station.silenced = True
+            station.send(protocol.status(f"ENGINE SILENT — no packet for {age:.0f} s", "fault"))
+            station.send(protocol.snapshot(self._seq, self._latest_t_plant, {}))
+            return
         if self._status is not None:
             station.send(protocol.status(*self._status))
         station.send(protocol.snapshot(self._seq, self._latest_t_plant, self._latest))

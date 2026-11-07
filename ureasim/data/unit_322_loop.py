@@ -14,6 +14,8 @@ Source: V1 ``backend/main.py``; Sempell's orifice selection for SV32251 / SV3225
 
 from __future__ import annotations
 
+from types import MappingProxyType
+
 from ureasim.core.stream import MW_COMP
 from ureasim.data.design_point import STRIP_BOT_DES_KGH
 from ureasim.data.unit_322e001_bundle import BUNDLE
@@ -41,7 +43,8 @@ __all__ = [
     "LOOP_LEVEL_NLL_SUM_PCT",
     "SV32251_SET_BARA", "SV32251_RESEAT_BARA", "SV32251_CAP_KGH", "SV32251_P_REL_BARA",
     "SV32251_T_REL_K", "SV32251_MW_REL", "SV32251_Z_REL", "SV32251_K", "SV32251_COUNT",
-    "TRIP_22_2_BARA", "TRIP_22_2_RESET_BARA", "TRIP_21_2_PUMPS_TD_S", "TRIP_21_2_P001_TD_S",
+    "TRIP_22_2_BARA", "TRIP_22_2_RESET_BARA", "TRIP_LABELS", "trip_label",
+    "TRIP_21_2_PUMPS_TD_S", "TRIP_21_2_P001_TD_S",
     "TRIP_21_2_FY_TD_S", "TRIP_21_8_RUN_TD_S", "TRIP_21_8_STOP_TP_S", "TRIP_21_8_PDY_L2_BAR",
     "TRIP_21_2_FY_L2_FRAC",
 ]
@@ -151,6 +154,25 @@ SV32251_COUNT = 2
 #: ``SYN_P_TRIP_RESET_BARA``.
 TRIP_22_2_BARA = 155.0
 TRIP_22_2_RESET_BARA = 148.0
+
+#: The synthesis trips' names where the console words them, by packet key; a key absent here is named by
+#: its number ("21_2" -> "21.2"). Trip 22.2 is the simulator's own protection, not a plant interlock:
+#: neither AC4's application software nor the Safeguard SG1 draws a synthesis high-high pressure trip
+#: (handoff open data gap 6, As-Built §LXXIII.7), and the process engineer decided on 2026-11-06 to keep
+#: it, named as the simulator's wherever the console names it (`project.md` decision 174). Its logic and
+#: set points above are unchanged. Source: the process engineer's decision of 2026-11-06.
+TRIP_LABELS = MappingProxyType({"22_2": "22.2 (simulator)"})
+
+
+def trip_label(key: str) -> str:
+    """A synthesis trip's name on the console: "21.2", or "22.2 (simulator)" for the simulator's own trip.
+
+    Process utility
+    ---------------
+    A trainee reads a trip's name on the pump faceplate and in the engine's refusals; a trip the plant's
+    DCS does not have must not be taken for one of its interlocks.
+    """
+    return TRIP_LABELS.get(key, key.replace("_", "."))
 
 #: AC4 PC21's timers [s] (UD-MR-G00-FF-0004): TRIP_21_2_FLAG1's 5 s on the HP ammonia pumps
 #: running, 15 s on 323P001A / B running and 5 s on FY-322403 above its L2 (page 20); each pump's

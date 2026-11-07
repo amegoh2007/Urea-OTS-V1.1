@@ -15,10 +15,13 @@ that fills the window (``canvas.py``, handoff A-26): the same painter and the sa
 the picture is the same and only the cost of drawing it moves. ``opengl`` forces the choice; left as None
 it is the canvas module's own test of the machine.
 
-The scene ends on a "100% LOAD" button. Pressing it (click, or Enter / Space) raises
-``start_requested("load_100")``; the application starts the simulator at that load and calls
-``mark_ready`` when the console is up; the splash then raises ``reveal`` (show the console now, it is
-underneath) and fades out. A key press or click *before* the button is on screen only skips ahead to it.
+The scene ends on two buttons. Pressing "100% LOAD" (click, or Enter / Space) raises
+``start_requested("load_100")``; clicking "LOAD" raises ``start_requested("load_exercise")`` (the start
+from a saved exercise; it has no key, so Enter keeps meaning 100% LOAD). The application starts the
+simulator and calls ``mark_ready`` when the console is up; the splash then raises ``reveal`` (show the
+console now, it is underneath) and fades out; or it calls ``rearm`` (no exercise was chosen) and the
+buttons are live again. A key press or click *before* the buttons are on screen only skips ahead to
+them. One press is taken at a time, whichever button it was.
 
 Typical use (see INTEGRATION.md for the full recipe)::
 
@@ -40,7 +43,7 @@ from PyQt6.QtWidgets import QWidget
 from ureasim.data.intro import RENDER, START_OPTION, STAGE, STRINGS, TICK_MS
 from ureasim.hmi.intro.canvas import GLCanvas, opengl_available
 from ureasim.hmi.intro.painter import IntroPainter
-from ureasim.hmi.intro.scene import ButtonState, build_frame, button_contains, to_design, view_rect
+from ureasim.hmi.intro.scene import ButtonState, ButtonStates, build_frame, button_at, to_design, view_rect
 from ureasim.hmi.intro.sequencer import Event, IntroSequencer, Phase
 
 log = logging.getLogger(__name__)
@@ -48,7 +51,7 @@ log = logging.getLogger(__name__)
 # Share of the screen the windowed intro may occupy, so it never overflows a small laptop panel.
 _SCREEN_FILL = 0.92
 
-# Keys that press the start button once it is on screen; any key skips the scene before that.
+# Keys that press the 100% LOAD button once it is on screen; any key skips the scene before that.
 _START_KEY_CODES = frozenset(k.value for k in (Qt.Key.Key_Return, Qt.Key.Key_Enter, Qt.Key.Key_Space))
 
 
@@ -71,7 +74,8 @@ class IntroSplash(QWidget):
         self._painter = IntroPainter()
         self._painter.warm_up()  # the font database and the logo, before the window is on screen
         self._status = ""
-        self._hover = False
+        self._hover: str | None = None          # the key of the button under the pointer
+        self._start_key = START_OPTION.key      # the key of the button pressed
         self._clock = QElapsedTimer()
         self._timer = QTimer(self)
         self._timer.setTimerType(Qt.TimerType.PreciseTimer)
@@ -113,36 +117,47 @@ class IntroSplash(QWidget):
         """Jump to the last frame and its button. Never starts the simulator."""
         self._seq.skip(self._now())
 
+    def rearm(self, status: str = "") -> None:
+        """The press did not start the simulator (after LOAD the operator chose no exercise): the buttons are
+        live again, ``status`` on the status line, and nothing starts until the operator presses one."""
+        if self._seq.cancel_start():
+            self._status = status
+            self.update()
+
     # -- input ------------------------------------------------------------------------------
 
     def _key(self, code: int) -> None:
-        """A key was pressed: skip the scene, or press the start button once it is live."""
+        """A key was pressed: skip the scene, or press the 100% LOAD button once it is live."""
         if self._seq.phase is Phase.PLAYING:
             self.skip()
         elif code in _START_KEY_CODES:
-            self._press_start()
+            self._press_start(START_OPTION.key)
 
     def _click_at(self, x_px: float, y_px: float) -> None:
-        """A click at a widget pixel: skip the scene, or press the start button if it is under it."""
+        """A click at a widget pixel: skip the scene, or press the start button under it."""
         if self._seq.phase is Phase.PLAYING:
             self.skip()
-        elif self._seq.awaiting_start and self._over_button(x_px, y_px):
-            self._press_start()
+        elif self._seq.awaiting_start and (key := self._button_under(x_px, y_px)) is not None:
+            self._press_start(key)
 
-    def _over_button(self, x_px: float, y_px: float) -> bool:
+    def _button_under(self, x_px: float, y_px: float) -> str | None:
+        """The key of the start button at a widget pixel, or None."""
         w, h = float(self.width()), float(self.height())
         dx, dy = to_design(x_px, y_px, view_rect(w, h), w, h)
-        return button_contains(dx, dy)
+        return button_at(dx, dy)
 
-    def _set_hover(self, hover: bool) -> None:
-        if hover != self._hover:
-            self._hover = hover
-            self.setCursor(Qt.CursorShape.PointingHandCursor if hover else Qt.CursorShape.ArrowCursor)
+    def _set_hover(self, key: str | None) -> None:
+        """The button under the pointer (its key), or None."""
+        if key != self._hover:
+            self._hover = key
+            self.setCursor(Qt.CursorShape.PointingHandCursor if key is not None else Qt.CursorShape.ArrowCursor)
             self.update()
 
-    def _press_start(self) -> None:
+    def _press_start(self, key: str) -> None:
+        """A start button was pressed; the sequencer takes one press, and its key is the one announced."""
         if self._seq.press_start(self._now()):
-            self._set_hover(False)
+            self._start_key = key
+            self._set_hover(None)
             self.update()
 
     # -- internals --------------------------------------------------------------------------
@@ -166,7 +181,7 @@ class IntroSplash(QWidget):
             if event is Event.START:
                 self._status = STRINGS.starting  # the application may replace it from its slot
                 self.repaint()  # draw the working state now: the slot below may block for seconds
-                self.start_requested.emit(START_OPTION.key)
+                self.start_requested.emit(self._start_key)
             elif event is Event.REVEAL:
                 self.reveal.emit()
             elif event is Event.FINISHED:
@@ -187,10 +202,11 @@ class IntroSplash(QWidget):
         self._canvas.deleteLater()
         self._canvas = None
 
-    def _button_state(self) -> ButtonState:
+    def _button_state(self) -> ButtonStates:
+        """Both buttons working once one is pressed; otherwise the one under the pointer lit."""
         if self._seq.busy:
             return ButtonState.BUSY
-        return ButtonState.HOVER if self._hover else ButtonState.IDLE
+        return {} if self._hover is None else {self._hover: ButtonState.HOVER}
 
     # -- Qt overrides -----------------------------------------------------------------------
 
@@ -245,10 +261,10 @@ class IntroSplash(QWidget):
     def mouseMoveEvent(self, event: QMouseEvent | None) -> None:  # noqa: N802
         if event is not None:
             pos = event.position()
-            self._set_hover(self._seq.awaiting_start and self._over_button(pos.x(), pos.y()))
+            self._set_hover(self._button_under(pos.x(), pos.y()) if self._seq.awaiting_start else None)
 
     def leaveEvent(self, event) -> None:  # noqa: N802, ANN001
-        self._set_hover(False)
+        self._set_hover(None)
 
     def closeEvent(self, event) -> None:  # noqa: N802, ANN001
         self._timer.stop()

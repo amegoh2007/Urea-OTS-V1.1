@@ -1,4 +1,4 @@
-"""Console server: the handshake, commands to the engine, the audit echo, a reconnect.
+"""Console server: the handshake, commands to the engine, the audit echo, a reconnect, a silent engine.
 
 These run against a real socket on an ephemeral port, because the behaviours that matter —
 a refusal reaching the console with its reason, a reconnecting console brought up to date at
@@ -12,6 +12,7 @@ import asyncio
 
 import pytest
 
+from ureasim.data.engine import DT_S, SNAPSHOT_REPLAY_MAX_AGE_S
 from ureasim.net import protocol
 from ureasim.net import server as server_module
 from ureasim.net.protocol import FrameReader, Kind
@@ -229,6 +230,94 @@ def test_a_reconnect_overlapping_its_old_connection_is_served():
         await new.close()
         await server.stop()
     run(scenario())
+
+
+# --------------------------------------------------------------------------------------
+# A silent engine (handoff A-28, decision 172)
+# --------------------------------------------------------------------------------------
+
+class _Clock:
+    """A wall clock the test moves by hand: the server's packet age, asyncio's own clock left alone."""
+
+    def __init__(self, t: float = 1000.0) -> None:
+        self.t = t
+
+    def __call__(self) -> float:
+        return self.t
+
+
+def test_a_console_connecting_to_a_silent_engine_is_told_so_and_shown_nothing():
+    """An engine that has stopped publishing: its last packet is not replayed, the stored status gives
+    way to the silence, and the engine's next publish restores the status once, then its packet."""
+    async def scenario():
+        clock = _Clock()
+        server = StationServer(clock=clock)
+        port = await server.start("127.0.0.1", 0)
+        server.publish({"PT_329201": 141.2}, t_plant=99.0)
+        server.publish_status("ENGINE RUNNING — SLOW", "ok")
+        clock.t += SNAPSHOT_REPLAY_MAX_AGE_S + 5.0
+        assert server.snapshot_age_s() == pytest.approx(SNAPSHOT_REPLAY_MAX_AGE_S + 5.0)
+
+        late = await Client.connect(port)
+        await late.pump(3)
+        assert [m["t"] for m in late.inbox] == ["welcome", "status", "snapshot"]
+        assert late.inbox[1]["level"] == "fault"
+        assert late.inbox[1]["text"] == "ENGINE SILENT — no packet for 6 s"
+        assert late.inbox[2]["state"] == {}
+
+        server.publish({"PT_329201": 141.5}, t_plant=99.1)
+        await late.pump(5)
+        assert [m["t"] for m in late.inbox[3:5]] == ["status", "snapshot"]
+        assert late.inbox[3]["text"] == "ENGINE RUNNING — SLOW"
+        assert late.inbox[4]["state"]["PT_329201"] == 141.5
+        server.publish({"PT_329201": 141.6}, t_plant=99.2)
+        await late.pump(6)
+        assert late.inbox[5]["t"] == "snapshot"                # the status is restored once only
+        await late.close()
+        await server.stop()
+    run(scenario())
+
+
+def test_a_packet_within_the_replay_age_is_replayed_with_its_status():
+    """A frozen or running engine publishes every pass: a console that connects is brought up to date at once."""
+    async def scenario():
+        clock = _Clock()
+        server = StationServer(clock=clock)
+        port = await server.start("127.0.0.1", 0)
+        server.publish({"PT_329201": 141.2}, t_plant=99.0)
+        server.publish_status("ENGINE FROZEN — the plant clock is held", "warn")
+        clock.t += SNAPSHOT_REPLAY_MAX_AGE_S                     # at the limit, not past it
+        late = await Client.connect(port)
+        await late.pump(3)
+        assert late.inbox[1]["text"] == "ENGINE FROZEN — the plant clock is held"
+        assert late.inbox[2]["state"]["PT_329201"] == 141.2
+        await late.close()
+        await server.stop()
+    run(scenario())
+
+
+def test_an_engine_that_has_never_published_is_answered_as_before():
+    """The plant held behind the start-up intro publishes nothing by design (decision 166): its stored status
+    and an empty snapshot, however long it has been held, and no silence."""
+    async def scenario():
+        clock = _Clock()
+        server = StationServer(clock=clock)
+        port = await server.start("127.0.0.1", 0)
+        server.publish_status("ENGINE FROZEN — the plant clock is held", "warn")
+        clock.t += 3600.0
+        assert server.snapshot_age_s() is None
+        late = await Client.connect(port)
+        await late.pump(3)
+        assert [m["t"] for m in late.inbox] == ["welcome", "status", "snapshot"]
+        assert late.inbox[1]["text"] == "ENGINE FROZEN — the plant clock is held"
+        assert late.inbox[2]["state"] == {}
+        await late.close()
+        await server.stop()
+    run(scenario())
+
+
+def test_the_replay_age_is_ten_publish_passes():
+    assert SNAPSHOT_REPLAY_MAX_AGE_S == pytest.approx(10 * DT_S)
 
 
 # --------------------------------------------------------------------------------------

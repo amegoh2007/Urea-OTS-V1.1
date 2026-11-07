@@ -10,7 +10,8 @@ and wrong for a live engine that is held. Pinned here:
   engine label still FROZEN, the readouts not blank), the plant's clock where the reset or the exercise
   put it, and the plant not stepped;
 * the watchdog still does its work: an engine that goes silent with the link up blanks the console about
-  5 s later, and a link that closes blanks it at once.
+  5 s later and keeps it blank through the reconnects that follow (handoff A-28, decision 172), and a link
+  that closes blanks it at once.
 
 The bridge's watchdog must already be in its strict state before any wait here counts, so the engine is
 started running, not held: a console that has never had a packet is on the 30 s first-packet allowance and
@@ -173,8 +174,9 @@ def test_a_reset_and_a_restored_exercise_keep_a_frozen_console_live_past_the_wat
 def test_the_watchdog_still_blanks_a_console_whose_engine_goes_silent(rig):
     """The link up and nothing arriving is the case the watchdog is for: the engine's thread stopped.
 
-    It asserts at the first blank only. After it the bridge reconnects and the server replays the dead engine's
-    last packet, so the console shows it as live until the next blank (handoff A-28, not changed here)."""
+    After the first blank the bridge reconnects, and the server does not replay the dead engine's last packet
+    (handoff A-28, decision 172): across two more reconnect cycles the console stays blank, and each
+    reconnect is told the engine is silent."""
     assert rig.bridge._stale.interval() == STALE_MS and rig.bridge.connected
     quiet_from = time.monotonic()
     rig.host.stop()
@@ -182,6 +184,16 @@ def test_the_watchdog_still_blanks_a_console_whose_engine_goes_silent(rig):
     when, text = rig.disconnects(quiet_from)[0]
     assert "no data from the engine" in text
     assert STALE_MS / 1000.0 - 0.6 <= when - quiet_from <= STALE_MS / 1000.0 + 1.5, when - quiet_from
+    assert rig.bridge.latest == {} and all(text == NO_DATA for text in rig.readouts())
+
+    def watchdog_blanks() -> int:
+        return sum("no data from the engine" in text for _, text in rig.disconnects(when))
+
+    rig.wait_for(lambda: watchdog_blanks() >= 3, 3 * PAST_THE_WATCHDOG_S + 6.0,
+                 "two more reconnect cycles, each blanked by the watchdog")
+    assert all(not state for t, state in rig.snapshots if t >= when), "a silent engine's packet reached the console"
+    silences = [text for t, text in rig.statuses if t >= when and text.startswith("ENGINE SILENT")]
+    assert len(silences) >= 2, rig.statuses[-12:]
     assert rig.bridge.latest == {} and all(text == NO_DATA for text in rig.readouts())
 
 

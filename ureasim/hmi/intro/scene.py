@@ -15,9 +15,11 @@ utilities, LP recirculation, desorption, evaporation). The intro states no plant
 condition: it never shows a value, a status tick or a "connected" word that the engine did not send,
 and the only live text is the status line the application itself passes in.
 
-The scene ends on a start button ("100% LOAD"). Nothing leaves the screen until the operator presses
-it: the intro is the doorway to the simulator, not a film that runs into it. The button's geometry and
-hit test live here, next to the pixels it is drawn on, so a click and a drawing can never disagree.
+The scene ends on a row of start buttons: "100% LOAD", the plant from its 1750 MTPD design seed, and
+"LOAD", the plant from a saved exercise the operator chooses. Nothing leaves the screen until the
+operator presses one: the intro is the doorway to the simulator, not a film that runs into it. The
+buttons' geometry and hit test live here, next to the pixels they are drawn on, so a click and a
+drawing can never disagree.
 
 The frame is pure data (see ``ops.py``). ``t`` is the scene clock, held at ``TIMELINE.hold`` once the
 scene is complete; ``wall`` is the unclamped clock that keeps the idle motion (the flyby's orbit, flow particles, the
@@ -27,6 +29,7 @@ status pulse, the button's breathing ring) alive while the operator decides.
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from enum import Enum, auto
 from functools import lru_cache
 
@@ -39,11 +42,13 @@ from ureasim.data.intro import (
     RIBBON,
     SECTIONS,
     START_OPTION,
+    START_OPTIONS,
     STAGE,
     STRINGS,
     TIMELINE,
     TITLE,
     Region,
+    StartOption,
 )
 from ureasim.hmi.intro.flyby import build_flyby
 from ureasim.hmi.intro.ops import (
@@ -294,16 +299,36 @@ def _footer(t: float, status: str, wall: float, busy: bool) -> list[Op]:
 
 
 class ButtonState(Enum):
-    """How the start button is drawn: waiting, under the pointer, or pressed and working."""
+    """How a start button is drawn: waiting, under the pointer, or pressed and working."""
 
     IDLE = auto()
     HOVER = auto()
     BUSY = auto()
 
 
-def button_rect() -> Rect:
-    """The start button's rectangle in design pixels, at rest (the hit area)."""
-    return Rect(_CX - BUTTON.width / 2.0, BUTTON.center_y - BUTTON.height / 2.0, BUTTON.width, BUTTON.height)
+#: One state for every start button, or one per option key (a key it does not name is IDLE).
+ButtonStates = ButtonState | Mapping[str, ButtonState]
+
+_OPTIONS = {option.key: option for option in START_OPTIONS}
+_ROW_WIDTH = sum(option.width for option in START_OPTIONS) + BUTTON.gap * (len(START_OPTIONS) - 1)
+
+
+def _row_lefts() -> dict[str, float]:
+    """Each pill's left edge: the options left to right, the row centred on the text column."""
+    lefts: dict[str, float] = {}
+    x = _CX - _ROW_WIDTH / 2.0
+    for option in START_OPTIONS:
+        lefts[option.key] = x
+        x += option.width + BUTTON.gap
+    return lefts
+
+
+_PILL_LEFT = _row_lefts()
+
+
+def button_rect(key: str = START_OPTION.key) -> Rect:
+    """A start button's rectangle in design pixels, at rest (its hit area); the 100% LOAD button's by default."""
+    return Rect(_PILL_LEFT[key], BUTTON.center_y - BUTTON.height / 2.0, _OPTIONS[key].width, BUTTON.height)
 
 
 def to_design(x_px: float, y_px: float, view: Rect, width_px: float, height_px: float) -> tuple[float, float]:
@@ -312,18 +337,58 @@ def to_design(x_px: float, y_px: float, view: Rect, width_px: float, height_px: 
     return view.x + x_px / s, view.y + y_px / s
 
 
+def button_at(x: float, y: float) -> str | None:
+    """The key of the start button a design-space point lies on, or None between and beside them."""
+    for option in START_OPTIONS:
+        r = button_rect(option.key)
+        if r.x <= x <= r.right and r.y <= y <= r.bottom:
+            return option.key
+    return None
+
+
 def button_contains(x: float, y: float) -> bool:
-    """Whether a design-space point lies on the start button."""
-    r = button_rect()
-    return r.x <= x <= r.right and r.y <= y <= r.bottom
+    """Whether a design-space point lies on a start button."""
+    return button_at(x, y) is not None
 
 
-def _button(t: float, wall: float, state: ButtonState) -> list[Op]:
-    """The '100% LOAD' button: a pill that rises in, breathes while it waits, dims while it works."""
+def _state_of(button: ButtonStates, key: str) -> ButtonState:
+    """How the pill of ``key`` is drawn."""
+    return button if isinstance(button, ButtonState) else button.get(key, ButtonState.IDLE)
+
+
+def _busy(button: ButtonStates) -> bool:
+    """A start was pressed: some pill is drawn working."""
+    states = (button,) if isinstance(button, ButtonState) else tuple(button.values())
+    return any(state is ButtonState.BUSY for state in states)
+
+
+def _icon(option: StartOption, rect: Rect, alpha: float) -> Polygon:
+    """The pill's glyph: a play triangle for the start at 100 % load, a folder for a saved exercise."""
+    ix = rect.cx + option.icon_dx
+    h = BUTTON.icon_half_height
+    if option.icon == "folder":
+        top, tab, bottom = rect.cy - 0.8 * h, rect.cy - 0.45 * h, rect.cy + 0.8 * h
+        points = ((ix - 1.1 * h, top), (ix - 0.25 * h, top), (ix - 0.05 * h, tab), (ix + 1.1 * h, tab),
+                  (ix + 1.1 * h, bottom), (ix - 1.1 * h, bottom))
+    else:
+        points = ((ix - h * 0.7, rect.cy - h), (ix + h * 1.1, rect.cy), (ix - h * 0.7, rect.cy + h))
+    return Polygon(points, PALETTE.orange, alpha)
+
+
+def _buttons(t: float, wall: float, button: ButtonStates) -> list[Op]:
+    """The row of start pills, 100% LOAD first."""
+    ops: list[Op] = []
+    for option in START_OPTIONS:
+        ops += _button(t, wall, option, _state_of(button, option.key))
+    return ops
+
+
+def _button(t: float, wall: float, option: StartOption, state: ButtonState) -> list[Op]:
+    """One start button: a pill that rises in, breathes while it waits, dims while it works."""
     a = ease_out_cubic(window(t, *TIMELINE.button_in))
     if a <= 0.0:
         return []
-    base = button_rect()
+    base = button_rect(option.key)
     rect = Rect(base.x, base.y + (1.0 - a) * BUTTON.rise, base.w, base.h)
     pill = rect.h / 2.0
     ops: list[Op] = []
@@ -341,11 +406,9 @@ def _button(t: float, wall: float, state: ButtonState) -> list[Op]:
         fill, fill_alpha = PALETTE.slate, 0.75 * a
     ops.append(RoundRect(rect, pill, fill, fill_alpha))
     label_alpha = a if state is not ButtonState.BUSY else 0.85 * a
-    ix = rect.cx + BUTTON.icon_dx
-    h = BUTTON.icon_half_height
-    ops.append(Polygon(((ix - h * 0.7, rect.cy - h), (ix + h * 1.1, rect.cy), (ix - h * 0.7, rect.cy + h)), PALETTE.orange, label_alpha))
+    ops.append(_icon(option, rect, label_alpha))
     ops.append(
-        Text(rect.cx + BUTTON.label_dx, rect.cy, START_OPTION.label, BUTTON.label_size, PALETTE.white, label_alpha, "center", BUTTON.label_spacing, True)
+        Text(rect.cx + option.label_dx, rect.cy, option.label, BUTTON.label_size, PALETTE.white, label_alpha, "center", BUTTON.label_spacing, True)
     )
     return ops
 
@@ -356,13 +419,14 @@ def build_frame(
     *,
     status: str = "",
     wall: float | None = None,
-    button: ButtonState = ButtonState.IDLE,
+    button: ButtonStates = ButtonState.IDLE,
 ) -> list[Op]:
     """Every drawing operation of the intro at scene time ``t``, back to front.
 
     ``view`` is the visible region of design space (see ``view_rect``); ``status`` is the line the
     application wants shown while it works; ``wall`` is the unclamped clock for idle motion and
-    defaults to ``t``; ``button`` is how the start button is drawn.
+    defaults to ``t``; ``button`` is how the start buttons are drawn, one state for all of them or one
+    per option key.
     """
     clock = min(max(t, 0.0), TIMELINE.hold)
     idle = clock if wall is None else wall
@@ -371,6 +435,6 @@ def build_frame(
     ops += _logo(clock)
     ops += _titles(clock)
     ops += _ribbon(clock, idle)
-    ops += _button(clock, idle, button)
-    ops += _footer(clock, status, idle, button is ButtonState.BUSY)
+    ops += _buttons(clock, idle, button)
+    ops += _footer(clock, status, idle, _busy(button))
     return ops

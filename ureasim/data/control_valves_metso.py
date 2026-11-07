@@ -12,7 +12,10 @@ on its normal case (`valve_sizing.design_stroke_pct`).
 
 The sheets print each case's capacity at its travel and name no curve, so a Neldisc's
 characteristic is its printed points, from shut to the rated Cv wide open, linear between
-(decision 108). A sheet that prints no density carries IAPWS-IF97's saturated liquid at its rating
+(decision 108). The five balanced valves (the sheets' valve series S-L-ANSI150 and S-L-ANSI300:
+PV-329204, PV-329207A / B, PV-329208, PV-329212) keep every printed point and take the shape between
+them from Valmet's published S-Disc table (decision 170, 2026-11-06). A sheet that prints no density
+carries IAPWS-IF97's saturated liquid at its rating
 temperature (decision 116); a gas the sheet gives as a specific gravity carries kg/Nm3 on air's
 normal density; steam carries its mass flow with a unit density, as Flowserve's steam sheets.
 
@@ -23,7 +26,10 @@ Source
 ------
 Metso, NELPROF 3.20 sizing sheets, UD-MR-G00-DZ-0031-009 (items 19-33, rev 00 and 01, 7 February
 and 28 July 2005; the vendor archive, scanned, read from the page images 2026-10-15 and
-2026-10-16). Each valve cites its item and PDF page.
+2026-10-16). Each valve cites its item and PDF page. The balanced valves' relative-Cv table is
+Valmet (Neles), bulletin 2SL120EN, "Neldisc triple eccentric disc valve with flow balancing trim
+S-Disc", 4/2022, Table 2 (https://www.valmet.com/globalassets/sharepoint/imported/2sl120en.pdf;
+a public vendor document, not in the plant archive).
 """
 
 from __future__ import annotations
@@ -38,12 +44,77 @@ def _metso(page: int, item: int) -> str:
             "page image)")
 
 
+def _s_disc_source(page: int, item: int, ansi_class: int) -> str:
+    """A balanced valve's source: Metso's sheet for the printed points, Valmet's table for the shape."""
+    return (_metso(page, item) + f"; shape between the points: Valmet bulletin 2SL120EN (4/2022) "
+            f"Table 2, ASME {ansi_class} column (decision 170)")
+
+
 def _neldisc(rated: float, cases: tuple) -> tuple:
     """A Neldisc's characteristic as its sheet prints it: the capacity of each case at its travel,
     from shut to the rated Cv wide open, linear between — the sheet names no curve. FpCv equals Cv
     on both sheets (the rated FpCv is the rated Cv), so the printed capacity is the trim's."""
     return ((0.0, 0.0),) + tuple((c.stroke_pct / 100.0, c.capacity / rated) for c in cases) + (
         (1.0, 1.0),)
+
+
+#: Valmet bulletin 2SL120EN (4/2022), Table 2: the balanced Neldisc's Cv / Cv_max at 10, 20 ... 100 %
+#: of its 80 degree travel, by ANSI class (the sheet's valve series prints the class). The table
+#: starts at 10 %: that it is shut at 0 % is an assumption, as for every printed-point trim here. The
+#: table's FL, Z and xT columns are not adopted; the sheets print their own FL and xT.
+S_DISC_RELATIVE_CV = {
+    150: (0.040, 0.086, 0.140, 0.208, 0.295, 0.401, 0.538, 0.688, 0.872, 1.000),
+    300: (0.061, 0.126, 0.202, 0.292, 0.405, 0.531, 0.667, 0.788, 0.899, 1.000),
+}
+
+#: Nodes closer than this to a printed point are the printed point (a travel and a table node that
+#: coincide, as PV-329207B's 10.0 %).
+_NODE_TOL = 1e-9
+
+
+def _s_disc(rated: float, cases: tuple, ansi_class: int) -> tuple:
+    """A balanced Neldisc's characteristic: every printed point of its sheet, and between them (and
+    from the last to wide open) the shape of Valmet's S-Disc table.
+
+    Process utility
+    ---------------
+    A control valve's gain between two sizing cases decides how the steam header answers the
+    controller away from the design point. The sheet prints three capacities and no curve; the
+    straight line between them overstates a balanced valve's capacity by up to 30 % between widely
+    spaced points (PV-329207B at 30 % travel) and understates it near full travel. The vendor's own
+    table gives the curve's shape, and the sheet's points anchor it, so the sheet is reproduced
+    exactly where it prints and the design point, placed on the sheet's normal case, is untouched.
+
+    Equation
+    --------
+    With T(h) the table, linear between its nodes and zero at h = 0, and two neighbouring anchors
+    (h_a, y_a) and (h_b, y_b) among shut, the printed points and wide open:
+
+        y(h) = y_a + (T(h) - T(h_a)) . (y_b - y_a) / (T(h_b) - T(h_a))      h_a <= h <= h_b
+
+    an affine map of the table onto the segment, so y is continuous, passes every anchor and is a
+    straight line wherever the table is one. The table's 10 % nodes are added as points.
+
+    Source: Valmet 2SL120EN Table 2 for T; the Metso sheets for the anchors. Decision 170.
+    """
+    nodes = tuple(((i + 1) / 10.0, f) for i, f in enumerate(S_DISC_RELATIVE_CV[ansi_class]))
+    knots = ((0.0, 0.0),) + nodes
+
+    def table(h: float) -> float:
+        for (h0, f0), (h1, f1) in zip(knots, knots[1:]):
+            if h <= h1:
+                return f0 + (f1 - f0) * (h - h0) / (h1 - h0)
+        return knots[-1][1]
+
+    anchors = _neldisc(rated, cases)
+    points = [anchors[0]]
+    for (h_a, y_a), (h_b, y_b) in zip(anchors, anchors[1:]):
+        scale = (y_b - y_a) / (table(h_b) - table(h_a))
+        for h_n, _ in nodes:
+            if h_a + _NODE_TOL < h_n < h_b - _NODE_TOL:
+                points.append((h_n, y_a + (table(h_n) - table(h_a)) * scale))
+        points.append((h_b, y_b))
+    return tuple(points)
 
 
 # Spring-to-open metal-seated butterflies passing saturated steam. Each case prints the mass flow
@@ -64,9 +135,10 @@ PV_329203 = VendorValve(
     _metso(28, 27))
 
 #: PV-329212, 324E003's 9-bar steam: DN 80 balanced Neldisc (S-L-ANSI150), maximum Cv 150.
+#: The five balanced valves take Valmet's S-Disc shape through their printed points (decision 170).
 PV_329212 = VendorValve(
-    "PV-329212", 150.0, _neldisc(150.0, _PV_329212_CASES), "gas", _PV_329212_CASES, 1,
-    _metso(33, 32))
+    "PV-329212", 150.0, _s_disc(150.0, _PV_329212_CASES, 150), "gas", _PV_329212_CASES, 1,
+    _s_disc_source(33, 32, 150))
 
 # The other steam butterflies on the same sheets (pages 25-32, read 2026-10-15). Where the valve is
 # smaller than its line (PV-329204, PV-329207B) the sheet's capacities are FpCv and its rated FpCv is
@@ -109,24 +181,24 @@ PV_329202 = VendorValve(
 #: PV-329204, superheated MP steam to 329D005: DN 250 balanced Neldisc in a DN 300 line, Cv 1640,
 #: FpCv 1604.25 (item 28, rev 00).
 PV_329204 = VendorValve(
-    "PV-329204", 1604.25, _neldisc(1604.25, _PV_329204_CASES), "gas", _PV_329204_CASES, 1,
-    _metso(29, 28))
+    "PV-329204", 1604.25, _s_disc(1604.25, _PV_329204_CASES, 300), "gas", _PV_329204_CASES, 1,
+    _s_disc_source(29, 28, 300))
 
 #: PV-329207A, the LP header to atmosphere: DN 300 balanced Neldisc, maximum Cv 3880 (item 29,
 #: rev 01).
 PV_329207A = VendorValve(
-    "PV-329207A", 3880.0, _neldisc(3880.0, _PV_329207A_CASES), "gas", _PV_329207A_CASES, 1,
-    _metso(30, 29))
+    "PV-329207A", 3880.0, _s_disc(3880.0, _PV_329207A_CASES, 150), "gas", _PV_329207A_CASES, 1,
+    _s_disc_source(30, 29, 150))
 
 #: PV-329207B: DN 250 balanced Neldisc in a DN 300 line, Cv 2580, FpCv 2447.16 (item 30, rev 00).
 PV_329207B = VendorValve(
-    "PV-329207B", 2447.16, _neldisc(2447.16, _PV_329207B_CASES), "gas", _PV_329207B_CASES, 1,
-    _metso(31, 30))
+    "PV-329207B", 2447.16, _s_disc(2447.16, _PV_329207B_CASES, 150), "gas", _PV_329207B_CASES, 1,
+    _s_disc_source(31, 30, 150))
 
 #: PV-329208, 323E010's chest: DN 250 balanced Neldisc, maximum Cv 2580 (item 31, rev 00).
 PV_329208 = VendorValve(
-    "PV-329208", 2580.0, _neldisc(2580.0, _PV_329208_CASES), "gas", _PV_329208_CASES, 1,
-    _metso(32, 31))
+    "PV-329208", 2580.0, _s_disc(2580.0, _PV_329208_CASES, 150), "gas", _PV_329208_CASES, 1,
+    _s_disc_source(32, 31, 150))
 
 #: FV-329409, 322E003's tempered water on FIC-329409: DN 150 Neldisc, maximum Cv 1240 (item 25,
 #: rev 00, page 26, read from the scan 2026-10-15): circulating water at 95 C, 52 / 312 / 478 m3/h
@@ -214,5 +286,5 @@ METSO_VALVES = {v.tag: v for v in (
 __all__ = [
     "PV_329203", "PV_329212", "FV_329401", "PV_329202", "PV_329204", "PV_329207A", "PV_329207B",
     "PV_329208", "FV_329409", "HV_323605", "PV_323203", "PV_323202A", "PV_323202B", "TV_328002",
-    "METSO_VALVES",
+    "METSO_VALVES", "S_DISC_RELATIVE_CV",
 ]

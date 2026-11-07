@@ -217,15 +217,17 @@ def test_lv_324501_on_flowserves_sheets_decided_divergence(v1):
 
 def test_pv_329212_on_its_vendor_trim_decided_divergence(v1):
     """Decision 23's class, decided 2026-10-14: PV-329212 on Metso's DN 80 balanced Neldisc, its
-    printed capacities as its curve, from its 54.68 % design stroke and the normal case's xT 0.57,
+    printed capacities as its curve (and, since decision 170, 2026-11-06, Valmet's S-Disc shape between
+    them: the vendor-trim numbers below are the chord's and are to be re-measured when `E:` is back),
+    from its 54.68 % design stroke and the normal case's xT 0.57,
     where V1 runs the chest valve linear from 65.56 %. Both hold the design to the bit; with the
     9-bar header 10 % down from 0.5 s the two part on tick 5, and after five minutes the chest
-    stands at 5.6360 bar a on V1's valve and 5.7619 on the vendor's, the melt at 138.921 and
+    stands at 5.6360 bar a on V1's valve and 5.7394 (5.7619 before decision 170) on the vendor's, the melt at 138.921 and
     139.390 C."""
     parted, hist = _both(v1, h._step(v1, 5, p9=8.1), 3001, "PV-329212", vendor_trim=True)
     assert parted == 5
-    assert hist[3000]["chest"] == (pytest.approx(5.636, abs=1e-4), pytest.approx(5.7619, abs=1e-4))
-    assert hist[3000]["T"] == (pytest.approx(138.9208, abs=1e-4), pytest.approx(139.3903, abs=1e-4))
+    assert hist[3000]["chest"] == (pytest.approx(5.636, abs=1e-4), pytest.approx(5.7394, abs=1e-4))
+    assert hist[3000]["T"] == (pytest.approx(138.9208, abs=1e-4), pytest.approx(139.3046, abs=1e-4))
 
 
 def test_the_lost_seal_admits_air_decided_divergence(v1):

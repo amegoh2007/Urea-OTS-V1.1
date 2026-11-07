@@ -9,7 +9,10 @@ press releases it. Pinned, over a real socket and the real engine:
 * ``python run.py`` plays the intro, ``--no-intro`` runs the plant from the start, as before;
 * a plant built held publishes no packet and its clock does not move;
 * the intro's start command releases it, the engine acks, and the plant publishes from its design seed;
-* a plant built the other way runs from the start.
+* a plant built the other way runs from the start;
+* the repository's ``scenarios`` folder is shipped beside the instructor's folder (``UREASIM_EXERCISES`` or
+  ``~/ureasim-exercises``): the intro's LOAD and the instructor's panel list both, SAVE writes only the
+  instructor's and refuses a shipped name, and every scenario there loads on the present model (decision 171).
 """
 
 from __future__ import annotations
@@ -17,12 +20,16 @@ from __future__ import annotations
 import asyncio
 import socket
 import threading
+from pathlib import Path
 
 import pytest
 
 import run
 from tests.net.test_server import Client
 from ureasim.data.intro import START_COMMANDS, START_OPTION
+from ureasim.engine import snapshot
+from ureasim.engine.plant import build_plant
+from ureasim.engine.session import EXERCISE_DIR_ENV
 from ureasim.net import protocol
 from ureasim.net.protocol import Kind
 
@@ -121,6 +128,73 @@ def test_a_held_plant_publishes_nothing_until_the_start_key_releases_it() -> Non
         task.cancel()
         await asyncio.gather(task, return_exceptions=True)
     asyncio.run(scenario())
+
+
+# -- the exercise folders (decision 171) -----------------------------------------------------------------------
+
+
+def test_the_repositorys_scenarios_folder_is_the_shipped_one() -> None:
+    assert run.SCENARIO_DIR == Path(run.__file__).resolve().parent / "scenarios"
+
+
+async def _ask(port: int, *messages: dict) -> list[dict]:
+    """Send ``messages`` as a console would and collect one answer to each: an ack or the exercise list."""
+    console = await Client.connect(port)
+    for message in messages:
+        await console.send(message)
+    while len(console.of_kind(Kind.EXERCISES)) + len(console.of_kind(Kind.ACK)) < len(messages):
+        await console.pump(len(console.inbox) + 1, timeout=10.0)
+    await console.close()
+    return console.of_kind(Kind.EXERCISES) + console.of_kind(Kind.ACK)
+
+
+def _shipped() -> list[str]:
+    return sorted(p.stem for p in run.SCENARIO_DIR.glob("*.json")) if run.SCENARIO_DIR.is_dir() else []
+
+
+def test_the_engine_run_py_serves_lists_the_shipped_scenarios_beside_the_instructors_folder(monkeypatch, tmp_path):
+    """The intro's LOAD and the instructor's panel see one list: the shipped files and the instructor's own."""
+    monkeypatch.setenv(EXERCISE_DIR_ENV, str(tmp_path))
+    (tmp_path / "drill_1.json").write_text("{}", encoding="utf-8")
+
+    async def scenario():
+        task, port = await _engine(hold=True)
+        answers = await _ask(port, protocol.exercise_list(7))
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+        return answers
+    [answer] = asyncio.run(scenario())
+    assert answer["ok"] is True and answer["names"] == sorted({*_shipped(), "drill_1"})
+
+
+def test_save_writes_the_instructors_folder_and_never_the_repository(monkeypatch, tmp_path):
+    """CLAUDE.md section 6 keeps training saves out of the tree; a shipped name is refused, not shadowed."""
+    if not _shipped():
+        pytest.skip(f"no saved exercise in {run.SCENARIO_DIR}")
+    monkeypatch.setenv(EXERCISE_DIR_ENV, str(tmp_path))
+    before = sorted(p.name for p in run.SCENARIO_DIR.iterdir())
+
+    async def scenario():
+        task, port = await _engine(hold=True)
+        answers = await _ask(port, protocol.command(1, {"type": "snapshot_save", "name": "drill_2"}),
+                             protocol.command(2, {"type": "snapshot_save", "name": _shipped()[0]}))
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+        return answers
+    acks = {a["id"]: a for a in asyncio.run(scenario())}
+    assert acks[1]["ok"] is True and (tmp_path / "drill_2.json").is_file()
+    assert acks[2]["ok"] is False and "shipped" in acks[2]["reason"]
+    assert sorted(p.name for p in run.SCENARIO_DIR.iterdir()) == before
+
+
+def test_every_saved_scenario_loads_on_the_present_model() -> None:
+    """``snapshot.load`` checks a file against the plant the model builds today; a stale file is refused."""
+    paths = sorted(run.SCENARIO_DIR.glob("*.json")) if run.SCENARIO_DIR.is_dir() else []
+    if not paths:
+        pytest.skip(f"no saved exercise in {run.SCENARIO_DIR}")
+    for path in paths:
+        plant = snapshot.load(str(path), build_plant()[1])
+        assert plant.clock.tick > 0, path.name
 
 
 def test_a_plant_that_is_not_held_runs_from_the_start() -> None:

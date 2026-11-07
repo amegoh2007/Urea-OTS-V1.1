@@ -3,8 +3,9 @@
 Pinned without a socket: an exercise list is re-emitted as a signal, one refused carries its
 reason, and a request on a link that is down is not sent; the historian's answer to a trend
 likewise. On a real socket, against a server on its own thread: the console is welcomed with no
-role to ask for (decision 149) and its request answered, and an engine that refuses its `hello`
-is shown with the reason and not retried.
+role to ask for (decision 149) and its request answered, an engine that refuses its `hello`
+is shown with the reason and not retried, and a bridge that is closed does not reconnect (handoff
+A-30, decision 173).
 
 The staleness watchdog (session 85, handoff A-25 point 2): the strict window blanks a console that gets
 no packet, but an engine held at its design seed publishes nothing until released and its first tick is
@@ -133,7 +134,26 @@ def test_a_refusal_is_shown_and_not_retried(qapp, refusing_server):
     bridge.close()
 
 
-PACKET = protocol.snapshot(1, 0.1, {"_health": {"ok": True}})
+def test_a_closed_bridge_does_not_reconnect(qapp, console_server):
+    """Handoff A-30 (decision 173): `close` aborts the socket, whose `disconnected` arrives at once, and the
+    bridge schedules no retry for it; it stays closed past the retry delays, and `connect_to` opens it again."""
+    bridge = EngineBridge("console")
+    statuses = []
+    bridge.status.connect(lambda text, level: statuses.append((text, level)))
+    bridge.connect_to("127.0.0.1", console_server)
+    _wait(lambda: bridge.connected)
+    closed_at = len(statuses)
+    bridge.close()
+    assert not bridge._retry.isActive()
+    QTest.qWait(2500)                                 # past the 0.5 s and 1 s retry delays: 1.5 s
+    assert not bridge.connected and not bridge._retry.isActive()
+    assert not any(t.startswith("connect") for t, _ in statuses[closed_at:]), statuses[closed_at:]
+    bridge.connect_to("127.0.0.1", console_server)
+    _wait(lambda: bridge.connected)
+    bridge.close()
+
+
+PACKET =protocol.snapshot(1, 0.1, {"_health": {"ok": True}})
 
 
 def _watched(monkeypatch, strict_ms: int, first_ms: int):

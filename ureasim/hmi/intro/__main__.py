@@ -1,8 +1,8 @@
 """Play the intro on its own: ``python -m ureasim.hmi.intro [--fullscreen]``.
 
 For reviewing the animation without starting the engine. Any key or a click skips ahead to the
-"100% LOAD" button; pressing it prints the start request and closes the window, as the application's
-own slot would start the simulator.
+"100% LOAD" and "LOAD" buttons; pressing one prints the start request (its key) and closes the window,
+as the application's own slot would start the simulator.
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""The engine's clock constants — the physics step, the pacing modes, the catch-up cap.
+"""The engine's clock constants — the physics step, the pacing modes, the catch-up cap, the replay age.
 
 What this is
 ------------
@@ -9,12 +9,14 @@ delay, so the step must never move, or a transient would depend on machine load.
 Source
 ------
 V1 ``backend/main.py``: ``DT`` (line 277), ``SIM_SPEED`` (285), ``STEP_CAP`` (286), and
-``sim_task``'s per-pass cap on the wall-clock elapsed (12013).
+``sim_task``'s per-pass cap on the wall-clock elapsed (12013). The replay age is the rewrite's own
+(handoff A-28, decision 172).
 """
 
 from __future__ import annotations
 
-__all__ = ["DT_S", "DT_NS", "SIM_SPEED", "MAX_PASS_S", "MAX_PASS_NS", "STEP_CAP_S"]
+__all__ = ["DT_S", "DT_NS", "SIM_SPEED", "MAX_PASS_S", "MAX_PASS_NS", "STEP_CAP_S",
+           "SNAPSHOT_REPLAY_MAX_AGE_S"]
 
 #: The physics step [s]: V1's ``DT``, the step of V1's design pin and of every equivalence test.
 #: Fixed (decided 2026-09-27, handoff A-14).
@@ -36,3 +38,11 @@ MAX_PASS_NS = 500_000_000
 #: V1's largest physical sub-step [s], the stability bound of its fastest flow loops. Not an
 #: operating step here: the engine steps DT_S, always.
 STEP_CAP_S = 0.25
+
+#: The oldest packet the console server replays to a console that connects [s of wall time]: ten
+#: publish passes of DT_S. A running or frozen engine publishes every pass, so its last packet is
+#: at most a pass old; one older comes from an engine that has stopped publishing, and replaying it
+#: would show the engine's last values as live after every watchdog blank (`ureasim.net.server`).
+#: Source: handoff A-28 option (a), decided by the process engineer 2026-11-06 (`project.md`
+#: decision 172); "about 1 s" is the option's own figure.
+SNAPSHOT_REPLAY_MAX_AGE_S = 1.0

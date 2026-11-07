@@ -123,6 +123,8 @@ class EngineBridge(QObject):
         self._connected = False
         #: True once the server has refused this console: no retry until `connect_to` again.
         self._refused = False
+        #: True once `close` has been called: no retry until `connect_to` again (handoff A-30).
+        self._closed = False
 
         self._socket.readyRead.connect(self._on_ready_read)
         self._socket.connected.connect(self._on_connected)
@@ -150,6 +152,7 @@ class EngineBridge(QObject):
         self._port = port
         self._attempt = 0
         self._refused = False
+        self._closed = False
         self._attempt_connect()
 
     def _attempt_connect(self) -> None:
@@ -159,7 +162,13 @@ class EngineBridge(QObject):
         self._socket.connectToHost(self._host, self._port)
 
     def close(self) -> None:
-        """Disconnect and stop retrying."""
+        """Disconnect and stop retrying.
+
+        The flag is set before the abort: aborting a connected socket emits `disconnected` at once,
+        and its handler would otherwise schedule a retry, so a closed bridge connected again 1.5 s
+        later (handoff A-30, decision 173).
+        """
+        self._closed = True
         self._retry.stop()
         self._stale.stop()
         self._socket.abort()
@@ -218,7 +227,7 @@ class EngineBridge(QObject):
         self._schedule_retry()
 
     def _schedule_retry(self) -> None:
-        if not self._host or self._refused:
+        if not self._host or self._refused or self._closed:
             return
         delay = RECONNECT_MS[min(self._attempt, len(RECONNECT_MS) - 1)]
         self._attempt += 1

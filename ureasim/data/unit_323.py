@@ -410,7 +410,7 @@ E010_OP_DES_PCT = E010_PCHEST_DES_BARA / P_LP_BARA * 100.0
 
 #: PV-329208 on its vendor's trim (decision 108's class, applied 2026-10-15): Metso's DN 250 balanced
 #: Neldisc, maximum Cv 2580 (`data.control_valves.PV_329208`), its design stroke where it passes PFD
-#: 926's 11 230 kg/h on its normal case, 27.22 %, and that case's xT. V1 runs it linear from
+#: 926's 11 230 kg/h on its normal case, 27.26 % (27.22 % on the chord, before decision 170), and that case's xT. V1 runs it linear from
 #: E010_OP_DES_PCT above, which the equivalence harness keeps.
 PV_329208_OP_DES_PCT = design_stroke_pct(PV_329208, STEAM_PFD_KGH["926"])
 PV_329208_XT = PV_329208.normal_case.xt
