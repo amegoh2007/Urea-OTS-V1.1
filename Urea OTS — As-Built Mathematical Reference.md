@@ -20650,3 +20650,569 @@ median from Book2.
 * pyflakes is clean on every touched file; the PyQt6 grep over net, engine, units, control, core, thermo and data prints
   nothing; `data/control_valves_metso.py` is 357 lines.
 * Not done: the console was not driven by hand; B-118's next arms (the note in its handoff item) were not started.
+
+# Part CIV — Session 92: B-118 at Book2's 69.3 % dwell on the corrected boundary (no decision)
+
+Session 92 (2026-11-07), a side session of session 91, re-ran B-118's diagnostic at Book2's 69.3 % load dwell with
+the three corrections the process engineer noted on 2026-11-07 (handoff B-118, "For the next B-118 session"). It is
+measurement only. Nothing under `ureasim/` changed (CLAUDE.md section 5.6), and V1's stripper slip gain stays 4.0
+in the tree (decision 177). Every arm ran in scratch through session 91's runner, copied unedited: `s92/opt_run91.py`
+is byte-identical to `s91/opt_run91.py`, and `cfg92run.py` differs from `cfg91run.py` only in the runner's path.
+`mk92.py` writes the configurations, `an92.py` reads the records, and `book2_check92.py` and `book2_descent92.py`
+read Book2. The advisor (Opus) was consulted on the plan before any run and on the reading before this record.
+
+## CIV.1 Book2 read again, and the corrected boundary
+
+Book2.xlsx was read directly (`References/DCS Trends/Book2.xlsx`, sheet "Basic Data (Two Monthes)", 5 280 rows),
+not through the session-76 cache.
+
+* **HIC-322605's anchor.** At the ~100 % window session 88 found (2023-08-19 05:35-07:16, n 7, load 100.29 %),
+  HVGT-322605 reads 50.24 % (10-90 %: 49.14-51.98). Its ratio to load is 0.50 across the steady runs from 92 to
+  111 % (0.511 at 92.1 %, n 452; 0.501 at 100.3 %; 0.498 at 111.0 %, n 4 349). It is 0.52 at 69.3 % and 0.57 at
+  60.7 %. The process engineer's "about 50 % at 100 % load" is confirmed.
+  - At the 69.3 % dwell (n 28, the runs of 2023-07-25 and 2023-08-19) HVGT-322605 reads 36.14 %, 0.719 of its
+    100 % opening.
+  - On HV-322605's vendor table that is a flow coefficient ratio of Kv(36.14) / Kv(50.24) = 0.730.
+  - The engine reaches the same ratio at 43.27 % on its 60.0 % anchor (`unit_322r001.HIC605_DES_PCT`). The stroke
+    ratio alone gives 43.16 %, and the process engineer's figure is 43.3 %. The arms use 43.27 %.
+* **MASTER-329207.** PT-329207 reads 4.398 bar g at the dwell (10-90 %: 4.347-4.402; the two runs 4.401 and
+  4.380), so the master goes to 5.411 bar a. The engine's design is 5.013 bar a (4.0 bar g, `P_LP_BARA`), and
+  Book2's 100 % window reads 4.05 bar g. The master is a pressure, so it has no stroke anchor.
+* **HIC-322602.** It runs on the spindle solve on the displayed LT-329501 at 50 % (`"solve"`, `cap_max` 8.0, as in
+  the B-120 arms of §CIII.7), in place of session 91's time ramp to 40 %. Book2's 11.4 % at the dwell (the two runs
+  at 3.2 and 15.2 %) cannot be held on this engine (data gap 1).
+* **Unchanged from §CIII.12:**
+  - PIC-329204 to 16.6 bar g, TIC-329005 to 94.1 C and HIC-322604 to 46.5 %, each moved from design in step with
+    the load ramp.
+  - The ratio trimmed on AY-322701 to 3.19, within the faceplate's 2.0-2.6.
+  - 323F010, 328D003, LT-323503 and LT-328504 trimmed as in §CIII.7.
+  - Book2's dwell gives PIC-329204 16.59 bar g, TIC-329005 94.08 C (the two runs at 100.0 and 94.0 C), HIC-322604
+    46.5 %, AY-322701 3.194, TT-322005 181.49 C (10-90 %: 181.15-181.72) and PT-329201 132.11 bar g
+    (129.03-133.45).
+* **HIC-322605, two ways.**
+  - The A arms ramp HIC-322605 to 43.27 % with the load.
+  - The M arms put the board operator on it instead (the runner's `"manual"` mode, the alternative the note
+    names). The opening is re-typed every two minutes on the ramp and every five after it. Each move is sized from
+    the solution 322R001 discharges plus its holdup's trend, to bring LT-322504 back to 80 % over half an hour.
+    HIC-322605 is a hand station, not a level loop.
+* **Beyond the brief: HIC-322604.** The brief leaves HIC-322604 raw, but its anchor also differs from the plant's.
+  - The engine anchors it at 72 % (decision 99, the vendor's trim at the licensor's purge). The plant runs it at
+    55.0 % at 100 % load.
+  - On its equal-percentage trim (R 50), the raw 46.5 % has a flow coefficient 0.37 of the design's.
+  - The MO arms keep the plant's stroke offset on the engine's anchor: 72.0 - (55.0 - 46.5) = 63.5 %, a flow
+    coefficient 0.72 of the design's. The operator holds HIC-322605.
+  - This applies the process engineer's "relative to each anchor" rule to the one stroke the brief leaves raw. It is
+    reported apart from the arms the brief asks for.
+
+Every arm starts from the design seed and ramps the load to 69.3 % at 0.5 %/min (3 720 s). It then settles for 1 h
+and holds for 3 h, with every trim live through the hold. Each arm runs as built (V1's slip gain 4.0) and on
+session 86's S2 prototype with the gain at 0. S2 is patch83: 322E003's liquor ceiling and bubble-point cap, and
+322E001's lean rise off with its steam slope 1.26.
+
+Before the runs:
+* every log printed the live gain read back from the plant's stripper;
+* every S2 log printed both patch lines;
+* the seven smoke runs were refused no command, and each handle reached its target.
+
+Session 91's B069_AB configuration was also re-run unchanged on HEAD (1b96dc3). Its record is identical to session
+91's on every sampled key (trip 22.1 at 2 100 s), so decision 178 did not move this baseline.
+
+## CIV.2 The arms
+
+All six corrected arms trip 22.1. None reaches the hold, so the values below are at the trip, not settled. Only
+A, as built (480 s) and MO, as built (120 s) enter the settle. The flag CARBAMATE_DEPOSITION is set from 360 s in
+every as-built arm, the baseline included, and at the trip in the S2 arms.
+
+| arm | HIC-322605 | trip 22.1 | route | LT-322504 | LT-329501 | TT-322005 C / conversion % at the trip | AY-322701 (ratio min) |
+|---|---|---|---|---|---|---|---|
+| A, as built | ramp to 43.27 % | 4 200 s, settle | flood, spindle floor from 4 020 s; 5.5 t/h vented at 1 740 s | 100 % from 1 200 s | 100 % | 156.2 / 26.5 | 2.75-3.13 (2.022) |
+| A, S2, gain 0 | ramp to 43.27 % | 3 720 s, ramp end | flood, spindle floor from 3 660 s | 100 % from 1 680 s | 100 % | 157.3 / 27.8 | 3.01-3.51 (2.0006) |
+| M, as built | operator | 1 980 s, ramp (L 0.837) | vent: f 0.77, 8.4 t/h uncondensed | 70.3 % | 54.7 % (50.6 true) | 175.9 / 43.1 | 3.01-3.29 (2.010) |
+| M, S2, gain 0 | operator | 3 720 s, ramp end | flood, spindle floor from 3 600 s | 53.5 % | 100 % | 159.7 / 29.6 | 3.02-3.41 (2.000 from 3 480 s) |
+| MO, as built | operator | 3 840 s, settle | flood, spindle floor from 3 780 s; 7.3 t/h vented at 1 920 s | 58.6 % | 100 % | 159.7 / 28.6 | 2.83-3.30 (2.010) |
+| MO, S2, gain 0 | operator | 3 720 s, ramp end | flood, spindle floor from 3 600 s | 53.3 % | 100 % | 159.6 / 29.6 | 3.02-3.41 (2.000 from 3 480 s) |
+| B069_AB on HEAD | ramp to 36.1 % | 2 100 s, ramp | flood, spindle ramped to 54.8 % | 100 % from 900 s | 100 % | 167.6 / 37.3 | 2.85-3.03 (2.023) |
+
+The handles at the trip:
+
+| arm | HIC-322605 % | HIC-322602 % | HIC-322604 % | MASTER-329207 bar a | PIC-329204 bar a | TIC-329005 C | ratio |
+|---|---|---|---|---|---|---|---|
+| A, as built | 43.27 | 10.0 | 46.5 | 5.411 | 17.613 | 94.1 | 2.059 |
+| A, S2, gain 0 | 43.27 | 10.0 | 46.5 | 5.411 | 17.613 | 94.1 | 2.003 |
+| M, as built | 55.50 | 44.8 | 58.4 | 5.225 | 18.589 | 87.5 | 2.025 |
+| M, S2, gain 0 | 41.11 | 10.0 | 46.5 | 5.411 | 17.613 | 94.1 | 2.003 |
+| MO, as built | 44.32 | 10.0 | 63.5 | 5.411 | 17.613 | 94.1 | 2.038 |
+| MO, S2, gain 0 | 40.82 | 10.0 | 63.5 | 5.411 | 17.613 | 94.1 | 2.004 |
+
+What every arm shares, in this order:
+
+1. **322R001 cools on the ramp first.** TT-322005 leaves Book2's dwell band (181.15 C) at 720-1 440 s, at L 0.94-0.88,
+   and falls below 175 C at 1 440-2 100 s. At the trip the S2 arms and the late as-built arms read 156-160 C, with
+   conversion at 26.5-29.6 %. TT-322005 falls with the reactor's level held (M, MO) as well as backed up (A).
+2. **322R001's off-gas grows about 4.5-fold**, from 22-23 t/h to 100-107 t/h at the ramp's end. 322E002's duty falls
+   from 62 MW to 44-48 MW at the ramp's end (36.5-45.5 MW at its lowest), its saturation fraction at 0.69-0.99.
+3. **322E003's condensate grows with the off-gas**, from 57-58 t/h to 127-135 t/h. The spindle solve holds LT-329501
+   near 50 % until HIC-322602 reaches its 10 % floor, where 322F001 entrains most: 78-106 t/h at the ramp's
+   motive. From there the sump floods (LT-329501 100 %), the full sump condenses no more than drains from it, and
+   TT-322015 runs past H2. That is trip 22.1, at 3 720-4 200 s.
+4. **Only M, as built trips on the vent.** Its liquor follows the tempered water (no S2 ceiling). Its saturation
+   fraction falls to 0.77, 8.4 t/h stays uncondensed, and TT-322015 passes H2 at 1 980 s. The margin was small:
+   TT-322015 read 109.3 C a minute earlier, against H2's 110 C. A, as built (HIC-322604 raw) and MO, as built also
+   vented, 5.5 and 7.3 t/h at 1 740-1 920 s, with TT-322015 peaking at 95.4 C, and recovered.
+
+Matched-load comparison: TT-322005 / conversion where the ramp passes each load. Session 91's design-handle 70 % arms
+(§CIII.7, `s91/B070NP_g4`, `_g0`; gain 0 there without S2) are shown for reference.
+
+| arm | L 0.95 | L 0.90 | L 0.85 | L 0.80 | L 0.75 | L 0.70 |
+|---|---|---|---|---|---|---|
+| design handles, gain 4 (§CIII.7) | 182.9 / 54.5 | 181.6 / 52.3 | 177.5 / 45.6 | 171.5 / 37.3 | 166.1 / 32.1 | - |
+| design handles, gain 0 (§CIII.7) | 182.5 / 53.7 | 180.4 / 50.2 | 175.5 / 42.8 | 169.5 / 35.1 | 164.5 / 31.1 | - |
+| MO, as built | 182.9 / 54.8 | 181.9 / 53.1 | 177.3 / 45.4 | 170.8 / 36.3 | 165.3 / 31.6 | 160.8 / 29.5 |
+| M, S2, gain 0 | 182.6 / 54.2 | 180.9 / 51.6 | 176.0 / 44.0 | 169.7 / 36.3 | 164.4 / 32.6 | 160.1 / 30.2 |
+| A, as built | 182.4 / 53.8 | 179.3 / 50.4 | 173.5 / 42.5 | 168.5 / 37.3 | 163.8 / 33.2 | 159.6 / 29.4 |
+| A, S2, gain 0 | 181.4 / 52.4 | 176.7 / 46.6 | 170.1 / 38.4 | 164.8 / 33.8 | 160.8 / 30.8 | 157.6 / 28.2 |
+| B069_AB (§CIII.12) | 182.2 / 53.5 | 176.9 / 46.3 | 170.0 / 39.4 | - | - | - |
+
+With the operator on HIC-322605, the reactor tracks the design-handle arms within about 1-2 K at every matched load:
+on this engine the reactor's turndown follows the load, not Book2's dwell handles. The anchored ramp (A) and session
+91's raw ramp run 2-8 K colder at L 0.80-0.90, because they back 322R001 up while it still discharges near its design flow.
+
+## CIV.3 The plant's own descent into the dwells
+
+Book2's samples (16.8 min apart) through both cuts:
+
+* **2023-07-25.** The load falls from 109.9 % (05:49:50) through 106.1 % (06:06:38) and 90.4 % (06:23:26) to
+  72.3 % (06:40:14), about 1 %/min between samples. TT-322005 reads 182.82, 182.74, 182.60, 181.67, then 180.83 C
+  at 70.7 % and 180.96 C at 70.5 %.
+  - PT-329207 rose first: 3.90 to 4.03 and 4.38 bar g at the cut's start.
+  - TIC-329005 rose during the cut: 80.2, 85.5, 95.5, 99.8 C.
+  - HV-322602 and PIC-329204 fell with the load: 75 to 39.3 %, and 20.0 to 17.2 bar g.
+  - HVGT-322605 lagged the load: 41.7 % at 72.3 %, 37.9 % an hour later.
+* **2023-08-19.** The load falls from 100.2 % (06:59:26) through 97.9 % and 81.5 % to 70.1 % (07:49:50), 0.7-1.0 %/min.
+  TT-322005 reads 182.81, 182.78, 182.81, 181.93, then 181.09 C at 68.7 %.
+  - PT-329207 rose before the load moved: 4.06 bar g at 06:42, 4.25 at 06:59, 4.34 at 07:16.
+  - TIC-329005 rose 86.5 to 94.1 C, HV-322602 fell 63 to 36 %, and PIC-329204 fell 19.0 to 16.5 bar g.
+
+The plant cut load faster than the arms' 0.5 %/min, and its reactor top fell about 2 K, to 180.8-181.1 C. The
+engine's TT-322005 falls more than 20 K on the slower ramp. So the ramp's rate does not explain the collapse. The
+rates are means between samples, so the plant's peak rate was at least as high. This partly answers §CIII.12's open
+point, the plant's path to its dwell, at Book2's sample spacing: the operators raised the LP header first, before
+or at the cut's start, and moved the tempered water, the spindle and the HP steam with the load. The arms moved
+MASTER-329207 linearly over the hour.
+
+## CIV.4 Reading
+
+* **Correction 2 changes the route, and only for a time.** On the spindle solve the sump holds on the ramp in every
+  arm until HIC-322602 reaches its 10 % floor. Session 91's flood at 2 040-2 100 s, with the spindle ramped open loop
+  to 55 %, is gone. On 322F001's back-solved geometry (data gap 1) the 10 % floor entrains 78-106 t/h against
+  127-135 t/h of condensate, the make growing with 322R001's off-gas.
+* **Correction 1 sets the right end value, not a usable path.**
+  - The anchored ramp backs 322R001 up to its band's top within 20-28 minutes.
+  - The operator holds LT-322504, and at the trip has HIC-322605 at 40.8-44.3 %, still falling, close to the
+    anchored 43.27 %.
+  - The engine's discharge stays near its design 225 t/h until the reactor cools, so a time-linear path closes
+    HV-322605 too early. No opening settled.
+* **Correction 3 and the HIC-322604 offset do not keep the reactor hot.**
+  - With S2 and gain 0, A, M and MO give the same result: trip at 3 720 s, TT-322005 157-160 C.
+  - As built, the offset arm did not trip on the vent, but the vent margin in M was 0.7 K of TT-322015. The offset
+    is not credited with removing it.
+* **Session 91's "the dwell handles bring trip 22.1 sooner" is qualified.** With the three corrections together, the
+  trip comes at 3 720-4 200 s, at or just after the design-handle arms' 3 420-3 540 s (§CIII.7). Session 91's earlier
+  trip was the boundary: the raw HIC-322605 ramp and the open-loop spindle.
+* **The S2 arms end NH3-rich.** AY-322701 reads 3.33-3.45 at the trip, above its 3.19 target, with the ratio on its
+  2.0 floor from 3 480 s (M, MO) and at 2.0006 (A). The as-built arms end at 3.01-3.03, below the target, with the
+  ratio at 2.01-2.07.
+* **Acceptance (TT-322005 at 181.5 C for 3 h, no trip): not met in any arm.** B-118 stays open; no relation changed.
+
+Not run:
+* session 86's active trims (MASTER-329207 on TT-322005, PIC-329204 on TT-322004, HIC-322604 on PT-329201) live
+  through the ramp to 69.3 %, under which 92.3 % held on S2 with gain 0 (§CIII.7);
+* the plant's own path: MASTER-329207 raised before the cut, and the load at 0.7-1.0 %/min.
+
+## CIV.5 Checks
+
+* `git status` is clean apart from three of the four documents, and nothing under `ureasim/` changed. The PyQt6 grep over net,
+  engine, units, control, core and thermo prints nothing.
+* The seven runs (wall 15-28 minutes each, in parallel) and their smoke runs are in the session scratchpad
+  (`s92/runs`), with their configurations (`s92/cfg`).
+* `tests/docs` passed after the documents changed (7 passed). `CLAUDE.md` is unchanged: no rule changed.
+
+# Part CV — Session 93: the plant's 5 November 2026 turndown (`Data/Trends 511.2026`) against the open data gaps and B-118 (decided 2026-11-08, decision 180)
+
+Session 93 (2026-11-07/08) took up the process engineer's pasted request to resolve or narrow the open data gaps
+from the plant DCS trends in `D:\Work\Urea Simulation Docs\Data\Trends 511.2026`, using the vendor-trimmed control
+valves as in-situ meters, and to cross-check decision 178 and B-118. It is measurement only: nothing under
+`ureasim/` changed, no decision was taken, and every script, export and run is in the session scratchpad
+(`t511/`, `b118/`). The advisor (Opus) was consulted on the plan after the folder was inventoried.
+
+## CV.1 The folder, and how it was read
+
+The folder holds no numeric export. It holds 75 photographs (JPEG, 4 000 x 2 252) of one ABB 800xA trend display,
+"UREA-LOAD : Trend Display", taken on 7 November 2026 between 21:13 and 22:08. Every window shown is on 5 November
+2026. The display carries ten pens per group and a table under the plot.
+
+| group | photos | windows (5 Nov) | span | pens |
+|---|---|---|---|---|
+| A, synthesis | 15 | 07:40-15:40, centres every 30 min | 1 h | UREA-LOAD, HV-322602, FY-321401, SIC-321951, TT-321001, TT-322002, TT-322012, PT-329201, PT-321202, SIC-323902 |
+| B, 322E003's tempered water | 14 | 07:25-14:55, centres every 30 min | 1 h | UREA-LOAD, TIC-329005, FIC-329409, TDY-329125 (rows 3-7 and 9 hidden) |
+| C, vacuum | 7 | 13:02-14:02, centres every 7.5 min | 15 min | UREA-LOAD, PIC-324202, PV-324202, PT-324201, PIC-324203, PV-324203, HIC-329605, HIC-329606, HIC-323605, PT-329207 |
+| D, evaporation and granulation | 10 | 13:06-14:28, every 7.5 min | 15 min | HIC-335602, FIC-324401, TIC-323012, PT-323204, LIC-324501, LV-324501A, LV-324501B, PIC-335201, FT-335401, FT-335405 |
+| E, steam and water valves | 29 | 07:43-09:43 every 7.5 min (15 min), 09:06-16:06 every 30 min (1 h) | 15 min / 1 h | UREA-LOAD, FV-329401, FV-329409, PV-329202, PV-329203, PV-323203, HV-323605, TV-323013A, TV-323013B, PV-323202 |
+
+Three properties of the table decide what the photographs can give:
+
+* **"Current Value" is not 5 November data.** It is the live value at the photograph's clock (7 November, 21:13-22:08):
+  UREA-LOAD reads 101.0-102.5 % in every photograph against window means of 69.2-102.0 %. It is used as a separate
+  dataset, the plant's own ~101.5 % state on 7 November.
+* **"MV" is the measured value** (ABB usage): every MV row carries its PV's engineering unit (FIC-329409 m3/h,
+  TIC-329005 C, SIC-321951 rpm, LIC-324501 %, PIC-324202 bar g). No controller set point or output is logged; the only
+  outputs are the VALUE rows of valve and hand-station tags.
+* **"Mean Value" is the window mean** of each pen and "Ruler Value" the value at the ruler's time where a ruler was
+  placed (group C at 13:08:14, group D at 14:36:12, outside its windows, group E at 10:05:41).
+
+Method (scratchpad `t511/`):
+1. Windows OCR of every photograph (`ocr.ps1`, word level `ocrw.ps1`) located the tables and labels. Its word boxes sit
+   about one table row (~40 px) above the image's own pixels, so OCR positions were used only to locate, never to
+   measure.
+2. Every table was read visually from deskewed crops (`crop_tables.py`) and transcribed (`transcribed.py`): window
+   centre, span, low and high range, current, ruler and mean value of every pen.
+3. The traces were digitized (`geom2.py`, `digitize.py`). Time is anchored on the labelled dashed gridlines,
+   interpolated between neighbours at each pixel's height (keystone). The high and low range lines (the dashed
+   lines at the plot's top and just above the solid time axis) are found by RANSAC on white-pixel runs, as a
+   quadratic in x (lens bend). Pen colours come from the table's colour column (one cell per pen, found on the image),
+   refined on the trace pixels by four damped Lloyd steps; a trace pixel is one brighter than its local background
+   (31 px median) and not white. Two photographs (214332, 220713, both cropped at a plot edge) were not digitized.
+4. QA: every digitized pen-window is compared with the display's own window mean. 391 of 560 scored pen-windows agree
+   within max(1 % of span, the unit's tolerance: 0.5 C, 0.4 K, 0.4 t/h, 1.5 rpm, 1 %, 1.5 m3/h, capped at 5 % of span);
+   per pen below. The QA-passing windows hold 84 369 points in group A, 27 899 in B, 23 374 in C, 31 808 in D and
+   138 438 in E. A point is a
+   4-pixel column: 4.5 s on a 1 h window, 1.05-1.08 s on a 15 min window. That is the photograph's pitch, not the DCS
+   history's own step, which the deadband-stepped traces do not reveal.
+   Pens lying on a range line (PV-324202/203, PV-323202, HIC-335602 at 0 %) are hidden by the line and not scored.
+
+| pen | windows within tolerance | RMSE of those |
+|---|---|---|
+| FY-321401 | 14/14 | 0.18 t/h |
+| HV-322602 | 11/14 | 0.33 % |
+| TT-321001 | 14/14 | 0.15 C |
+| TT-322002 | 13/14 | 0.28 C |
+| TT-322012 | 6/14 (the rest within 1 K) | 0.33 C |
+| PT-329201 | 14/14 (1 % of span, 2.1 bar) | 1.5 bar |
+| SIC-321951 / SIC-323902 | 14/14, 13/14 | 1.03, 0.32 rpm |
+| UREA-LOAD (all groups) | 36/59 | 0.1-0.6 % |
+| FIC-329409 / TDY-329125 / TIC-329005 | 12/12, 11/12, 8/12 | 0.38 m3/h, 0.12 K, 0.27 C |
+| PIC-324202 / PT-324201 / PIC-324203 | 4/7, 5/7, 4/7 | 0.002-0.006 bar |
+| FV-329401, FV-329409, PV-329202, PV-323203, TV-323013A | 25/26 each | 0.32-0.48 % |
+| PV-329203 / HV-323605 / TV-323013B | 21/26, 12/26, 2/26 | 0.36, 0.57, 0.55 % |
+| PT-323204 / FIC-324401 / PIC-335201 / TIC-323012 | 8/9, 6/9, 6/9, 8/9 | 0.010 bar, 0.98 m3/h, 0.04 bar, 1.1 C |
+| HIC-329606 / PT-329207 / FT-335405 / LV-324501A | 6/7, 3/7, 4/9, 5/8 | 0.61 %, 0.007 bar, 0.027 m3/h, 0.63 % |
+| HIC-329605, HIC-323605, PT-321202, FT-335401, LIC-324501, LV-324501B | 0-1 of 7-14 each | - |
+
+The pens that fail are the dark slate (pen 7) and dark green (pen 9) of the ABB palette where another trace covers
+them, and pen 5/10 crossings. The engineering values below rest on the window means; the traces add the load path,
+the maxima and the step timing, each from QA-passing windows only.
+
+## CV.2 The day's load path, and what the folder does not contain
+
+The load on 5 November, from the digitized UREA-LOAD (2-min medians, QA-passing windows):
+
+| period | load | note |
+|---|---|---|
+| 07:40-07:44 | 101 % | |
+| 07:44-08:12 | descent | 1.0-1.4 %/min |
+| 08:12-08:58 | **68.9 %** (68.6-71.3) | hold, 46 min |
+| 09:10-09:20 | ascent | 1.5-1.7 %/min |
+| 09:20-12:06 | **90.5 %** (88.9-91.1) | hold, 2 h 46 min (a 10-min dip at 11:10 in one window is a digitizing artefact; the overlapping windows' means do not show it) |
+| 12:00-12:40 | descent | 0.5-0.7 %/min |
+| 12:38-13:50 | **74.4 %** (73.2-75.2) | hold, 72 min; the granulator restarted at 13:22 (group D) |
+| 13:48-14:08 | ascent | 1.8 %/min |
+| 14:08-15:32 | **101.7 %** (101.1-102.2) | hold; the day's reference |
+
+The two low holds bracket Book2's 69.3 % dwell, and the 90.5 % hold sits beside Book2's 92.3 % band. The 5 November
+plant is the post-turnaround plant; where it differs from Book2 (2023) both are reported.
+
+Not in the folder (every OCR file searched, garbled variants included): TT-322015, LT-323503, LT-329505, FY-322403,
+PT-321211/221, ST-321952/953, LT-329501, TT-322005, LT-322504, PIC-329204, FT-329403, FT-323402, ST-323901, FT-323418,
+FIC-335405's set point and output, FT-329401. The "322605" and "324202" hits in groups C and E are OCR misreads of
+HIC-323605 and the live alarm banner "PIC-324202 MV < L1".
+
+## CV.3 Data gap 1 and B-118: 322F001 and 322E003 through the plant's turndown
+
+**The entrainment ratio from the engine's own heat balance.** The discharge balance of `units/synthesis/ejector.py`
+(`T_d (1 + mu) cp_D = cp_N T_mot + mu cp_C T_s`, cp 4.74 / 3.10 / 3.50, T_s the 178.8 C pseudo-temperature) inverted
+for mu, every temperature in departure form from the plant's own full-load windows of the same day (14:10-15:40,
+101.95 %): T_d = 107.566 + (TT-322012 - 113.25), T_mot = 28.934 + (TT-321001 - 18.30), T_s = 178.8 + (TT-322002 -
+167.85). At the reference this returns the PFD's mu, 57 561.3 / 42 762 = 1.3461, by construction; the absolute mu is
+not read, only its ratio. The sensitivity is 0.046 in mu per K of TT-322012, -0.024 per K of TT-322002 and -0.027 per
+K of TT-321001, so a window's ratio carries about +/- 0.05. The motive is the PFD's 42 762 kg/h times FY-321401 on its
+reference (FY-321401 is a fixed-density compute tag, `unit_321`; it tracks SIC-321951 at 0.338 t/h per rpm within
+0.4 % in every window).
+
+| window centre | load % | HV-322602 % | FY-321401 t/h | mu / mu_ref | suction, PFD basis t/h (ratio) | engine closure at the plant's stroke, level factor 1 |
+|---|---|---|---|---|---|---|
+| 08:09 | 80.0 | 47.8 | 33.30 | 0.986 | 45.4 (0.789) | stalled |
+| 08:39 | 69.9 | 34.9 | 28.71 | 1.023 | 40.6 (0.705) | stalled |
+| 09:09 | 78.1 | 38.9 | 31.80 | 1.080 | 47.5 (0.824) | stalled |
+| 09:39 | 88.6 | 48.5 | 36.17 | 1.121 | 56.0 (0.973) | 41.7 t/h |
+| 10:09 | 91.0 | 53.2 | 37.76 | 1.098 | 57.3 (0.996) | 53.2 t/h |
+| 10:39 | 90.9 | 54.9 | 37.99 | 1.068 | 56.1 (0.974) | 52.3 t/h |
+| 11:09 | 90.5 | 55.0 | 37.68 | 1.044 | 54.4 (0.944) | 47.7 t/h |
+| 11:39 | 90.1 | 55.2 | 37.36 | 1.021 | 52.7 (0.916) | 42.5 t/h |
+| 12:09 | 86.6 | 54.2 | 35.94 | 0.986 | 49.0 (0.851) | 21.7 t/h |
+| 12:39 | 78.6 | 46.6 | 32.44 | 0.969 | 43.5 (0.755) | stalled |
+| 13:09 | 74.6 | 40.0 | 30.33 | 1.003 | 42.0 (0.730) | stalled |
+| 13:39 | 80.7 | 43.7 | 32.53 | 1.032 | 46.4 (0.806) | stalled |
+| 14:09 | 94.2 | 55.8 | 37.96 | 1.030 | 54.0 (0.939) | 49.7 t/h |
+| 14:39 | 102.0 | 65.0 | 41.52 | 1.006 | 57.7 (1.002) | 73.9 t/h |
+| 15:09 | 101.9 | 65.8 | 41.79 | 0.994 | 57.4 (0.998) | 75.3 t/h |
+
+* **The plant's ejector keeps its entrainment ratio through the turndown**: mu / mu_ref 1.031 +/- 0.044 (n 15,
+  0.97-1.12), so its suction follows the load, m_suc / m_suc,ref = 1.037 L / L_ref (RMSE 0.038, R2 0.86).
+* **The operator closes the spindle with the load**: HV-322602 = 65.4 % (L / 101.95 %)^1.60 (R2 0.92, RMSE 2.3 %
+  stroke, n 15): 65.4 % at full load, 55 % at 90.5 %, 40 % at 74.6 %, 35 % at 69.9 %. Book2 reads 76 / 63 / 40 % at
+  111 / 92.3 / 69.3 %; the 5 November plant runs about 8 % of stroke more closed at 90 %.
+* **The engine's closure stalls on the plant's own operating line.** At the plant's motive and stroke (absolute on
+  the DDS map, level factor 1, the engine's fixed 4.2 bar lift), `ejector_322f001` reports stalled in every window at
+  69.9-80.7 % load, and between 86.6 and 94.2 % it passes 44-93 % of the plant's suction; at full load it passes
+  1.28-1.31 times it. Holding the plant's 100 % offset to the engine's 74 % anchor instead stalls it below about 87 %. The momentum closure puts the design point within 10 % of shutoff (motive fraction
+  0.907, data gap 1's B-12 margin); the plant runs at a motive fraction of 0.69 with the nozzle at 72 % of its design
+  area and entrains its full-load ratio. The engine holds the lift fixed at every load
+  (`loop_hydraulics.ejector_pressures_bara`: both ends ride PT-329201 on their design offsets).
+* **What lift the plant implies** (`lift_fit.py`): if the 4.2 bar lift is split into a static part and a friction
+  part scaling on the discharge flow squared, the closure passes the plant's suction in every window only if the
+  friction part is at least 2.41 bar (57 % of the lift); the 90 % windows alone need 0.6-1.0 bar, the 70-75 % windows
+  2.3-2.4 bar. No hydraulic datum in either archive splits the lift, so this is a fit, not a datum. The fit scales the
+  friction on the discharge flow squared; the prototype (CV.4) scales it on the motive ratio squared, which at the
+  plant's constant mu differs by about 0.03 bar at 70 %.
+
+**322E003's shell duty falls with the load.** From FIC-329409 (m3/h, IAPWS density at the return temperature) x 4.18 x
+TDY-329125:
+
+| window centre | load % | TIC-329005 C | FIC-329409 m3/h | TDY-329125 K | duty kW | / duty at 100.3 % | / load ratio | / PFD 5 329.5 kW |
+|---|---|---|---|---|---|---|---|---|
+| 07:54 | 87.9 | 91.1 | 327 | 18.3 | 6 635 | 0.865 | 0.987 | 1.25 |
+| 08:24 | 72.9 | 98.2 | 328 | 16.0 | 5 796 | 0.755 | 1.039 | 1.09 |
+| 08:54 | 73.0 | 98.4 | 331 | 16.1 | 5 884 | 0.767 | 1.053 | 1.10 |
+| 10:24 | 91.0 | 90.0 | 330 | 19.5 | 7 135 | 0.930 | 1.025 | 1.34 |
+| 10:54 | 90.5 | 90.0 | 330 | 19.7 | 7 207 | 0.939 | 1.041 | 1.35 |
+| 12:54 | 75.9 | 97.1 | 329 | 17.3 | 6 285 | 0.819 | 1.082 | 1.18 |
+| 14:24 | 100.3 | 85.8 | 332 | 20.8 | 7 675 | 1.000 | 1.000 | 1.44 |
+| 7 Nov live | 101.7 | 84.4 | 331 | 22.0 | 8 094 | - | - | 1.52 |
+
+* The plant's 322E003 removes 1.44-1.52 times the PFD's duty at full load, Uhde's datasheet's 8 000 kW (B-120's
+  1.49), and its duty falls with the load, 4-8 % less than in proportion.
+* **Like for like, mass and duty.** The plant's sump make, which at a steady level is its ejector suction, falls to
+  0.70-0.73 of full load at 70-75 % (40.6-42.0 t/h on the PFD basis). On the ramp to 69.3 % the engine's make rises to
+  73-93 t/h by L 0.85-0.80 (CV.4's arms) and 127-135 t/h at the trip (session 92), as 322R001's off-gas grows from 25 to
+  35-61 t/h and then 100 t/h. On duty the engine's 322E003 runs 0.96 of its starting duty at L 0.90 and 0.84-0.92 at
+  L 0.85 before its sump floods, near the plant's 0.93-0.94 at 90.5 %: the shell bound (decision 136) holds the engine's
+  duty while the extra mass arrives. **The engine's 322E003 flood at turndown is a symptom of the reactor's collapse
+  upstream, not of 322F001's suction law**: carrying 127-135 t/h at 69 % motive would take mu 4.3-4.6, three times the
+  plant's.
+* TT-322002 falls 5 K through the turndown (167.85 to 165.0 C at 74.6 %, 162.3 C in the 69.9 % window) while the
+  operator raises TIC-329005 14 K (84.4 to 98.3 C). The plant's scrubber liquor does not follow the tempered water,
+  as the as-built engine's does (+1 K per K, §XCIV); session 82's ceiling at T_cond(PT-329201) (S2) is consistent with
+  the plant.
+* The plant's own path, for B-118's acceptance: TIC-329005 84.4 / 90.0 / 97.1-98.4 C at 101.7 / 90.5 / 69-75 %;
+  SIC-323902 (323P001B, the 308 wash) 60.05 / 55.0 / 44.2-46.0 rpm (0.92 / 0.74-0.77 of full load); PT-329201
+  137.25 / 137.2-138.3 / 132.5-133.5 bar g.
+
+## CV.4 The 322F001 friction prototype, both sides measured
+
+**The prototype** (`b118/ej_proto.py`, scratch only): the part `lf` of the design 4.2 bar lift that is line and
+distributor friction, scaling on the square of the motive ratio taken on the motive the engine delivers on its first
+call (the design seed):
+
+    p_disch,eff = p_disch - lf . (1 - r^2),   r = m_motive / m_motive,seed,   lf = 2.41 bar (CV.3's fit)
+
+The sump law is left as built (V1's level / 50 %, D-19). A seal ramp in its place (suction 0 at 5 % and full from 15 %
+up, placed on Book2's 7-11 % levels) was prototyped and dropped: the design seed's level is not exactly 50 %, so the
+as-built multiplier reads 1.00002 there and the ramp moves EJ_322F001.suction_kgh by 1.3 kg/h on the first tick.
+
+**The design seed** (`b118/seedcheck.py`): the plant from its design seed for 600 ticks, every packet leaf recorded
+each 10 s, as built and with the prototype. The boot tick agrees on all 3 268 leaves (==). From the second tick the
+motive settles (the engine runs 0.078 % under the PFD motive), r leaves 1 and the friction term acts: after 60 s the
+largest departure on a physical leaf is 3.7e-6 relative (EJ_322F001.suction_kgh 57 569.0 against 57 568.8 kg/h).
+
+**The arms** (`b118/cfg_t511.py`, Session 84's runner `opt_run84.py` copied, two laws added: `hic602_plant` and an
+`interp` schedule; the patch chain patch81-83 copied with its path fixed). Every arm starts from the design seed and
+ramps at 0.5 %/min, with HIC-322602 on the plant's own relation, 65.4 % (L / 1.0195)^1.6, in place of session 92's
+spindle solve:
+
+* 69.3 %: Book2's dwell handles moved from design with the load (PIC-329204 16.6 bar g, MASTER-329207 5.411 bar a,
+  TIC-329005 94.1 C, HIC-322604 46.5 %), HIC-322605 by the board operator on LT-322504 80 %, the ratio trimmed on
+  AY-322701 3.19, the levels trimmed; 1 h settle, 3 h hold.
+* 92.3 %, two policies: "i", the same structure on Book2's 92.3 % handles (18.2 bar g, 5.123 bar a, 90.0 C, 51.5 %,
+  AY-322701 3.25); and Session 84's active trims (MASTER-329207 on TT-322005, PIC-329204 on TT-322004, HIC-322604 on
+  PT-329201, TIC-329005 anti-vent from 90 C, HIC-322605 on LT-322504); 1 h settle, 2 h hold.
+* Each as built (B) and with the prototype (P), each with V1's slip gain 4.0 and no patch (NP) and on S2 with the gain
+  at 0 (S2g0, decision 177's pairing).
+
+Session 84's policy applies its trims' initial values at t = 0. As built at full load, TIC-329005 at 90 C at once
+vents 4.2 t/h from 322E003 and trips 22.1 at 60 s in both B92_NP and P92_NP; those two arms say nothing about 322F001
+and are not used.
+
+**69.3 %:**
+
+| arm | trip 22.1 | route | TT-322005 C at L 0.95 / 0.90 / 0.85 / 0.80 / 0.75 | suction / condensate t/h at L 0.85 | at L 0.80 | at L 0.75 |
+|---|---|---|---|---|---|---|
+| B69, NP | 2 580 s (L 0.787) | sump full at 2 520 s, 35.7 t/h vented | 183.1 / 182.3 / 177.4 / 170.7 / - | 53.6 / 60.1 | 48.6 / 82.5 | - |
+| P69, NP | 2 100 s (L 0.827) | saturation vent, 8.2 t/h, sump 42 % | 183.1 / 182.5 / 179.0 / - / - | 56.7 / 58.4 | - | - |
+| B69, S2g0 | 2 460 s (L 0.797) | sump full at 2 460 s, 33.0 t/h vented | 182.9 / 181.6 / 175.5 / 168.9 / - | 58.4 / 72.7 | 44.0 / 40.4 (flooded) | - |
+| P69, S2g0 | 3 540 s (L 0.708) | sump full at 3 480 s, 19.6 t/h vented | 182.9 / 181.9 / 176.6 / 170.0 / 164.5 | 63.5 / 72.4 | 79.1 / 93.4 | 88.6 / 109.9 |
+
+* As built, the closure on the plant's spindle path does not stall at 0.5 %/min before the sump floods: the flood comes
+  first, at L 0.79-0.80, with the condensate outgrowing the suction as 322R001's off-gas doubles (25 to 41-49 t/h).
+* The NP arms vent from the first minute (2.0-4.9 t/h, TT-322015 64-81 C): the ratio trim takes AT-322701 from 2.84 to
+  3.28 and the as-built liquor's bubble pressure follows it (decision 105; §XCII.4). S2 removes that vent.
+* **With S2 and gain 0 the prototype carries the sump 1 080 s longer** (to L 0.708, the ramp's end), entraining up to
+  89 t/h at L 0.75 (mu 2.1 at L 0.80, against the plant's 1.4), but the condensate outgrows it (110 t/h at L 0.75) as
+  322R001's off-gas grows from 26 to 79 t/h, and the sump floods.
+* **TT-322005 follows the same path in every arm**, within 2.4 K at each matched load, prototype or not: 175.5-179.0 C
+  at L 0.85, 168.9-170.7 C at L 0.80. Book2's 69.3 % dwell reads 181.5 C, about 2 K under its full-load value
+  (§CIV.3; TT-322005 is not in this folder). The prototype changes where 322F001 runs, not what 322R001 does.
+
+**92.3 %.** **Session 84's active trims, S2 and gain 0:** both arms hold the 2 h hold with no trip and no vent above 0.31 t/h:
+TT-322005 176.96 C as built and 176.95 C with the prototype (spans 1.2 and 1.0 K), conversion 49.8 %, AT-322701
+3.16-3.23, 322E003's duty 5 336-5 343 kW, suction and condensate 59.4-59.7 t/h. They differ only in the sump:
+LT-329501 46-48 % as built, 38-39 % with the prototype. TT-322005 sits 5.6 K under Book2's 182.6 C, as in session 86.
+**Fixed Book2 handles (i), S2 and gain 0:** neither trips. As built the sump reached 86 % in the settle (3 600 s) and recovered; the 2 h hold reads TT-322005
+175.39 C as built and 174.61 C with the prototype (spans 3.6 and 1.6 K), conversion 45.7 and 44.8 %, LT-329501
+46-55 and 39-45 %, at most 1.4 and 1.3 t/h vented, 322E003's duty 5 110 and 5 162 kW; both end at 175.4-175.6 C,
+7 K under Book2.
+**No patch (NP), fixed handles:** both trip 22.1 on the liquor vent at 1 560 and 1 740 s (7.5 and 8.0 t/h
+uncondensed), the prototype irrelevant to the route.
+
+**Reading.** The prototype raises the closure's capacity on the plant's spindle path: at 69.3 % with S2 and gain 0 it entrains up
+to 89 t/h at L 0.75 where the as-built suction stays at 44-58 t/h, and carries the sump 1 080 s longer, to the ramp's
+end. It does not hold 322R001: TT-322005 follows the same path within 2.4 K at every matched load in every arm, and
+the trip still comes. Without S2 it brings the trip earlier, 2 100 against 2 580 s, on the liquor-vent route with
+the sump at 42 %. On the full arms the as-built closure flooded before it stalled; the stall evidence is the offline
+check (CV.3) and the 10 %/min smoke runs (EJECTOR_STALL at 300-330 s), not these arms. At 92.3 % under active trims
+both hold and the prototype changes only the sump's level. What the turndown needs is 322R001's heat; 322F001's lift
+is measured and waits on that change.
+
+## CV.5 Data gap 3: the vacuum train
+
+Group C (13:02-14:02) and the live values of 7 November show the plant's vacuum controllers with their air bleeds shut:
+PV-324202 0.0 % and PV-324203 0.0-1.1 % in every window and live, the alarm banner of 7 November reading "PIC-324202
+MV < L1, -0.75 bar g". The plant's first and second stages are therefore ejector- or condenser-limited, not on
+their bleeds. The engine's design runs PV-324202 at 61.07 % and PV-324203 at 92.03 %, admitting PFD 784 / 783's
+21 kg/h of false air each.
+
+**The one clean step in the folder (5 Nov, load 75 %, before the evaporators' feed rose at the granulator restart)**,
+digitized (PIC-324202, PT-324201, HIC-329606 QA-passing; HIC-329605 read on the photographs):
+
+| time | HIC-329605 % | HIC-329606 % | PT-329207 bar g | PT-324201 bar a | PIC-324202 bar a | PIC-324203 bar a |
+|---|---|---|---|---|---|---|
+| 13:05-13:08 (ruler 13:08:14) | 48 | 35 | 4.24 | 0.64 | 0.62 | 0.48 |
+| 13:11-13:13 | 50-55 | 37.5-38 | 4.20 | 0.59-0.61 | 0.56-0.58 | 0.40-0.43 |
+| 13:15-13:17 | 70 | 40-41 | 4.22 | 0.25-0.31 (lowest 0.25) | 0.21-0.24 | 0.14-0.17 |
+| 13:20-13:54 (means) | 64-67 | 40-41 | 4.13-4.24 | 0.31-0.33 | 0.28-0.29 | 0.14-0.15 |
+| 7 Nov live, 101.7 % | 73.0 | 44.3 | 4.00 | 0.32 | 0.27 | 0.10 |
+
+The step answers within 2.5 minutes. Below about 55 % on HIC-329605 the first stage sits at 0.56-0.64 bar a; at 64-73 %
+it sits at 0.27-0.33 bar a and stops moving with the stroke.
+
+**The engine at design load with the plant's bleed practice** (`b118/vac100.py`, 1 h from the design seed, measurement
+only): PIC-324202 and PIC-324203 in MAN at 0 %.
+
+| arm | HIC-329605 / HIC-329606 % | 324F001 (PT-324201 = PIC-324202 node) bar a | PIC-324203 bar a |
+|---|---|---|---|
+| design seed | 69.1 / 80.2, bleeds 61 / 92 % | 0.330 | 0.131 (324F003) |
+| bleeds shut | 69.1 / 80.2 | 0.267 (0.281 at 5 min, 0.271 at 10 min) | 0.102 |
+| bleeds shut, plant's strokes | 73.0 / 44.3 | 0.269 | 0.102 |
+| bleeds shut, the plant's pre-step strokes | 48.0 / 35.0 | 0.257 | 0.097 |
+| plant, 7 Nov live | 73.0 / 44.3, bleeds 0-1 % | 0.32 separator (PT-324201), 0.27 condenser (PIC-324202) | 0.10 (324E005) |
+| plant, 5 Nov 13:05-13:08 (75 % load, evaporators on reduced feed) | 48 / 35, bleeds 0 % | 0.64 separator, 0.62 condenser | 0.48 (324E005) |
+
+The engine's PT-324201 and PIC-324202 both read the 324F001 separator node; its PIC-324203 reads the 324F003 node. The
+plant's PIC-324202 and PIC-324203 read the 324E002 and 324E005 condensers ("324E002,VP", "324E005,VP"), and its
+PT-324201 the 324F001 separator. Only stage 1's separator compares like for like.
+
+* **Stage 1, like for like:** with its bleeds shut the engine's separator settles at 0.267 bar a, 0.05 bar deeper than
+  the plant's 0.32 bar a, which sits at the PFD's 0.33 with no bleed at all. The plant reaches its design vacuum on the
+  ejector and condenser alone; the engine needs 21 kg/h of false air through PV-324202 at 61 % to sit there. 324F002 and
+  324E002 are stronger in the engine than in the plant at full motive. Stage 2 has no like-for-like reading (the plant's
+  324F003 pressure is not logged; its 324E005 reads 0.10 bar a, the engine's 324F003 node 0.102).
+* **Motive dependence.** Neither side moves with the stroke at 69-73 % on HIC-329605. At the plant's pre-step 48 / 35 %
+  the engine's motive does fall (`b118/motive_chk.py`, 60 s after the step: 324F002 389 to 278 kg/h, nozzle 4.09 to
+  2.92 bar a; 324F004 1 218 to 439 kg/h and 324F005 180 to 65 kg/h, nozzles 4.09 to 1.48 bar a), and its vacuum still
+  holds and deepens (0.257 / 0.097 bar a after 1 h), while the plant sat at 0.62 / 0.48 bar a with a smaller vapour load
+  (75 % load, FIC-324401 at 53 m3/h against 92). The plant's ejectors lose their vacuum below about 55-64 % on HIC-329605
+  at PT-329207 4.2 bar g, the break-off of a motive-starved ejector; the engine's synthesized maps (`ejector_map`, B-57 /
+  B-61) have no such regime, and with the bleeds shut its vacuum is set by the condensers at every stroke tried. No
+  condenser cold end, cooling water or inert load is logged, so no curve can be reconstructed; the break-off bracket
+  (HIC-329605 55-64 %, HIC-329606 38-40 %, PT-329207 4.20-4.24 bar g) is the datum a curve must meet.
+
+## CV.6 Decision 178's nine conventional Neldiscs
+
+Group E logs the strokes of eight of the nine (TV-328002 is not in the folder) from 07:43 to 16:06. The DCS's
+TV-323013A and TV-323013B (loop "329058,WC") are Metso's PV-323202A (DN 300) and PV-323202B (DN 250), the tempered-
+water valves at 329E002 (loop summary T 323013, `control_valves_metso`); the DCS's PV-323202 on the same loop reads
+0.0 % on 5 November and 16-18 % live on 7 November. The paste's 63.3 / 58 % for them are PV-329207B's travels; their
+own last printed travels are 65.9 and 60.3 %.
+
+| valve (DCS tag) | last printed travel % | highest window mean, 5 Nov % | highest stroke, digitized or read % | live 7 Nov % | above the last printed point |
+|---|---|---|---|---|---|
+| FV-329401 | 52.9 | 31.1 (07:43-07:58) | about 32 (the digitized maxima of FV-329401 and PV-329202 carry stray pixels; the window means bound them) | 31.3-31.7 | no |
+| FV-329409 | 63.5 | 49.8 (08:21-08:36) | 50 | 45.1-45.4 | no |
+| PV-329202 | 52.9 | 39.7 (15:06-16:06) | about 41 | 36.5-38.8 | no |
+| PV-329203 | 61.0 | 57.1 (15:06-16:06) | 58.0 (p99, 15:06-16:06) | 48.0-49.7 | no, 3 % short |
+| PV-323203 | 44.6 | 78.2 (09:21-09:36) | **about 94 at 09:28** (read on 220704; p99 91.6) | 40.1-42.8 | **yes** |
+| HV-323605 | 78.1 | 75.0 (09:28-09:43) | 76-78 (read on 220704) | 70.0 | no, at the edge |
+| TV-323013A = PV-323202A | 65.9 | 38.2 (07:43-07:58) | 39.2 | 34.9-35.7 | no |
+| TV-323013B = PV-323202B | 60.3 | 76.2 (09:06-09:21) | about 76 | **64.3-65.1** | **yes**: 71-76 % from 08:21 to 09:43 (the 68.9 % hold and the ascent), and live at full load |
+| PV-323202 | - | 0.0 | 0.0 | 16.1-18.2 | - |
+
+* **No in-situ Cv(theta) can be formed.** None of the nine has its differential logged. Only FV-329409 has its flow
+  (FIC-329409 in group B), which makes an operating point, not a Cv: 327-332 m3/h at 44.3-50.0 % on 5 November
+  (45.1 % at 331 m3/h live), against the vendor's normal case of 312 m3/h at 46.4 % and the engine's design stroke of
+  46.85 % for 306 t/h. FT-329401 is not logged, and neither LT-329505 nor LV-329505 (the paste's route to PV-329203's
+  flow) is in the folder.
+* The two valves that run above their last printed travel, PV-323203 (to about 94 % for a few minutes during the
+  ascent to 90 %) and TV-323013B (71-76 % for 80 minutes through the 68.9 % hold and the ascent, 64-65 % at full
+  load), have neither flow
+  nor differential logged; decision 178's L-series shape above the sheets' printed points is neither confirmed nor
+  contradicted. PV-323202A / B are catalogued in `control_valves_metso` and not wired into any unit, so the finding
+  is the plant's: TV-323013B runs its normal life beyond its last printed point (60.3 %).
+
+## CV.7 Data gaps 4, 9, 2, 5, 8 and 10
+
+* **Data gap 4, LT-324501.** Group D logs LIC-324501 with LV-324501A (to the granulator), LV-324501B (to 323D002),
+  FT-335401 and FIC-324401 from 13:06 to 14:28, through the granulator's restart at 13:22: LV-324501B closing from
+  100 % to 0-10 %, LV-324501A opening to 78-82 %, FT-335401 from 0 to 73 m3/h, the level swinging 50-70 % in 15-minute
+  means. The leg's holdup cannot be weighed from it. The DN 200 barometric leg holds about 40 kg of melt per metre,
+  so a full 0-100 % span on one to two metres is 40-80 kg, while the flows that would be integrated are 70-110 t/h,
+  metered to about 1 %: the integrated imbalance's uncertainty over a single swing (about 1 t/h for several minutes) is
+  one to two orders of magnitude above the holdup. LIC-324501's trace also fails QA (1 of 9 windows). The row stays
+  on the DCS readback (LRV / URV, reference connection).
+* **Data gap 9, FIC-335405.** Only FT-335405, the measured flow, is logged (0.004 to 0.363 m3/h through the restart);
+  no set point or output, and no step. Its ratio to FT-335401 stays at 0.0046-0.0050 m3/m3 in every window from 13:28,
+  so the loop tracks its ratio station within the 15-minute resolution, which bounds nothing about Kc or Ti. Not
+  resolvable from this folder.
+* **Data gaps 2 (TT-322015), 5 (AC4 PC21), 8 (LT-323503) and 10 (LT-329505)**: none of their tags is in the folder,
+  and no trip occurred on 5 November in the windows shown (the alarm banner of 7 November shows only LY-335501 LIM_L1
+  and PIC-324202 MV < L1). Unchanged.
+
+## CV.8 Checks
+
+* Nothing under `ureasim/` changed: `git status` shows only the three documents session 92 left uncommitted and this
+  session's additions to them. The PyQt6 grep over net, engine, units, control, core and thermo prints nothing.
+* The design-seed check of the prototype (CV.4): the boot tick identical on 3 268 leaves; 3.7e-6 at 60 s.
+* Scratch: the photographs' OCR, crops, transcription, geometry, digitized traces and QA in `t511/`; the runner copy,
+  patches, configurations, the twelve arms, their smoke runs, the vacuum checks and the motive check in `b118/`. The
+  session scratchpad is temporary.
+* `pytest tests/docs` after the documents changed: 7 passed. `CLAUDE.md` is unchanged: no rule changed.
+
+## CV.9 The process engineer's decisions of 2026-11-08 (decision 180)
+
+| item | decision | what it means for the tree |
+|---|---|---|
+| 322F001's lift (data gap 1) | (a) keep as built | `ureasim/` unchanged. The lift-friction prototype (`ej_proto.py`, 2.41 bar on the motive ratio squared, boot tick ==) is held in B-118's workspace with decision 177's slip gain 0, to be built with them once 322R001's turndown heat balance is resolved, both sides measured. |
+| B-118 | (b), narrowed | 322R001's heat balance and 322E002's gas and thermal hand-off into 322R001 on the turndown ramp. Acceptance tests: Book2's 69.3 % dwell and 92.3 % band, and the 5 November holds at 68.9 % (46 min), 74.4 % (72 min) and 90.5 % (2 h 46 min) with the plant's handles (CV.2-3). |
+| 322E003's duty | (a) keep the 1750 MTPD PFD anchor | Decision 159's class; the measured 1.44-1.52 times the PFD at full load stays a record. |
+| Data gap 3 | (a) keep the synthesized maps | The break-off bracket (HIC-329605 55-64 %, HIC-329606 38-40 %, PT-329207 4.20-4.24 bar g) recorded in the handoff's row; 324E002/E005's cold-end and cooling-water temperatures for 5 Nov 13:00-13:30 added to `D:\Work\reports\DCS readback checklist.md` (row 13). |
+| Decision 178; data gaps 2, 4, 5, 8, 9, 10 | (a) keep | The gaps stay on the checklist; TV-323013B's flow and differential added (row 14), to test the L-series shape past PV-323202B's last printed point. |
+
+Session 93's scripts and data (the transcription, the geometry, the digitized traces and QA, the prototype, the runner copy, the configurations and the run records) were archived from the temporary scratchpad to `D:\Work\reports\Trends_511_2026_scripts` (outside the tree, CLAUDE.md §6), with a README; the paths CV.1-8 give as `t511/` and `b118/` are its `digitization/` and `b118/` folders. Sessions 92 and 93 were committed.

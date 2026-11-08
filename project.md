@@ -11,7 +11,7 @@ short of the start-up band (session 50); B-94 closed on PFD 734's departure form
 as designed, PV-329203 / 212 on Metso's trims, 329D001 read — the cold start at 136.04 bar g, 1.5 bar under the start-up band, its tau 1 305 s faster than the trend's (session 51); B-91 accepted, B-96 and B-79 closed — solid carbamate on Egan, Potts and Potts — PV-329202, PV-329208 and LV-329505 on their vendor trims (session 52); B-30 and B-22 decided and closed — 323E011 on its dew point, 323F010 on its live vacuum — A-6 closed, and every Metso valve the archive prints on its trim (session 53); B-31 decided and closed — every LP inlet at its producer's live temperature — A-13 closed on its audit, eight Section B and C items signed off and Section C empty (session 54); B-97 decided and closed — 708 at 324F002's adiabatic discharge temperature — UF85 (unit 335) dosing live, the physical plant complete and every console binding resolving, B-1, B-4 and B-12 signed off and Section B empty (session 55); A-8's section assignment signed off and A-2 closed on an optional station token, the multi-station deployment supported and the instructor's panel unpaused, `handoff.md`'s Sections A, B and C all empty (session 56); 323P003's low-level trip searched (none drawn) and its NPSH read, trip 21.2's hand switches typed and TRIP_84_8 traced to the instrument air, decision 95's buffering signed off; the archive searched for the open data gaps — 328D003's and 323D002's overflows traced, trip 21.2 shutting XV-322902 and XV-322903 as AC4 draws it (session 57); the software converted to a single-console simulator (decision 149), retiring the multi-station roles, the station token, the roster and section assignment (decisions 72, 124 and 125; session 68); the open data gaps searched again in both user folders and the archive, seven control valves wired on the vendor sheets found (decision 150) and 322E006 on PFD 28's cooling water (decision 151), four data-gap rows closed (session 69); every module under `ureasim/` split inside the 600-line target, the moved lines verbatim and re-exported, no relation touched (decision 152, session 70); an external report on five data-gap rows audited against the code, 322C001's head volume and the urea-melt Henry constant closed (decision 153, session 71); 322E001 on its 2,950-tube replacement (decision 154), the turnaround's plugged tubes derating 322E002, 322E003 and 323E010 (decision 155), five loops and AI-329701's range on the plant DCS's faceplates of 24 October 2026 (decision 156), `Scenarios6.docx` put to the plant (session 72); the plugged tubes' conductances re-anchored on the bundle in service (decision 157), LV-322501's failure case read tick by tick — SV32351 / SV32352 lift at their set (decision 158) — the vacuum bleeds kept on the 1750 MTPD basis (decision 159), TIC-328008 and FFIC-335406 on their faceplates (decision 160), the dynamic audits built and their one finding, B-117, signed off as built, `Scenarios6.docx` 47 of 71; Sections A, B and C empty, 11 data gaps open (sessions 73 and 74); the load range 70-115 % studied on the committed engine for the load-optimisation workbook (`D:\Work\Urea_Plant_Load_Optimization_70_to_115.xlsx`): 100 % verified on both objectives, the engine's turndown, 323F010's barometric leg and a stripper cut's loop oscillation raised as B-118 to B-120, no relation changed (sessions 75 and 76); the workbook retried on the process engineer's control document with HIC-322605 operated by hand: 100 % verified on both objectives, 105 % near-steady, the turndown unchanged, B-118 and B-119 updated and B-121 raised, no relation changed (session 77); a pasted analysis of B-118 to B-121 checked and measured as scratch patches, 105 % verified with FIC-328402 raised 10 %, two errors in session 77's record corrected, B-119 decided (b) and built — 323F010 draining on its own head through N2, its leg taller than any column the vacuum holds (decision 161) (session 78); B-122 decided (b) and built — 323F010's pressure step solved itself where its holdup boils (decision 162) — and closed, the dynamic audit's two restored for every node; B-121 traced to the LP section's vents, not unit 328; B-118's N/C excursion traced to the reactor's real feed and 322E003's vent to its saturation fraction; B-123 raised and signed off as built, V1's thermo memo kept (decision 163); the synthesis loop's harness kept on the linearised step (session 79); every controller and hand station given a load relation (72 entries) and the schedule run from 70 to 115 % on both objectives with slow supervisory trims, then re-held at 100-110 %: 100 % verified on both objectives and 105 % on the steam objective, no steady state below 100 % or at 110-115 %, B-118 and B-120 updated, FFIC-321404's ratio found on the engine's basis (the plant's 2.115 is 2.05 here); B-121 closed on option (a), PIC-323202 and the unit 328 pair operator moves (decision 164); the load-optimisation workbook rebuilt with the 72-entry schedule; the Sonnet + Opus advisor workflow added to `CLAUDE.md` (session 80); B-118's and B-120's narrowed option (b) measured at Book2's 92.3 and 111 % bands as scratch patches, neither band held and no relation changed. B-118: 322E001's overhead fraction flat on the ramp, the excursion an operator handles' effect, and 322E003's liquor hot on the tempered water. B-120: near the plant's 111 % level the H/C slip is small and 322E003 vents on the same hot liquor. The Phase 7 cold start was found tripping 22.2 on the committed engine (B-124). V1's source tree and the References archive were moved (A-24, CLAUDE.md §4) (session 81); A-24 closed, V1's source tree named at `E:\Simulator\Urea Simulation`, its boot pin's test and the stripper's equivalence run on it (decision 165, session 82); B-124 bisected to 15e66c2, 322E002's low-N/C branch (decisions 142, 147) taking the NH3-lean cold start to trip 22.2; B-118's and B-120's TT-322002 prototype measured at Book2's 92.3 and 111 % bands, no band held and no relation changed (session 82); B-124's evidence gathered and the full cold start run (the branch off: no trip 22.2, tau 1350 s, dead time 540 s, final 137.45 bar g, 322R001 at its funnel's lip from 6 420 s), 322E001's turndown traced at 92.3 %, 322E003 on the vendor's margin at 111 %, no band held and no relation changed (session 83); B-124 closed on option (a), 322E002's low-N/C branch kept and decision 110's cold-start record re-baselined on the committed engine (decision 168), the fill probe reading LT-322504's narrow band (36 % a full reactor at its lip; session 52's full at 8 000 s the band's top, the backup above the lip moved with 322E001's shell bound (decision 139, B-102, in 15e66c2): with it off LT-322504 peaks at 91.2 % at 7 740 s, while B-103/B-104 and the bundle alone do not restore it); FT-329403 found on stream 901 at the design point (60.85 t/h, Uhde's loop summary 60.8); B-118 and B-120 measured under active closed-loop trims, no band held, B-120's mode absent with V1's stripper slip off (session 86)
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; at `D:\Work\Urea Simulation` until 2026-11-04, decision 165)
-**Last updated:** 2026-11-07 (sessions 75 to 91; session 91 continued: decision 178 built, the nine conventional Neldiscs on Valmet's L-series rows, data gap 7 closed, 8 data gaps; decision 179, the dynamic audit applying decision 163 on 323F010; B-118 at Book2's 69.3 % dwell, both arms tripping 22.1 on the ramp; session 91 (As-Built Part CIII), on the process engineer's "resolve all open items": A-28 and A-30 built on option (a) and closed (decisions 172, 173); A-29 run on `E:` and closed, the pins decision 170 moved in 20 decided-equivalence tests re-pinned and the whole suite passing; trip 22.2 kept as the simulator's own protection and named so (decision 174, data gap 6 closed); 322E001's U closed by decision (decision 175, data gap 11 closed); B-120 option (b) measured (decision 176) and decided (b2), its gain set to 0 only with B-118's turndown change (decision 177); data gap 7's L1 table found on Valmet's site and proposed, not built; LT-329505's lower tap and LT-324501's tap traced; Section A empty, Section B one open (B-118), 9 data gaps; session 90, a side session of session 88, added the start-up intro's LOAD button, the plant started from a saved exercise (the repository's shipped `scenarios` or the instructor's own folder), decision 171, As-Built Part CII, and raised A-30; session 89 researched the routes to every open gap and built decision 170, the five balanced Neldiscs on Valmet's S-Disc table, As-Built Part CI; session 88 researched the load workbook's gaps, As-Built Part C, and took no decision; session 87 closed A-26 and A-27, decision 169, and raised A-28; session 86 closed B-124 on option (a), decision 168, and measured B-118 and B-120 under active closed-loop trims; session 84 attached the start-up intro and holds the plant until the operator presses 100% LOAD, decision 166; session 85 decided and closed its six open points, decision 167)
+**Last updated:** 2026-11-07 (sessions 75 to 92; session 92, a side session of session 91 (As-Built Part CIV): B-118 re-run at Book2's 69.3 % dwell on the process engineer's three corrections, measurement only: all six arms trip 22.1 before the hold, 322R001 cooling to 156-160 C on the ramp, no relation changed, B-118 open; session 91 continued: decision 178 built, the nine conventional Neldiscs on Valmet's L-series rows, data gap 7 closed, 8 data gaps; decision 179, the dynamic audit applying decision 163 on 323F010; B-118 at Book2's 69.3 % dwell, both arms tripping 22.1 on the ramp; session 91 (As-Built Part CIII), on the process engineer's "resolve all open items": A-28 and A-30 built on option (a) and closed (decisions 172, 173); A-29 run on `E:` and closed, the pins decision 170 moved in 20 decided-equivalence tests re-pinned and the whole suite passing; trip 22.2 kept as the simulator's own protection and named so (decision 174, data gap 6 closed); 322E001's U closed by decision (decision 175, data gap 11 closed); B-120 option (b) measured (decision 176) and decided (b2), its gain set to 0 only with B-118's turndown change (decision 177); data gap 7's L1 table found on Valmet's site and proposed, not built; LT-329505's lower tap and LT-324501's tap traced; Section A empty, Section B one open (B-118), 9 data gaps; session 90, a side session of session 88, added the start-up intro's LOAD button, the plant started from a saved exercise (the repository's shipped `scenarios` or the instructor's own folder), decision 171, As-Built Part CII, and raised A-30; session 89 researched the routes to every open gap and built decision 170, the five balanced Neldiscs on Valmet's S-Disc table, As-Built Part CI; session 88 researched the load workbook's gaps, As-Built Part C, and took no decision; session 87 closed A-26 and A-27, decision 169, and raised A-28; session 86 closed B-124 on option (a), decision 168, and measured B-118 and B-120 under active closed-loop trims; session 84 attached the start-up intro and holds the plant until the operator presses 100% LOAD, decision 166; session 85 decided and closed its six open points, decision 167)
 
 ---
 
@@ -908,6 +908,14 @@ steam system (`steam/`).
 - [x] Decision 178 built (session 91, As-Built §CIII.10): the nine conventional Neldiscs on Valmet's L-series Cv rows,
       data gap 7 closed, the suite re-pinned; decision 179, the dynamic audit applying decision 163 on 323F010;
       B-118 at Book2's 69.3 % dwell set points, trip 22.1 on the ramp in both arms (§CIII.12)
+- [x] B-118 re-run at Book2's 69.3 % dwell on the process engineer's corrected boundary (session 92, As-Built Part CIV):
+      HIC-322605 on its anchor (43.27 %) or by the board operator, HIC-322602 on the spindle solve, MASTER-329207 on
+      PT-329207's dwell median; all six arms trip 22.1 before the hold, the acceptance test not met; Book2's own descent
+      read; no relation changed
+- [x] `Data/Trends 511.2026` read (session 93, As-Built Part CV): the plant's 5 November 2026 turndown from 75
+      photographs, tables transcribed and traces digitized with QA; data gaps 1, 3, 4 and 9 annotated, decision 178's
+      valves checked, a 322F001 friction-share prototype measured on twelve B-118 arms; no relation changed;
+      the options decided 2026-11-08 (decision 180), B-118 narrowed to 322R001's heat balance
 
 ---
 
@@ -5656,6 +5664,61 @@ checklist written, no mail drafted. The advisor (Opus) was consulted before the 
   L-series, Valmet's public L6 bulletins print no opening table; the urea loop diagrams are wiring only; Gmail holds
   no vendor answer. The DCS readback checklist is `D:\Work\reports\DCS readback checklist.md`.
 
+### Session 92 — B-118 re-run at Book2's 69.3 % dwell on the process engineer's corrected boundary
+
+Session 92 (2026-11-07), a side session of session 91, re-ran B-118's 69.3 % diagnostic with the three corrections of
+the process engineer's note. Measurement only: nothing under `ureasim/` changed, no decision was taken, and the slip
+gain stays 4.0 in the tree (decision 177). The advisor (Opus) was consulted on the plan and on the reading.
+
+* **Book2 read again** (As-Built §CIV.1). HVGT-322605 reads 50.24 % at 100 % load, so the dwell's 36.14 % is 43.27 % on
+  the engine's 60.0 % anchor (the vendor table's flow coefficient ratio, 0.730). PT-329207's dwell median is 4.398 bar
+  g, so MASTER-329207 went to 5.411 bar a.
+* **Six arms** (§CIV.2) through session 91's runner, copied unedited:
+  - HIC-322605 ramped to 43.27 % or held by the board operator on LT-322504;
+  - HIC-322602 on the spindle solve on LT-329501;
+  - a pair beyond the brief with HIC-322604 on its plant offset (63.5 %);
+  - each as built and on S2 with the gain at 0.
+* **Result.** All six trip 22.1 before the hold, at 3 720-4 200 s; as built with the operator, at 1 980 s on 322E003's
+  vent. In every arm 322R001 cools on the ramp. In the five that reach the ramp's end, TT-322005 reads 156-160 C at the
+  trip (conversion 26-30 %) and the off-gas has grown 4.5-fold, until 322E003's sump floods with the spindle at its
+  floor. With the operator on HIC-322605 the
+  reactor tracks the design-handle arms within 1-2 K at every matched load. Session 91's baseline re-ran identically on
+  HEAD.
+* **The plant's descent** (§CIV.3). Book2 comes down at 0.7-1.0 %/min, the LP header raised first, with TT-322005
+  2 K lower at the dwell. The engine falls more than 20 K on a slower ramp.
+* **Not run:** session 86's active trims through the ramp, and the plant's own path. B-118 stays open, recommended (b).
+
+### Session 93 — the plant's 5 November 2026 turndown read from `Data/Trends 511.2026`; data gaps and B-118 measured against it
+
+Session 93 (2026-11-07/08) took up the process engineer's pasted request to resolve or narrow the open data gaps from
+the plant DCS trends in `Data/Trends 511.2026`. Measurement only: nothing under `ureasim/` changed, no decision was
+taken, and every script and run stayed in the session scratchpad. The advisor (Opus) was consulted on the plan.
+
+* **The folder** (As-Built §CV.1-2) is 75 photographs of the ABB trend display, not an export: five pen groups,
+  windows of 1 h and 15 min, all on 5 November 2026. The tables were read visually and transcribed; the traces were
+  digitized (gridline-anchored time, RANSAC range lines, pen colours from the table) and checked against the display's
+  own window means (391 of 560 pen-windows within tolerance). The table's "Current Value" is the live value of
+  7 November (~101.5 % load), and no controller set point or output is logged. The plant held 68.9 %, 90.5 %, 74.4 %
+  and 101.7 % that day.
+* **Data gap 1, B-118** (§CV.3-4). 322F001 keeps its entrainment ratio (1.031 +/- 0.044) with HV-322602 closed as
+  65.4 % (L / 101.95 %)^1.6; the engine's closure stalls on that line at 69.9-80.7 % on its fixed 4.2 bar lift.
+  322E003's duty falls with the load, 1.44-1.52 times the PFD at full load: B-118's flood is the reactor's collapse
+  upstream. A friction-share prototype of the lift (2.41 bar) keeps the seed's boot tick == and was run on twelve arms;
+  it raises 322F001's capacity on the plant's spindle path, and 322R001 cools along the same path in every arm.
+* **Data gap 3** (§CV.5). The plant runs both vacuum bleeds shut and holds 324F001 at its design pressure without them;
+  the engine with its bleeds shut runs 0.05 bar deeper, and has no break-off where the plant loses its vacuum below
+  55-64 % on HIC-329605.
+* **Decision 178** (§CV.6). PV-323203 (to about 94 %) and TV-323013B (= PV-323202B, 64-76 %) run above their last
+  printed travels; no differential is logged for any of the nine, so no in-situ Cv.
+* **Data gaps 2, 4, 5, 8, 9 and 10** (§CV.7): not resolvable from the folder.
+* B-118 stays open, recommended (b) narrowed to 322R001's heat on the descent; 8 data gaps remain.
+* **Decided 2026-11-08 (decision 180).** The process engineer took session 93's options: B-118 (b) narrowed to
+  322R001's heat balance and 322E002's hand-off on the ramp, with the 5 November holds added to Book2's bands as
+  acceptance tests; the 322F001 lift prototype held in B-118's workspace with decision 177; 322E003 on its PFD
+  anchor; data gap 3's maps kept and the break-off bracket recorded; decision 178 kept; the DCS readback checklist
+  given 324E002/E005's cold ends (row 13) and TV-323013B's flow and differential (row 14). Session 93's scripts and
+  data archived to `D:\Work\reports\Trends_511_2026_scripts` (outside the tree). Sessions 92 and 93 committed.
+
 ## 5. Design decisions on record
 
 1. **PyQt6, not PyQt5.** Qt6 is current, has proper high-DPI scaling for the 1366×720 stage,
@@ -6619,3 +6682,13 @@ checklist written, no mail drafted. The advisor (Opus) was consulted before the 
      only, the audit counts a reversal above decision 163's accepted 0.012 mbar, and a third successive reversal at
      the general 1e-7 bar floor must stay below it; every other node keeps the 1e-7 bar floor and the limit of two. No
      relation changes (As-Built §CIII.11).
+180. **Session 93's options decided: B-118 narrowed to 322R001's heat balance, 322F001 held as built**
+     (2026-11-08, the process engineer's decisions on As-Built Part CV). (1) 322F001 stays as built; the lift-friction
+     prototype, p_disch,eff = p_disch - 2.41 (1 - r^2) on the motive ratio to the seed, is held in B-118's workspace
+     with decision 177's slip gain 0 and built with them once 322R001's turndown heat balance is resolved. (2) B-118
+     takes (b), narrowed to 322R001's heat balance and 322E002's gas and thermal hand-off into 322R001 on the ramp;
+     the 5 November 2026 holds at 68.9, 74.4 and 90.5 % join Book2's 69.3 % and 92.3 % bands as acceptance tests.
+     (3) 322E003 keeps its 1750 MTPD PFD anchor (decision 159's class). (4) Data gap 3: the synthesized ejector maps
+     kept, the plant's break-off bracket recorded (HIC-329605 55-64 % at PT-329207 4.2 bar g), 324E002/E005's cold
+     ends for 5 Nov 13:00-13:30 added to the DCS readback checklist. (5) Decision 178 kept; data gaps 2, 4, 5, 8, 9 and
+     10 stay on the checklist, TV-323013B's flow and differential added. No relation changes (As-Built §CV.9).
