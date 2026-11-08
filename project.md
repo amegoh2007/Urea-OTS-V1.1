@@ -916,6 +916,9 @@ steam system (`steam/`).
       photographs, tables transcribed and traces digitized with QA; data gaps 1, 3, 4 and 9 annotated, decision 178's
       valves checked, a 322F001 friction-share prototype measured on twelve B-118 arms; no relation changed;
       the options decided 2026-11-08 (decision 180), B-118 narrowed to 322R001's heat balance
+- [x] B-118's term audit (session 94, As-Built Part CVI): 322R001's turndown budget decomposed, the carbamate
+      source found responsible, four seed-exact prototypes measured; no relation changed; option (a) decided
+      2026-11-09 (decision 181), S2 and slip gain 0 unbundled from B-118
 
 ---
 
@@ -5719,6 +5722,27 @@ taken, and every script and run stayed in the session scratchpad. The advisor (O
   given 324E002/E005's cold ends (row 13) and TV-323013B's flow and differential (row 14). Session 93's scripts and
   data archived to `D:\Work\reports\Trends_511_2026_scripts` (outside the tree). Sessions 92 and 93 committed.
 
+Session 94 (2026-11-08/09) took up the process engineer's second request of 2026-11-08: a term-by-term audit of
+322R001's energy balance on the turndown ramp, in scratch only, with decision 180's workspace beside the as-built
+baseline, and isolated prototypes of the responsible terms, both sides measured (As-Built Part CVI; the report
+`D:\Work\reports\B-118 322R001 term audit.md`; the scripts in `D:\Work\reports\B118_term_audit_scripts`).
+
+* Read-only recorders on the reactor and 322E002 (the seed identical on every leaf) close the column's budget
+  exactly: TT-322005 - TT-322010 = carbamate - dehydration - wall loss - storage - boil cap; 13.0 = 31.8 - 18.8 K
+  at the seed.
+* Book2's column rise holds at 13.4-13.9 K from 69 to 111 %; TT-322010 falls 1.2 K at 69.5 % with the shell 2.5 K
+  up.
+* The carbamate source is the responsible term: zero by L 0.85 in both arms, 322E002's flash first (its CO2 gas
+  fraction halving per kelvin of TT-322010), then the reactor's off-gas CO2 growing with the unconverted CO2 and
+  V1's slip. The wall loss subtracts 1-5 K, the dehydration sink stabilises, and TT-322010's own departure is
+  small on the ramp but 11 K too large at the plant's steady 69.5 % band on a constant UA.
+* Four seed-exact prototypes measured; none holds the 69.3 or 68.9 % hold. As built with P1, P4 and decision 180's lift the 92.3 % hold passes; the workspace's S2 terms and slip gain 0 starve the reactor. The arms' handle laws were found
+  stepping HIC-322602 and the AY-322701 target off the engine's seed at t = 0.
+* Options (a) and (b) presented; no relation changed; Section B one open (B-118), 8 data gaps.
+* **Decided 2026-11-09 (decision 181).** Option (a), `ureasim/` as built; S2 and slip gain 0 unbundled from
+  B-118; P1, P4 and the 322F001 lift on the as-built stripper held as the candidate bundle, verified next on the
+  five holds. Session 94 committed.
+
 ## 5. Design decisions on record
 
 1. **PyQt6, not PyQt5.** Qt6 is current, has proper high-DPI scaling for the 1366×720 stage,
@@ -6692,3 +6716,10 @@ taken, and every script and run stayed in the session scratchpad. The advisor (O
      kept, the plant's break-off bracket recorded (HIC-329605 55-64 % at PT-329207 4.2 bar g), 324E002/E005's cold
      ends for 5 Nov 13:00-13:30 added to the DCS readback checklist. (5) Decision 178 kept; data gaps 2, 4, 5, 8, 9 and
      10 stay on the checklist, TV-323013B's flow and differential added. No relation changes (As-Built §CV.9).
+181. **Session 94's options decided: (a), and B-118 unbundled from S2 and slip gain 0** (2026-11-09, the process
+     engineer's decision on As-Built Part CVI). `ureasim/` stays as built. The S2 stripper terms and decision 177's
+     slip gain 0 leave B-118's workspace (decisions 177 and 180 revised): they starve 322R001's carbamate source at
+     turndown. B-118's candidate bundle is P1 (322E002's UA on the load to the power 0.77), P4 (the wall loss on a
+     stagnant reactor only) and decision 180's 322F001 lift on the as-built stripper (slip gain 4.0), verified next
+     in scratch on the five holds with the seed stationary and the handles moved as departures from the engine's
+     design seed, then wired as option (b) once measured. No relation changes (As-Built §CVI.8).

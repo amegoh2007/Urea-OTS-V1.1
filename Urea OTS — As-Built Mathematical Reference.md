@@ -21216,3 +21216,196 @@ own last printed travels are 65.9 and 60.3 %.
 | Decision 178; data gaps 2, 4, 5, 8, 9, 10 | (a) keep | The gaps stay on the checklist; TV-323013B's flow and differential added (row 14), to test the L-series shape past PV-323202B's last printed point. |
 
 Session 93's scripts and data (the transcription, the geometry, the digitized traces and QA, the prototype, the runner copy, the configurations and the run records) were archived from the temporary scratchpad to `D:\Work\reports\Trends_511_2026_scripts` (outside the tree, CLAUDE.md §6), with a README; the paths CV.1-8 give as `t511/` and `b118/` are its `digitization/` and `b118/` folders. Sessions 92 and 93 were committed.
+
+# Part CVI — Session 94: B-118's term audit of 322R001's turndown cooling (decided 2026-11-09, decision 181)
+
+Session 94 (2026-11-08/09) took up the process engineer's second request of 2026-11-08: a term-by-term audit of
+322R001's energy balance on the turndown ramp, with decision 180's workspace (S2's stripper terms, decision 177's
+slip gain 0, the 322F001 lift prototype of 2.41 bar) beside the as-built baseline, then isolated prototypes of the
+responsible terms, both sides measured. It is measurement only. Nothing under `ureasim/` changed (CLAUDE.md 5.6). The
+scripts ran in the session scratchpad and are archived at `D:\Work\reports\B118_term_audit_scripts` (outside the
+tree); the report is `D:\Work\reports\B-118 322R001 term audit.md`. The advisor (Opus) was consulted on the harness
+before any run and on the reading before this record.
+
+## CVI.1 The harness and the column identity
+
+Four read-only recorders (`terms94.py`) wrap `reactor_inventory.reactor_322r001`, `reactor_inventory.node_boil`,
+`ReactorInventory.step` and `CondenserHoldup.step`; each returns what it wrapped. With them attached the design seed
+is identical on every packet leaf (3 268 leaves, 7 samples over 600 ticks). Read off `reactor_inventory.step` and
+`reactor_hydraulics.node_dtdt`, the four nodes' temperature steps sum, exactly on every tick, to
+
+    TT-322005(t-1) - TT-322010 = sum dT_rxn - sum loss_K - sum storage_K - sum cap_K
+    dT_rxn,n  = q_n / mcp_live = carb_K,n - dehyd_K,n,   q_n = xi_carb,n 117 000 - xi_dehyd,n 15 500   [kJ/h]
+    loss_K,n  = tau_n (1 - clamp(co2_scale)) (T_n - 40) / 21 600
+    storage_K = tau_n (T_n,new - T_n,old) / dt,   cap_K = tau_n (T_n,pre-cap - T_n,new) / dt
+
+with xi_carb = gas CO2 from 322E002 - off-gas CO2 (the anchored split plus the conversion-deficit slip, clamped at
+zero) spread over the nodes by liquid volume. The residual is below 3e-10 K on every sample of every arm.
+
+**The seed's budget.** Rise 13.00 K = carbamate 31.82 K - dehydration 18.82 K; the carbamate term is itself a
+difference, gas CO2 489.4 kmol/h (53.40 K) less off-gas CO2 197.7 kmol/h (21.57 K). Wall loss 0 (gate 0), the boil
+cap 0.045 K against storage -0.045 K. 322E002: shell 151.94 C, feed mix 155.20 C, adiabatic pseudo-temperature
+600.48 C, exp(-NTU) = 0.0403 (NTU 3.212), CO2 gas fraction 0.2036.
+
+## CVI.2 The plant: Book2's profile at its load bands
+
+Read directly from `References/DCS Trends/Book2.xlsx` (`book2_profile.py`, `fit_e002.py`):
+
+| band | rows | TT-322010 | TT-322005 - TT-322010 | TT-329001 (322E002 shell) | PT-329201 bar g |
+|---|---|---|---|---|---|
+| 69.5 % (68.5-70.5) | 19 | 168.00 (-1.18) | 13.46 K | +2.54 K | 131.1 |
+| 80.4 % | 7 | 168.74 (-0.44) | 13.48 K | +1.50 K | 136.6 |
+| 92.2 % | 611 | 168.76 (-0.42) | 13.87 K | +0.95 K | 137.6 |
+| 100.4 % (reference) | 12 | 169.18 | 13.51 K | 152.82 C | 139.9 |
+| 111.0 % | 4 117 | 169.28 (+0.10) | 13.38 K | -1.73 K | 142.1 |
+
+The plant's column rise holds at 13.4-13.9 K from 69 to 111 %, and TT-322010 falls 1.2 K at 69.5 % while the
+operator raises 322E002's shell 2.5 K (MASTER-329207). Any term whose cooling grows as the load falls is off the
+plant. Neither archive measures 322E002's gas split or the reactor's off-gas CO2; the rise is the only plant datum on
+the carbamate source.
+
+## CVI.3 The decomposition on the ramp (0.5 %/min from the design seed, session 93's 69.3 % handles)
+
+Two diagnostic arms ran past a latched trip (`no_abort`, the plant as built; samples after the first latch are
+starred): D69_B as built, D69_W in decision 180's workspace. K are per kilogram of the live melt; "unclamped" is gas
+less off-gas CO2 before the clamp at zero.
+
+| arm, L | TT-322010 | TT-322005 | rise | carbamate (unclamped) | gas / off-gas split / slip vs seed | dehydration | wall loss | storage | TT-322010 vs seed: shell / NTU / spike |
+|---|---|---|---|---|---|---|---|---|---|
+| B 0.95 | 169.21 | 183.09 | 13.88 | 40.95 | +6.26 / +2.87 / 0 | 18.73 | 0.29 | +2.32 | +0.35 / +0.17 / -1.40 |
+| B 0.90 | 168.85 | 182.45 | 13.60 | 20.62 | -9.55 / -1.65 / 0 | 18.72 | 1.01 | -12.70 | +1.04 / -2.68 / +0.45 |
+| B 0.85 | 168.92 | 178.05 | 9.13 | 0 (-0.8) | -14.18 / -13.73 / -4.72 | 17.45 | 1.80 | -28.37 | +1.29 / -4.04 / +1.55 |
+| B 0.80 | 167.31 | 171.31 | 4.00 | 0 (-34.5) | -14.58 / -35.58 / -16.21 | 16.32 | 2.58 | -22.91 | +1.69 / -6.38 / +1.84 |
+| B 0.693* | 155.99 | 159.43 | 3.45 | 0 | -51.20 / -22.23 / -11.90 | 15.98 | 4.63 | -24.06 | +3.79 / -17.91 / +0.12 |
+| W 0.95 | 168.66 | 182.98 | 14.32 | 38.41 | +4.00 / +2.58 / 0 | 18.31 | 0.28 | +0.64 | +0.15 / +0.47 / -2.04 |
+| W 0.90 | 168.32 | 182.14 | 13.81 | 18.61 | -10.60 / -2.61 / 0 | 18.11 | 1.00 | -14.31 | +0.96 / -2.28 / -0.35 |
+| W 0.85 | 167.87 | 177.25 | 9.38 | 0 (-1.8) | -11.90 / -15.97 / -5.78 | 16.69 | 1.78 | -27.84 | +1.03 / -2.94 / -0.20 |
+| W 0.80 | 167.64 | 170.58 | 2.94 | 0 (-35.4) | -9.38 / -39.12 / -18.72 | 15.56 | 2.56 | -21.05 | +1.01 / -2.05 / -1.29 |
+| W 0.693* | 161.54 | 159.65 | -1.90 | 0 | -48.07 / -74.33 / -39.25 | 15.46 | 4.51 | -18.07 | +2.21 / -10.50 / +0.06 |
+
+The first latch (trip 22.1, TT-322015) came at 2 580 s (L 0.785) as built and 3 540 s (L 0.705) in the workspace; the
+vent trip and the reactor's heat are separate failure modes, and the reactor's carbamate source is gone before
+either latch. The 92.3 % arms (session 93's interpolated 92.3 % handles, 1 h settle, 1 h hold): as built, a 22.1 latch
+at 1 560 s, and the reactor recovering to TT-322005 181.0 C, TT-322010 170.5 C, carbamate 41.7 K, gas CO2 603 kmol/h,
+conversion 0.513 at 7 800 s (Book2 182.64 / 168.76 C); in the workspace no latch, and TT-322005 174.5 C, TT-322010
+169.7 C, carbamate 20.6 K, gas CO2 486 kmol/h, conversion 0.446 at 7 200 s. Wall loss there is 1.2-1.3 K.
+
+## CVI.4 The four terms the request named
+
+1. **TT-322010 and 322E002's quench.** On the ramp to L 0.80 TT-322010 moves only -0.8 to -2.7 K: the NTU term
+   (-2.1 to -6.4 K) is offset by MASTER-329207's shell (+1.0 to +1.7 K) and the exotherm spike. It collapses (-10.9
+   to -14.5 K) only after the reactor has, as 322E002's feed falls with the loop. At the plant's own steady bands,
+   with Book2's shell moves and the flow in proportion to load, the constant-UA quench gives TT-322010 -11.22,
+   -8.44, -3.54 and +4.87 K at 69.5, 80.4, 92.2 and 111 % against the plant's -1.18, -0.44, -0.42 and +0.10 K. A
+   conductance on the tube-side flow, UA = UA_pin (m / m_ref)^n, reproduces the plant at n = 0.816, 0.847, 0.722 and
+   0.709 (mean 0.77). The sensible inlet is not the term that matters: through the flash it is. At the seed,
+   `hpcc_flash_split`'s CO2 gas fraction is 0.204; it is 0.100 at TT-322010 - 1 K, 0.051 at - 2 K and 0.335 at + 1 K,
+   0.291 at PT-329201 - 3 bar and 0.130 at + 3 bar, and it does not move with the feed N/C between -0.1 and +0.4.
+   With gas CO2 worth 53.4 K at the seed, 1 K of TT-322010 is about 27 K of the reactor's carbamate source.
+2. **The carbamate heat supply.** The responsible term. It falls from 31.8 K to 18.6-20.6 K at L 0.90 and to zero
+   by L 0.85 in both arms, the gas CO2 322E002 passes falling first (-9.6 to -10.6 K at L 0.90, its CO2 fraction
+   0.170-0.171 against 0.204), then the off-gas taking more CO2 as the conversion falls: the split, re-solved at the
+   live pressure on the design temperature, takes a fixed share of a growing unconverted CO2 (-13.7 to -16.0 K at
+   L 0.85, -35.6 to -39.1 K at L 0.80), and V1's conversion-deficit slip adds to it (-4.7 to -5.8, then -16.2 to
+   -18.7 K). Cooler, the reactor converts less, its off-gas takes more CO2, and the source falls further: a positive
+   loop with no counterpart in the plant's constant rise.
+3. **The dehydration sink.** It falls as the column cools (18.8 to 15.6-17.5 K by L 0.80-0.85): a stabiliser. The
+   longer residence raises the conversion by +0.016 to +0.034 (about +0.5 to +1.2 K of sink) up to L 0.80; the feed
+   composition moves it -0.02 to +0.05; the node temperatures take it down by up to -0.23 (all at constant inputs
+   otherwise, `urea_extent_pfr` re-evaluated against the seed).
+4. **The gated wall loss.** It subtracts 0.28-0.29, 1.0, 1.8, 2.6, 3.4-3.6 and 4.5-4.6 K at L 0.95, 0.90, 0.85,
+   0.80, 0.75 and 0.693 on the ramp, 5.4 K at the 69.3 % end and 1.2-1.3 K at 92.3 %; quasi-steady it is
+   (1 - L)/L (T - 40) 2 340 s / 21 600 s, about 6.5 K at 69.3 %. The gate is V1's stand-in for a stagnant reactor;
+   Book2's load-invariant rise bounds a real running loss at about 0.7 K at design (the bands' 0.3 K spread over
+   1/L - 1 = 0.44 at 69.5 %).
+
+**A confound in the arms' handles.** The engine's seed runs HIC-322602 at 74.0 % and reads AT-322701 3.0. Session
+93's handle laws put the plant's absolute values on it: HIC-322602 on 65.4 % (L / 1.0195)^1.6 (63.4 % at L = 1) and
+AY-322701 trimmed to 3.19 (69.3 %) or 3.25 (92.3 %), so two handles step at t = 0. In the first five minutes the
+suction runs to 69.4 t/h (design 57.6 t/h), LT-329501 drains from 50 to 35 %, the melt N/C to 322E002 swings from
+2.88 to 3.42 and the flash's CO2 target from 0.315 to 0.065. The onset of term 2 on the ramp therefore carries this
+step as well as the turndown; it is not attributed to the turndown alone.
+
+## CVI.5 The prototypes, both sides measured
+
+`proto94.py`, each zero at the design seed:
+
+| key | relation | seed |
+|---|---|---|
+| P1 `ua_n 0.77` | 322E002's UA = UA_pin (m / m_seed)^0.77, m its feed mass, m_seed its first call's | boot tick identical; the seed's own drift moves TT-322010 4.9e-4 K by 60 s |
+| P4 `wall stagnant` | node_dtdt's gate 1 - flow_frac only at the engine's own flow floor (1e-3), 0 while CO2 flows | identical on every leaf over 600 ticks; the wall-loss unit test's assertions hold (0 at design, V1's 6 h relaxation when stagnant) |
+| P5 `split_live_t` | the off-gas split re-solved at the live top temperature, in departure form on the seed's top node | boot tick identical, then 1e-7 drift |
+| P6 `reactor_slip 0` | V1's conversion-deficit slip gain 0 | identical over 600 ticks |
+
+Acceptance arms in the workspace (W) unless named, ramp at 0.5 %/min, stopped at a latched trip:
+
+| arm | outcome | at the stop |
+|---|---|---|
+| P1 69.3 % | trip 22.1 at 4 020 s (end of ramp) | TT-322005 160.9, TT-322010 167.7 C, carbamate 0 |
+| P4 69.3 % | trip at 3 660 s (L 0.698) | 161.8 / 161.9 C, carbamate 0 |
+| P1+P4 69.3 % | trip at 4 200 s | 162.3 / 167.9 C, carbamate 0 |
+| P1 68.9 % (5 Nov) | trip at 4 080 s | 160.5 / 167.6 C, carbamate 0 |
+| P1+P4 68.9 % | trip at 4 200 s | 162.2 / 168.0 C, carbamate 0 |
+| P5+P6 69.3 % | trip at 3 360 s (L 0.723) | 161.2 / 161.9 C, carbamate 0 |
+| P1+P4+P5+P6 69.3 %, 68.9 % | trips at 4 200 s | 161.6 / 164.2 and 161.5 / 164.7 C; off-gas CO2 1 010 kmol/h at L 0.693 |
+| P1+P4+P5+P6 92.3 % | trip at 3 420 s | 165.6 / 165.7 C |
+| P1, P1+P4 92.3 % | no trip through the 2 h hold | TT-322005 176.9 / 177.2 C at 11 760 s (workspace alone 174.3 C at 8 160 s; Book2 182.64 C), TT-322010 169.6 C |
+| as built + P1+P4 69.3 % | trip at 2 880 s (L 0.762); run on past it | TT-322005 182.2, 181.8, 181.2 and 180.1 C at L 0.847, 0.817, 0.787 and 0.757, the carbamate source 27-32 K to L 0.79; 322E003's sump full from 2 940 s; 158.5 C at 7 320 s |
+| as built + P1+P4 + 322F001 lift, 92.3 % | **no trip through the 1 h settle and 1 h hold** | TT-322005 183.0-183.1 C, TT-322010 170.1 C, LT-329501 37-38 %, LT-322504 79-81 %, conversion 0.58, 6 420-8 160 s (Book2 182.64 / 168.76 C) |
+| as built + P1+P4 + 322F001 lift, 69.3 % | trip 22.1 at 3 480 s (L 0.71); run on past it | TT-322005 182.2 C at L 0.851 and 181.6 C at L 0.802 (LT-329501 37-39 %); 163.3 C at 5 580 s with 322E003 full, 182.3 C at 7 320 s |
+
+* P1 puts TT-322010 on the plant's value at 69 % (167.6-168.0 C against Book2's 167.9 C) and does not hold the
+  reactor: the carbamate source still goes to zero. Its fit was made on the load ratio and the prototype runs on
+  322E002's own feed mass, which falls more slowly than the load; it is not ready to build until it runs on
+  `co2_scale`, the fit's own basis, which also keeps the seed identical through its own drift.
+* P4 removes its 1-5 K and does not hold the reactor on its own.
+* P5 makes it worse: at the live temperature the Extended UNIQUAC ratio on the overall feed raises CO2's K-ratio
+  1.6 times at 178 C and 3.5-4.1 times at 170-165 C (subcooled liquid at 141 bar, where the service's ratio is not
+  evidence about the plant), and the off-gas takes more CO2. P5 is rejected as measured. P6 was not run alone.
+* The vent trip 22.1 and the reactor's heat are separate: as built at 92.3 % the reactor recovers after its latch.
+* **On the as-built stripper P1 and P4 hold the reactor down the ramp.** As built with P1 and P4, TT-322005 stays
+  within Book2's 69.3 % band (181.5 C, +/- 2 K) to L 0.76 and the carbamate source keeps 27-32 K, where the same
+  prototypes in decision 180's workspace lose it by L 0.85. The trip comes from 322E003 instead: its sump fills
+  (LT-329501 100 % from 2 940 s) and 22.1 latches at 2 880 s; after it the board operator closes HIC-322605 to
+  17 % on LT-322504, the reactor's throughput falls to 0.29 of design and its conversion rises to 0.85, so the
+  181 C at L 0.693 is not a healthy hold: with 322E003 still full the reactor cools to 168.1 C by 5 880 s and
+  158.5 C by 7 320 s. The workspace's S2 stripper terms and slip gain 0 change 322E002's feed:
+  at 92.3 % they pass 486-502 kmol/h of gas CO2 to the reactor against 603 kmol/h as built.
+* **As built with P1, P4 and decision 180's lift, the 92.3 % hold passes**: no trip, TT-322005 within 0.5 K of
+  Book2, 322E003's level at 37-38 %. It is the first trip-free 92.3 % arm of the B-118 series on the plant's
+  handles. At 69.3 % the same bundle keeps the reactor in band to L 0.80 and still trips 22.1 at L 0.71 as
+  322E003 fills; the reactor falls to 163.3 C and recovers to 182.3 C by 7 320 s, so the 69.3 % acceptance (3 h
+  at 181.5 C, no trip) is not met. The 68.9 % hold was not run on this bundle.
+
+## CVI.6 Options (for the process engineer; no decision taken)
+
+* **(a) Keep `ureasim/` as built (recommended).** Hold P1, P4 and decision 180's lift as B-118's candidate bundle
+  on the as-built stripper, and put decision 180's bundling back to the process engineer: the S2 stripper terms
+  and decision 177's slip gain 0 starve the reactor's carbamate source, and without them the 92.3 % hold passes.
+  Before any build: P1 rebased on `co2_scale` (the Book2 fit's basis, which also keeps the seed identical through
+  its own drift), the acceptance arms' handles in departure form on the engine's seed (HIC-322602 and the
+  AY-322701 target as their departures from the plant's full-load values), and the bundle re-run on the 69.3,
+  68.9, 74.4, 90.5 and 92.3 % holds, then B-118 continued on 322E003's fill at L 0.71.
+* **(b) Build P1 (on `co2_scale`), P4 and the 322F001 lift now as decided divergences**, the equivalence tests
+  asserting both sides (CLAUDE.md 5.6), the S2 terms and slip gain 0 left unbuilt pending decision 177's review,
+  and B-118 continued on the 69.3 % fill. The 92.3 % hold is measured passing on this bundle; the 69.3 and
+  68.9 % holds are not.
+
+Recommended: (a). P1 is measured on the condenser's feed mass, not on the basis it was fitted on; the arms carry the
+t = 0 handle confound; the 69.3 and 68.9 % acceptance tests are not met; and dropping S2 and slip gain 0 reverses
+part of decision 180, which is the process engineer's call.
+
+## CVI.7 Checks
+
+* `grep -rn "PyQt6"` below the HMI layer prints nothing. `pytest tests/docs`: 7 passed after the documents changed. `CLAUDE.md` is unchanged:
+  no rule changed.
+
+## CVI.8 The process engineer's decision of 2026-11-09 (decision 181)
+
+| item | decision | what it means for the tree |
+|---|---|---|
+| B-118, session 94's options | (a) keep as built | `ureasim/` unchanged; nothing wired. |
+| decision 180's bundle | S2 and slip gain 0 unbundled from B-118 (decisions 177 and 180 revised) | The as-built stripper (slip gain 4.0) stays under B-118; S2's terms and slip gain 0 starve the reactor's carbamate source at turndown (CVI.5). |
+| B-118's candidate bundle | P1 + P4 + the 322F001 lift (2.41 bar) | Verified next in scratch on the five holds, P1 rebased for a stationary seed, the handles started on the engine's design seed and moved as departures, 322E003's sump balance logged at L 0.85-0.69, with and without P6; wired as option (b) only once measured. |
+
+Session 94 was committed with this decision.
