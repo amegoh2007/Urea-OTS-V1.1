@@ -381,7 +381,8 @@ def carbamate_condenser_322e002(gas_feed_kmolh: dict, gas_feed_t_c: float,
                                 dt: float = 0.0,
                                 ua_kjhk=_PINNED,
                                 nc_anchor: float = REACTOR_FEED_NC_DES,
-                                sat_frac: float = 1.0, low_nc: bool = True) -> CondenserResult:
+                                sat_frac: float = 1.0, low_nc: bool = True,
+                                release_heat: bool = True) -> CondenserResult:
     """Evaluate the HP carbamate condenser for one tick.
 
     Parameters
@@ -414,6 +415,10 @@ def carbamate_condenser_322e002(gas_feed_kmolh: dict, gas_feed_t_c: float,
     low_nc
         The melt's bubble pressure rising toward its azeotrope below N/C 3.0 (decided
         2026-10-22, handoff B-106); False is V1's K_N line, which the harnesses keep.
+    release_heat
+        A net release of CO2 costs its heat of formation, the outlet held at the shell's
+        temperature (decided 2026-11-11, decision 185, handoff B-129); False is V1's clamp of the
+        CO2 absorbed at zero, which the harnesses keep.
     """
     # ----- 1. the combined tube-side feed ---------------------------------------------------
     feed = {k: gas_feed_kmolh.get(k, 0.0) + liq_feed_kgh.get(k, 0.0) / MW_COMP[k]
@@ -458,7 +463,11 @@ def carbamate_condenser_322e002(gas_feed_kmolh: dict, gas_feed_t_c: float,
     # The vertex is sharp but CONTINUOUS. A coarse N/C sweep makes it look like a 30 C jump;
     # a fine one walks through it. Do not smooth this in the chemistry: the legitimate lever
     # is the steam-header feedback gain.
-    co2_absorbed = max(gas_feed_kmolh.get("CO2", 0.0) - gas["CO2"], 0.0)
+    # A melt that cannot hold its CO2 (the saturation fraction going to zero on a start-up) sends
+    # more CO2 out in the gas than came in: the carbamate decomposes and takes its heat back.
+    co2_absorbed = gas_feed_kmolh.get("CO2", 0.0) - gas["CO2"]
+    if not release_heat:
+        co2_absorbed = max(co2_absorbed, 0.0)
     q_carb_kw = co2_absorbed * 1000.0 * DH_CARB_KJMOL / 3600.0
     q_sens_kw = gas_m * CP_GAS * max(gas_feed_t_c - T_PROD_DES_C, 0.0) / 3600.0
     duty_kw = q_carb_kw + q_sens_kw
@@ -490,6 +499,10 @@ def carbamate_condenser_322e002(gas_feed_kmolh: dict, gas_feed_t_c: float,
         # Gate the off-design EXCESS above the design pin, which is what kills the loop-tear
         # self-excitation without suppressing the genuine response.
         t_prod = T_PROD_DES_C + gate * (t_prod_live - T_PROD_DES_C)
+    if co2_absorbed < 0.0:
+        # The shell's steam condenses on tubes colder than it: a decomposing melt is held at the
+        # shell's temperature, not quenched below it (B-129).
+        t_prod = max(t_prod, t_shell_c)
 
     # LP steam actually RAISED on the shell is the process duty MINUS the extra sensible heat
     # carried out in the product above the design pin. At design the two are bit-identical,

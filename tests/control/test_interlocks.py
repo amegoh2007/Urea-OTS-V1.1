@@ -437,3 +437,34 @@ def test_the_trip_hand_switches_and_the_flags_have_no_reset():
     assert _run(trips, 0.1, hs_321604=True)[0]
     assert not trips.flag_21_2.reset() and trips.flag_21_2.latched
     assert _run(trips, 0.1) == (False, False, False)
+
+
+# -- B-131: a non-finite PV is a live initiator (decided 2026-11-11, decision 187) -------------------------------
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
+def test_a_failed_measurement_trips_22_2_and_22_1_and_v1_reads_it_healthy(bad, monkeypatch):
+    """A NaN fails both of V1's comparisons, so V1 reads it as healthy; the rewrite trips on any
+    non-finite PV and holds the reset while it lasts. An infinite PV above the limit trips both."""
+    def pair():
+        return (BandedInterlock("22_2", trip_at=SYN_P_TRIP_BARA, reset_below=SYN_P_TRIP_RESET_BARA),
+                HystereticInterlock("22_1", trip_above=110.0, clear_below=108.0))
+
+    banded, hyst = pair()
+    assert banded.update_from_pv(bad) and banded.live and hyst.update_from_pv(bad) and hyst.live
+    assert banded.reset() is False
+    banded.update_from_pv(147.0)
+    hyst.update_from_pv(100.0)
+    assert banded.reset() is True and not hyst.latched
+    monkeypatch.setattr(BandedInterlock, "nan_is_live", False)
+    monkeypatch.setattr(HystereticInterlock, "nan_is_live", False)
+    banded, hyst = pair()
+    assert banded.update_from_pv(bad) == hyst.update_from_pv(bad) == (bad == float("inf"))
+
+
+def test_on_finite_pvs_the_two_sides_are_the_same(monkeypatch):
+    """Over 22.2's excursion the switch changes nothing."""
+    ours = BandedInterlock("22_2", trip_at=SYN_P_TRIP_BARA, reset_below=SYN_P_TRIP_RESET_BARA)
+    got = [(ours.update_from_pv(pv), ours.live) for pv in PV_22_2]
+    monkeypatch.setattr(BandedInterlock, "nan_is_live", False)
+    v1 = BandedInterlock("22_2", trip_at=SYN_P_TRIP_BARA, reset_below=SYN_P_TRIP_RESET_BARA)
+    assert [(v1.update_from_pv(pv), v1.live) for pv in PV_22_2] == got

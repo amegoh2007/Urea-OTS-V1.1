@@ -634,7 +634,7 @@ def _hpcc_port(strip, ej, t_shell, s, sat):
     r = carbamate_condenser_322e002(
         strip["top_kmolh"], strip["T_top"], ej["comp"], ej["T_C"], t_shell_c=t_shell, gate=1.0,
         t_prod_prev_c=s.hpcc_tprod, p_loop_bara=s.p_syn, phi_prev=s.hpcc_phi, dt=DT,
-        nc_anchor=pin.HPCC_NC_DES_LIVE, sat_frac=sat, low_nc=False)
+        nc_anchor=pin.HPCC_NC_DES_LIVE, sat_frac=sat, low_nc=False, release_heat=False)
     return {"phi_gas": r.phi_gas, "phi_film": r.phi_film, "phi_eq": r.phi_eq,
             "feed_kmolh": r.feed_kmolh, "gas_kmolh": r.gas_kmolh, "liq_kmolh": r.liq_kmolh,
             "gas_kgh": r.gas_kgh, "liq_kgh": r.liq_kgh, "gas_th": r.gas_th, "liq_th": r.liq_th,
@@ -768,6 +768,7 @@ def harness_plant():
     tic_328012 = plant.loops["328C003"][0].tic_328012
     tic_328012.Kc, tic_328012.Ti = 3.0, 250.0
     plant.units["322E002"].low_nc_branch = False
+    plant.units["322E002"].release_heat = False          # decision 185, V1's clamp
     plant.units["323E003"].track_species = False
     plant.units["322E003"].wash_line = False
     # V1's reactor PT on the melt's bubble pressure and its feed line on the live loop: its cap at

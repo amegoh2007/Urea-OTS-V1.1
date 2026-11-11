@@ -246,7 +246,7 @@ def assert_same(v1, where, gas=None, liq=None, **kwargs):
     liq = v1["_design_liq"] if liq is None else liq
     theirs = v1["hpcc_322e002"](gas, liq, **kwargs)
     ours = carbamate_condenser_322e002(
-        gas["top_kmolh"], gas["T_top"], liq["comp"], liq["T_C"], low_nc=False,
+        gas["top_kmolh"], gas["T_top"], liq["comp"], liq["T_C"], low_nc=False, release_heat=False,
         **{KEYWORDS.get(k, k): v for k, v in kwargs.items()})
     for old_key, new_key in FIELDS:
         a, b = theirs[old_key], getattr(ours, new_key)
@@ -266,7 +266,8 @@ def test_the_unpinned_pass_agrees(v1):
         gas, liq = v1["_design_gas"], v1["_design_liq"]
         theirs = v1["hpcc_322e002"](gas, liq, gate=1.0)
         ours = carbamate_condenser_322e002(gas["top_kmolh"], gas["T_top"], liq["comp"],
-                                           liq["T_C"], gate=1.0, ua_kjhk=None, low_nc=False)
+                                           liq["T_C"], gate=1.0, ua_kjhk=None, low_nc=False,
+                                           release_heat=False)
         for old_key, new_key in FIELDS:
             assert theirs[old_key] == getattr(ours, new_key), old_key
     finally:

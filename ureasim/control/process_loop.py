@@ -59,6 +59,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 from ureasim.control.valve import cv_fraction
 from ureasim.core.numeric import clamp
@@ -132,6 +133,10 @@ class ProcessLoop:
     #: Filtered-derivative state G_{k-1}, carried per unit of Kc so a tuning change does not
     #: disturb it.
     dfilt: float = 0.0
+    #: Through a bad PV the history is unknown and the first good sample reseeds it (decided
+    #: 2026-11-11, decision 186, handoff B-130); False is V1's step on recovery. A class switch,
+    #: so a saved exercise keeps its shape.
+    reseed_after_bad: ClassVar[bool] = True
 
     def __post_init__(self) -> None:
         if self.mode not in MODES:
@@ -154,9 +159,17 @@ class ProcessLoop:
           * **in MAN the PV history is still advanced.** The loop is watching even while it
             is not acting, so putting it back into AUTO resumes on the two samples that
             actually just happened.
+          * **the first good sample after a bad one reseeds the history** (B-130). The two
+            samples before it are unknown, so the loop acts on its integral alone that tick
+            instead of stepping its output by Kc times the PV's move through the outage, which
+            is V1's behaviour and ``reseed_after_bad = False``.
         """
         if not pv_ok(pv, self.sp):
+            if self.reseed_after_bad:
+                self.pv1 = self.pv2 = math.nan                # the history through it is unknown
             return clamp(self.op, self.op_lo, self.op_hi)    # freeze last good on a bad PV
+        if self.reseed_after_bad and not (math.isfinite(self.pv1) and math.isfinite(self.pv2)):
+            self.pv1 = self.pv2 = pv                         # reseed on the first good sample
 
         if self.mode == "CAS" and cas_sp is not None:
             self.sp = clamp(cas_sp, self.sp_lo, self.sp_hi)  # remote set point from the master

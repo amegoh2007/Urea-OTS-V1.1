@@ -51,6 +51,7 @@ Source: V1 ``backend/main.py`` ``step_sim`` 7695-7705 and 7970-7987; `data.synth
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 from ureasim.core.numeric import bracketed_root, clamp
 from ureasim.data.synthesis_pin import HPCC_LIQ_DES_LIVE_KGH, HPCC_NC_DES_LIVE
@@ -115,6 +116,9 @@ class CondenserHoldup:
     #: The melt's bubble pressure rising toward its azeotrope below N/C 3.0 (decided 2026-10-22,
     #: handoff B-106); False is V1's K_N line, which the synthesis harness keeps.
     low_nc_branch: bool = True
+    #: A net release of CO2 costs its heat (decided 2026-11-11, decision 185, handoff B-129);
+    #: False is V1's clamp at zero. A class switch, so a saved exercise keeps its shape.
+    release_heat: ClassVar[bool] = True
 
     def step(self, top_kmolh: dict, t_top_c: float, ej_comp_kgh: dict, ej_t_c: float,
              t_shell_c: float, p_syn_bara: float, phi_fwd: float,
@@ -135,7 +139,8 @@ class CondenserHoldup:
                 memo[f] = carbamate_condenser_322e002(
                     top_kmolh, t_top_c, ej_comp_kgh, ej_t_c, t_shell_c=t_shell_c, gate=1.0,
                     t_prod_prev_c=self.t_prod_prev_c, p_loop_bara=p_syn_bara, phi_prev=self.phi,
-                    dt=dt, nc_anchor=HPCC_NC_DES_LIVE, sat_frac=f, low_nc=self.low_nc_branch)
+                    dt=dt, nc_anchor=HPCC_NC_DES_LIVE, sat_frac=f, low_nc=self.low_nc_branch,
+                    release_heat=self.release_heat)
             return memo[f]
 
         sat = saturation_fraction(self.p_bub_prev_bara, p_syn_bara)

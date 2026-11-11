@@ -300,8 +300,11 @@ def test_an_unknown_mode_is_refused():
 
 @pytest.mark.parametrize("bad", [float("nan"), float("inf"), None, "x"])
 def test_a_bad_pv_freezes_the_output_without_touching_the_mode_or_the_history(bad, v1):
+    """V1's side of decision 186 (handoff B-130): on the harness switch the history is untouched;
+    the rewrite's reseed is pinned in `tests/control/test_process_loop.py`."""
     config = CONFIGS["PIC pressure, bar a, with derivative"]
     c, loop = _pair(config)
+    loop.reseed_after_bad = False
     for pv in _trace(config, 80):
         v1["_ctrl_ipd"](c, pv, DT)
         loop.step(pv, DT)

@@ -38,7 +38,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 | Series | Next | Where it is written |
 |---|---|---|
 | Session | 100 | `docs/history/session-log.md` |
-| Decision | 185 | `docs/decisions.md` |
+| Decision | 188 | `docs/decisions.md` |
 | As-Built Part | CXI | the As-Built reference, appended at its end |
 | Handoff Section A | A-39 | `handoff.md` |
 | Handoff Sections B and C | B-133 | `handoff.md` |

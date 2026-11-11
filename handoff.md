@@ -156,25 +156,6 @@ onto it as its departure, decision 104's class (recommended: the trace first, in
 keep as built; (b) the faceplate shows and takes the plant's basis; (c) the floor restated on the
 engine's basis. The process engineer's call (decision 160's class).
 
-### B-129 — 322E002 drops the heat of a net CO2 release
-
-*Raised 2026-11-11, session 97 (§CVIII.7).* `carbamate_condenser.py:461` clamps the CO2 absorbed at zero.
-It binds only as the saturation fraction goes to zero, on a start-up. Options: (a) keep as built; (b) let
-the term go negative, the outlet floored at the shell's temperature, the seed unchanged.
-
-### B-130 — `ProcessLoop` kicks on recovery from a bad PV
-
-*Raised 2026-11-11, session 97 (§CVIII.7); V1's behaviour.* The PV history does not advance through a bad
-PV (`process_loop.py:158-159`), so the first good sample steps the output by Kc times the PV's move.
-`Controller` demotes to MAN and resets. Options: (a) keep as built; (b) reseed the history on the first
-good sample, V1's on the harness switch.
-
-### B-131 — The interlocks read a non-finite PV as healthy
-
-*Raised 2026-11-11, session 97 (§CVIII.7).* `interlocks.py:135-143` and `:164-171`: a NaN fails both
-comparisons, so trip 22.2 does not fire on one. The dynamic audit's finite-value check mitigates it.
-Options: (a) keep as built; (b) a non-finite PV is live.
-
 ---
 
 # Section C — Calibration Deferrals

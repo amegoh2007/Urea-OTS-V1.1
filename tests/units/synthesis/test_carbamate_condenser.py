@@ -368,3 +368,26 @@ def test_a_feed_with_no_co2_at_all_holds_the_design_ratios():
                  liq={k: (0.0 if k == "CO2" else v) for k, v in LIQ.items()})
     assert no_co2.melt_nc == REACTOR_FEED_NC_DES
     assert no_co2.melt_hc == REACTOR_FEED_HC_DES
+
+
+# ======================================================================================
+# B-129: the heat of a net CO2 release (decided 2026-11-11, decision 185)
+# ======================================================================================
+
+def test_a_net_co2_release_costs_its_heat_and_v1_clamps_it_at_zero():
+    """A melt that holds none of its volatiles (saturation fraction 0) sends the ejector's carbamate
+    CO2 out with the gas, 2 403.50 kmol/h. V1 clamps the CO2 absorbed at zero: the duty is the gas's
+    sensible heat, 2 366.90 kW, and the outlet 147.33 C. The rewrite charges the decomposition: the
+    duty -20 704.31 kW, no steam raised, the outlet held at the shell's 147.0 C (As-Built Part CX)."""
+    v1 = run(sat_frac=0.0, t_shell_c=147.0, release_heat=False)
+    ours = run(sat_frac=0.0, t_shell_c=147.0)
+    assert v1.gas_kmolh == ours.gas_kmolh and ours.gas_kmolh["CO2"] == pytest.approx(2403.50, abs=0.01)
+    assert v1.duty_kw == pytest.approx(2366.90, abs=0.01) and v1.t_prod == pytest.approx(147.33, abs=0.01)
+    assert ours.duty_kw == pytest.approx(-20704.31, abs=0.01)
+    assert ours.q_steam_kw == 0.0 and ours.t_prod == 147.0
+
+
+@pytest.mark.parametrize("sat_frac", [1.0, 0.3])
+def test_where_the_melt_absorbs_co2_the_two_sides_are_the_same_to_the_bit(sat_frac):
+    """The design point and a partly saturated melt absorb CO2, so the switch changes nothing."""
+    assert run(sat_frac=sat_frac, release_heat=False) == run(sat_frac=sat_frac)

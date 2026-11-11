@@ -21927,3 +21927,36 @@ test directly, exercised only through the plant: A-38.
 | `units.synthesis.reactor_column` | `equivalence/test_reactor_equivalence.py`, `units/synthesis/test_reactor.py` |
 | `units.synthesis.reactor_hydraulics` | `equivalence/test_reactor_equivalence.py`, `units/synthesis/test_reactor.py` and 1 more |
 | `units.synthesis.scrubber_sump` | `equivalence/test_synthesis_loop_decided_equivalence.py`, `units/synthesis/test_holdups_and_water.py` |
+
+## CX.7 Wave 2: B-129, B-130 and B-131 built as decided divergences (decisions 185 to 187)
+
+Each switch is a class attribute (`typing.ClassVar`), not a dataclass field, because the snapshot's compatibility
+check compares every object's attribute names: an instance field would have made the six shipped exercises and every
+instructor's saved exercise unloadable. All six shipped exercises load after the change.
+
+* **B-129 (b), decision 185.** `carbamate_condenser_322e002(..., release_heat=True)`: the CO2 absorbed is no longer
+  clamped at zero, so a net release costs its heat of formation, and wherever the term is negative the outlet is held
+  at the shell's temperature, t_prod = max(t_prod, T_shell). `CondenserHoldup.release_heat`; False is V1's clamp, set
+  in the equivalence harnesses. Measured on the unit at the design feeds, saturation fraction 0, shell 147.0 C: the gas
+  carries 2 403.50 kmol/h of CO2 both ways; V1's duty 2 366.90 kW (the gas's sensible heat), outlet 147.33 C, 5 523.5 kW
+  of steam; the rewrite's duty -20 704.31 kW, T_adb -10.5 C (one specific heat, `CP_GAS` 2.0), outlet 147.0 C, no
+  steam. At saturation fractions 0.3 and 1 every field is the same both ways. `HPCC_STEAM`'s stream record follows the
+  duty and reads negative in a net release; the steam the shell raises is `q_steam_kw`, floored at zero.
+* **B-130 (b), decision 186.** `ProcessLoop.reseed_after_bad`: through a bad PV the history `pv1`, `pv2` is set
+  non-finite (unknown; the snapshot encodes it), and the first good sample reseeds both to itself, so the loop acts on
+  its integral alone on that tick. On a 2 bar move through a 5 s outage (Kc 2, Ti 60 s): the rewrite steps the output
+  by the integral, -0.00667 %; V1 by -4.00667 %. The output stays frozen through the outage both ways; without a bad PV
+  400 ticks are the same to the bit. V1's side on the switch in `test_process_loop_equivalence.py`.
+* **B-131 (b), decision 187.** `BandedInterlock.nan_is_live` and `HystereticInterlock.nan_is_live`: a NaN or infinite
+  PV is a live initiator, latches the trip and blocks its reset (22.2 and 22.1). V1 reads a NaN and -inf as healthy and
+  +inf as tripping. Over 22.2's finite excursion both sides are the same.
+
+**The seed.** The plain seed at session 98's commit (`6853ac3`) against the tree with Waves 1 and 2, 18 000 ticks,
+every tick of the first 20 and every 10 s: 200 samples of all 3 694 packet leaves (`STREAMS` included), none differs.
+
+**The suite.** 2 190 passed, 5 862 skipped (`E:` not mounted), 1 failed:
+`test_console_while_frozen.py::test_a_reset_and_a_restored_exercise_keep_a_frozen_console_live_past_the_watchdog`,
+whose last assertion read the console's engine label as still FROZEN after the released plant's clock had moved. The
+suite ran beside two 45-minute engine runs of Wave 3; alone the file passed three times of three (36 s, 33 s, 33 s),
+and Wave 1's suite passed it. A timing race under load, not a change of behaviour; nothing in the console or the
+server was touched.

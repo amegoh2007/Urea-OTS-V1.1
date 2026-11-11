@@ -1000,3 +1000,12 @@ decision on an item.
 184. **`bracketed_root`'s exhaustions counted in the engine's health** (2026-11-11, the same table, A-37 (a)).
      `core.numeric.ROOT_LEDGER` counts a solve that runs out of iterations with its bracket open; the session publishes
      the count as `_health.roots_exhausted`. The root returned is unchanged to the bit (As-Built §CX.3).
+185. **322E002 charges the heat of a net CO2 release** (2026-11-11, the process engineer's decision table of the
+     session 98 plan, B-129 (b)). The CO2 absorbed may go negative; where it does, the outlet is held at the shell's
+     temperature. `release_heat` on `carbamate_condenser_322e002` and `CondenserHoldup`, False is V1's clamp at zero.
+     The seed is unchanged on every leaf (As-Built §CX.7).
+186. **`ProcessLoop` reseeds its PV history on the first good sample after a bad one** (2026-11-11, the same table,
+     B-130 (b)). `ProcessLoop.reseed_after_bad`, False is V1's step of Kc times the PV's move through the outage
+     (As-Built §CX.7).
+187. **A non-finite PV is a live initiator of 22.2 and 22.1** (2026-11-11, the same table, B-131 (b)).
+     `nan_is_live` on `BandedInterlock` and `HystereticInterlock`, False is V1's comparison (As-Built §CX.7).

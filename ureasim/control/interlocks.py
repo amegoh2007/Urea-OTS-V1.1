@@ -55,7 +55,9 @@ initiator, and a trainee has to learn the difference:
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 
 @dataclass
@@ -131,9 +133,17 @@ class BandedInterlock(Interlock):
     trip_at: float = float("inf")
     #: The reset-block threshold, below the trip point.
     reset_below: float = float("inf")
+    #: A non-finite PV is a live initiator (decided 2026-11-11, decision 187, handoff B-131); False
+    #: is V1's comparison, which reads a NaN as healthy. A class switch, so a saved exercise keeps
+    #: its shape.
+    nan_is_live: ClassVar[bool] = True
 
     def update_from_pv(self, pv: float) -> bool:
-        """Evaluate against a process value and return the latch state."""
+        """Evaluate against a process value and return the latch state. A failed measurement
+        (NaN or infinite) trips and blocks the reset, as a logic solver's bad-quality input does."""
+        if self.nan_is_live and not math.isfinite(pv):
+            self.live = self.latched = True
+            return self.latched
         if self.latched:
             self.live = pv >= self.reset_below        # reset-block band while latched
         else:
@@ -160,9 +170,16 @@ class HystereticInterlock(Interlock):
     trip_above: float = float("inf")
     clear_below: float = float("-inf")
     operator_resettable: bool = False
+    #: A non-finite PV is a live initiator (decision 187, handoff B-131); False is V1's
+    #: comparison. A class switch, so a saved exercise keeps its shape.
+    nan_is_live: ClassVar[bool] = True
 
     def update_from_pv(self, pv: float) -> bool:
-        """Evaluate against a process value and return the latch state."""
+        """Evaluate against a process value and return the latch state; a failed measurement
+        sets the action and holds it."""
+        if self.nan_is_live and not math.isfinite(pv):
+            self.live = self.latched = True
+            return self.latched
         self.live = pv > self.trip_above
         if self.live:
             self.latched = True
