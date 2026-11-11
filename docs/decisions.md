@@ -1009,3 +1009,7 @@ decision on an item.
      (As-Built §CX.7).
 187. **A non-finite PV is a live initiator of 22.2 and 22.1** (2026-11-11, the same table, B-131 (b)).
      `nan_is_live` on `BandedInterlock` and `HystereticInterlock`, False is V1's comparison (As-Built §CX.7).
+188. **Bundle A runs with the 322F001 lift on the live motive, its seed not bit-identical** (2026-11-11, the
+     process engineer, session 101). The lift departs from the plain seed at tick 3 (CVII.1's drift; 743
+     physical leaves and 11 console strings over 18 000 ticks); kept for comparability with sessions 95 and 99,
+     the criterion "every leaf identical" waived for it (As-Built §CXII.3).

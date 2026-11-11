@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-11, session 101 (A-39 closed).
+**Last updated:** 2026-11-12, session 101.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -43,8 +43,8 @@ suites (§CX.6). To do: a behaviour test of each, the thermo ones on the stores'
 
 ### B-118 — Below 100 % load the engine holds no steady state on the plant's reactor window
 
-*Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to XCVIII, C and CIII to CVII;
-decisions 177, 180 and 181.*
+*Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to XCVIII, C, CIII to CVII and
+CX to CXII; decisions 177, 180, 181 and 188.*
 
 **Problem.** The plant runs for hours at reduced load. The committed engine, ramped from its design
 seed, does not, on every operating policy tried:
@@ -78,7 +78,7 @@ And A-34's atoms closed tick by tick on a turndown (`tests/phase7/test_loop_atom
   322E001's overhead fraction, flat on the ramp (§XCIV.2); 322E003's liquor, tempered water and
   condensation margin (§XCIV.3-4, §XCV.3); 322E001's feed-deficit bottoms term alone (§XCVI.2); the
   ramp's rate and HIC-322605's handling (Part CIV); V1's stripper slip gain at 70 % (§CIII.7); the
-  reactor's conversion-deficit slip, P6 (§CVII).
+  reactor's conversion-deficit slip, P6 (§CVII); E0, AY-322701's target ramped with the load (§CX.8).
 * Rejected: P5, the off-gas split at the live top temperature (§CVI.5). Unbundled (decision 181): the S2
   stripper terms and slip gain 0, which starve the carbamate source (486-502 against 603 kmol/h at 92.3 %).
 * Boundary facts for every arm. Each handle starts on the engine's design seed and moves as a
@@ -100,21 +100,23 @@ And A-34's atoms closed tick by tick on a turndown (`tests/phase7/test_loop_atom
 * The 322F001 lift (decision 180): p_disch,eff = p_disch - 2.41 (1 - r^2), r the motive ratio.
 * On the as-built stripper, `unit_322e001.SLIP_GAIN` 4.0. P6 is out: it changes nothing.
 
-**Session 95's verification (§CVII.3-4).** 92.3 % passes; 90.5 % is trip-free, 47-50 min out of band;
-74.4, 69.3 and 68.9 % fail 960-1 680 s after the ramp on 322E002's collapse, with P1 on the load ratio.
+**Verification on the tree (§CXII.10, replacing §CVII.3).** 92.3 % is trip-free and in band, its
+AT-322701 under the plant-basis 3.0 on 56 of 120 samples; 90.5 % trip-free, out of band 47 min as in session
+95; 74.4, 69.3 and 68.9 % latch at 4 680, 5 040 and 4 920 s on 322E002's collapse.
 
-**Sessions 99 and 100 (§CX.8, §CXI.2-3): Wave 3 stopped at E0; E1r to E5 are not run.**
-* E0 fails (melt N/C 2.44 at 2 880 s, trip 22.2 at 4 920 s), and neither its target nor the ratio's floor is
-  why: the PV never falls under 2.021 while the set point sits on 2.000, and the plant's ratio is flat with
-  load. The control trips at 4 680 s, session 95's A744 at 4 800 s (B-129's heat term): that table is stale.
-* The descent's N/C hump (melt 3.65 at 960 s, fraction 0.84) is the K_N line: its term is the whole deficit
-  in 36 of 46 samples, and on Extended UNIQUAC's slope the deficit is at most 1.86 bar [I] (B-125).
-* The downswing through 3.0 starts at a ratio at or above the design; the loop's N and C boundary is unlogged.
-* E1 as fitted moves the seed by 1.1e-6 on 820 leaves, the console's tags unchanged: its criterion is open.
+**Session 101 (§CXII.6-9): the 74.4 % ramp; E2 to E4 not run, E2's gate failed.**
+* E1eu holds 322E002's fraction at 1 through the hump. Alone it leaves the as-built cold branch as it is
+  (trip 22.1 at 2 840 s, its control's at 2 800 s); with bundle A the hump (3.56) and the collapse stay,
+  the melt N/C falling through 3.0 before the fraction leaves 1. The hump is not the K_N line (§CXI.2
+  corrected); 322E002's saturation does not initiate the collapse (B-125).
+* The floor at 1.9397 moves the hump by 0.002 and the collapse by 10 s; the ratio fixed at the seed's
+  raises the hump to 3.86 (B-128).
+* 322E001's bottoms leave the load ratio, -143 to +366 kmol/h of N over 960-2 760 s, over it from
+  2 100 s; the loop loses reactive N from 1 800 s. No feed departs by more than 56 kmol/h (B-127).
 
-**Next step, scratch (`D:\Work\reports\Session 99 review and session 101 plan and prompt.md`).** E1 on
-Extended UNIQUAC's shape both sides, seed and ramp (E1r); the loop's N and C boundary on the control; the
-five holds again on the tree; then E2 and E3 (§CVIII.9). The process engineer's: E1's seed criterion (B-125).
+**Next step, scratch.** What sets 322E001's bottoms off the load ratio on the descent; its sump and
+322R001's inventory are mass-only holdups (B-126) [I]. Then E3 on the 74.4 % ramp before the holds.
+The process engineer's: E1's shape and seed criterion (B-125), and the bundle.
 
 **B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode: gain 0 removes it
 at 92.3 % on the S2 prototype and at 111 % (§XCVIII.3), and alone runs the reactor 12.4 K colder at
@@ -124,19 +126,19 @@ at 92.3 % on the S2 prototype and at 111 % (§XCVIII.3), and alone runs the reac
 
 *Raised 2026-11-11, session 97 (§CVIII.4). Decisions 97 and 135's law.* `saturation_fraction` loses 1.54 %
 of all condensation per bar its deficit stands above zero, and the deficit is zero at the design. As
-built it gives 0.857 at Book2's 92.3 % band and 0.798 at 69.3 %, where the plant condenses fully; with
-`BUB_KN` at 0 it gives 1.000 and 0.920 (the melt N/C taken as AY-322701 + 0.2, an inference). The outlet
-temperature is an NTU quench of a 350 K spike, about -59 K per unit of ln UA. Options: (a) keep as built;
-(b) fit the ridge's location and a margin, both branches rising (§CIX.1), the deficit at most zero at every Book2 band,
-the seed unchanged, a harness switch, both sides measured (B-118's E1 and E1r); (c) the outlet at the
-melt's bubble temperature, the conductance setting the duty, only if (b) fails. Session 99 (§CX.8): the
-deficit is +6.4 to +11.2 bar at Book2's five bands; (b) needs a margin of 4.38 bar (ridge at 3.40 or
-above) to 11.20 bar (ridge at 3.0); the seed itself stands up to 0.0076 bar over the law's edge, so no
-constant margin leaves it unchanged. Session 100 (§CXI.2-3): on the 74.4 % ramp the K_N line is the whole
-deficit through the N/C hump, and the fit kept that line above its ridge, below the hump's 3.65. To measure:
-Extended UNIQUAC's shape on both sides (`BUB_KN` is V1's calibration, no document) with its margin. A gate
-must bring 4.4 bar in beside the design point, a kink where the loop sits [I]; whether the seed condition
-is relaxed to the design pin, the console's tags and a stated tolerance is the process engineer's call.
+built it gives 0.857 at Book2's 92.3 % band and 0.798 at 69.3 %, where the plant condenses fully (the melt
+N/C taken as AY-322701 + 0.2, an inference). The outlet temperature is an NTU quench of a 350 K spike.
+Established: the deficit is +6.4 to +11.2 bar at Book2's five bands (§CX.8); on the 74.4 % ramp the K_N line
+is the whole deficit through the N/C hump (§CXI.2), and makes the fraction's dip, not the hump (§CXII.7).
+Session 101 (§CXII.2-3, §CXII.7): E1eu, Extended UNIQUAC's shape on both sides (ridge at 4.5, `BUB_KN`
+retired), needs a margin of 4.38 bar, set by the 69.3 % band. It holds the fraction at 1 on the seed and
+through the 74.4 % hump; the hump stays, and the melt N/C falls through 3.0 before the fraction leaves 1: the
+law does not initiate B-118's collapse. Its seed is not bit-identical: 644 physical leaves pass 1e-5 and 19
+console strings flip a last digit, the largest departures last-digit flips; the unit at the design feeds is
+identical on the engine's anchor and not on its default (P_bub +0.146 bar). Options: (a) keep as built;
+(b) E1eu, on a seed criterion the process engineer restates (the design pin, each published tag to its last
+digit, the fraction); (c) the outlet at the melt's bubble temperature, only if (b) fails. Alone, (b) leaves
+the as-built cold branch as it is (§CXII.7): it goes to a build only within a bundle.
 
 ### B-126 — 322R001's 136 t of liquor has no composition
 
@@ -144,27 +146,32 @@ is relaxed to the design pin, the console's tags and a stated tolerance is the p
 product scaled to the hydraulic outflow. Measured 305 s after a 20 % CO2 cut: the overflow carries
 2 933 kmol/h more N and 576 kmol/h more C than the reaction step produced. A candidate cause of B-120's
 loop mode (an inference). Options: (a) keep as built; (b) carry the holdup's species, the overflow at the
-holdup's composition, identical at the seed, twelve compartments on its eleven trays (§CIX.2), decisions 141 and 146's class (recommended, step E3).
+holdup's composition, identical at the seed, twelve compartments on its eleven trays (§CIX.2, confirmed
+§CXII.4), decisions 141 and 146's class (recommended, step E3). N3 (§CXII.9): booked at their outflow
+compositions, the mass-only holdups leave the loop's N -89.5 and C -37.7 kmol over the 74.4 % descent;
+322R001's inventory takes in 3.0 t more than its reaction sends (its inflow's lag, B-78 item 4).
 
 ### B-127 — The loop's design boundary does not close, and the reactor's tear follows the CO2 load
 
 *Raised 2026-11-11, session 97 (§CVIII.6); V1's reconciliation, once flagged as B-75.* In 134 215.2,
 out 132 190.3 kg/h. The reactor removes 2 107.45 kg/h from its feed, NH3 129.1 kmol/h of it, 5.1 % of the
-fresh ammonia, scaled on the CO2 load ratio. Exact at the design; off it the stream it corrects need not
-follow the CO2 (PFD 308 at 0.50 of seed at L 0.71), a bias of at most about 27 kmol/h (an inference).
-Options: (a) keep as built; (b) trace which boundary row carries the 129 kmol/h and move the correction
-onto it as its departure, decision 104's class (recommended: the trace first, in scratch).
+fresh ammonia, scaled on the CO2 load ratio. E5's trace (§CXII.5): the PFD's own boundary closes within 0.4
+kmol/h; row 116, the motive re-pinned on the engine's ratio basis (42 762.05 against 40 756 kg/h), carries
+117.46 kmol/h of NH3, 91 % of the tear's NH3 and 97 % of its N; the bottoms' and 308's re-pins the rest. On
+the descent the tear and the fresh ammonia follow the delivered CO2 within 18 kmol/h; 322E001's bottoms do
+not (§CXII.9). [I: the tear and B-128's basis are one fact.] Options: (a) keep as built; (b) the correction
+moved onto row 116 as its departure, decision 104's class, once B-128's basis is decided.
 
 ### B-128 — FFIC-321404's 2.0 floor binds on the engine's basis
 
 *Raised 2026-11-11, session 97 (§CVIII.7).* `RATIO_SP_MIN` 2.0 is applied to the engine's ratio (design
 2.0231 for the plant's 2.086 molar): 1.1 % of downward authority against the plant's 5.4 %. Options: (a)
-keep as built; (b) the faceplate shows and takes the plant's basis; (c) the floor restated on the
-engine's basis. The process engineer's call (decision 160's class). Sessions 99 and 100 (§CX.8, §CXI.2): on the
-74.4 % ramp the set point sits on the floor from 900 to 1 680 s, but the PV stays at 2.021-2.028 there (the
-ammonia lags the ramp) and the plant's ratio is flat with load (§XCIII.3): the floor is not what fails
-B-118's E0. Its other side, the floor at 1.9397, is one scratch arm, not yet run. The DCS readback
-checklist's row 15 asks the faceplate's limits and basis.
+keep as built (the process engineer's, for now); (b) the faceplate shows and takes the plant's basis; (c)
+the floor restated on the engine's basis, 1.9397. Measured (§CXI.2, §CXII.8): on the 74.4 % ramp the set
+point sits on the floor from 900 to 1 680 s while the PV stays at 2.021-2.028; with the floor at 1.9397
+session 95's trim asks for at most 0.0045 below 2.0, the hump moves by 0.002, the collapse by 10 s, the
+latch by -250 s. On this trim the floor does not decide B-118. Row 116's re-pin is the same basis (B-127).
+The DCS readback checklist's row 15 asks the faceplate's limits and basis.
 
 ---
 

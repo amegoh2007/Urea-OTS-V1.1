@@ -22210,7 +22210,7 @@ failure, beside two engine runs, is that assertion [I: the race]. Raised as A-39
 
 ---
 
-# Part CXII — Session 101: B-118's scratch programme on session 100's plan; A-39 closed (2026-11-11)
+# Part CXII — Session 101: B-118's scratch programme on session 100's plan; A-39 closed (2026-11-11/12)
 
 Session 101 ran the plan of `D:\Work\reports\Session 99 review and session 101 plan and prompt.md` (sections 3
 and 4) on the process engineer's decision table. Every experiment is a monkeypatch in a scratch script, run on a
@@ -22222,3 +22222,258 @@ tree is the test of CXII.1. `[I]` marks an inference.
 `tests/hmi/test_console_while_frozen.py:171` asserted `ENGINE RUNNING` as soon as the released plant's clock
 moved. It now waits for the label, up to 10 s, as the test waits for every other state. Run twenty times while
 ten of this session's engine arms ran beside it: 20 passed, 17.8 to 21.7 s each. A-39 is closed.
+
+## CXII.2 S0: E1eu, Extended UNIQUAC's shape on both sides of the design melt (B-125)
+
+`proto_e1.py` with its ridge at R = 4.5, above every N/C a run reaches, so the K_N line is retired in the range
+the loop visits: below R 322E002's bubble pressure follows the Extended UNIQUAC melt's own (a 0.0005 table from
+N/C 1.5, linear between nodes), anchored on the design melt (`HPCC_NC_DES_LIVE`), so the design melt still
+bubbles at 144.2 bar a. The slope there is +1.3 bar per unit of N/C (EU's minimum sits at N/C 3.08, the design
+melt). Refitted on Book2's five bands (`e1_fit.py`, melt N/C taken as AY-322701 + 0.2 [I]), the unmargined
+deficit d = (P_bub - P_loop) - 3.5 is +2.46, +4.38, +1.56, +0.80 and -1.87 bar at 60.7, 69.3, 80.4, 92.4 and
+100.3 % (as built: +10.71, +11.20, +8.44, +9.17, +6.38). The margin that brings every band to d <= 0 is
+**4.38 bar**, set by the 69.3 % band, against session 99's 4.38 at R 3.45. S0 passes.
+
+## CXII.3 S1: the seed, null ramp at L = 1.0, 18 000 ticks, every packet leaf and every console string
+
+`seedcheck101.py` on the byte copy of 0312941: the plant from its design seed for 18 000 ticks, the 3 694
+packet leaves on the first 20 ticks and every 100th, the 232 indicators of the ten screens formatted as the
+console formats them (`screen_layout.OVERLAYS`, `state_access.format_value`), and 322E002's fraction and melt
+N/C on every tick. Physical leaves exclude the residual, closure and rounding diagnostics and anything under
+1e-6 on both sides. The packet publishes rounded values, so a last-digit flip (0.26 against 0.261) is a
+relative difference of 4e-3.
+
+| Arm | Leaves differing (physical) | Over 1e-5 / 1e-4 / 1e-3 | Console strings differing | Fraction min | Melt N/C walk |
+|---|---|---|---|---|---|
+| plain | - | - | - | 0.999883 | 3.078163-3.079253 |
+| bundle A | 752 (743) | 408 / 184 / 34 | 11 | 0.999882 | 3.078161-3.079253 |
+| E1eu | 820 (811) | 644 / 330 / 80 | 19 | 1.000000 | 3.078143-3.079193 |
+| E1eu + A | 821 (812) | 649 / 329 / 81 | 19 | 1.000000 | 3.078140-3.079193 |
+| N1 (floor 1.9397) | 0 | 0 | 0 | 0.999883 | as plain |
+
+* **Bundle A is not bit-identical.** Run part by part for 20 ticks, terms94's recorder, 322E002's UA on the
+  CO2 demand^0.77 and the stagnant-only wall loss each leave every leaf identical; the 322F001 lift (lf 2.41
+  bar on r = live motive / first-call motive) departs at tick 3 (322E002's phi_gas, 1e-12 relative) as the
+  seed's own motive wanders, CVII.1's recorded drift. The process engineer decided to run bundle A unchanged,
+  for comparability with sessions 95 and 99 (decision 188).
+* **E1eu fails section 3's relaxed criterion on each clause read plainly.** 19 console strings flip a last
+  digit (FIC-329401 6 494.7 against 6 494.9 on 48 samples, FT-329407 16.70 against 16.71, AT-322701 2.999
+  against 3.000 once), and 644 physical leaves pass 1e-5. The largest physical departures are last-digit
+  flips (ABSORB_328.C001.make_conc_pct 0.40 against 0.39, 2.5e-2). The seed's real shift is the fraction: the
+  plain seed dips to 0.999883, E1's margin holds it at 1, and the melt N/C walk narrows by 6e-5 at its top.
+* **The unit at the design feeds.** On the engine's anchor (`nc_anchor = HPCC_NC_DES_LIVE`, the holdup's call)
+  `carbamate_condenser_322e002` at its design feeds is identical with E1 to the bit, 92 of 92 fields. On the
+  unit's default anchor (`REACTOR_FEED_NC_DES`, V1's fallback, the unit tests' `run()`) two fields differ:
+  P_bub 144.346 against 144.2 bar a and the fraction 0.99776 against 1. The prototype anchors on
+  `HPCC_NC_DES_LIVE` whatever anchor it is passed; it can be identical only where the melt N/C is its anchor.
+
+## CXII.4 322R001's trays (E3's precondition)
+
+Vendor drawing UD-AU-322-DZ-0006-008 rev. 04, "Trays Detail" (Belleli for Uhde, `Soft copy\12\`), a scan,
+read visually: "DETAIL OF TRAYS #1/3/5/7/9/11" and "DETAIL OF TRAYS #2/4/6/8/10", and the tray table's rows
+#1, #2-3, #4-5-6, #7-8-9 and #10-11 (830, 720, 550, 420 and 360 holes of 8 mm on triangular pitches 63.5,
+67.5, 78.5, 89.5 and 99 mm). **Eleven trays**, so twelve compartments. `References\322R001 Description.md` says
+only "10 to 15".
+
+## CXII.5 E5: the desk trace of the reactor's tear (B-127)
+
+`e5_trace.py`: the HP loop's boundary at the design by element, on the engine's design rows and on the PFD's
+own (Combined 1750 MTPD; the table gives gas columns in mol per cent and liquid columns in mass per cent, the
+basis taken as the one that returns each column's own mean molar weight).
+
+| Row | Engine kg/h | PFD kg/h | NH3, engine less PFD [kmol/h] | N, C, H, O, engine less PFD [kmol/h] |
+|---|---|---|---|---|
+| 107 CO2 | 54 618.0 | 54 618 | 0 | 0, 0, 0, 0 |
+| 116 ammonia to 322F001 | 42 762.1 | 40 756 | +117.46 | +117.52, +0.19, +353.52, +0.09 |
+| 308 carbamate to 322E003 | 36 835.2 | 36 915 | -1.43 | -1.44, -0.70, -7.04, -2.76 |
+| 208 bottoms (out) | 130 482.0 | 130 582 | +0.37 | -3.77, -0.97, -5.83, -1.85 |
+| 204 vent (out) | 1 708.3 | 1 708 | 0 | -0.09, +0.02, +0.05, +0.08 |
+
+The PFD's boundary closes on every element within 0.4 kmol/h (in - out -1.0 kg/h). The engine's leaves N
++119.97, C +0.51, H +351.9, O -1.02 kmol/h (2 024.9 kg/h); the tear removes N 121.45, C 1.25, H 359.07, O 1.84
+(2 107.45 kg/h). **Row 116 carries it**: the motive's re-pin, `RATIO_PV_DES . NC_TO_MASS . CO2_DES_KGH` =
+42 762.05 kg/h (`data/unit_321.py:225-228`), puts 117.46 kmol/h of NH3 above PFD 116, 91 % of the tear's NH3
+and 97 % of its N; the bottoms' and 308's re-pins make up the rest. On pure species the re-pinned motive is
+2.080 mol NH3 per mol CO2 (the plant's FFIC-321404 2.086, XCIII.3) and PFD 116 is 1.981: the excess the
+reactor's tear removes is the ammonia the engine's ratio basis adds over the PFD's [I: B-127's tear and
+B-128's basis are one fact].
+
+## CXII.6 The arms
+
+Session 95's runner (`opt_run95.py` on the `cfg95.py` launcher), every arm from the 74.4 % control
+(`cfg/C744t.json`: session 95's policy, bundle A as decision 188 runs it, 0.5 %/min from the design seed, a 1 h
+settle, the hold, run on past a latch). The S2 and N arms are sampled every 10 s, the B0 arms every 60 s as in
+session 95. Two discriminators come first. A744 is identical to session 99's archived C744t on all 184 samples
+to 11 040 s, so the harness is passive. N3, with the boundary probe, is identical to A744 on all 52
+samples to 3 120 s, so the probe is passive. The recorder's `s_factor` reads the previous sample's level and is
+compared only between equal sample intervals.
+
+S2c is S2eu's control: the as-built engine on the same policy without E1, so S2eu has an arm to be read
+against (A744 carries bundle A).
+
+The columns are the plan's: the first latched trip; TT-322005 in the hold, mean [min, max] C; AT-322701 and the
+melt N/C, max / min on the descent (to L 0.80 in brackets); 322E002's saturation fraction, its minimum on the
+samples before the latch (to L 0.80 in brackets); the ratio's set point and PV minima on the ramp; the reactor's
+off-gas at 60 s and at L 0.80 [t/h]; 322E003's make at L 0.75 over the seed's; the verdict against the arm's
+criterion. A latched plant cools, so a latched arm's hold figures describe the trip: for it the table gives
+TT-322005 from L 0.80 to the latch instead.
+
+| Arm | First latch [s] | TT-322005 in the hold [C] | AT-322701 max / min | melt N/C max / min | fraction min before the latch | ratio SP / PV min (ramp) | off-gas 60 s / L 0.80 [t/h] | make L 0.75 | verdict |
+|---|---|---|---|---|---|---|---|---|---|
+| 74.4 %, S2's control: as built, no bundle | 2 800 (22_1) | latched before the hold; 166.3 to 169.5 C from L 0.80 to the latch | 3.288 / 2.850 [3.288 / 2.905] | 3.404 / 2.807 [3.404 / 2.892] | 0.9079 at 1 330 s (0.9079) | 2.0041 / 2.0230 | 22.49 / 59.41 | 0.77 | reported |
+| 74.4 %, S2: E1eu, as built | 2 840 (22_1) | latched before the hold; 165.2 to 168.5 C from L 0.80 to the latch | 3.261 / 2.815 [3.261 / 2.815] | 3.375 / 2.780 [3.375 / 2.780] | 0.8721 at 2 340 s (0.8721) | 2.0067 / 2.0230 | 22.43 / 59.19 | 0.83 | descent 1 of 5; hold fail |
+| 74.4 %, S2: E1eu + bundle A | 4 550 (21_10, 21_2, 21_8, 22_1, 22_2) | latched before the hold; 181.4 to 190.3 C from L 0.80 to the latch | 3.377 / 2.316 [3.377 / 3.000] | 3.556 / 2.392 [3.556 / 3.018] | 0.0000 at 3 750 s (0.9961) | 2.0000 / 2.0210 | 22.50 / 33.26 | 1.62 | descent 1 of 5; hold fail |
+| 74.4 %, N1: floor 1.9397 | 4 430 (21_10, 21_2, 21_8, 22_1, 22_2) | latched before the hold; 181.4 to 190.2 C from L 0.80 to the latch | 3.423 / 2.236 [3.423 / 3.000] | 3.649 / 2.316 [3.649 / 3.018] | 0.0000 at 4 340 s (0.8351) | 1.9955 / 2.0160 | 22.63 / 37.93 | 2.18 | reported |
+| 74.4 %, N2: ratio fixed 2.0231 | 4 180 (21_10, 21_2, 21_8, 22_1, 22_2) | latched before the hold; 181.1 to 190.3 C from L 0.80 to the latch | 3.501 / 2.274 [3.501 / 3.000] | 3.861 / 2.370 [3.861 / 3.017] | 0.0000 at 3 860 s (0.7572) | 2.0231 / 2.0220 | 22.63 / 48.60 | 2.10 | reported |
+| 74.4 % to 3 120 s, N3: the probe | none | - | 3.423 / 2.211 [3.423 / 3.000] | 3.649 / 2.327 [3.649 / 3.018] | 0.2020 at 3 070 s (0.8350) | 2.0000 / 2.0210 | 22.63 / 38.45 | 2.29 | probe passive; reported |
+| 92.3 %, B0 | none | 182.40 [181.90, 182.55] | 3.399 / 3.005 [3.399 / 3.005] | 3.645 / 3.021 [3.645 / 3.021] | 0.8275 at 1 260 s (0.8515) | 2.0015 / 2.0280 | 22.62 / - | - | trip-free, TT in band; AT under the plant-basis 3.0 (§CXII.10) |
+| 90.5 %, B0 | none | 181.05 [178.28, 182.41] | 3.409 / 3.005 [3.409 / 3.005] | 3.645 / 3.017 [3.645 / 3.017] | 0.8354 at 1 500 s (0.8419) | 2.0000 / 2.0230 | 22.63 / - | - | **fail**: TT005 180.6-184.6 |
+| 74.4 %, B0 (the control) | 4 680 (21_10, 21_2, 21_8, 22_1, 22_2) | latched before the hold; 181.4 to 190.2 C from L 0.80 to the latch | 3.420 / 2.213 [3.420 / 3.005] | 3.647 / 2.351 [3.647 / 3.018] | 0.0000 at 4 320 s (0.8362) | 2.0000 / 2.0210 | 22.63 / 38.79 | 2.17 | **fail**: latched, PT 129.5-136.5 barg |
+| 69.3 %, B0 | 5 040 (21_10, 21_2, 21_8, 22_1, 22_2) | latched before the hold; 181.4 to 190.1 C from L 0.80 to the latch | 3.432 / 2.228 [3.432 / 3.005] | 3.662 / 2.373 [3.662 / 3.019] | 0.1035 at 4 800 s (0.8258) | 2.0000 / 2.0210 | 22.64 / 41.23 | 1.95 | **fail**: latched, TT005 181.5+/-2 |
+| 68.9 %, B0 | 4 920 (21_10, 21_2, 21_8, 22_1, 22_2) | latched before the hold; 181.4 to 190.0 C from L 0.80 to the latch | 3.425 / 2.215 [3.425 / 3.005] | 3.652 / 2.329 [3.652 / 3.019] | 0.0000 at 4 620 s (0.8328) | 2.0000 / 2.0210 | 22.64 / 40.32 | 2.25 | **fail**: latched |
+
+## CXII.7 S2: E1eu on the 74.4 % ramp, without and with bundle A (B-125)
+
+* **On the as-built engine (S2eu), against its control S2c** (the same engine and policy without E1, sampled
+  alike). 322E002's fraction stays at or above 0.987 to 1 880 s, its one dip 0.987 at 360 s; the control's
+  falls to 0.908 at 1 330 s. Little else moves. Both arms take the as-built cold branch that bundle A removed
+  (§CVII.3 and B-118's problem statement). At L 0.80 TT-322005 is 168.5 C (control 169.5) and the off-gas
+  59.2 t/h (59.4) against 22.4 at 60 s. The hump is 3.375 (3.404), the melt N/C falls under 2.9 at 2 060 s
+  (2 300 s), trip 22.1 latches at 2 840 s (2 800 s), and 322E003's make at L 0.75 is 0.83 of the seed's (0.77).
+  E1eu alone does not remove the as-built cold branch.
+  Descent: one criterion of five met (the set point off 2.000, minimum 2.0067; the control's 2.0041).
+* **With bundle A (S2euA)** the fraction is at or above 0.9961 on every sample to 3 000 s (that one dip at
+  360 s), and TT-322005 holds 181.5 to 183.0 C on the descent. The hump stays: melt N/C 3.556 at 1 210 s
+  (control 3.647 at 960 s), AT-322701 3.377, the set point on 2.000 on 18 samples from 1 040 to 1 450 s (the
+  control's 10 s twin, N3: 19 samples from 910 to 1 570 s), and the off-gas 33.26 t/h
+  at L 0.80 against 22.50 at 60 s. The melt N/C falls through 3.0 (3.001 at 2 960 s, 2.949 at 3 000 s) while
+  the fraction is still 1.000; the fraction leaves 1 only at 3 020 s (0.9896, N/C 2.868). The collapse comes
+  140 s later than the control's (N/C under 2.9 at 3 020 s, control 2 880 s), and the arm latches at 4 550 s
+  (control 4 680 s). Descent: one criterion of five met (the fraction). 322E003's make at L 0.75 is 1.62 of the
+  seed's (control 2.17; E1r's criterion 0.70 to 0.75).
+* **Finding.** Retiring the K_N line holds 322E002 at full condensation through the hump: the fraction's dip
+  on the descent is that line, as §CXI.2 found. §CXI.2's reading of the hump itself as the K_N line is
+  corrected here: with the line retired the hump stays (3.556 against 3.647). The melt N/C falls through 3.0
+  before the fraction leaves 1, so 322E002's saturation does not initiate the collapse; it falls with it [I: and
+  may deepen it]. E2's gate, S2's bundle arm passing its descent criteria, is not met.
+
+## CXII.8 N1 and N2: the ratio's floor and its trim (B-128)
+
+* **N1**, the floor at 1.9397 (2.0 x 2.0231 / 2.086) in the scratch operator's limit and in
+  `command.RATIO_SP_MIN`; its seed is identical (§CXII.3). Session 95's trim on AY-322701 is a velocity-form PI
+  (kc 0.05, Ti 1 800 s) and asks for at most 0.0045 below 2.000: the set point's minimum is 1.9955 and the PV's
+  on the ramp 2.016 (control 2.021). On 10 s samples the arm first departs from the control (N3) at
+  910 s, the first sample on which the control's set point sits on 2.000. Hump 3.649 at
+  970 s (control 3.647 at 960 s); N/C under 2.9 at 2 890 s (control 2 880 s); latched at 4 430 s (control
+  4 680 s).
+* **N2**, the ratio fixed at the seed's 2.0231 with no operator: the PV runs 2.022 to 2.045 on the ramp. Hump
+  3.861 at 1 690 s, higher and later; N/C under 2.9 at 2 900 s; latched at 4 180 s.
+* **Finding.** The floor clips the trim by at most 0.0045 on the descent. Lowered to the plant's equivalent,
+  it moves the hump by 0.002 and the collapse by 10 s. The trim itself takes 0.21 off the hump (N2 against the
+  control) and moves the collapse by 20 s. B-128's other side is measured: on this trim the floor does not
+  decide B-118.
+
+## CXII.9 N3: the loop's N and C boundary on the descent (B-127, B-126)
+
+`probe101.py` wraps the scheduler's tick. It integrates, in kmol of N, C, H and O and of reactive N and C, the
+loop's boundary: the fresh ammonia, the CO2 feed, stream 308, 322E001's drain and blow-through, the vent as
+HV-322604 passes it, 322E002's leak and 322R001's tear. With them it integrates the four mass-only holdups'
+gains, each at the composition of the stream it feeds. A row is written every 10 s on the control to 3 120 s
+(`n3_analyze.py`, `n3_windows.py`, `n3_r001mass.py`).
+
+**The stream that leaves the load ratio is 322E001's bottoms.** Each stream's flow less its seed flow times
+the delivered CO2 ratio, 960 to 2 760 s [kmol/h]:
+
+| Stream | N | C |
+|---|---|---|
+| 208, 322E001's bottoms (out) | -143 to +366 | -98 to +182 |
+| 204, 322E003's gas to HV-322604 (inside the loop) | -0.4 to +91.8 | -0.1 to +17.5 |
+| 308, 322E003's wash (in) | -55.7 to +47.3 | -29.6 to +22.7 |
+| the vent as passed (out) | -1.2 to +22.5 | -0.3 to +4.1 |
+| the fresh ammonia (in) | -2.6 to +17.8 | - |
+| 322R001's tear | 0 | 0 |
+
+On the load ratio itself (seed x L) the fresh ammonia stands 88 to 102 kmol/h of N over, because the CO2
+delivered runs above L. The bottoms' departure, read at instants: -69 kmol/h of N and -66 of C at 1 500 s,
+under the ratio while the hump builds; on the downswing +269 N / +117 C at 2 100 s, +365 / +178 at 2 400 s,
++320 / +167 at 2 700 s and +647 / +327 at 3 000 s. The loop's reactive N held (in - out - tear) is -17.4,
+-29.3, -26.0 and -37.5 kmol in the four 300 s windows from 1 800 to 3 000 s (C -6.5, -13.5, -13.3, -20.2),
+after +0.4 N and +3.1 C in the window to 1 800 s. The loop loses reactive N and C from the window that opens at
+1 800 s, and the bottoms carry it. **Ruled out:** no feed leaves the
+load ratio by more than 18 kmol/h of N (the fresh ammonia) or 56 (308), and the tear none. The departure
+arises inside the loop and leaves on the bottoms.
+
+**The holdups.** The probe's attribution is checked: the boundary's residual against the holdups' gains equals,
+to 1e-10 kmol on every element, the sum of what each mass-only holdup creates (its gain at the composition of
+the stream it feeds, less its own in and out), the loop gas's share and the one-tick lag. Over 3 000 s that
+residual is N -89.5, C -37.7, H -282.5, O -40.1 kmol (B-126's class). In mass the boundary less the holdups'
+gains leaves -2.63 t over the 3 000 s.
+322R001's inventory takes in 3.0 t more than its reaction sends it: its inflow's lag on the production surge
+(`reactor_inventory.py:298-305`, B-78 item 4, kept as V1 writes it). It also receives 4.1 t of forward pulse
+from 322E003's sump, an internal transfer that the per-holdup split books to the two holdups unpaired.
+
+## CXII.10 B0: the five holds on the tree (replaces §CVII.3)
+
+The five holds on the tree as committed (B-129 to B-131 in, decisions 185 to 187), bundle A as decision 188
+runs it, session 95's handles, each hold for its own duration (§CVII.2). This table replaces §CVII.3's,
+which predates decision 185. The 74.4 % arm is session 99's control, sample for sample (§CXII.6).
+
+| Hold | First latch | TT-322005 in the hold, mean [min, max] C | Plant reference | Also in the hold | Session 95, bundle A (§CVII.3) | Verdict |
+|---|---|---|---|---|---|---|
+| 92.3 % Book2 (2 h) | none | 182.40 [181.90, 182.55] | 182.64 C | AT-322701 2.937 to 3.037 (the trim's target 3.04); PT-329201 138.4 to 138.8 bar g | none; 182.40 [181.90, 182.50]; pass | trip-free and in band; AT-322701 under 3.0 on 56 of 120 samples |
+| 90.5 % 5 Nov (2 h 46 min) | none | 181.05 [178.28, 182.41] | ~182.6 C (Book2 at 92 %) | AT-322701 2.922 to 3.035 | none; 181.05 [178.30, 182.40]; out of band 47 min | trip-free; **out of band** on 47 of 166 samples |
+| 74.4 % 5 Nov (72 min) | 4 680 s (21.10, 21.2, 21.8, 22.1, 22.2) | latched before the hold; 181.4 to 190.2 C from L 0.80 to the latch | not logged | PT-329201 152.9 to 157.3 bar g after the latch | latched at 4 800 s | **fail** |
+| 69.3 % Book2 (3 h) | 5 040 s (21.10, 21.2, 21.8, 22.1, 22.2) | latched before the hold; 181.4 to 190.1 C from L 0.80 to the latch | 181.49 C | PT-329201 152.8 to 156.0 bar g after the latch | latched at 5 040 s | **fail** |
+| 68.9 % 5 Nov (46 min) | 4 920 s (21.10, 21.2, 21.8, 22.1, 22.2) | latched before the hold; 181.4 to 190.0 C from L 0.80 to the latch | not logged | PT-329201 152.7 to 155.4 bar g after the latch | latched at 4 740 s | **fail** |
+
+* **92.3 %.** TT-322005 holds Book2's band, trip-free, as in session 95. AT-322701 runs 2.937 to 3.037 in the
+  hold and is under 3.0 on 56 of its 120 samples, in three spells (4 920 to 6 300 s, 7 980 to 8 760 s and
+  10 740 to 11 760 s): a slow swing on consecutive samples, not a ring. The trim's target is 3.04, the
+  engine's 3.00 plus the plant's departure from its full-load band
+  (§CVII.2). The criterion's 3.0 to 3.3 is the plant's absolute band, where the plant reads 3.25 at 92.3 % and
+  3.21 at full load, while the engine's design reads 3.00. On the engine's basis the band sits 0.21 lower [I],
+  and the hold passes. The verdict turns on the basis, which is the process engineer's to decide. Session 95's
+  pass predates the AT clause, which §CVIII.9 added; it recorded AY-322701 at 3.00.
+* **90.5 %.** Trip-free. TT-322005 runs 178.28 to 182.41 C and is under 180.6 C from 4 800 to 7 560 s,
+  47 of its 166 samples: session 95's spell to the minute (§CVII.3). The 92.3 % and 90.5 % holds do not
+  feel decision 185's heat term; the three low holds' latches move by -120 to +180 s.
+* **74.4, 69.3 and 68.9 %.** Each latches 21.2, 21.8, 21.10, 22.1 and 22.2 in one sample: at 4 680, 5 040 and
+  4 920 s, against session 95's 4 800, 5 040 and 4 740 s. In each the melt N/C falls under 2.9 between 2 820 and
+  2 880 s (322E002's collapse, §CVII.4), and the loop pressure then rises to the latch. TT-322005 holds 181.4 C
+  or more from L 0.80 until the collapse's swings carry it to 190 C. None of the three reaches its hold.
+
+## CXII.11 Not run
+
+* **E2.** Its gate is S2's bundle arm passing its descent criteria; S2euA meets one of five (§CXII.7). E3 is E2
+  with twelve compartments of species holdup in 322R001, and E4 is on E3, so neither was run.
+* **A-38.** Not taken up. Engine arms ran through the session, and the plan holds A-38 to a time without them.
+
+## CXII.12 Options for the process engineer (no decision taken)
+
+1. **E1's shape and margin (B-125).** (a) Keep as built. (b) E1eu: Extended UNIQUAC both sides, K_N retired,
+   a margin of 4.38 bar with the ridge at 4.5. It holds the fraction at 1 at every Book2 band and on the 74.4 %
+   ramp. Alone it leaves the as-built cold branch as it is (S2eu against S2c: trip 22.1 at 2 840 s against
+   2 800 s); with bundle A the hump and the collapse stay (§CXII.7).
+2. **E1's seed criterion.** Measured (§CXII.3): the unit at the design feeds is identical on the engine's
+   anchor (92 of 92 fields) and not on its default (P_bub +0.146 bar, fraction -0.0022). 19 console strings
+   flip a last digit, and 644 physical leaves pass 1e-5, the largest of them last-digit flips (2.5e-2). The
+   seed's real shift is the fraction held at 1, where the plain seed dips to 0.999883. (a) Keep the relaxed
+   criterion; E1 is then not built. (b) Restate it on the design pin, each published tag to its last digit,
+   and the fraction.
+3. **B-128.** (a) Keep the floor at 2.0, as decided for now. Its other side, 1.9397, moves the hump by 0.002,
+   the collapse by 10 s and the latch by -250 s (§CXII.8).
+4. **The bundle that goes to a build.** No bundle passed its criteria, and no build is proposed.
+   Bundle A holds TT-322005 at 92.3 % and 90.5 % on the descent and fails the three low
+   holds (§CXII.10); E1eu with bundle A meets one of S2's five descent criteria (§CXII.7). The measured
+   candidates for the next scratch step are 322E001's bottoms on the descent (§CXII.9) and 322R001's
+   species holdup (E3, B-126).
+
+## CXII.13 Checks
+
+* `grep -rn "PyQt6" ureasim/net ureasim/engine ureasim/units ureasim/control ureasim/core
+  ureasim/thermo` prints nothing.
+* No file under `ureasim/` changed in session 101. The arms ran on byte copies whose `ureasim/`
+  matches the tree file for file.
+* The suite on the tree, run alone after every arm had exited:
+  2 212 passed, 5 862 skipped, none failed (20 min 20 s).
+  `E:` is not mounted, so every V1-side test skips. A skip is not a pass, and A-33 stays open.
