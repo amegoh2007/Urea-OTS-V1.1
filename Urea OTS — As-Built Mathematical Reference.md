@@ -13,97 +13,24 @@ Design basis: `References/Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md
 
 ---
 
-## Table of contents
+## How to read this document
 
-- Part 0 — Reading guide: the four rules that govern every equation here
-- Part I — Thermodynamic package selection, and why
-- Part II — The property layer
-- Part III — The unified VLE / flash service
-- Part IV — Reaction kinetics and equilibrium
-- Part V — Hydraulics: valves, vessels, pumps, compressors, ejectors
-- Part VI — Heat transfer and separation
-- Part VII — Unit-operation balances, section by section
-- Part VIII — Control and interlock mathematics
-- Part IX — Deviation-consequence physics
-- Part X — Numerical methods
-- Part XI — Port status register
-- Part XII — HMI geometry
-- Part XIII — Station transport
-- Part XIV — The core flowsheet layer: packets, lines, nodes and published streams
-- Part XV — The control layer: valves, loops, ratio, trips and machines
-- Part XVI — Unit 321: the NH3 pumping station
-- Part XVII — Unit 320: the CO2 feed compressor and its discharge line
-- Part XVIII — Unit 322E001: the HP CO2 stripper
-- Part XIX — Deviation-consequence physics: the lost liquid seal and the mushy zone
-- Part XX — Unit 322E001 (continued): the bottom sump, LIC-322501 and LV-322501
-- Part XXI — The liquid-liquid jet pump: a constant-area closure with one root
-- Part XXII — Unit 322F001: the HP carbamate ejector
-- Part XXIII — Unit 322E002: the HP carbamate condenser
-- Part XXIV — Unit 322R001: the HP urea reactor
-- Part XXV — Unit 322E003: the HP scrubber
-- Part XXVI — HV-322604: the inert-purge letdown, and `synthesis/` closed
-- Part XXVII — The urea-liquor stage layer: the first unit of `recirc/`
-- Part XXVIII — 323C003 and 323E002: stage 1 of unit 323
-- Part XXIX — 323F004: stage 2 of unit 323, the flash tank
-- Part XXX — 323E010 and 323F010: stage 3 of unit 323, the pre-evaporator
-- Part XXXI — 323D002: stage 4 of unit 323, the urea solution tank
-- Part XXXII — 323E011 and 323D011: the flash condenser and the LP flash gas node
-- Part XXXIII — 323E003, 323D001 and 323P001: the LP carbamate condenser
-- Part XXXIV — 323C005: the atmospheric absorber, the first unit of `desorption/`
-- Part XXXV — 328D003: the ammonia water tank
-- Part XXXVI — 328E007: the desorber heat exchanger
-- Part XXXVII — The flow loops' gains per cent of span (handoff B-41)
-- Part XXXVIII — 328C002: desorber I, and the desorption train's species layer
-- Part XXXIX — Phase 4's scheduled items: the flash budget, the liquid-full line, B-2, the data hunt
-- Part XL — The chest anchors, the chest cascades on span, and the vendor valves
-- Part XLI — 328C003 and 328E021: the hydrolyser; the liquid pays what boils; the relief devices
-- Part XLII — 328C004: desorber II, FFIC-329401 on the desorbers' feed, its ratio station and the 741 recycle
-- Part XLIII — 328D001 and 328E004: the reflux drum, where the desorbers' overhead returns
-- Part XLIV — Phase 4 closed: the letdowns flash, the nodes relieve, 328D001 has heads
-- Part XLV — The engine: the plant state's tears and the fixed-step simulator
-- Part XLVI — Phase 4 re-opened: the liquid-rated valves relieve gas; 322C001, the LP absorber
-- Part XLVII — The absorber's three decisions: 322E006, the flood in the vent line, the letdown that condenses; unit 324 surveyed, its vacuum condensers ported
-- Part XLVIII — I 22.1 on the DCS's logic; unit 324: the ejector data exhausted, the melt's equilibrium checked and ported, the condenser nodes
-- Part XLIX — Four decisions: XV-322915's keyswitch and rated steam, the melt on the PFD's own water activity, the ejectors' maps; the vacuums the maps hold (B-61); stage 1 of unit 324
-- Part L — The ejectors on their design loads, the held melt boiling, stage 2 of unit 324
-- Part LI — The feed at its leg's strength, the PFD's motive, the pre-evaporator's liquor boiling, the vacuum train
-- Part LII — The vacuum train as the plant runs it: the lagged cold ends, 324E006's shell; 324E007's ammonia vent
-- Part LIII — The steam system surveyed (unit 329)
-- Part LIV — The condensers' vent departure (B-67) and the steam network ported (unit 329)
-- Part LV — The vent's ratio above its partial pressure (B-71), the steam users on their valves (B-73), the scheduler (Phase 5)
-- Part LVI — The LP header downstream of 322D001A/B, and the synthesis loop scheduled (Phase 5)
-- Part LVII — The loop's sinks decided, the motive-loss stall fixed, and the operational shell (Phase 5)
-- Part LVIII — The console packet, V1's display blocks scheduled, the engine served (Phases 5 and 6)
-- Part LIX — The relief and overflow routings decided, the faceplates and the instructor's panel (Phase 6)
-- Part LX — 323E011's overflow to 323C005, the history request and the trend window (Phase 6)
-- Part LXI — The display gaps decided, single-machine mode, the stream inspector and the data report (Phase 6)
-- Part LXII — 320K002 a boundary feed, the isometrics' run lengths, the trace steam, the DCS's tunings and the Phase 7 runner (Phases 6 and 7)
-- Part LXIII — B-51's backward pressure step, SV32064 on the CO2 line, and B-87 traced (Phase 7)
-- Part LXIV — B-86, B-87, B-88, B-39, A-7, B-13, B-82 and B-89 decided; the Phase 7 re-runs and the steady state at 1750 MTPD (Phase 7)
-- Part LXV — A-18, B-90, B-84, B-81, B-85, B-28 and B-25 decided; PT-329201 on the loop's vapour inventory; trips 21.2, 21.8 and 21.10 as AC4 executes them (Phase 7)
-- Part LXVI — B-91 (a) and B-92 built; B-18, B-37 and B-20 decided and closed; trip 21.2's hand switches and AI-329701 on the screens; the plant DCS's readback (Phase 7)
-- Part LXVII — B-94, B-91, B-93, B-95 and the Metso valves decided; 329D001 read (Phase 7)
-- Part LXVIII — B-91 accepted; B-96's hysteresis; B-79 (b), solid carbamate; the Metso steam valves and LV-329505 (Phase 7)
-- Part LXIX — B-30 and B-22 decided; the last Metso valves wired; FV-329409; A-6 closed (Phase 7)
-- Part LXX — B-31 decided; A-13 closed by its audit; eight Section B and C items signed off (Phase 7)
-- Part LXXI — B-97 decided; UF85 (unit 335) dosing live; B-1, B-4 and B-12 signed off (Phases 4 and 7)
-- Part LXXII — A-8 signed off; A-2 closed on the station token; the checklist complete (Phase 6)
-- Part LXXIII — 323P003's protection, trip 21.2's hand switches and TRIP_84_8 read; decision 95 signed off; the overflows traced; 21.2 shuts XV-322902 and XV-322903 (Phase 7)
-- Part LXXIV — The console revised from its slides; the research PDF worked through (Phases 6 and 7)
-- Part LXXV — Three Metso valves wired; the process-deviation scenarios put to the plant (Phase 7)
-- Part LXXVI — A full 323F004 overflows, the species step at a heel; A-21 and B-99 measured (Phase 7)
-- Part LXXVII — A-21, B-99, B-100 and B-101 decided and built (Phase 7)
-- Part LXXVIII — S1-1.2's conversion traced; A-21's option (c) measured (Phase 7)
-- Part LXXIX — B-102 and B-103 decided and built; Scenarios5.md put to the plant (Phase 7)
-- Part LXXX — B-104 to B-107 decided and built; A-23 closed; Scenarios5.md re-run (Phase 7)
-- Part LXXXI — B-108 to B-111 decided and built; Scenarios5.md re-run (Phase 7)
-- Part LXXXII — B-112 decided and built: PT on 322R001 on its feed line's PFD drop (Phase 7)
-- Part LXXXIII — Single-console conversion (Phase 6 / Phase 7)
-- Part LXXXIV — The data gaps searched again; seven valves on their vendor sheets (Phase 7)
-- Part LXXXV — The housekeeping split: every module inside 600 lines (Phase 7)
-- Part LXXXVI — An external report on five data-gap rows; two closed (Phase 7)
-- Part LXXXVII — The replacement stripper, the plugged tubes, the gap photographs, Scenarios6 (Phase 7)
-- Part LXXXVIII — B-113 to B-117 closed, and the dynamic audits (Phase 7)
+It is over 21 000 lines. **Never read it whole** (`Claude.md` §3a). Grep for the heading, then read
+that section alone.
+
+* **Order.** Parts 0 to XV state the standing mathematics by layer; Part XI is the port status
+  register, one row a ported relation with the tolerance achieved. From Part XVI on the Parts follow
+  the order of the work: the units as they were ported, then one Part a session. A later Part
+  supersedes an earlier one on the same relation, so read the latest Part that names the tag.
+* **List the Parts** (their titles are the table of contents):
+  `grep -n "^# Part" "Urea OTS — As-Built Mathematical Reference.md"`
+* **Find a section.** Sections are numbered Part.section, and `§CVII.4` is the heading `## CVII.4`:
+  `grep -n "^## CVII\.4 " "Urea OTS — As-Built Mathematical Reference.md"`
+* **Find a tag, a decision or a handoff item.** Its headings first, the full text only if they miss:
+  `grep -n "^#.*322E002" ...`, then `grep -n "decision 142" ...`
+* **Write.** A session appends one Part at the end, numbered from `project.md`'s Next free numbers.
+  That Part is the one home of the session's equations, measurements and closures; `project.md`,
+  `handoff.md` and the session log cite its sections and do not repeat them.
 
 ---
 
@@ -21409,3 +21336,181 @@ part of decision 180, which is the process engineer's call.
 | B-118's candidate bundle | P1 + P4 + the 322F001 lift (2.41 bar) | Verified next in scratch on the five holds, P1 rebased for a stationary seed, the handles started on the engine's design seed and moved as departures, 322E003's sump balance logged at L 0.85-0.69, with and without P6; wired as option (b) only once measured. |
 
 Session 94 was committed with this decision.
+
+---
+
+# Part CVII — Session 95: B-118's candidate bundle verified on the five holds (2026-11-10/11)
+
+Session 95 took up the process engineer's request of 2026-11-09 under decision 181: `ureasim/` kept as built,
+the session's scratch verification of B-118's candidate bundle — P1 (322E002's UA on the load to the power 0.77),
+P4 (322R001's wall loss on a stagnant reactor only) and decision 180's 322F001 lift (2.41 bar of the 4.2 bar
+friction share on the motive ratio squared) — on the as-built stripper (slip gain 4.0, no S2 terms), on the five
+acceptance holds, with and without P6 (322R001's conversion-deficit slip gain 0). Measurement only: no file under
+`ureasim/` changed and no relation changed. The scripts and runs are archived in
+`D:\Work\reports\B118_bundle_verification_s95` (outside the tree); the report is
+`D:\Work\reports\B-118 bundle verification s95.md`.
+
+## CVII.1 The seed: P1's drift found and removed
+
+* **Where session 94's P1 drifted.** The first live call of `carbamate_condenser_322e002` carries exactly the feed
+  of the module's synthetic design call (250 638.9350 kg/h both), so P1 had no offset at its anchor. Its drift was
+  the basis itself: 322E002's feed mass wanders 4e-5 of itself over 600 ticks (about seven condenser calls a
+  tick), and 322R001's `co2_scale`, the basis CVI.5 proposed, wanders 3.3e-6 by 60 s. **CVI.5's statement that
+  `co2_scale` "keeps the seed identical through its own drift" is wrong**: it moves the seed as the feed mass does,
+  only less.
+* **The basis that keeps the seed identical** is the battery-limit CO2 demand over its design,
+  `320K002-CO2 / 54.618 t/h`, the instructor's boundary condition and the load the Book2 fit was made on: 1.0 by
+  construction at the design seed. P1 on that ratio (`proto95.py`, `ua_basis "demand"`) leaves every leaf of the
+  packet identical to the plain seed over 600 ticks (0 leaves differ).
+* **The 322F001 lift is not bit-identical**: its relation is on the live motive ratio, and the seed's own motive
+  wanders, so TT-322010 departs 3.9e-5 K by 60 s, about 3 % of the plain seed's own 1.15e-3 K wander. It is kept on
+  the motive, its physics being the friction of the motive flow squared.
+* **The null ramp.** The full session-95 policy with bundle A at L = 1.0 for 1 800 s against the plain seed: every
+  handle stays at the engine's seed (HIC-322602 74.0 -> 73.98 % on its level trim, every other handle exact), every
+  PV within the seed's own wander, no trip. Session 94's t = 0 handle step is gone.
+
+## CVII.2 The arms
+
+* **Bundle A** = as built + P1 (demand basis, n 0.77) + P4 + the 322F001 lift (2.41 bar, seal ramp off, V1's
+  level/50 suction factor). **Bundle B** = A + P6.
+* **Handles in departure form on the engine's design seed**, w(L) = (1 - L) / (1 - Lt):
+  HIC-322602 = 74.0 % . L^1.6 (the plant's 5 November exponent) plus a bias trim on LT-329501 at the seed's 50 %
+  (SIMC, kc 0.25 %/%, Ti 300 s, bias +/- 15 %); HIC-322605 the board operator on LT-322504 at the seed's 80 %; the
+  ratio station trimmed on AY-322701 at 3.000 + w . (the plant's AY departure); PIC-329204, MASTER-329207,
+  TIC-329005 and HIC-322604 at seed + w . (the plant's departure from its own full-load band). The plant's
+  departures are Book2's medians against its 100.3 % band (PIC-329204 19.00 bar g, PT-329207 4.05 bar g,
+  TIC-329005 86.48 C, HIC-322604 55.01 %, AY-322701 3.21) and, for the 5 November holds, TIC-329005 against that
+  day's 84.4 C at 101.7 % (CV.3).
+* Ramp 0.5 %/min from the design seed, 1 h settle, the hold's own duration, every level loop on its trim, run on
+  past a latch (`no_abort`), sampled every 60 s.
+
+## CVII.3 The hold table
+
+| hold | arm | trip | TT-322005 in the hold, mean [min, max] C | plant reference | verdict |
+|---|---|---|---|---|---|
+| 92.3 % Book2 (2 h) | A | none | 182.40 [181.90, 182.50] | 182.64 (Book2 92.3 %) | **pass** |
+| 92.3 % | B | none | 182.37 [181.60, 182.60] | 182.64 | **pass** |
+| 90.5 % 5 Nov (2 h 46 min) | A | none | 181.05 [178.30, 182.40] | ~182.6 (Book2 at 92 %) | **trip-free, out of band**: below 180.6 C from 4 800 to 7 560 s (47 min of the hold, the hold starting at 4 740 s), its minimum 178.3 C 4.3 K under the reference; 182.4 C at the end |
+| 90.5 % | B | none | 181.02 [178.90, 182.40] | ~182.6 | as A: below 180.6 C from 4 860 to 7 800 s (50 min) |
+| 74.4 % 5 Nov (72 min) | A | 22.2, 21.2, 21.8, 21.10 and 22.1 in the same 60 s sample, 4 800 s (L 0.744, 1 680 s after the ramp) | 181.4-182.5 to about 4 300 s, then rising to 190.3 with the loop pressure | not logged (TIC-329005 97.1 C) | **fail** |
+| 74.4 % | B | the same at 4 680 s | as A, to 190.0 | | **fail** |
+| 69.3 % Book2 (3 h) | A | the same at 5 040 s (1 320 s after the ramp) | as above, to 190.3 | 181.49 | **fail** |
+| 69.3 % | B | the same at 4 980 s | to 189.5 | 181.49 | **fail** |
+| 68.9 % 5 Nov (46 min) | A | the same at 4 740 s (960 s after the ramp) | to 189.8 | not logged (TIC-329005 98.3 C) | **fail** |
+| 68.9 % | B | the same at 4 740 s | to 189.8 | | **fail** |
+
+At 92.3 % the hold holds TT-322010 at 169.85 C (Book2 168.76), LT-329501 at 49.9 %, LT-322504 at 79.7 %,
+HIC-322602 at 63.1 % (its bias -2.0 % on the L^1.6 law), HIC-322605 at 55.7 %, 322E003's uncondensed gas at
+1.5 t/h and AY-322701 at 3.00. The 90.5 % dip is a genuine slow excursion in the hold, not a ring: seven
+consecutive samples sit at 178.3-178.5 C, uncondensed gas 3.4 t/h, and the column recovers over three hours. On
+Book2's +/- 2 K band the 90.5 % hold fails on band and passes only on being trip-free.
+
+**The reactor deficit B-118 was raised for is gone on the ramp.** On every low-load arm TT-322005 stays at
+181.4-182.5 C from L 0.80 to the end of the ramp and into the settle (181.7-182.0 C at L 0.69-0.71, against
+Book2's 181.49 C at 69.3 %); the carbamate source keeps 37-79 K down to L 0.77, where session 94's arms lost it by L 0.85. The
+failure has moved from 322R001 to 322E002 and the synthesis pressure.
+
+## CVII.4 The new failure: 322E002's condensation collapses from L 0.76
+
+* **Onset.** On every 74.4, 69.3 and 68.9 % arm, A and B alike, 322E002's saturation fraction (`sat_frac`,
+  decisions 97 and 135) first falls below 0.6 at L 0.757-0.763 on the ramp, independent of the hold's target.
+  In the collapse the duty falls from about 40 MW to 2.8-3.9 MW, the equilibrium CO2 condensed fraction to about
+  0, the condenser's bubble pressure rises to 185-208 bar against the loop's 138 bar, the product temperature
+  falls to the shell's (151-154 C) and nearly all the feed's CO2 (1 960-2 080 of 2 470 kmol/h) leaves as gas.
+  The collapse alternates with recoveries (duty back to 33-45 MW) every few minutes.
+* **Before the onset** the condenser drifts toward it: from L 0.80 to 0.77 its feed CO2 rises 2 082 -> 2 258
+  kmol/h as the load falls (the scrubber's recycle grows), the gas CO2 it passes 702 -> 883 kmol/h, TT-322010
+  170.4 -> 172.6 C, and the saturation fraction rises to 0.99, the bubble pressure falling to the loop's.
+* **The consequence.** 322R001's off-gas swings 15-112 t/h (26 t/h at L 0.95), 322E003 condenses all of it
+  (uncondensed 0 from L 0.80), and its sump make swings 60-136 t/h. Over the settle the loop pressure climbs from
+  138.4-139.3 bar a at the end of the ramp to 155 bar a, and the latch comes where PT-329201 crosses trip 22.2's
+  155.0 bar a (the simulator's own protection, V1's assumed set point; A693 154.98 bar a at 4 980 s, 155.16 at
+  5 040 s). At 60 s sampling the trips that latch with it (21.2, 21.8, 21.10, 22.1) cannot be ranked; the record is
+  consistent with 22.2 first. TT-322005 rises to 189.5-190.3 C with the pressure before the latch.
+* **P6 changes nothing that matters**: arm B agrees with arm A to four or five digits until the collapse, and the
+  collapse's onset, the trips and their times move by at most 120 s.
+* **Session 94's arms never collapsed**: on its absolute handles and P1 on the feed-mass basis, e_sat stayed at or
+  above 0.83 down to each arm's latch (L 0.689-0.792), most of them with the reactor already cold (`D:\Work\reports\B118_term_audit_scripts\s94\runs`).
+* **The discriminators** (ramp 1.0 -> 0.744, 1 200 s settle, arm A unless named):
+
+  | arm | 322E002 collapse | trip | TT-322005 below L 0.80, C | at L 0.80: TT-322010 C, gas CO2 to 322R001 kmol/h, 322E002 feed t/h |
+  |---|---|---|---|---|
+  | A, sampled every 2 s | from L 0.763 | none by 4 320 s (PT-329201 143.5 bar a) | 181.4-184.5 | 170.1, 677, 229 |
+  | A, PIC-329204 and MASTER-329207 at their seed | from L 0.749 | none by 4 320 s | 181.3-182.1 | 170.1, 649, 230 |
+  | A, HIC-322604 at its seed | from L 0.754 | none by 4 320 s (143.2 bar a) | 181.3-184.2 | 170.2, 689, 230 |
+  | A with P1 on session 94's feed-mass basis | none (e_sat >= 0.87) | none by 4 320 s | 163.6-178.9 | 168.7, 374, 224 |
+  | A without P1 (P4 + lift) | none (e_sat >= 0.87) | latched at 3 960 s | 161.2-171.0 | 168.7, 444, 248 |
+  | as built, no bundle | censored: latched at 2 820 s (L 0.769), before the onset window | latched | 166.5-169.3 | 168.4, 381, 239 |
+
+  The no-bundle arm latched above the onset window and is no evidence either way; the arm without P1 passed
+  L 0.76 (to 0.744) before its latch. **The collapse comes with P1 on the demand basis and with nothing else
+  measured**, and the same term is what holds
+  the reactor: with P1 on the load ratio 322E002 passes 650-690 kmol/h of gas CO2 to 322R001 at L 0.80, against
+  370-440 kmol/h without it or on the feed-mass basis, and only those arms keep TT-322005 in Book2's band. The
+  handles' departures (PIC-329204, MASTER-329207, HIC-322604) move the onset by at most 0.014 in L, and the onset's
+  independence of the hold's target already excludes TIC-329005 (its departure at L 0.76 differs about twofold
+  between the 74.4 and 68.9 % arms). The Book2 fit took 322E002's feed mass in proportion to the load, so that its
+  NTU rises as L^(n - 1); in the engine the feed falls more slowly than the load (229 t/h at L 0.80, 0.92 of the
+  seed's 250.6, the scrubber's recycle growing), so on the load ratio the NTU falls instead (0.84 / 0.92 = 0.92 of
+  the seed's at L 0.80), a stronger cut than the fit implies, and on the feed-mass basis the cut is too weak to
+  hold the reactor. Book2's TT-322010 departure at its 80.4 % band is -0.44 K; the arms give +0.1 K on the load
+  ratio and -1.3 K on the feed mass.
+
+  **At 2 s sampling** the onset is a smooth drift over about 50 s (L 0.767 -> 0.763): the saturation fraction
+  0.986 -> 0.857, the equilibrium CO2 condensed fraction 0.50 -> 0.10, the bubble pressure 142 -> 150 bar a, the
+  duty 38.8 -> 32.1 MW, the gas CO2 895 -> 1 124 kmol/h. Past it the condenser's state jumps between a condensing
+  and a non-condensing solution from one 2 s sample to the next (saturation fraction 0.32, 0.78, 0.61, 0.53, 0.57,
+  1.00, 0.45 ...; 94 large reversals in 859 samples), while the published TT-322010 moves smoothly. The drift onto
+  the edge is the condenser's equilibrium at the live state; whether the switching past it is a physical
+  relaxation or a stiff step ringing at tick scale (decision 78's class, decision 135's coupled solve) is not
+  resolved at 2 s and needs a tick-resolution probe.
+
+## CVII.5 322E003's sump balance (the request's L 0.85-0.69)
+
+dm = make + recondensed backlog - suction - pulse; make = feed - vent; feed = off-gas in + LP wash (PFD 308) +
+carry-over. The suction factor is the sump level of the tick before over 50 %, clamped to [0, 1.25]. Arm A at
+69.3 % (kg/h; the 68.9 % arm agrees within the collapse's scatter):
+
+| L | off-gas in | condensed off-gas | uncondensed | LP wash m308 | make | suction | 322F001 capacity at factor 1 | factor | level % | HIC-322602 % (bias) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0.95 | 26 195 | 23 448 | 1 093 | 36 248 | 59 775 | 57 608 | 63 139 | 0.92 | 45.6 | 69.9 (+1.7) |
+| 0.90 | 33 558 | 29 960 | 2 060 | 33 116 | 63 149 | 58 441 | 60 556 | 0.96 | 48.3 | 64.8 (+2.2) |
+| 0.85 | 36 563 | 33 156 | 1 986 | 29 190 | 62 410 | 58 614 | 58 597 | 1.00 | 50.0 | 58.9 (+1.7) |
+| 0.80 | 40 643 | 39 333 | 0 | 30 109 | 69 507 | 62 585 | 58 693 | 1.06 | 53.3 | 52.1 (+0.2) |
+| 0.75 | 111 764 | 110 562 | 0 | 25 582 | 136 202 | 89 736 | 71 789 | 1.25 | 67.2 | 39.6 (-7.3) |
+| 0.71 | 65 769 | 64 683 | 0 | 18 283 | 83 006 | 81 417 | 71 946 | 1.06 | 56.6 | 33.0 (-9.6) |
+| 0.693 (hold start) | 95 354 | 94 257 | 0 | 17 044 | 111 339 | 91 943 | 78 998 | 1.13 | 58.2 | 30.2 (-11.0) |
+
+* **The sump-head factor does not throttle the suction below 50 %.** The level never falls below 45 %; the factor
+  is 0.92-1.00 to L 0.85 and 1.06-1.25 below, at its 1.25 ceiling through the collapse's surges. Only in the surges
+  does the make exceed what the ejector draws at the ceiling.
+* **323P001 / LIC-323502 is not pumping near-100 % wash.** m308 falls with the load, to 0.50 of the seed's
+  36 834 kg/h by L 0.71 and 0.46 at the hold; LIC-323502 holds 46-48 %. Session 94's 0.89-0.97 of seed came under
+  the absolute handles.
+* **The sump fills to 100 % only after the latch**, when the trips stop 321P002A/B, the motive goes to zero and
+  322F001 stalls (EJECTOR_STALL with the trips). Before it the level peaks at 68-74 %; HIC-322602's bias trim
+  reaches -11 % at the hold's start and its -15 % limit after the latch.
+* The sump's own balance closes to 1.3e-7 kg/h (the residual's largest value on any arm).
+
+## CVII.6 Options (for the process engineer; no decision taken)
+
+* **(a) Keep `ureasim/` as built (recommended).** B-118 continues on 322E002's low-load collapse under P1: a
+  tick-resolution probe of the saturation fraction's switching past the CO2 condensation edge (decisions 97 and
+  135) to tell a physical relaxation from a stiff-step ring, and the scrubber recycle that raises 322E002's feed
+  against the load (322E003's make 59.8 -> 69.5 t/h from L 0.95 to 0.80). P1's basis stays open: the load ratio
+  holds the reactor and folds the condenser, the feed mass keeps the condenser and loses the reactor, and Book2's
+  TT-322010 lies between them. P6 leaves the bundle: it changes nothing measured.
+* **(b) Build P1 (load ratio), P4 and the 322F001 lift now as decided divergences**, the equivalence tests asserting
+  both sides (CLAUDE.md 5.6). Measured on this bundle: one hold of five passes outright (92.3 %); the 90.5 % hold
+  is trip-free but out of Book2's band for about 47 minutes; the 74.4, 69.3 and 68.9 % holds fail on 322E002's
+  collapse and trip 22.2. Not recommended: the failure is created by P1 itself.
+
+Trip 22.2's 155.0 bar a is V1's assumed set point and the simulator's own protection; it ends the runs but does not
+cause the failure (the loop pressure climbs while 322E002 stops condensing), so moving it is not an option for
+B-118. The climb's rate depends in part on MASTER-329207's +0.35 bar departure: with PIC-329204 and MASTER-329207
+at their seed the collapse is present and PT-329201 peaks at 140.8 bar a by 4 320 s, against 143.5 bar a on arm
+A; that arm was not run to the trip.
+
+## CVII.7 Checks
+
+* `grep -rn "PyQt6"` below the HMI layer prints nothing. `pytest tests/docs`: 7 passed after the documents changed. `CLAUDE.md` is unchanged: no rule changed. No file under `ureasim/` changed.

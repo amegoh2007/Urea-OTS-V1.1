@@ -149,7 +149,7 @@ a Qt layout method gets none.
   (`claude-mem:do`, `claude-mem:build`) stay excluded by the no-sub-agents rule below.
 * **ALWAYS update the four living documents** — `project.md`, `handoff.md`,
   `Urea OTS — As-Built Mathematical Reference.md` and this file when its rules change —
-  whenever any of the following happens:
+  each fact once, in the home §3a gives it, whenever any of the following happens:
   - a significant change lands,
   - a milestone in `project.md` flips state,
   - an equation is ported, altered or found to disagree with the original,
@@ -167,6 +167,38 @@ a Qt layout method gets none.
   Extended UNIQUAC grids during transients, which stalls it for seconds a tick.
 * **One unit at a time.** Port, comment, test and document a single unit operation before
   starting the next. A half-ported flowsheet is worse than an unported one.
+
+## 3a. Document map and reading budget (2026-11-11)
+
+The documents are written to be cheap to read. Before session 96 a session start read 165 000 tokens
+of history; it now reads the state. These rules keep it so, and they bind as the rest of this file.
+
+| Document | Holds | How it is read |
+|---|---|---|
+| `project.md` | the state now, the scope, the next free numbers | whole, at session start; ceiling 150 lines |
+| `handoff.md` | the open items and open data gaps, each as its current state | whole, at session start; ceiling 300 lines |
+| `Urea OTS — As-Built Mathematical Reference.md` | every equation, measurement and closure; one Part a session | never whole: grep a heading, read that section |
+| `docs/decisions.md` | the numbered decisions; "`project.md` decision N" means entry N there | never whole: `grep -n "^N\. "` |
+| `docs/decided-classes.md` | §5 rule 7's classes | grep for the mechanism before a unit's physics changes |
+| `docs/architecture.md` | the layers, the HMI, the single console, the scheduler | when a change touches the architecture |
+| `docs/history/session-log.md` | one entry a session | append-only; `grep -n "^### Session"` |
+| `docs/history/phase-checklist.md`, `docs/history/handoff-record-to-session-95.md` | the completed checklist; the tracker's history, B-118's chronicle, the data gaps' search records | frozen; grep before a search or a measurement is repeated |
+
+1. **One fact, one home.** An equation, a measurement, a closure: the session's As-Built Part. An
+   open item: `handoff.md`. A decision: one numbered entry in `docs/decisions.md`. Every other
+   document cites it (`As-Built §CVII.4`, `decision 181`) and never restates it.
+2. **State, not history.** `project.md`'s State block and a `handoff.md` item are rewritten in place.
+   No session paragraph is appended to either, and "Last updated" is a date and a session number.
+3. **A `handoff.md` item** holds its problem, its acceptance tests, what is established (a line each,
+   with its As-Built section), what is ruled out, the open options and the next step: at most 80
+   lines. A data-gap row holds the datum, its consumer, the stand-in as built, what is found and the
+   route to close. A closed item is deleted, and no list of closed items is kept.
+4. **A session-log entry** is at most 12 lines: the date, what was decided, built and measured, and
+   the Part and the decisions that hold it.
+5. **Read by grep.** Grep, then read the section, never the file. Send a long run's output to a file
+   in the scratchpad and read its tail. Do not print a document to check an edit.
+6. **A document over its ceiling** is cut back in the same session: the excess is history, and it is
+   already in the As-Built Part it cites.
 
 ## 4. CRITICAL — technical data sourcing
 
@@ -266,197 +298,12 @@ none of them is optional:
    instead. The As-Built register row names the divergence and the date of the decision, and
    the handoff item is deleted.
 7. **A decided class applies to every new unit (2026-09-30).** Once the process engineer has
-   decided a class of V1 flaw, apply it without re-asking wherever a new unit shows it: a pump
-   capped at its vessel's heel, a full vessel's excess published as an overflow, a transmitter
-   reading the delivered flow (decision 11); a fixed-effectiveness exchanger's feed taking only
-   what the hot side gave (decision 14); a loop gain read per cent of its transmitter's span, a
-   cascade master's output onto its slave's span, and no scale V1 derived to hold an
-   engineering-unit loop gain (decisions 10, 21); a design differential written as a subtraction
-   of two design pressures (A-13; closed 2026-10-16, `tests/engine/test_check_valve_audit.py` enforces
-   it); a heater's chest on its datasheet's pressure (decision 20); a
-   control valve on its vendor's trim, its design stroke where its rated capacity passes the design
-   flow (decision 23); a column's negative net duty condensing vapour, not clamped (decision 15); a
-   liquid losing, and paying the latent heat of, what boils, not what its overhead passes (decision
-   24); a cooler's stroke-proportional duty held to what brings its process to the coolant's
-   temperature (decision 28); a vent or overhead line discharging against its receiver's live
-   pressure, not a design constant (decision 29); a loop with no table row keeping V1's own
-   tuning, logged in handoff Section C (B-52) — unless V1's tuning is measured unstable, when
-   decision 22 gave TIC-323012 its sibling's row; a control structure the P&ID and a functional
-   diagram both draw and V1 did not build —
-   a ratio station, a level master over a flow slave — wired as drawn, once measured stable on the
-   model (decisions 26, 27; B-48 was kept as V1 because V1's measurement runs it away); a letdown
-   handed its liquor's live vapour pressure, at most its inlet pressure, so it chokes where its
-   downstream condition warrants it (decision 31); a node relieving through its certified safety
-   valves — pop action at set, the vendor's blowdown, API 520 on the certified capacity, in
-   `core/relief.py` (decision 32); a liquid-rated safety valve on a vapour node relieving on its
-   orifice's own area at the full-lift gas coefficient Sempell prints for that orifice in gas service,
-   0.922 for F, K and M, and the gas blowdown (decision 34, 2026-10-01; the coefficient read
-   2026-10-16, decision 130); a vessel's volume with its heads, and a
-   level read between its transmitter's taps (decision 33); an exchanger V1 replaced with a fixed
-   outlet temperature ported on its datasheet UA, its coolant at the supply temperature and the
-   flow no document fixes back-solved so the design point holds (decision 36); a utility a trip
-   admits put where the P&ID injects it, as the stream that carries its heat, and the trip on the
-   instrument where the P&ID draws it (decision 37); a gas letdown below its dew point flashed
-   onto the liquor it condenses, V1's single-phase answer kept for a dry gas (decision 38); an
-   interlock built as Uhde's DCS application software executes it, with no latch or reset its logic
-   does not draw and its hand switches as the loop summaries type them (decision 39), and no operator
-   command on the console the DCS does not have — a generated screen changed only through the
-   converter's `DECIDED_EDITS` (decision 40); a utility a valve admits at its loop summary's rated
-   flow, where V1 back-calculated a duty (decision 41); a melt's strength capped at what its
-   non-volatiles leave (decision 42); an equipment curve the archive lacks synthesized by its 1-D
-   model on the vendor's geometry, its capacity anchored on the PFD's design load and the vendor's
-   duty kept as margin (decisions 43, 44); a chest-heated vessel's held liquor boiling past its own
-   boiling point at its live vacuum — on the melt's equilibrium in an evaporator separator, on the
-   bubble point of its whole composition in the pre-evaporator — the excess sensible heat paid as
-   latent heat, evaluated inside the vacuum's implicit step (decisions 45, 48); a stage fed by
-   another's barometric leg taking the strength the leg drains, anchored on the design (decision
-   46); a flowsheet stream on the PFD's material balance where a vendor rating differs, the
-   vendor's figure kept inside its equipment's own model (decision 47); a condenser cold end a
-   vacuum balance reads lagged on its tube-side water residence, tau = V_tubes / Q_cw on the
-   datasheet's tubes and the PFD's water, not handed over a bare one-tick tear (decision 49); a
-   condenser shell between two ejectors a live vacuum node on its name plate's volume, its upstream
-   ejector discharging against it and bounded by the next shell's pressure, not a design constant
-   (decision 50); a design-anchored partial pressure's departure added to the design partial
-   pressure, floored at zero, not multiplied into it, where its design back-pressure is at most that
-   partial pressure, and V1's ratio kept where it is above (decisions 51, 55); every simulated steam user's live
-   draw on its header, the users the simulator does not model constant at their PFD rows, each unit's
-   draw its live ratio on its PFD row where its own model's design differs (decisions 52, 47); a
-   superheated steam inlet boiling its drum's own water, a saturated condensate let down flashing
-   into its receiver, a blowdown leaving its drum's water, and no floor holding a header up
-   (decision 54); a steam user on its valve against its header's live pressure, anchored on the
-   header's design, a choked nozzle's pressure solved on the flow its valve passes (decision 56); a
-   steam drum feeding its header through the PFD's stream, a letdown joining the header downstream of
-   the drums carrying its superheat to the header's users and boiling no drum water, a shell boiling
-   its drums' water at their saturation (decision 58); a design credit that mirrors a load-scaled
-   deduction scaled by the same load (decision 59); mass a model holds back, recondenses or pulses
-   kept in a physical inventory — a backlog's recondensate returned to the condensate it left, a full
-   sump's excess held back in the vessel draining into it, a throttle on a vessel's outflow so what it
-   holds back stays, a pulse drawn from the vessel that supplies it (decisions 60, 62); a
-   liquor line delivering
-   its live flow and delaying only the liquor's temperature and composition (handoff B-21); a gas
-   node's volume taking every vessel open to its gas space (decision 68); two saturating rises that
-   describe one end state sharing one ceiling (decision 69); a published instrument pinned on the PFD's
-   and the plant's value where V1 pinned a model pseudo-quantity, the pseudo-quantity kept inside its
-   own unit (decision 70); one atmosphere, 1.01325 bar, and one gravity, 9.80665 m/s2, in every
-   relation and display, a relief valve keeping the atmosphere its sheet states (decision 71); a machine
-   outside the simulation's scope a boundary that delivers what the process asks of it, with no curve,
-   speed or operator lever (decision 73); a line's dead time on its isometrics' as-built straight pipe
-   and elbow arcs, each size at its own bore, where V1 estimated a run (decision 74); a known
-   continuous inflow — a restriction orifice's rated steam — put where its P&ID ties it in, and taken
-   out of the PFD row that carries it (decision 75); a loop with a row in the plant DCS's tuning table
-   (`References/Master_PID_Tuning_Constants.md`, checked on its faceplate photograph) on that row, its
-   derivative and filter included, its gain read onto the PV the model carries (decisions 76, 77); a
-   vapour-space pressure whose explicit step would ring — dt . df/dP below -1 on its own
-   linearisation — taking the backward step on that tick, its outflow at the pressure it settles on,
-   V1's explicit step kept to the bit elsewhere (`core.node.stable_pressure_step`, decision 78); a
-   condenser's vent never negative, every species it carries and the inerts that size it floored at
-   zero, so it condenses no more than it receives (decision 80); a flow loop on the stream every
-   plant source puts it on, a draw with no control valve on its P&ID at its pump's PFD delivery, and
-   a level only open-loop transmitters read left to the operator (decision 81); a held liquor whose
-   boiling point lies below its equilibrium model's window not boiling, its stage on V1's closure
-   (decision 82); a trip that isolates a boundary machine's delivery taking that boundary's demand to
-   zero, a demand refused while it is latched (decision 83); a generated screen's geometry changed
-   only through the converter's ``NUDGE`` rows, zero overlap on every screen (decision 84); no gate
-   that freezes a unit's physics at its operating point (decision 86); an equipment leak flowing
-   from the high-pressure side into the low on its live differential, its mass and heat booked on
-   both sides (decision 87); a malfunction's consequence shown on the instrument the plant's DCS
-   reads it on, published in a port block when V1's packet has no key (decision 89); a line
-   downstream of a letdown holding the valve's design flash at the homogeneous two-phase density,
-   the valve's place on its line read from the isometrics (decision 91); a ratio controller the
-   functional diagram draws, trimming its slave, built as drawn with its balance tracking (decision
-   92, decisions 26 and 27's class); no loop with the DCS table's deadband, the model having no
-   measurement noise (decision 93); no reaction a design point cannot anchor, its omission recorded
-   (decision 94); a vapour node's capacity its vessels' free volume on the gas law at the PFD's
-   density with its liquors' buffering read once off the design's solubility, a holdup's gain over
-   its own step liquid, not pressure (decision 95); an interlock ported from Uhde's application
-   software as drawn, its flags live with no reset the logic does not draw, a limit the archive
-   lacks a logged stand-in (decision 96); a condensing unit's liquor holding no more gas than its
-   bubble point at the live loop pressure allows, on the saturation fraction of its deficit (decision
-   97); a console element V1's screens lack added only through the converter's `DECIDED_ADDITIONS`
-   (decision 98); a stream V1 books into nothing taken into the unit its loop summary names (decision
-   100); a non-volatile a PFD row's rounding leaves unaccounted closed on the drain, water giving way
-   (decision 101); a held liquor's node at most at its bubble point at the live pressure, the excess
-   heat flashing its volatiles, and a kinetics' residence on the liquid passing, not on the outflow
-   alone (decision 102); a value the process engineer reads back from the plant DCS the datum where
-   the archive is silent, applied on the PV the model carries (decision 103); a stream a PFD unit's
-   balance closes without entering as its departure from its PFD row, zero at design (decision 104);
-   a condensing unit's liquor held to its own bubble pressure, and a full sump condensing no more than
-   drains from it (decision 105); a vendor sheet that prints its capacity at its cases' travels and
-   names no curve run on its printed points (decision 108); an interlock's analogue limit the archive
-   gives no hysteresis carrying a stated 2-unit stand-in (decision 111); a dry gas above a solid's
-   saturation laying the solid down, its heat paid and the deposit carried to its receiver
-   (decision 112); a condenser's capacity on its dew point against its coolant, anchored on V1's
-   constant at the design node and not capped at the gas that arrives, its vent passing nothing below
-   its receiver's pressure (decision 114); a held liquor relaxing to its bubble point at its
-   separator's live pressure (decision 115); a vendor sheet that prints no density carrying
-   IAPWS-IF97's at its rating temperature (decision 116); an inlet charged at its producer's live
-   temperature as its departure from the producer's design, T_in,des + (T_producer - T_producer,des),
-   read the same tick where the producer steps first and a tick late where it steps after, a utility
-   with no circuit kept at its design (decision 118); a mixing point no unit computes a temperature
-   for — an ejector's discharge — on its adiabatic first law at its receiver's pressure, its water
-   condensing below its dew point, as its departure from the design mix (decision 121); a V1 cascade
-   its step_sim builds and calls with its permissive forced, run on the live permissive and seeded at
-   its fixed point on the plant's design (decision 123); a liquor stage's species step taking what
-   it drains and boils off at the step's end composition where its outflows pass more on the tick
-   than it holds (decisions 133, 137, decision 78's class); a saturation fraction and the bubble
-   pressure it sets solved together on the tick, not across it (decision 135); a cooler's
-   condensation capacity on its shell's effectiveness at the live coolant flow, its duty capped at it
-   (decision 136); a heater's duty bounded by what its shell transfers at the live utility's LMTD
-   against the process side's design profile, on its design duty's anchor, the lift it cannot pay for
-   left in the product and a band holding the design seed's own drift unbound (decision 139); a
-   held-back inventory capped at what the vessel holding it holds full, the vessel upstream keeping
-   the rest and discharging no more than the full one passes, and a heat-transfer surface standing
-   submerged derated linearly to its flooded-surface floor, its product cooling by the same factor
-   (decision 140, decision 62's class); a liquor stage V1 runs mass-only carrying its species as its
-   departure from its PFD row, each inlet at its own row, its consumer on the live composition and
-   temperature a line residence late on its line's isometrics (decisions 141, 146); a melt's
-   bubble-pressure law below its azeotrope following the Extended UNIQUAC model's rise, added in bar
-   as its departure from the branch, not multiplied onto the design pressure (decisions 142, 147,
-   decision 51's class); a vacuum vessel's lost liquid seal admitting atmospheric air through its
-   drain's trim on the blow-through law (decision 143); a stage's coupled temperature-pressure
-   iteration that does not settle solved for its temperature on its own energy balance by a
-   bracketed root, V1's iteration kept to the bit wherever it converges (decision 144, decision 78's
-   class); an instrument that reads a liquor's bubble pressure capped at the pressure the liquor
-   stands at where it flashes, the threshold its own saturation fraction uses (decision 145); a
-   published reading with no transmitter of its own on its PFD's design pressure, its line's design
-   differential the subtraction of the PFD's two design pressures and its flow and density factors
-   normalised on the design seed, where V1 wrote the differential on the live loop pressure
-   (decision 148, decision 70's and A-13's classes); a vendor sheet sized on a density that is not
-   its fluid's taken to the fluid's density, a trim passing m = Kv sqrt(rho dP) — the Kv a mass flow
-   needs scaling as m / sqrt(rho), the mass a stroke passes as sqrt(rho) (decision 150, decision
-   23's class); an exchanger whose coolant flow a PFD fixes running on that flow, its UA
-   back-solved so the design point holds and the datasheet's kept as margin (decision 151, decision
-   36's class); a unit replaced at a turnaround run on the replacement's own drawings and process
-   datasheet — its limits, holdups and capacity — the PFD still the flowsheet's anchor and the
-   equipment V1 models kept on every harness's switch (decision 154); an exchanger with plugged tubes
-   keeping its tube counts and active surface and its plugged bores out of its process volume, its
-   conductance re-anchored on the bundle in service so the PFD's design point holds by construction,
-   the clean bundle on the harnesses' switch (decisions 155, 157); a photograph of the plant DCS's
-   faceplate a tuning-table row, a range and a limit as decisions 76, 77 and 103 take them (decision
-   156); an event shorter than a survey's sample — a safety valve's lift — read on its peak between
-   samples, and a premise checked in the code before a relation is changed for it (decision 158); a
-   trend taken at another load not moving the 1750 MTPD design basis (decision 159); a faceplate's
-   gain on a PV the model carries in other units taken through their local slope at the design, and
-   a ratio station's design seed kept where the PFD closes the design, the photographed limits held
-   on what an operator enters (decision 160); a cascade master integrating while its slave is out of
-   cascade, as V1's ``_ctrl_ipd`` builds it, kept (decision 160, B-117, decision 120's class); a
-   vessel draining through a barometric leg its drawings show taller than any column the vacuum can
-   hold draining on its own liquid head, the vessel's pressure no part of the drive (decision 161);
-   a held liquor's boil-off on a tick where it boils — at the old pressure, the Jacobian's probe or
-   the linearised step — taking its vapour space's backward step solved itself, the boil's kink at
-   the bubble point and a root pinned on a memo bin's edge being what the linearisation cannot
-   carry, the linearised step kept to the bit elsewhere (decision 162, decision 78's class);
-   V1's thermo memo kept as ported where a stage chatters on its bin edges below its
-   transmitter's resolution (decision 163, B-123), the dynamic audit not counting that chatter as ringing
-   (decision 179);
-   a Neldisc's trim on the vendor's published table for its sheet's valve series (the S-Disc table for a balanced
-   valve, the L-series Cv rows for a conventional one) through its sheet's printed points, every printed point
-   and the rated capacity kept (decisions 170, 178);
-   a trip no plant logic draws kept as the simulator's own protection, named so wherever the console names it, its
-   logic and set points V1's (decision 174);
-   and no approximation of
-   the physics bought for a pacing target (decision 88). A
-   new mechanism still goes to the process engineer, with both sides measured.
+   decided a class of V1 flaw, apply it without re-asking wherever a new unit shows it. The classes,
+   102 of them, one a line with its decision number, are in `docs/decided-classes.md` and are binding
+   (moved there 2026-11-11, wording unchanged). Before a unit's physics is ported or changed, grep
+   that file for the mechanism and for the equipment's kind; never read it whole. A class decided
+   later is appended there as one line. A new mechanism still goes to the process engineer, with
+   both sides measured.
 
 ## 6. Clean-codebase rules
 
@@ -470,14 +317,17 @@ none of them is optional:
 
 Start:
 1. Invoke `Skill(caveman)` at `full`.
-2. Read `project.md` (state) and `handoff.md` (open items).
+2. Read `project.md` (state) and `handoff.md` (open items), whole. Read nothing else until the
+   task names it (§3a).
 3. Search claude-mem (`Skill(claude-mem:mem-search)`) for the history of the items the session
    takes up.
 
 End (mandatory):
-1. Update `project.md` checklist.
-2. Update `handoff.md` — add new gaps, **delete closed ones**.
-3. Update `Urea OTS — As-Built Mathematical Reference.md` for every equation touched.
+1. Update `project.md`: the State block and the Next free numbers, rewritten in place. Append the
+   session's entry to `docs/history/session-log.md`, and each decision taken to `docs/decisions.md`.
+2. Update `handoff.md` — rewrite the state of each item touched, add new gaps, **delete closed ones**.
+3. Update `Urea OTS — As-Built Mathematical Reference.md`: one new Part for every equation touched
+   and every measurement made.
 4. State plainly what was finished, what was not, and why.
 5. List all open gaps in the final report (mandatory, 2026-10-03): every open `handoff.md` item
    and open data gap, each with its status in a line, not only those the session touched.

@@ -123,7 +123,7 @@ python tools/convert_overlays.py
 | file | what it is |
 |---|---|
 | `Claude.md` | binding directives for any agent working in this workspace |
-| `project.md` | architecture and the living progress checklist |
+| `project.md` | the project's state; architecture in `docs/architecture.md`, decisions in `docs/decisions.md` |
 | `handoff.md` | open issues for the human engineer |
 | `Urea OTS — As-Built Mathematical Reference.md` | every equation and thermodynamic package, with the case for each |
 
