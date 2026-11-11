@@ -21974,7 +21974,7 @@ of the tree with Waves 1 and 2. Bundle A (P1, 322E002's UA on the CO2 demand rat
 |---|---|---|---|---|---|---|---|---|
 | A744 (session 95) | - | 4 800 s | 181.4-182.5 to about 4 300 s, then to 190.3 | 2.42 (§CVIII.3, 2 s samples) | 0.45 | - | - | reference |
 | C744t, the control | the Wave 1 and 2 tree; every tick logged 2 600-4 800 s | 4 680 s: 22.2, 21.2, 21.8, 21.10, 22.1 in one 60 s sample | 184.08 (181.5-190.2) | 1.919 at 4 254 s | 0.000 at 3 732 s | 1.19 / 1.96 / 2.05 | - | control |
-| E0 | AY-322701's target ramped with the load, 3.000 to 3.192 (Book2's 100.3 % 3.21 less the 0.018 departure) | 4 920 s, the same five | 183.50 (181.3-190.1) | 2.441 at 2 880 s (3.063 at 2 760 s); 2.316 at 4 080 s | 0.000 at 3 970 s | 1.19 / 1.82 / 1.67 | melt N/C above 2.9; no collapse by 4 800 s | **fail** |
+| E0 | AY-322701's target ramped with the load, 3.000 to 3.192: session 95's departure basis (§CVII.2), Book2's 100.3 % median 3.21 (§C.2's banding) less the hold's 0.018; this Part's banding (`book2_bands.json`) reads 3.243 at 100.3 % | 4 920 s, the same five | 183.50 (181.3-190.1) | 2.441 at 2 880 s (3.063 at 2 760 s); 2.316 at 4 080 s | 0.000 at 3 970 s | 1.19 / 1.82 / 1.67 | melt N/C above 2.9; no collapse by 4 800 s | **fail** |
 
 **E0 fails, and the target is not why.** On the descent AT-322701 rises above the target (3.40 at L 0.90 against
 3.10), so the trim asks for less ammonia, and FFIC-321404's set point sits at 2.0009-2.0011 from 960 to 1 440 s,
@@ -22018,7 +22018,7 @@ With the heat charged the first collapse is shallower (at 2 940 s the saturation
 duty 20.0 against 2.7 MW) and the second deeper (at 3 120 s 0.381 against 0.447). B-130's and B-131's switches change no
 sample before 3 420 s.
 
-**E1 fails its seed criterion by construction** (`w3/e1_fit.py`, `w3/run/proto_e1.py`, `seed/seedcheck99.py`).
+**E1, as fitted, fails its seed criterion** (`w3/e1_fit.py`, `w3/run/proto_e1.py`, `seed/seedcheck99.py`).
 
 * Book2's five bands (± 2.5 % runs of at least four samples; `w3/book2_bands.json`): the as-built deficit
   d = (P_bub - P_loop) - 3.5 is +10.71, +11.20, +8.44, +9.17 and +6.38 bar at 60.7, 69.3, 80.4, 92.4 and 100.3 %
@@ -22031,8 +22031,9 @@ sample before 3 420 s.
   both ways), needs a margin of 11.20 bar at R 3.0, 10.73 at 3.1, 8.99 at 3.2, 6.53 at 3.3, 5.31 at 3.35 and 4.38 at
   R 3.40 or above for d <= 0 at every band.
 * The seed's own saturation fraction is not 1: it dips to 0.99988 in 300 s (the deficit reaches +0.0076 bar), and
-  its melt N/C walks 0 to +6.72e-4 above the anchor in 30 s through 300 distinct values. So any margin and any change
-  of shape near the design moves the seed. Null ramp at L 1.0, 18 000 ticks, all 3 694 leaves: E1 at R 3.45 with
+  its melt N/C walks 0 to +6.72e-4 above the anchor in 30 s through 300 distinct values. So any constant margin and any
+  change of shape across the seed's band moves the seed; a margin and shape gated to zero at the seed's state (on
+  the load's departure, say) was not tried. Null ramp at L 1.0, 18 000 ticks, all 3 694 leaves: E1 at R 3.45 with
   4.38 bar differs on 820 leaves from the third tick (the `STREAMS` records: the reactor's overflow CO2 39 502.1004
   against 39 502.1453); the re-anchoring alone, R 3.0786 and margin 0, on 752. The console's rounded leaves
   (TT_322010, LT_322E002, TT_322005, PI_322E002) differ by 0.0 in both.
@@ -22047,20 +22048,21 @@ decided after Wave 3, and nothing is: it was skipped.
 
 No data gap closes: none has its datum. What changed is how cheaply each will close when its datum arrives.
 
-**The stand-ins, one row each** (`tests/data/test_data_gap_standins.py`, 17 tests, pins every value below; the
+**The stand-ins, one row each** (`tests/data/test_data_gap_standins.py`, 21 tests, pins every value below; the
 day a readback or a curve arrives, closing the gap is the constant changed and its row re-pinned):
 
 | gap | constant (`ureasim/data/`) | stand-in | stands in for | other tests that pin it |
 |---|---|---|---|---|
-| 1 | `unit_322f001.py:169` `P_DISCHARGE_DES_BARA` | 144.2 bar a | the fixed discharge the nozzle (`A_T_DES_M2`, line 221) and throat (`A_M_M2`, line 224) are back-solved on | `units/synthesis/test_ejector.py` |
+| 1 | `control/jet_pump.py:122-131` `K_NOZZLE`, `K_ENTRY`, `K_THROAT`, `ETA_DIFF`; `data/unit_322f001.py:221, 224` `A_T_DES_M2`, `A_M_M2` | 0.05, 0.10, 0.05, 0.80; 2.1959e-4 and 1.9815e-3 m2 (16.72 and 50.23 mm bores) | the vendor's loss coefficients (open literature, Cunningham; ESDU 85032) and the nozzle and throat back-solved through them from the licensor's duty | the ejector equivalence suite (V1 side) |
 | 2 | `unit_322c001.py:161-162` `TRIP_22_1_HIGH_C`, `TRIP_22_1_CLEAR_C` | 110.0 C, 108.0 C | TT-322015's H2 (the readback) and its clearing point, V1's 2 K | - |
-| 3 | `unit_324_train.py:234, 242, 243` `F002_`, `F004_`, `F005_MOTIVE_DES_KGH` | 390, 1 220, 180 kg/h | the design motives the synthesized maps are anchored on | `data/test_unit_324_train.py`, `units/evaporation/test_ejector_map.py` |
+| 3 | `ejector_map(tag).k_capacity` (`units/evaporation/ejector_map.py:237`), computed from `data/unit_324.py:289` `EJECTOR_DESIGN_LOADS` | 324F002 0.33635, 324F004 0.91921, 324F005 0.49739 | the in-situ factors anchoring each vendor map on the PFD's design load (B-61); the curves would replace the map | `units/evaporation/test_ejector_map.py` |
 | 4 | `unit_324.py:354-355` `F003_M_TAU_S`, `F003_LEVEL_SP_PCT` | 180 s, 54.7 % | LI-324501 on V1's holdup ratio | - |
 | 5 | `unit_322_loop.py:193, 188` `TRIP_21_2_FY_L2_FRAC`, `TRIP_21_8_PDY_L2_BAR` | 0.05, 0.1 bar | FY-322403's L2 (V1's 21.4 threshold), PDY-321203 / 204's L2 | the synthesis-loop equivalence suite (V1 side) |
 | 8 | `unit_323e011.py:238, 244` `LT_323503_L2_PCT`, `LT_323503_L2_HYST_PCT` | 5.0 %, 2.0 % | LT-323503's L2 (the faceplate's) and its restart hysteresis | `units/recirc/test_flash_condenser.py` |
 | 9 | `unit_335.py:75-76` `FIC_335405_KC`, `FIC_335405_TI_S` | 100 per t/h, 15 s | FIC-335405's tuning, V1's | - |
 | 10 | `unit_324.py:221, 220` `E001_COND_TAU_S`, `E001_COND_LEVEL_SP_PCT` | 90 s, 50.0 % | LI-329505 on V1's holdup ratio | - |
 
+The design duties the gap 1 and gap 3 stand-ins are anchored on are PFD data and are not pinned as stand-ins.
 Gap 5's PT-321211 / 221, ST-321952 / 953 and TRIP_84_8 inputs are taken healthy, no constant; its timer modes and
 the flip-flops' dominance are code (`control/interlocks.py`), pinned by `tests/control/test_interlocks.py`.
 
@@ -22106,7 +22108,9 @@ cold-end and cooling-water temperatures for 5 November 13:00-13:30), which has n
 * `grep -rn "PyQt6"` below `ureasim/hmi` prints nothing; `tests/test_layering.py` passes.
 * The suite after Wave 1: 2 181 passed, 5 862 skipped, none failed (20 min). After Wave 2: 2 190 passed, 5 862
   skipped, 1 failed under load and passed alone (CX.7). Wave 5 added `tests/data/test_data_gap_standins.py`
-  (17 tests) and changed no code; it, `tests/data` and `tests/docs` pass. `E:\Simulator` was not mounted: every
+  (21 tests) and changed no code; it, `tests/data` and `tests/docs` pass. The suite on the session's
+  third commit (2d9a8f4), alone on the machine: 2 208 passed, 5 862 skipped, none failed (18 min 40 s); the
+  stand-in test as revised after it (21 tests) passes alone. `E:\Simulator` was not mounted: every
   V1-side test skipped, so A-33 stays open.
 * No file under `ureasim/` was edited for an experiment; every prototype is a monkeypatch in the scratchpad.
 * Commits: bbdc3de (Wave 1), 27a855d (Wave 2), and the session's records with Wave 5's test.

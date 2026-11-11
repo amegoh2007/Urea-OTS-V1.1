@@ -108,15 +108,15 @@ And A-34's atoms closed tick by tick on a turndown (`tests/phase7/test_loop_atom
 * E0 fails: AY-322701's target ramped to 3.192 does not move the ratio, whose set point stays within
   0.0011 of its 2.0 floor on the descent (B-128). The melt N/C is 2.44 at 2 880 s (L 0.764); trip 22.2 at 4 920 s. The
   control (bundle A) trips at 4 680 s, session 95's A744 at 4 800 s: B-129's heat term, nothing else.
-* E1 cannot keep the seed: its saturation fraction dips to 0.99988 and its melt N/C walks 6.7e-4, so
-  any margin moves it (820 leaves; the console's tags unchanged). EU's ridge is at N/C 3.08 (B-125).
+* E1 as fitted cannot keep the seed, whose fraction dips to 0.99988 and N/C walks 6.7e-4: a constant
+  margin moves it (820 leaves; the console's tags unchanged). A seed-gated E1 is untested (B-125).
 
 **Open options and next step: the process engineer's choice.**
 
-* (a) Accept a seed change of E1's size (the `STREAMS` records at about 1e-4, the console's tags
-  unchanged) as E1's criterion, then E1r, E2 and E3 in scratch as §CVIII.9 lists them.
+* (a) E1 again, its margin and shape gated to zero at the seed's state, or a seed change of E1's size
+  accepted as its criterion (the console's tags unchanged); then E1r, E2 and E3 (§CVIII.9).
 * (b) Decide B-128 first, then E0 again: with the floor binding no ratio target acts on the descent.
-* (c) Build session 95's bundle now as decided divergences (one hold of five passes).
+* (c) Build session 95's bundle (1 of 5 holds passed before B-129 changed the collapse; re-run first).
 
 **B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode: gain 0 removes it
 at 92.3 % on the S2 prototype and at 111 % (§XCVIII.3), and alone runs the reactor 12.4 K colder at
@@ -134,8 +134,8 @@ the seed unchanged, a harness switch, both sides measured (B-118's E1 and E1r); 
 melt's bubble temperature, the conductance setting the duty, only if (b) fails. Session 99 (§CX.8): the
 deficit is +6.4 to +11.2 bar at Book2's five bands; (b) needs a margin of 4.38 bar (ridge at 3.40 or
 above) to 11.20 bar (ridge at 3.0); the seed itself stands up to 0.0076 bar over the law's edge, so no
-margin leaves it unchanged. (b) as written cannot be met; whether its seed condition is relaxed is the
-process engineer's call (B-118's option (a)).
+constant margin leaves it unchanged. A margin gated to zero at the seed's state is untested; whether to
+try it or relax the seed condition is the process engineer's call (B-118's option (a)).
 
 ### B-126 — 322R001's 136 t of liquor has no composition
 

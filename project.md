@@ -27,7 +27,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   divergences, each on a harness switch, the seed identical on every leaf (decisions 185 to 187); Wave 3
   stopped at E0, which fails (B-118's next step is the process engineer's); Wave 4 had nothing decided to
   build; Wave 5 tabled the data gaps' stand-ins and drafted the checklist rows and the Körting request.
-  Suite: 2 190 passed, 5 862 skipped (V1 not mounted), 1 failed under load and passed alone (§CX.7).
+  Suite: 2 208 passed, 5 862 skipped (V1 not mounted), none failed (§CX.10).
 
 ## Next free numbers
 

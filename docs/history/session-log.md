@@ -4904,6 +4904,6 @@ On the process engineer's prompt and the plan's decision table. Wave 1 (bbdc3de)
 by tick, the layering test, the root ledger, the valve walk, the records corrected; A-31, A-32, A-34 to A-37 and
 B-132 closed, A-38 raised; decisions 182 to 184. Wave 2 (27a855d): B-129, B-130 and B-131 built on ClassVar harness
 switches, the seed identical on 3 694 leaves; decisions 185 to 187. Wave 3, scratch: E0 fails (the ratio's floor
-binds, B-128); E0t classifies the collapse's chatter; E1 cannot keep the seed; stopped, E1r to E5 not run. The control departs from session 95's A744 through B-129's heat
-term alone. Wave 4 skipped. Wave 5: the stand-in table and test, checklist rows 15 and 16, the Körting draft, gap
+binds, B-128); E0t classifies the collapse's chatter; E1 as fitted cannot keep the seed (a seed-gated E1 untested);
+stopped, E1r to E5 not run. The control departs from session 95's A744 through B-129's heat term alone. Wave 4 skipped. Wave 5: the stand-in table and test, checklist rows 15 and 16, the Körting draft, gap
 1's fits. `E:` not mounted. The record is As-Built Part CX.
