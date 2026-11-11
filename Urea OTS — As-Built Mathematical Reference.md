@@ -21960,3 +21960,153 @@ whose last assertion read the console's engine label as still FROZEN after the r
 suite ran beside two 45-minute engine runs of Wave 3; alone the file passed three times of three (36 s, 33 s, 33 s),
 and Wave 1's suite passed it. A timing race under load, not a change of behaviour; nothing in the console or the
 server was touched.
+
+## CX.8 Wave 3: B-118 in scratch, stopped at E0
+
+**The rig.** Session 95's runner (`opt_run95.py`, `cfg95.py`, `proto95.py`, `ej_proto.py`, `terms94.py`) copied to the
+scratchpad and patched only to record: every tick's melt N/C, 322E002's saturation fraction, the loop pressure and,
+in the hold, TT-322005, with the engine's `roots_exhausted`, and every tick of a chosen window. It ran on a byte copy
+of the tree with Waves 1 and 2. Bundle A (P1, 322E002's UA on the CO2 demand ratio to 0.77; P4; the 322F001 lift
+2.41 bar), session 95's 74.4 % policy: 0.5 %/min from the seed to L 0.744 at 3 120 s, a 3 600 s settle and a
+4 320 s hold; `roots_exhausted` 0 in every arm.
+
+| arm | change on the control | first latched trip | TT-322005, ramp end to trip, mean (range) C | melt N/C minimum before the trip | saturation fraction minimum | 322E003's make / its value at 60 s, at L 0.803, 0.754, 0.744 | criterion | verdict |
+|---|---|---|---|---|---|---|---|---|
+| A744 (session 95) | - | 4 800 s | 181.4-182.5 to about 4 300 s, then to 190.3 | 2.42 (§CVIII.3, 2 s samples) | 0.45 | - | - | reference |
+| C744t, the control | the Wave 1 and 2 tree; every tick logged 2 600-4 800 s | 4 680 s: 22.2, 21.2, 21.8, 21.10, 22.1 in one 60 s sample | 184.08 (181.5-190.2) | 1.919 at 4 254 s | 0.000 at 3 732 s | 1.19 / 1.96 / 2.05 | - | control |
+| E0 | AY-322701's target ramped with the load, 3.000 to 3.192 (Book2's 100.3 % 3.21 less the 0.018 departure) | 4 920 s, the same five | 183.50 (181.3-190.1) | 2.441 at 2 880 s (3.063 at 2 760 s); 2.316 at 4 080 s | 0.000 at 3 970 s | 1.19 / 1.82 / 1.67 | melt N/C above 2.9; no collapse by 4 800 s | **fail** |
+
+**E0 fails, and the target is not why.** On the descent AT-322701 rises above the target (3.40 at L 0.90 against
+3.10), so the trim asks for less ammonia, and FFIC-321404's set point sits at 2.0009-2.0011 from 960 to 1 440 s,
+on the edge of its 2.0 floor, where the control's sits on it exactly (B-128). E0 and the control agree to 0.02 in
+melt N/C to 2 760 s (L 0.774); E0 collapses first (2.441 at 2 880 s, the control 2.811, crossing 3.0 at 2 815 s),
+and trips 240 s later. With
+the floor binding, a different target cannot move the ratio downward; the plant's 5.4 % of downward authority
+against the engine's 1.1 % is B-128's question.
+
+**E0t, the reversals classified** (the control's 22 001 ticks, 2 600-4 800 s). A reversal is a tick where the first
+difference changes sign; a period-two ring is a run of at least four consecutive reversals.
+
+| signal | reversals, collapsed (f < 0.6) / other | half-period 1 tick | 2-5 | 6-20 | 21-100 | over 100 | ticks in period-two rings, runs, longest |
+|---|---|---|---|---|---|---|---|
+| melt N/C | 1 128 / 549 | 354 / 81 | 383 / 105 | 298 / 197 | 91 / 158 | 2 / 8 | 290, 70, 6 ticks |
+| saturation fraction | 1 367 / 579 | 622 / 71 | 395 / 153 | 251 / 193 | 97 / 152 | 2 / 10 | 553, 127, 9 ticks |
+| 322E002's gas CO2 | 1 984 / 866 | 1 201 / 187 | 418 / 248 | 288 / 304 | 76 / 120 | 1 / 7 | 1 021, 195, 18 ticks |
+| TT-322010 | 1 117 / 648 | 391 / 111 | 363 / 152 | 261 / 204 | 100 / 170 | 2 / 11 | 382, 93, 7 ticks |
+
+TT-322005 and the loop pressure show no period-two run. **The collapsed phase chatters at the tick**: two thirds or
+more of its reversals come within five ticks of the last, a third or more within one, in bursts of at most 0.6 to 1.8 s; one step of
+the saturation fraction reaches 0.43 and of the bubble pressure 48 bar. Only the one-tick bursts are decision 78's
+ring; the rest is chatter at 0.3 to 1 s. Outside the collapse the reversals come mostly 0.6 to 10 s apart. The slow mode is the
+recycle of §CVIII.3: the melt N/C falls through 3.0 at 2 815, 3 420, 3 677 and 4 208 s, and at the edges of each
+collapse it crosses 3.0 six times in 75 s (3 736-3 811 s) and four in 48 s (4 198-4 246 s), chattering on the
+branch point.
+
+**The control against session 95's A744: B-129's term is the whole difference.** The two agree on every 60 s
+sample to 2 880 s and part at 2 940 s (melt N/C 2.493 against A744's 2.375); the control trips 120 s earlier. In the
+collapse 322E002 releases CO2 net: its duty is negative on 2 053 of the control's logged ticks, from 2 896.5 to
+4 630.9 s, down to -32 213 kW. Three arms of the control cut at 3 420 s, each with Wave 2's switches on V1's side
+(`w3/run/v1sw.py`):
+
+| arm | switches on V1's side | against A744, every sample to 3 420 s | against the control | duty < 0, ticks of 2 800-3 420 s |
+|---|---|---|---|---|
+| V744heat | `CondenserHoldup.release_heat` | identical | parts at 2 940 s | 0 |
+| V744loop | `ProcessLoop.reseed_after_bad` | parts at 2 940 s | identical | 611, from 2 896.5 s |
+| V744all | all three | identical | parts at 2 940 s | 0 |
+
+With the heat charged the first collapse is shallower (at 2 940 s the saturation fraction 0.629 against 0.397, the
+duty 20.0 against 2.7 MW) and the second deeper (at 3 120 s 0.381 against 0.447). B-130's and B-131's switches change no
+sample before 3 420 s.
+
+**E1 fails its seed criterion by construction** (`w3/e1_fit.py`, `w3/run/proto_e1.py`, `seed/seedcheck99.py`).
+
+* Book2's five bands (± 2.5 % runs of at least four samples; `w3/book2_bands.json`): the as-built deficit
+  d = (P_bub - P_loop) - 3.5 is +10.71, +11.20, +8.44, +9.17 and +6.38 bar at 60.7, 69.3, 80.4, 92.4 and 100.3 %
+  (P_bub 149.39, 148.09, 149.44, 151.08 and 151.48 bar a): the law condenses 83-90 % at every band where the plant
+  condenses fully.
+* Extended UNIQUAC's own bubble pressure at 170 C has its minimum, 43.80 bar, at N/C 3.08, the design melt (53.75 at
+  2.8, 44.37 at 3.0, 44.68 at 3.2, 45.08 at 3.6): EU's ridge is the design point, and above it EU rises 1.3 bar per
+  unit of N/C, where `BUB_KN` rises 26.
+* E1, EU's shape below a ridge R and the K_N line above, re-anchored at `HPCC_NC_DES_LIVE` (design P_bub 144.2 bar a
+  both ways), needs a margin of 11.20 bar at R 3.0, 10.73 at 3.1, 8.99 at 3.2, 6.53 at 3.3, 5.31 at 3.35 and 4.38 at
+  R 3.40 or above for d <= 0 at every band.
+* The seed's own saturation fraction is not 1: it dips to 0.99988 in 300 s (the deficit reaches +0.0076 bar), and
+  its melt N/C walks 0 to +6.72e-4 above the anchor in 30 s through 300 distinct values. So any margin and any change
+  of shape near the design moves the seed. Null ramp at L 1.0, 18 000 ticks, all 3 694 leaves: E1 at R 3.45 with
+  4.38 bar differs on 820 leaves from the third tick (the `STREAMS` records: the reactor's overflow CO2 39 502.1004
+  against 39 502.1453); the re-anchoring alone, R 3.0786 and margin 0, on 752. The console's rounded leaves
+  (TT_322010, LT_322E002, TT_322005, PI_322E002) differ by 0.0 in both.
+
+The scripts and runs of this Part are archived in `D:\Work\reports\B118_wave3_s99`.
+
+The prompt stops the wave at the first step that fails its criterion: that is E0. E0t and E1's null ramp ran beside
+E0 and are recorded. **Not run: E1r, E2, E3, E4 and E5**, nor B-120's gain. Wave 4 builds only what section 2 marks
+decided after Wave 3, and nothing is: it was skipped.
+
+## CX.9 Wave 5: the data gaps, as far as a desk takes them
+
+No data gap closes: none has its datum. What changed is how cheaply each will close when its datum arrives.
+
+**The stand-ins, one row each** (`tests/data/test_data_gap_standins.py`, 17 tests, pins every value below; the
+day a readback or a curve arrives, closing the gap is the constant changed and its row re-pinned):
+
+| gap | constant (`ureasim/data/`) | stand-in | stands in for | other tests that pin it |
+|---|---|---|---|---|
+| 1 | `unit_322f001.py:169` `P_DISCHARGE_DES_BARA` | 144.2 bar a | the fixed discharge the nozzle (`A_T_DES_M2`, line 221) and throat (`A_M_M2`, line 224) are back-solved on | `units/synthesis/test_ejector.py` |
+| 2 | `unit_322c001.py:161-162` `TRIP_22_1_HIGH_C`, `TRIP_22_1_CLEAR_C` | 110.0 C, 108.0 C | TT-322015's H2 (the readback) and its clearing point, V1's 2 K | - |
+| 3 | `unit_324_train.py:234, 242, 243` `F002_`, `F004_`, `F005_MOTIVE_DES_KGH` | 390, 1 220, 180 kg/h | the design motives the synthesized maps are anchored on | `data/test_unit_324_train.py`, `units/evaporation/test_ejector_map.py` |
+| 4 | `unit_324.py:354-355` `F003_M_TAU_S`, `F003_LEVEL_SP_PCT` | 180 s, 54.7 % | LI-324501 on V1's holdup ratio | - |
+| 5 | `unit_322_loop.py:193, 188` `TRIP_21_2_FY_L2_FRAC`, `TRIP_21_8_PDY_L2_BAR` | 0.05, 0.1 bar | FY-322403's L2 (V1's 21.4 threshold), PDY-321203 / 204's L2 | the synthesis-loop equivalence suite (V1 side) |
+| 8 | `unit_323e011.py:238, 244` `LT_323503_L2_PCT`, `LT_323503_L2_HYST_PCT` | 5.0 %, 2.0 % | LT-323503's L2 (the faceplate's) and its restart hysteresis | `units/recirc/test_flash_condenser.py` |
+| 9 | `unit_335.py:75-76` `FIC_335405_KC`, `FIC_335405_TI_S` | 100 per t/h, 15 s | FIC-335405's tuning, V1's | - |
+| 10 | `unit_324.py:221, 220` `E001_COND_TAU_S`, `E001_COND_LEVEL_SP_PCT` | 90 s, 50.0 % | LI-329505 on V1's holdup ratio | - |
+
+Gap 5's PT-321211 / 221, ST-321952 / 953 and TRIP_84_8 inputs are taken healthy, no constant; its timer modes and
+the flip-flops' dominance are code (`control/interlocks.py`), pinned by `tests/control/test_interlocks.py`.
+
+**The DCS readback checklist** (`D:\Work\reports\DCS readback checklist.md`), rows 15 and 16 added: FFIC-321404's
+set-point limits, unit and basis (B-128); AY-322701, TT-322010, PT-329201 and TT-322005 over the three 5 November
+holds, with Book2's band medians and the 5 November PT-329201 as known so far.
+
+**The Körting request** (`D:\Work\reports\Koerting request draft s99.md`), a draft, not sent: order 2/131/4/04219
+(322F001: the fourteen diagrams of UD-AU-322-DZ-0013-005 section 5, the H-Q curves of UD-AU-322-EC-0013, the nozzle's
+and mixing throat's dimensions, the free area against stroke); orders 2/115/4/09674 and 2/232/4/00503 (324F002,
+324F004, 324F005: capacity against suction, discharge and motive pressure, the break-off curve, the throats).
+
+**Gap 1, scratch fits** (`w5/gap1_fit.py`, session 93's `lift_fit.json` and closure, nothing under `ureasim/`):
+
+* The lift share over the 15 windows of 5 November: the smallest friction part L_f of the 4.20 bar lift at which the
+  closure passes the plant's suction is 0.00 bar at full load (102.0 and 101.9 %), 0.55-1.74 bar at 86.6-94.2 %
+  (n 7), 1.94-2.11 bar at 78.1-80.7 % (n 4) and 2.28-2.41 bar at 69.9-74.6 % (n 2): 0 to 57 % of the lift. The lift
+  reduction it buys at the window, L_f (1 - (m_d / m_d,des)^2), is 0.07-0.41 bar at 86-94 % and 0.72-1.23 bar at
+  70-81 %. A single L_f of 2.41 bar is the smallest that passes all fifteen; the windows do not fix it from above.
+* The level term on Book2's four points (LT-329501 11 % at HV-322602 40 %, 69.3 %; 1 % at 54 %, 80.4 %; 7.05 % at
+  63 %, 92.3 %; 10.8 % at 76 %, 111 %), the plant's suction taken as 585.7 kg/h per % of load and its motive as
+  0.00987 of design per % (least squares on the 15 windows; Book2's own motive and suction are not logged [I]):
+
+| load % | HV-322602 % | LT-329501 % | suction t/h | closure at level factor 1, L_f 0 | L_f 2.41 | factor needed, L_f 2.41 | V1's factor, level / 50 |
+|---|---|---|---|---|---|---|---|
+| 69.3 | 40 | 11.0 | 40.6 | stalled | 23.5 | 1.73 | 0.22 |
+| 80.4 | 54 | 1.0 | 47.1 | stalled | 34.9 | 1.35 | 0.02 |
+| 92.3 | 63 | 7.05 | 54.1 | 31.7 | 52.4 | 1.03 | 0.14 |
+| 111.0 | 76 | 10.8 | 65.0 | 94.8 | 70.4 | 0.92 | 0.22 |
+
+  No level law fits the four points: the factor the closure needs does not rise with the level (1.35 at 1 %, 1.03
+  at 7 %, 1.73 at 11 %), so on the plant the level is not what sets the suction, and V1's law passes 1 to 23 % of the
+  plant's suction at Book2's levels. The plant's sump behaves as a seal that passes its full suction from about 1 %
+  up; and even at a factor of 1 the back-solved closure with the 2.41 bar fit falls 26-42 % short at 69.3 and 80.4 %
+  on Book2's more open strokes. Both say the geometry or the lift law, not the level term, is what data gap 1's
+  curves must settle.
+
+**Gap 3's break-off term** was not fitted: the plan schedules it after checklist row 13 (324E002's and 324E005's
+cold-end and cooling-water temperatures for 5 November 13:00-13:30), which has not been read.
+
+## CX.10 Checks
+
+* `grep -rn "PyQt6"` below `ureasim/hmi` prints nothing; `tests/test_layering.py` passes.
+* The suite after Wave 1: 2 181 passed, 5 862 skipped, none failed (20 min). After Wave 2: 2 190 passed, 5 862
+  skipped, 1 failed under load and passed alone (CX.7). Wave 5 added `tests/data/test_data_gap_standins.py`
+  (17 tests) and changed no code; it, `tests/data` and `tests/docs` pass. `E:\Simulator` was not mounted: every
+  V1-side test skipped, so A-33 stays open.
+* No file under `ureasim/` was edited for an experiment; every prototype is a monkeypatch in the scratchpad.
+* Commits: bbdc3de (Wave 1), 27a855d (Wave 2), and the session's records with Wave 5's test.

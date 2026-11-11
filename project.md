@@ -2,7 +2,7 @@
 
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165)
-**Last updated:** 2026-11-11, session 98
+**Last updated:** 2026-11-11, session 99
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -18,20 +18,16 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A seven (A-31 to A-37), Section B nine (B-118 with B-120 folded in,
-  and B-125 to B-132), Section C none, 8 open data gaps. Every data gap waits on a vendor curve or on
-  one plant DCS readback session (`D:\Work\reports\DCS readback checklist.md`).
-* **In hand.** B-118: the candidate bundle (P1, P4 and the 322F001 lift, decision 181) was verified in
-  scratch on the five acceptance holds in session 95 (As-Built Part CVII). One hold passes, one is
-  trip-free and out of band, three trip on 322E002's condensation collapse under P1. Options (a) and
-  (b) are with the process engineer; `ureasim/` is as built.
-* **Session 97** audited the committed engine read-only (As-Built Part CVIII): no critical finding, 15
-  handoff items raised, none decided. Session 95's collapse is read as 322E002's feed N/C crossing 3.0
-  on a recycle, and B-118's next steps are the scratch sequence E0 to E3 (§CVIII.9). No code and no
-  relation changed. Suite: 2 154 passed, 5 862 skipped (V1 not mounted), none failed.
-* **Session 98** researched the routes to every open gap (As-Built Part CIX) and wrote the resolution plan
-  and the prompt that executes it (`D:\Work\reports\Open gaps resolution plan and Opus 5.5 prompt s98.md`):
-  five waves. Its decision table awaits the process engineer; nothing is decided or built.
+* **Open.** `handoff.md`: Section A two (A-33, A-38), Section B five (B-118 with B-120 folded in, and
+  B-125 to B-128), Section C none, 8 open data gaps. Every data gap waits on a vendor curve or on one
+  plant DCS readback session (`D:\Work\reports\DCS readback checklist.md`).
+* **Session 99** executed the resolution plan (`D:\Work\reports\Open gaps resolution plan and Opus 5.5
+  prompt s98.md`) on the process engineer's decision table (As-Built Part CX). Wave 1 closed A-31, A-32,
+  A-34 to A-37 and B-132 (decisions 182 to 184; A-38 raised); Wave 2 built B-129 to B-131 as decided
+  divergences, each on a harness switch, the seed identical on every leaf (decisions 185 to 187); Wave 3
+  stopped at E0, which fails (B-118's next step is the process engineer's); Wave 4 had nothing decided to
+  build; Wave 5 tabled the data gaps' stand-ins and drafted the checklist rows and the Körting request.
+  Suite: 2 190 passed, 5 862 skipped (V1 not mounted), 1 failed under load and passed alone (§CX.7).
 
 ## Next free numbers
 

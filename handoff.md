@@ -5,7 +5,8 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-11, session 98 (the routes researched; B-125's and B-126's options reworded).
+**Last updated:** 2026-11-11, session 99 (the resolution plan's Waves 1, 2, 3 to E0 and 5; B-118, B-125 and
+B-128 rewritten).
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -65,6 +66,7 @@ plant's own handles, TT-322005 inside Book2's band (+/- 2 K) and no trip:
 | 68.9 %, 46 min | the same | the same |
 
 Licensor's windows (Operating Manual III §5.2): N/C 2.90-3.10, TT-322005 180-183 C, PT-329201 136-143 bar.
+And A-34's atoms closed tick by tick on a turndown (`tests/phase7/test_loop_atoms.py`, §CX.1).
 
 **Established. Do not measure these again; cite the section.**
 
@@ -85,10 +87,9 @@ Licensor's windows (Operating Manual III §5.2): N/C 2.90-3.10, TT-322005 180-18
   plant's 2.115 is 2.047-2.053 here (§XCIII.3). HV-322605's anchor is 60.0 % at 100 %, so Book2's
   36.1 % is 43.27 % here (§CIV.1). FT-329403 is stream 901, 60.85 t/h at the design (§XCVIII.2).
   LT-329501 cannot reach Book2's 7 %: 322F001's suction is proportional to the level (§XCVI.2).
-* Session 95's collapse starts when 322E002's feed N/C falls through 3.0, onto the low-N/C branch
-  (decisions 142, 147): collapsed samples hold a melt N/C of 2.23-2.58, condensing ones 2.76-3.35. It is
-  a recycle of 14-21 minutes through 322R001, 322E003 and 322F001, its gain above one below about 2.8
-  (an inference); FFIC-321404's ratio sat on its floor and could not act (B-128; §CVIII.3).
+* Session 95's collapse is 322E002's feed N/C falling through 3.0 onto the low-N/C branch (decisions
+  142, 147), a recycle of 14-21 minutes through 322R001, 322E003 and 322F001, its gain above one below
+  about 2.8 [I]; the ratio sat on its floor (B-128; §CVIII.3). It chatters at the tick (§CX.8).
 * 322E002's saturation fraction reads 0.85-0.93 from L 0.92 to 0.80 in every session 95 arm: 7-15 % of
   its condensables recycle, its feed does not fall with the load, and P1's two bases differ (B-125).
 
@@ -100,26 +101,26 @@ Licensor's windows (Operating Manual III §5.2): N/C 2.90-3.10, TT-322005 180-18
 * The 322F001 lift (decision 180): p_disch,eff = p_disch - 2.41 (1 - r^2), r the motive ratio.
 * On the as-built stripper, `unit_322e001.SLIP_GAIN` 4.0. P6 is out: it changes nothing.
 
-**Session 95's verification (§CVII.3-4; runs in `D:\Work\reports\B118_bundle_verification_s95`).**
-92.3 % passes (TT-322005 182.4 C, no trip). 90.5 % has no trip but is out of band for 47-50 minutes
-(down to 178.3 C). 74.4, 69.3 and 68.9 % hold 181.4-182.5 C through the ramp, then fail 960-1 680 s
-after it: 322E002's saturation fraction collapses from L 0.76, its duty from 40 to 3 MW, and the loop
-pressure reaches trip 22.2's 155.0 bar a. The collapse comes with P1 on the load ratio alone; without
-P1, or with P1 on the feed mass, 322E002 holds and the reactor falls to 161-179 C.
+**Session 95's verification (§CVII.3-4).** 92.3 % passes; 90.5 % is trip-free, 47-50 min out of band;
+74.4, 69.3 and 68.9 % fail 960-1 680 s after the ramp on 322E002's collapse, with P1 on the load ratio.
+
+**Session 99's Wave 3 (§CX.8): stopped at E0, its first step.**
+* E0 fails: AY-322701's target ramped to 3.192 does not move the ratio, whose set point stays within
+  0.0011 of its 2.0 floor on the descent (B-128). The melt N/C is 2.44 at 2 880 s (L 0.764); trip 22.2 at 4 920 s. The
+  control (bundle A) trips at 4 680 s, session 95's A744 at 4 800 s: B-129's heat term, nothing else.
+* E1 cannot keep the seed: its saturation fraction dips to 0.99988 and its melt N/C walks 6.7e-4, so
+  any margin moves it (820 leaves; the console's tags unchanged). EU's ridge is at N/C 3.08 (B-125).
 
 **Open options and next step: the process engineer's choice.**
 
-* (a) Recommended. Continue in scratch on the audit's sequence (§CVIII.9): E0, the AY-322701 target
-  ramped to the plant's absolute value; E0t, the tick-resolution probe; E1 and E1r, the saturation law
-  fitted on Book2 (B-125); E2, P1 on the condenser's own feed mass with P4 and the lift on the five
-  holds; E3, 322R001's species holdup (B-126), then B-120's gain measured. First: E0 and E0t at 74.4 %.
-* (b) Build the bundle now as decided divergences: one hold of five passes, one is trip-free and out
-  of band, three trip.
+* (a) Accept a seed change of E1's size (the `STREAMS` records at about 1e-4, the console's tags
+  unchanged) as E1's criterion, then E1r, E2 and E3 in scratch as §CVIII.9 lists them.
+* (b) Decide B-128 first, then E0 again: with the floor binding no ratio target acts on the descent.
+* (c) Build session 95's bundle now as decided divergences (one hold of five passes).
 
-**B-120 folded in (decision 177, revised by decision 181).** V1's stripper slip gain drives a loop mode:
-gain 0 removes it at 92.3 % on the S2 prototype and at 111 % (§XCVIII.3), and alone on the committed
-engine runs the reactor 12.4 K colder at 92.3 % (§CIII.7). The gain stays 4.0. Setting it to 0 waits
-on the process engineer's review, apart from B-118's bundle.
+**B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode: gain 0 removes it
+at 92.3 % on the S2 prototype and at 111 % (§XCVIII.3), and alone runs the reactor 12.4 K colder at
+92.3 % (§CIII.7). The gain stays 4.0; 0 waits on the process engineer, apart from B-118's bundle.
 
 ### B-125 — 322E002's saturation law has no margin at the design and contradicts Book2
 
@@ -129,8 +130,12 @@ built it gives 0.857 at Book2's 92.3 % band and 0.798 at 69.3 %, where the plant
 `BUB_KN` at 0 it gives 1.000 and 0.920 (the melt N/C taken as AY-322701 + 0.2, an inference). The outlet
 temperature is an NTU quench of a 350 K spike, about -59 K per unit of ln UA. Options: (a) keep as built;
 (b) fit the ridge's location and a margin, both branches rising (§CIX.1), the deficit at most zero at every Book2 band,
-the seed unchanged, a harness switch, both sides measured (recommended, as B-118's steps E1 and E1r);
-(c) the outlet at the melt's bubble temperature, the conductance setting the duty, only if (b) fails.
+the seed unchanged, a harness switch, both sides measured (B-118's E1 and E1r); (c) the outlet at the
+melt's bubble temperature, the conductance setting the duty, only if (b) fails. Session 99 (§CX.8): the
+deficit is +6.4 to +11.2 bar at Book2's five bands; (b) needs a margin of 4.38 bar (ridge at 3.40 or
+above) to 11.20 bar (ridge at 3.0); the seed itself stands up to 0.0076 bar over the law's edge, so no
+margin leaves it unchanged. (b) as written cannot be met; whether its seed condition is relaxed is the
+process engineer's call (B-118's option (a)).
 
 ### B-126 — 322R001's 136 t of liquor has no composition
 
@@ -154,7 +159,10 @@ onto it as its departure, decision 104's class (recommended: the trace first, in
 *Raised 2026-11-11, session 97 (§CVIII.7).* `RATIO_SP_MIN` 2.0 is applied to the engine's ratio (design
 2.0231 for the plant's 2.086 molar): 1.1 % of downward authority against the plant's 5.4 %. Options: (a)
 keep as built; (b) the faceplate shows and takes the plant's basis; (c) the floor restated on the
-engine's basis. The process engineer's call (decision 160's class).
+engine's basis. The process engineer's call (decision 160's class). Session 99 (§CX.8): on the
+74.4 % ramp the set point sits on the floor from 960 to 1 440 s (within 0.0011 of it on E0's target), so B-118's
+E0 cannot act until this is decided. The DCS readback checklist's row 15 asks the faceplate's limits and
+basis.
 
 ---
 
@@ -176,9 +184,9 @@ decision 178's cross-check and no ledger row.*
 
 | # | Datum | Needed by | As built | Found so far | Route to close |
 |---|---|---|---|---|---|
-| 1 | 322F001's nozzle and mixing-throat geometry, loss coefficients and performance diagrams | `control/jet_pump.py`, `data/unit_322f001.py` | both areas back-solved from the licensor's design duty on open-literature loss coefficients; the design point exact, the stall margin not (B-12's 90.7 %, §LXXI.3); the lift a fixed 4.2 bar | no vendor geometry or curve in either archive (§LIX.4). The plant keeps the entrainment ratio from 69 to 102 % load, mu / mu_ref 1.031 +/- 0.044, n 15; the as-built closure stalls on that line at 69.9-80.7 %; a friction share of at least 2.41 bar of the lift passes it, a fit (§CV.3-4). Book2's points: LT-329501 11 % at HV-322602 40 % (69.3 %), 1 % at 54 % (80.4 %). LT-329501 is not in the 5 November trends, so the level term is unfitted | Körting's 14 diagrams, order 2/131/4/04219. The lift prototype is held with B-118 (decision 180) |
+| 1 | 322F001's nozzle and mixing-throat geometry, loss coefficients and performance diagrams | `control/jet_pump.py`, `data/unit_322f001.py` | both areas back-solved from the licensor's design duty on open-literature loss coefficients; the design point exact, the stall margin not (B-12's 90.7 %, §LXXI.3); the lift a fixed 4.2 bar | no vendor geometry or curve in either archive (§LIX.4). The plant keeps the entrainment ratio from 69 to 102 % load, mu / mu_ref 1.031 +/- 0.044, n 15; the as-built closure stalls on that line at 69.9-80.7 %; a friction share of at least 2.41 bar of the lift passes it, a fit (§CV.3-4). Book2's points: LT-329501 11 % at HV-322602 40 % (69.3 %), 1 % at 54 % (80.4 %). LT-329501 is not in the 5 November trends, so the level term is unfitted; session 99 (§CX.9): the friction share needed is 0-2.41 bar over the 15 windows, and no level law fits Book2's four points (V1's passes 1-23 % of the plant's suction there) | Körting's 14 diagrams, order 2/131/4/04219 (draft request: `D:\Work\reports\Koerting request draft s99.md`). The lift prototype is held with B-118 (decision 180) |
 | 2 | TT-322015's H2 hysteresis | I 22.1's release (B-56) | H2 110 C (the DCS readback, decision 103); hysteresis V1's 2 K, cleared below 108 C | the object display shows range 0-200 C, H1 100.0, H2 110.0, delay 0 and no hysteresis field (photograph of 24 October 2026) | checklist row 1: the engineering view of the limit; else the 2 K stand-in signed off |
-| 3 | Körting's performance curves of 324F002, 324F004 and 324F005 | `ejector_map`, B-57's interpolation on the synthesized maps (§XLIX.4, §L.1) | synthesized maps, anchored on the PFD's design loads; in-situ factors 0.919, 0.336, 0.497 | one duty point an ejector; no curve in the archive (§XLVIII.2). The plant's motive break-off, the datum a curve must meet: HIC-329605 between 55 and 64 % (HIC-329606 38-40 %) at PT-329207 4.20-4.24 bar g, 5 November 2026 13:11-13:16, 75 % load; the engine's vacuum still holds there (§CV.5) | Körting, orders 2/115/4/09674 and 2/232/4/00503; checklist row 13: 324E002's and 324E005's cold-end and cooling-water temperatures for 5 November 13:00-13:30 |
+| 3 | Körting's performance curves of 324F002, 324F004 and 324F005 | `ejector_map`, B-57's interpolation on the synthesized maps (§XLIX.4, §L.1) | synthesized maps, anchored on the PFD's design loads; in-situ factors 0.919, 0.336, 0.497 | one duty point an ejector; no curve in the archive (§XLVIII.2). The plant's motive break-off, the datum a curve must meet: HIC-329605 between 55 and 64 % (HIC-329606 38-40 %) at PT-329207 4.20-4.24 bar g, 5 November 2026 13:11-13:16, 75 % load; the engine's vacuum still holds there (§CV.5) | Körting, orders 2/115/4/09674 and 2/232/4/00503 (the same draft); checklist row 13: 324E002's and 324E005's cold-end and cooling-water temperatures for 5 November 13:00-13:30 |
 | 4 | LT-324501's taps | LI-324501 between its taps (decision 33's class) | V1's holdup ratio (§L.4) | one 80 mm instrument on the barometric leg at EL +8495 (isometric UD-RL-100-MB-0180, item 22); no second connection drawn; the span cannot be weighed from the trends (§CV.7) | checklist row 11: LRV, URV and the reference connection; a walk-down |
 | 5 | AC4 PC21's limits and elements: FY-322403's L2; PT-321211 / 221's L2; ST-321952 / 953's H2; the T elements' mode; the SR flip-flops' dominance; TRIP_84_8_FLAG1's L2 | trips 21.2, 21.8 and 21.10 (§LXV.6) | FY-322403's L2 V1's 5 %; PDY's L2 0.1 bar; the T elements on-delays; reset dominant; PT-321211 / 221, ST-321952 / 953 and TRIP_84_8 taken healthy | the limits are database entries; the scan does not resolve the timer symbol (UD-MR-G00-FF-0004 pages 5, 7, 20); TRIP_84_8 is the instrument air, two of PT-384207A / B / C below L2 (§LXXIII.2) | checklist rows 3 to 8, one readback session |
 | 8 | LT-323503's L2 hysteresis | 323P008's restart (B-96) | trip below 5 %, restart at 7 %: the 2 % stand-in of 2026-10-15 (§LXVIII.2) | the faceplate confirms L2 5.0 %, H1 80.0 %, L1 20.0 %, delay 0 s; no hysteresis shown | checklist row 2; else the stand-in signed off |

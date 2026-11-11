@@ -163,7 +163,8 @@ a Qt layout method gets none.
 * **Finalize before the context runs out (2026-10-09).** Always finalize the session — the four
   documents updated, the checks run, and the final report of §7 printed — before the
   conversation's context limit is reached; then compact. Never let a compaction cut a session off
-  with its documents or its report unwritten.
+  with its documents or its report unwritten. The auto-compact window is set to 400k tokens
+  (2026-11-11, the process engineer's `/autocompact 400k`).
 * **Surgical edits.** Change the lines that must change. Do not reformat a file you are visiting.
 * **Rebuild the thermodynamic node stores after any thermo change** (2026-10-03, handoff A-18):
   ``python tools/build_liquid_state_store.py``. A changed parameter or solver makes the stores
