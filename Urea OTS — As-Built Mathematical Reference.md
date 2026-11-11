@@ -21688,3 +21688,59 @@ and 0, with the gas CO2 to 322R001 held above 603 kmol/h at 92.3 % (decision 181
 
 * `grep -rn "PyQt6"` below the HMI layer prints nothing. The suite as CVIII.2. `git status` clean after the
   audit; the documents changed only in logging it.
+
+---
+
+# Part CIX — Session 98: the routes to the open gaps researched; the resolution plan (2026-11-11)
+
+Session 98 researched what documents and literature give for the open items, on the process engineer's
+request, and wrote the plan that resolves them and the prompt that executes it. No file under `ureasim/`,
+`tests/` or `tools/` changed, no relation changed, no decision was taken. The brief is
+`D:\Work\reports\Open gaps research brief s98.md`; the plan and the prompt
+`D:\Work\reports\Open gaps resolution plan and Opus 5.5 prompt s98.md`; the per-item records
+`D:\Work\reports\open_gaps_research_s98`.
+
+## CIX.1 The licensor's figures on the melt's bubble pressure (B-125, B-118)
+
+`References\Sources\Urea Production Diagrams.pdf`, Uhde's Fundamentals UD-VT-G00-DC-0003 rev 00, read from the
+page images. Figure 1 (page 1-30), liquid-gas equilibria of CO2-NH3 at constant pressure: the bubble-point
+and dew-point curves meet at a maximum temperature T_AZ at one composition X_AZ, and the bubble temperature
+falls on both sides of it; at constant temperature that is a pressure minimum, the pressure rising on both
+sides. Figure 2 (page 1-31), CO2-NH3-H2O: a liquid top-ridge line that moves with the water. Neither carries
+a scale. They support the rising branch below the ridge (decisions 142, 147) and do not support a flat law
+above it. CVIII.4's reading of Book2 (a slope of about zero above N/C 3.0) is therefore restated: Book2 runs
+AY-322701 3.19 to 3.25 at a lower loop pressure than the design's 3.00, which puts the plant's ridge above
+N/C 3.0. B-125's fit moves the ridge's location (`BUB_AZEOTROPE_NC`) and adds a margin, both branches rising.
+Open literature (search results only, no paper opened): a pressure minimum near N/C 3 and a design ratio of
+2.95; the quantitative top-ridge data are Lemkowitz's and were not reachable.
+
+## CIX.2 322R001's compartments (B-126)
+
+`data/unit_322r001.py:5` records eleven sieve trays. The vendor archive's table of contents (pages 887 and
+888) lists the reactor's file: the Technical Specification UD-AU-322-EC-0006, the Reactor Assembly
+UD-AU-322-DZ-0006-004 rev 07, Trays Detail -008 rev 04, Trays Holes Layout -009 and Calculations for Internal
+Trays -023; the first three located in `Soft copy\12\`. The specification is a scan and was not re-read, so
+the count stands on the data module's own source. Open literature (search results only): 7 to 12 trays, often
+10 or 11, a tray column modelled as mixed compartments in series. Step E3's holdup is twelve compartments,
+the count to be confirmed on drawing -008 before it is used.
+
+## CIX.3 What no source gives
+
+* The ABB Advant limit hysteresis (data gaps 2 and 8): no public source; the readback or the stand-ins.
+* Körting's curves (data gaps 1 and 3): vendor property; a request on orders 2/131/4/04219, 2/115/4/09674
+  and 2/232/4/00503.
+* A dynamic model of a heat-transfer-limited carbamate condenser under a load change: none found, so B-125's
+  option (c) has no template and stays a fallback.
+
+## CIX.4 The plan
+
+Five waves (the plan file's section 3): tests and records with no relation changed (A-31, A-34 to A-37,
+B-132, A-32); small decided divergences (B-129 to B-131, A-33 when `E:` is mounted); B-118 in scratch (E0 to
+E3 of CVIII.9, then E4, B-120's gain, and E5, B-127's trace); the builds the process engineer then decides;
+and the data gaps as far as a desk takes them (a stand-in table, the readback checklist extended, the Körting
+request, two scratch fits). The plan's section 2 is a decision table of defaults for the process engineer to
+edit; nothing in it is decided until then.
+
+## CIX.5 Checks
+
+* `grep -rn "PyQt6"` below the HMI layer prints nothing; `pytest tests/docs` passes.

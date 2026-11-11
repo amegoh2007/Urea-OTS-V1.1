@@ -4887,3 +4887,13 @@ carries no composition (B-126); 322E002's saturation law contradicts Book2's ban
 collapse read again in its archived runs: 322E002's feed N/C crossing 3.0 on a recycle (§CVIII.3).
 B-118's scratch sequence E0 to E3 proposed (§CVIII.9). Suite: 2 154 passed, 5 862 skipped (V1 not
 mounted), none failed; the PyQt6 grep prints nothing.
+
+### Session 98 — the routes to the open gaps researched; the resolution plan (2026-11-11)
+
+Session 97's documents committed (7ea8437). Then, on the process engineer's request, `/deep-research` (quick
+mode), `/research-deep` and `/soft-copy-search`, all inline: the licensor's Figures 1 and 2 give the shape of
+322E002's bubble-pressure law, a ridge with both branches rising, and no number (B-125's fit restated,
+§CIX.1); 322R001's eleven trays and its archive drawings located (B-126, §CIX.2); no public source for the
+Advant hysteresis or Körting's curves. The resolution plan, five waves, and its execution prompt written to
+`D:\Work\reports`; its decision table awaits the process engineer. No code, no relation and no decision
+changed; the record is As-Built Part CIX.

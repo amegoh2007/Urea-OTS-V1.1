@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-11, session 97 (the deep audit logged: A-31 to A-37 and B-125 to B-132 raised).
+**Last updated:** 2026-11-11, session 98 (the routes researched; B-125's and B-126's options reworded).
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -158,7 +158,7 @@ of all condensation per bar its deficit stands above zero, and the deficit is ze
 built it gives 0.857 at Book2's 92.3 % band and 0.798 at 69.3 %, where the plant condenses fully; with
 `BUB_KN` at 0 it gives 1.000 and 0.920 (the melt N/C taken as AY-322701 + 0.2, an inference). The outlet
 temperature is an NTU quench of a 350 K spike, about -59 K per unit of ln UA. Options: (a) keep as built;
-(b) fit the N/C slope above the branch and a margin so the deficit is at most zero at every Book2 band,
+(b) fit the ridge's location and a margin, both branches rising (§CIX.1), the deficit at most zero at every Book2 band,
 the seed unchanged, a harness switch, both sides measured (recommended, as B-118's steps E1 and E1r);
 (c) the outlet at the melt's bubble temperature, the conductance setting the duty, only if (b) fails.
 
@@ -168,7 +168,7 @@ the seed unchanged, a harness switch, both sides measured (recommended, as B-118
 product scaled to the hydraulic outflow. Measured 305 s after a 20 % CO2 cut: the overflow carries
 2 933 kmol/h more N and 576 kmol/h more C than the reaction step produced. A candidate cause of B-120's
 loop mode (an inference). Options: (a) keep as built; (b) carry the holdup's species, the overflow at the
-holdup's composition, identical at the seed, decisions 141 and 146's class (recommended, as step E3).
+holdup's composition, identical at the seed, twelve compartments on its eleven trays (§CIX.2), decisions 141 and 146's class (recommended, step E3).
 
 ### B-127 — The loop's design boundary does not close, and the reactor's tear follows the CO2 load
 

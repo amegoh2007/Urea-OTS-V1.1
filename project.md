@@ -2,7 +2,7 @@
 
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165)
-**Last updated:** 2026-11-11, session 97
+**Last updated:** 2026-11-11, session 98
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -29,14 +29,17 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   handoff items raised, none decided. Session 95's collapse is read as 322E002's feed N/C crossing 3.0
   on a recycle, and B-118's next steps are the scratch sequence E0 to E3 (§CVIII.9). No code and no
   relation changed. Suite: 2 154 passed, 5 862 skipped (V1 not mounted), none failed.
+* **Session 98** researched the routes to every open gap (As-Built Part CIX) and wrote the resolution plan
+  and the prompt that executes it (`D:\Work\reports\Open gaps resolution plan and Opus 5.5 prompt s98.md`):
+  five waves. Its decision table awaits the process engineer; nothing is decided or built.
 
 ## Next free numbers
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 98 | `docs/history/session-log.md` |
+| Session | 99 | `docs/history/session-log.md` |
 | Decision | 182 | `docs/decisions.md` |
-| As-Built Part | CIX | the As-Built reference, appended at its end |
+| As-Built Part | CX | the As-Built reference, appended at its end |
 | Handoff Section A | A-38 | `handoff.md` |
 | Handoff Sections B and C | B-133 | `handoff.md` |
 
