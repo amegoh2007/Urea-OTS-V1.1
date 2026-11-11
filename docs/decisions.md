@@ -988,4 +988,15 @@ decision on an item.
      stagnant reactor only) and decision 180's 322F001 lift on the as-built stripper (slip gain 4.0), verified next
      in scratch on the five holds with the seed stationary and the handles moved as departures from the engine's
      design seed, then wired as option (b) once measured. No relation changes (As-Built §CVI.8).
-
+182. **`data`'s place in the layering, enforced by a test** (2026-11-11, the process engineer's decision table of
+     the session 98 plan, A-31 (a)). `ureasim/data` sits beside the ranking between `control` and `units`: it may
+     import `thermo`, `core` and `control`; `thermo`, `core` and `control` read nothing from it but `thermo/empirical.py`'s
+     read of the leaf `data/design_point.py`. Stated in `CLAUDE.md` §1 rule 2; `tests/test_layering.py` enforces it with
+     rule 3's PyQt6 check. No import moved (As-Built §CX.2).
+183. **The console's gauge conversion is §4a's one decided exception** (2026-11-11, the same table, A-32 (a)). A
+     faceplate shows a pressure in bar g and sends its set point in bar a on `core.units_of_measure`'s atmosphere, the
+     engine's own; `hmi` may import `net`, `data` and that module of `core`. `CLAUDE.md` §4a rule 1 and
+     `docs/architecture.md` §3.2 say so (As-Built §CX.5).
+184. **`bracketed_root`'s exhaustions counted in the engine's health** (2026-11-11, the same table, A-37 (a)).
+     `core.numeric.ROOT_LEDGER` counts a solve that runs out of iterations with its bracket open; the session publishes
+     the count as `_health.roots_exhausted`. The root returned is unchanged to the bit (As-Built §CX.3).

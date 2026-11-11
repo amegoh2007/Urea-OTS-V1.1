@@ -21,7 +21,9 @@ shifts that let the analysers respond, and the telemetry the screens read.
 Conservation, and why it is worth a paragraph
 -----------------------------------------------
 Every stream operation below is written so that atoms and mass are conserved by construction
-rather than by correction. The two reactions are applied through one stoichiometric vector
+rather than by correction, from the corrected feed on: the pinned recycle tear
+(`REACT_TEAR_DES_KMOLH`, scaled by the CO2 load) is removed from the feed first, and is the one
+place atoms leave the loop (handoff B-127; `tests/phase7/test_loop_atoms.py`). The two reactions are applied through one stoichiometric vector
 each; the two composition shifts move species BETWEEN the overflow and the off-gas and never
 create or destroy any; `closure_resid` is computed and published as a diagnostic and is never
 injected back into a stream. An earlier version of this unit multiplied the off-gas by a gain

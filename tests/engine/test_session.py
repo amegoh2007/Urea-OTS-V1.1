@@ -88,7 +88,7 @@ def test_an_exercise_saved_and_restored_replays(tmp_path):
 
 def test_the_packet_is_published_with_its_health_and_recorded_on_v1s_paths(tmp_path):
     """Ten plant seconds: the packet carries V1's ``_health`` (clean, the heartbeat the steps
-    run); the historian has recorded the packet's paths ten times, and a trend's backfill reads
+    run, no bracketed solve run out of iterations, A-37); the historian has recorded the packet's paths ten times, and a trend's backfill reads
     them back."""
     s = EngineSession(tmp_path)
     assert s.published_state() == {}
@@ -98,6 +98,7 @@ def test_the_packet_is_published_with_its_health_and_recorded_on_v1s_paths(tmp_p
     assert p["t_sim"] == s.t_plant == 10.0
     h = p["_health"]
     assert h["ok"] is True and h["heartbeat"] == 100 and h["error"] is None
+    assert h["roots_exhausted"] == 0
     assert s.historian.stats()["fast"]["samples"] == 10
     q = s.history(["RECIRC_323.C003.TIC_323007.pv", "no.such.path"], 60.0)
     assert q["series"]["RECIRC_323.C003.TIC_323007.pv"][-1] == 135.0

@@ -69,7 +69,11 @@ This is the house style. It is not negotiable.
    ```
 
    An `import` that points *upward* is a defect. `thermo` must never know a reactor exists;
-   `hmi` must never compute a bubble point.
+   `hmi` must never compute a bubble point. `ureasim/data`, rule 7's constants, sits beside the
+   ranking between `control` and `units` (2026-11-11, decision 182): it may import `thermo`,
+   `core` and `control`, and `thermo`, `core` and `control` read nothing from it, except
+   `thermo/empirical.py`'s read of the leaf `data/design_point.py`. `tests/test_layering.py`
+   enforces these directions and rule 3.
 3. **The engine is headless. Nothing at or below `ureasim/net` may import Qt.**
    The simulator has a single local console (decision 149), and the engine still runs headless
    on its own physics thread behind a loopback server: physics stays strictly decoupled from
@@ -251,7 +255,9 @@ none of them is optional:
 
 1. **The engine owns the plant; a console owns nothing.** A console renders the snapshot it
    is sent and emits commands. It never computes, caches or corrects a value. A console
-   showing a number the engine did not publish for a tag is a defect by construction.
+   showing a number the engine did not publish for a tag is a defect by construction. The one
+   decided exception (2026-11-11, decision 183): a faceplate shows a pressure in bar g and sends
+   its set point in bar a, converting on `core.units_of_measure`'s atmosphere, the engine's own.
 2. **The engine enforces the process; the console separates plant operation from instructor
    controls in the UI.** The operator mimics and faceplates expose only what the plant DCS
    exposes — exactly what V1's operator screens allowed; re-classifying a plant control would

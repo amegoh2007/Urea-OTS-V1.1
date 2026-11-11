@@ -112,7 +112,10 @@ and the test suites and the Phase 7 runners drive the engine with no display.
 ```
 
 **Dependency rule:** imports flow downward only. `thermo` imports nothing from the project
-above it; `hmi` imports nothing below `engine`.
+above it but the leaf `data/design_point.py`; `data` sits beside the ranking between `control` and
+`units` (decision 182). `hmi` imports `net` and `data` and, below them, `core.units_of_measure`
+alone: the faceplates convert a gauge display to absolute and back on the engine's own atmosphere
+(decision 183, handoff A-32). `tests/test_layering.py` enforces every direction.
 
 ### 3.3 Directory layout
 

@@ -6,7 +6,7 @@ import math
 
 import pytest
 
-from ureasim.core.numeric import bracketed_root, clamp, clamp_preserving_nan
+from ureasim.core.numeric import ROOT_LEDGER, bracketed_root, clamp, clamp_preserving_nan
 
 
 def test_the_two_clamps_differ_only_on_a_nan():
@@ -36,3 +36,19 @@ def test_the_bracketed_root_handles_a_falling_function_and_a_kink():
 
     root = bracketed_root(fn, 0.0, 1.0, fn(0.0), fn(1.0), tol=1e-10)
     assert root == pytest.approx(1.6 / 2.2, abs=1e-9)
+
+
+def test_a_solve_that_runs_out_of_iterations_is_counted_and_returns_as_before():
+    """A-37 (decision 184): a residual with a step in it, the shape a thermo memo's bin edge gives
+    (decision 163), holds the bracket open through all 80 iterations; the solve returns the bracket's
+    midpoint, as it always did, and the ledger counts it once. A solve that converges is not
+    counted."""
+    def step(x: float) -> float:
+        return 1.0e6 if x >= 0.5 else -1.0
+
+    before = ROOT_LEDGER.exhausted
+    root = bracketed_root(step, 0.0, 1.0, step(0.0), step(1.0))
+    assert ROOT_LEDGER.exhausted == before + 1
+    assert root == pytest.approx(0.5, abs=0.01) and root != 0.5
+    bracketed_root(lambda x: 0.3 - x ** 3, 0.0, 1.0, 0.3, -0.7)
+    assert ROOT_LEDGER.exhausted == before + 1

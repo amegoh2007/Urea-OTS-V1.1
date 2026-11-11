@@ -17,7 +17,7 @@ import math
 from typing import Callable
 
 __all__ = ["clamp", "clamp_preserving_nan", "is_finite_positive", "bracketed_root",
-           "SECONDS_PER_HOUR"]
+           "RootLedger", "ROOT_LEDGER", "SECONDS_PER_HOUR"]
 
 #: One hour in seconds. Every flow in this engine is kg/h or kmol/h while every integration
 #: step is in seconds, so this factor appears in almost every accumulation term.
@@ -69,6 +69,26 @@ def is_finite_positive(x: float) -> bool:
     return math.isfinite(x) and x > 0.0
 
 
+class RootLedger:
+    """How many bracketed solves ran out of iterations with their bracket still open.
+
+    Process utility
+    ---------------
+    A residual with a step in it — a thermo memo's bin edge (decision 163) — can hold a bracket
+    open through every iteration, and the solve then returns its midpoint without saying so. The
+    ledger counts each such return so the engine can publish it in its health (handoff A-37,
+    decision 184). It is a diagnostic: nothing in the physics reads it, and the root returned is
+    the same to the bit whether it counts or not.
+    """
+
+    def __init__(self) -> None:
+        self.exhausted = 0
+
+
+#: The process's one ledger; the engine reads its count, the solver adds to it.
+ROOT_LEDGER = RootLedger()
+
+
 def bracketed_root(fn: Callable[[float], float], lo: float, hi: float, f_lo: float, f_hi: float,
                    tol: float = 1e-12, max_iter: int = 80) -> float:
     """A root of ``fn`` inside ``[lo, hi]``, where ``f_lo`` and ``f_hi`` bracket it in sign.
@@ -84,6 +104,8 @@ def bracketed_root(fn: Callable[[float], float], lo: float, hi: float, f_lo: flo
     ------
     False position on the bracket, the retained end's value halved whenever the same end is
     kept twice (Illinois), until the bracket is narrower than ``tol`` or ``fn`` is zero to it.
+    A solve that runs out of iterations with the bracket still wider than ``tol`` returns the
+    bracket's midpoint, as before, and adds one to `ROOT_LEDGER` (handoff A-37).
     """
     side = 0
     for _ in range(max_iter):
@@ -105,4 +127,7 @@ def bracketed_root(fn: Callable[[float], float], lo: float, hi: float, f_lo: flo
             if side == 1:           # the high end kept twice running
                 f_hi *= 0.5
             side = 1
+    else:
+        if hi - lo > tol:           # out of iterations, the bracket still open
+            ROOT_LEDGER.exhausted += 1
     return 0.5 * (lo + hi)

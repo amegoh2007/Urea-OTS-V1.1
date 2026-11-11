@@ -58,6 +58,7 @@ import traceback
 from pathlib import Path
 from typing import Any, Mapping
 
+from ureasim.core.numeric import ROOT_LEDGER
 from ureasim.data.engine import SIM_SPEED
 from ureasim.engine import snapshot
 from ureasim.engine.command import SIMULATOR_COMMANDS, apply_command
@@ -103,6 +104,8 @@ class EngineSession:
         self._health = {"ok": True, "error": None, "type": None, "traceback": None,
                         "sim_t": None, "since": None, "count": 0}
         self._last_step_wall = time.time()
+        #: The bracketed solves that ran out of iterations before this session began (A-37).
+        self._roots_before = ROOT_LEDGER.exhausted
 
     @property
     def plant(self) -> PlantState:
@@ -148,13 +151,16 @@ class EngineSession:
 
     def health(self, now: float | None = None) -> dict:
         """V1's ``_health`` block: whether the plant is stepping cleanly, its heartbeat (the steps
-        run), the seconds since the last good step and, after a fault, what raised."""
+        run), the seconds since the last good step and, after a fault, what raised; and the
+        rewrite's count of bracketed solves that ran out of iterations since the session began
+        (``roots_exhausted``, handoff A-37, decision 184)."""
         now = time.time() if now is None else now
         return {"ok": self._health["ok"], "heartbeat": self.simulator.steps,
                 "age_s": round(now - self._last_step_wall, 2), "error": self._health["error"],
                 "type": self._health["type"], "traceback": self._health["traceback"],
                 "sim_t": self._health["sim_t"], "since": self._health["since"],
-                "count": self._health["count"], "server_wall": now}
+                "count": self._health["count"], "server_wall": now,
+                "roots_exhausted": ROOT_LEDGER.exhausted - self._roots_before}
 
     # ---- what the consoles read ----
 

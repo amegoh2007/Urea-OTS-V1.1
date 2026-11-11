@@ -20,22 +20,7 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 # Section A — Rewrite issues
 
-Raised 2026-11-11, session 97, by the deep audit (As-Built Part CVIII; report
-`D:\Work\reports\Deep audit 2026-11-11.md`). None is decided. Each closes with the test it names.
-
-### A-31 — `data` has no place in the layering, and `thermo` imports it
-
-`thermo/empirical.py:74` imports `ureasim.data.design_point`; 66 imports in `ureasim/data/` reach `thermo`,
-`core` and `control` (§CVIII.8). `Claude.md` §1 rules 2 and 7 pull opposite ways. Options: (a) state
-`data`'s place in rule 2 and enforce the import directions by a test, `tests/test_layering.py`
-(recommended); (b) move the constants `thermo` reads into `thermo`.
-
-### A-32 — The console converts gauge and absolute pressure itself
-
-`hmi/faceplates/controller.py:181` and `master_setpoint.py:35,133,140` add and subtract the atmosphere;
-`hmi/state_access.py:35` imports `core` (§CVIII.8). One constant serves both, so no value is wrong.
-Options: (a) record it as §4a's decided exception and correct `docs/architecture.md` §3.2
-(recommended); (b) the engine publishes display values and takes unit-tagged set points.
+A-33 was raised 2026-11-11 by session 97's deep audit (As-Built Part CVIII); A-38 by session 99 (§CX.6).
 
 ### A-33 — Without V1 mounted the equivalence layer does not run
 
@@ -43,29 +28,14 @@ Options: (a) record it as §4a's decided exception and correct `docs/architectur
 Options: (a) golden vectors of V1's outputs in `tests/equivalence/`, written by a tool when `E:` is
 mounted, and a switch that fails a release run on a V1 skip (recommended); (b) keep as built.
 
-### A-34 — No test covers an element, energy across the loop, or a load ramp
+### A-38 — Sixteen modules are tested only through the plant
 
-`tests/engine/test_dynamic_audit.py:103-157` closes four holdups' mass for a minute (§CVIII.8). Proposed:
-`tests/phase7/test_loop_atoms.py`, each synthesis unit's N, C, H and O on every tick of a disturbance to
-1e-9 kmol/h, B-126 and B-127 its named exceptions until they close; a turndown test when B-118 closes.
-
-### A-35 — 75 of 237 modules have no test file of their name
-
-`Claude.md` §6 asks for a one-to-one mirror (§CVIII.2). Many are covered under another name. To do:
-one table of module against covering test, and an item for each module with none.
-
-### A-36 — Three records disagree with the code
-
-`reactor.py:22-27` claims conservation by construction without naming the tear (B-127); the As-Built
-reference's maintenance rule names V1's old path; §CVII.4's "condensed fraction" is the flash's gas
-fraction, corrected in §CVIII.3. To do: the first two, one line each.
-
-### A-37 — `bracketed_root` returns silently when it runs out of iterations
-
-`core/numeric.py:72-108`: the bracket's midpoint after 80 iterations, no flag, one tolerance for the width
-and the residual (§CVIII.7). A residual with a step in it (a memo bin edge, decision 163) can exhaust it
-unseen. Options: (a) count exhaustions in the engine's health, the result unchanged to the bit
-(recommended); (b) keep as built.
+*Raised 2026-11-11, session 99 (As-Built §CX.6; A-35's reconciliation).* No test imports or names
+`engine.plant.absorption`, `engine.plant.boundary`, `hmi.trend.plot`, `hmi.widgets.bargraph`,
+`hmi.widgets.icon_geometry`, `hmi.widgets.icons`, `thermo.activity`, `thermo.henry`, `thermo.kvalues`,
+`thermo.speciation`, `thermo.splits`, `thermo.srk`, `thermo.standard_state`, `thermo.vle_grid`,
+`units.synthesis.hp_split` or `units.synthesis.reactor_calibration`; six more are reached only by V1 equivalence
+suites (§CX.6). To do: a behaviour test of each, the thermo ones on the stores' own fixed points.
 
 ---
 
@@ -204,12 +174,6 @@ good sample, V1's on the harness switch.
 *Raised 2026-11-11, session 97 (§CVIII.7).* `interlocks.py:135-143` and `:164-171`: a NaN fails both
 comparisons, so trip 22.2 does not fire on one. The dynamic audit's finite-value check mitigates it.
 Options: (a) keep as built; (b) a non-finite PV is live.
-
-### B-132 — Two forms of the liquid critical-pressure factor
-
-*Raised 2026-11-11, session 97 (§CVIII.7).* `valve.py:233` and `:316` hold F_F at 0.96; `:377` uses
-0.96 - 0.28 sqrt(Pv / Pc) on water's Pc. Each pair is self-consistent; no valve was checked. To do: a
-test that walks every valve in `data/` and asserts its sizing and its live law use one form.
 
 ---
 

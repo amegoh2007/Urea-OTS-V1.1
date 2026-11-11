@@ -9,7 +9,7 @@ Design basis: `References/Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md
 > **Maintenance rule (`Claude.md` §3).** This document is updated in the same session as the code.
 > An equation that changes in `ureasim/` and not here is a defect. A `[PORTED]` tag below means the
 > relation is live in V1.1 and covered by an equivalence test; `[V1]` means it is still only in
-> `D:\Work\Urea Simulation\backend` and awaits porting.
+> `E:\Simulator\Urea Simulation\backend` (decision 165) and awaits porting.
 
 ---
 
@@ -21744,3 +21744,186 @@ edit; nothing in it is decided until then.
 ## CIX.5 Checks
 
 * `grep -rn "PyQt6"` below the HMI layer prints nothing; `pytest tests/docs` passes.
+
+---
+
+# Part CX — Session 99: the resolution plan executed (2026-11-11)
+
+Session 99 executed the resolution plan of Part CIX (`D:\Work\reports\Open gaps resolution plan and Opus 5.5
+prompt s98.md`, sections 2 and 3) on the process engineer's prompt of 2026-11-11, whose section 2 decision table
+is the authority for every divergence built here (decisions 182 to 187). `E:\Simulator` was not mounted: every
+V1-side test skipped, and each V1 side asserted below is asserted on the rewrite's harness switch, not against V1's
+code. Scratch work is in the session scratchpad; prototypes are monkeypatches, nothing under `ureasim/` was edited
+for an experiment.
+
+## CX.1 Wave 1, A-34: the loop's atoms closed tick by tick
+
+`tests/phase7/test_loop_atoms.py`, nine tests. A minute of 320K002's CO2 demand cut a fifth and HV-322605 throttled
+to 45 % from five seconds after the seed; on every tick N, C, H and O are closed across each unit's call. Worst
+residual over the 600 ticks, kmol/h of any element:
+
+| boundary | residual |
+|---|---|
+| 322E001's tubes: tube feed to top gas and bottoms | 7.3e-12 |
+| 322E001's tube feed against the reactor's overflow of the tick before plus the CO2 sweep | 3.6e-12 |
+| 322F001: motive and suction (at 322E003's `y_overflow` of the tick before) to discharge | 3.6e-12 |
+| 322E002: feed to gas and liquid | 7.3e-12 |
+| 322E002's feed against 322E001's top gas plus 322F001's discharge | 7.3e-12 |
+| 322R001's reaction: corrected feed to overflow and off-gas, the boil included | 7.3e-12 |
+| 322E003's tubes: feed (off-gas, wash, carry) to vent and overflow | 9.1e-13 |
+
+The two named exceptions, asserted as what they are:
+
+* **B-127.** The reactor's feed less its corrected feed is `REACT_TEAR_DES_KMOLH` times the CO2 load ratio,
+  species by species to 1e-9, on every tick: N 121.45, C 1.25, H 359.07, O 1.84 kmol/h at the design (121.26 N at
+  the first tick of the cut, s = 0.99845).
+* **B-126.** The overflow `ReactorInventory` sends on is the reaction's overflow times m_out / m_reaction, species by
+  species, to 0.0 kmol/h: the holdup carries no composition. On the first tick after HV-322605's throttle the
+  overflow's nitrogen is 1 595.22 kmol/h below the reaction's (H 5 226.66 kmol/h).
+
+322E001's sump, 322E002's holdup and 322E003's sump are mass-only holdups of B-126's class: each passes on the
+composition of the tick it was filled on (322E003's `y_overflow` is its last overflow's mass fractions,
+`scrubber_sump.py:158`). They lie outside the units' calls the test closes; no new item was raised for them. A-34's
+turndown test waits on B-118 and is one of its acceptance tests.
+
+## CX.2 Wave 1, A-31: the import directions measured and enforced (decision 182)
+
+The package graph read by `ast` over `ureasim/`: 664 cross-package imports on 20 package pairs.
+
+| from | to: count |
+|---|---|
+| `hmi` | `net` 2, `data` 31, `core` 1 (`hmi/state_access.py:35`, A-32) |
+| `net` | `engine` 1, `data` 2 |
+| `engine` | `units` 47, `control` 6, `core` 8, `thermo` 4, `data` 70 |
+| `units` | `control` 46, `core` 119, `thermo` 94, `data` 157 |
+| `control` | `core` 5 |
+| `core` | `thermo` 4 |
+| `data` | `control` 2 (`unit_322f001.py:42`, `valve_sizing.py:34`), `core` 29, `thermo` 35 |
+| `thermo` | `data` 1 (`thermo/empirical.py:74`, `data.design_point`, which imports nothing of `ureasim`) |
+
+No ranked layer imports upward. `CLAUDE.md` §1 rule 2 now places `data` beside the ranking between `control` and
+`units`, with `thermo/empirical.py`'s read of the leaf `data/design_point.py` its one exception, and
+`tests/test_layering.py` (eleven tests) enforces both directions, the console's imports (decision 183) and rule 3's
+PyQt6 grep. No import moved.
+
+## CX.3 Wave 1, A-37: the bracketed root's exhaustions counted (decision 184)
+
+`core.numeric.ROOT_LEDGER` counts each `bracketed_root` solve that runs out of its iterations with the bracket still
+wider than `tol`; the root returned is the bracket's midpoint as before, so no result changes. The engine session
+publishes the count since it began as `_health.roots_exhausted`. A residual with a step (1e6 above x = 0.5, -1 below)
+holds the bracket open through all 80 iterations and is counted once; a smooth residual is not. Measured on the
+plant: 0 at the seed over 60 s, and 0 through 300 s of the CO2 cut of CX.1. The thermo node stores hash only `thermo`
+sources, so they stay valid.
+
+## CX.4 Wave 1, B-132: one form of F_F for each valve
+
+Walked on the tree (`tests/control/test_valve.py`, six tests): every liquid valve the engine runs calls
+`valve_liquid_anchored`, nine calls in seven modules (`first_desorber`, `hydrolyser`, `second_desorber`,
+`flash_tank`, `rectifying_column`, `steam_valves` three, `stripper_sump`), whose design reference and live flow both
+evaluate F_F = 0.96 - 0.28 sqrt(Pv / Pc) in the same `_phi_liquid`. Nothing outside `control/valve.py` calls the
+flat-intercept pair (`valve_flow_liquid`, `cv_from_design_liquid`, `gravity_outflow_kgh`); only the equivalence
+suite drives it against V1. The vendor catalogues (`valve_sizing`, `control_valves`, `_metso`, `_fisher`) take the
+design stroke from the vendor's printed capacity ratio and compute no choke. No mismatch; no relation changed.
+
+## CX.5 Wave 1, A-36 and A-32: the records corrected (decision 183)
+
+* `reactor.py`'s docstring names the tear: atoms are conserved from the corrected feed on, and the pinned recycle
+  tear is the one place they leave the loop (B-127). This reference's maintenance rule names V1's tree at
+  `E:\Simulator\Urea Simulation\backend` (decision 165). §CVII.4's "condensed fraction" was corrected in §CVIII.3.
+* A-32 (a): the faceplates show pressure in bar g and send set points in bar a on `core.units_of_measure`'s
+  atmosphere, the engine's own (`faceplates/controller.py:181`, `master_setpoint.py:35,133,140`), recorded as
+  `CLAUDE.md` §4a rule 1's one decided exception; `docs/architecture.md` §3.2's dependency rule corrected.
+
+## CX.6 Wave 1, A-35: the module-to-test table
+
+262 modules (the package `__init__`s with code counted), 84 with no `test_<module>*.py`. 68 of them are imported or
+named by a test of another name; six only by V1 equivalence suites, which skip without `E:` (`core.signal`,
+`data.unit_329_ccw`, `thermo.memo`, `thermo.parameters`, `units.feed.feed_drum`, `units.feed.station`); 16 by no
+test directly, exercised only through the plant: A-38.
+
+| module | covered by (a test that imports it, or names it) |
+|---|---|
+| `ureasim` | `control/test_interlocks.py`, `control/test_ratio.py` and 247 more |
+| `control.jet_pump` | `equivalence/test_ejector_equivalence.py`, `units/synthesis/test_ejector.py` |
+| `core.signal` | `equivalence/test_core_equivalence.py` |
+| `data` | `core/test_units_of_measure.py`, `data/test_console_packet.py` and 177 more |
+| `data.design_point` | `data/test_control_valves.py`, `engine/test_check_valve_audit.py` and 27 more |
+| `data.desorption_train` | `engine/test_dynamic_audit.py`, `engine/test_simulator.py` and 17 more |
+| `data.indicator_lags` | `equivalence/test_indicators_equivalence.py`, `units/synthesis/test_indicators.py` |
+| `data.process_routes` | `core/test_flowsheet.py`, `equivalence/routes_switch.py` and 3 more |
+| `data.screen_layout` | `data/test_intro.py`, `engine/packet/test_packet.py` and 7 more |
+| `data.unit_320` | `core/test_units_of_measure.py`, `data/test_control_valves.py` and 9 more |
+| `data.unit_322_loop` | `data/test_tube_plugging.py`, `engine/packet/test_status.py` and 7 more |
+| `data.unit_322c001` | `core/test_vessel_geometry.py`, `equivalence/test_atmospheric_absorber_equivalence.py` and 8 more |
+| `data.unit_322e002` | `data/test_tube_plugging.py`, `engine/test_check_valve_audit.py` and 6 more |
+| `data.unit_322e003` | `data/test_tube_plugging.py`, `equivalence/b16_switch.py` and 14 more |
+| `data.unit_322e006` | `equivalence/test_lp_absorber_decided_equivalence.py`, `units/absorption/test_feed_cooler.py` and 1 more |
+| `data.unit_322f001` | `equivalence/test_ejector_equivalence.py`, `equivalence/test_scrubber_equivalence.py` and 2 more |
+| `data.unit_322r001` | `equivalence/test_carbamate_condenser_equivalence.py`, `equivalence/test_indicators_equivalence.py` and 16 more |
+| `data.unit_323c005` | `engine/test_state.py`, `equivalence/test_ammonia_water_tank_equivalence.py` and 7 more |
+| `data.unit_323e003` | `data/test_control_valves.py`, `engine/test_state.py` and 5 more |
+| `data.unit_323e011` | `data/test_control_valves.py`, `engine/test_dynamic_audit.py` and 7 more |
+| `data.unit_328c002` | `data/test_control_valves.py`, `engine/test_check_valve_audit.py` and 6 more |
+| `data.unit_328c003` | `data/test_control_valves.py`, `equivalence/test_first_desorber_equivalence.py` and 2 more |
+| `data.unit_328c004` | `engine/test_check_valve_audit.py`, `equivalence/test_second_desorber_control_equivalence.py` and 4 more |
+| `data.unit_328d001` | `engine/packet/test_desorption.py`, `engine/test_dynamic_audit.py` and 4 more |
+| `data.unit_328d003` | `data/test_control_valves.py`, `engine/packet/test_desorption.py` and 14 more |
+| `data.unit_328e007` | `equivalence/test_feed_effluent_interchanger_equivalence.py`, `units/desorption/test_feed_effluent_interchanger.py` |
+| `data.unit_329` | `core/test_units_of_measure.py`, `data/test_control_valves.py` and 25 more |
+| `data.unit_329_ccw` | `equivalence/ccw_tuning_switch.py`, `equivalence/test_synthesis_loop_equivalence.py` |
+| `data.unit_329_network` | `core/test_units_of_measure.py`, `equivalence/test_steam_network_equivalence.py` and 3 more |
+| `data.unit_335` | `equivalence/test_uf85_dosing_equivalence.py`, `units/evaporation/test_melt_route.py` and 1 more |
+| `engine.packet._common` | `engine/packet/conftest.py` |
+| `engine.plant` | `data/test_faceplates.py`, `engine/packet/conftest.py` and 29 more |
+| `engine.plant.absorption` | **none directly**; exercised through the plant |
+| `engine.plant.boundary` | **none directly**; exercised through the plant |
+| `hmi` | `core/test_units_of_measure.py`, `data/test_trend.py` and 34 more |
+| `hmi.faceplates.base` | `hmi/faceplates/test_indicator.py` |
+| `hmi.intro.__main__` | `hmi/intro/test_intro_main.py` |
+| `hmi.intro.camera` | `hmi/intro/test_intro_camera.py`, `hmi/intro/test_intro_flyby.py` |
+| `hmi.intro.canvas` | `hmi/intro/test_intro_canvas.py` |
+| `hmi.intro.flyby` | `hmi/intro/test_intro_flyby.py`, `hmi/intro/test_intro_init.py` |
+| `hmi.intro.model3d` | `hmi/intro/test_intro_flyby.py`, `hmi/intro/test_intro_model3d.py` |
+| `hmi.intro.ops` | `hmi/intro/test_intro_flyby.py`, `hmi/intro/test_intro_ops.py` and 2 more |
+| `hmi.intro.painter` | `hmi/intro/test_intro_painter.py`, `hmi/intro/test_intro_layering.py` |
+| `hmi.intro.scene` | `hmi/intro/test_intro_flyby.py`, `hmi/intro/test_intro_painter.py` and 3 more |
+| `hmi.intro.sequencer` | `hmi/intro/test_intro_sequencer.py`, `hmi/intro/test_intro_splash.py` and 1 more |
+| `hmi.intro.splash` | `hmi/intro/test_intro_canvas.py`, `hmi/intro/test_intro_init.py` and 3 more |
+| `hmi.intro.timeline` | `hmi/intro/test_intro_timeline.py` |
+| `hmi.screen_view` | `hmi/test_screen_geometry.py` |
+| `hmi.state_access` | `core/test_units_of_measure.py`, `engine/packet/test_packet.py` and 8 more |
+| `hmi.theme` | `data/test_trend.py`, `hmi/test_screen_geometry.py` |
+| `hmi.trend.plot` | **none directly**; exercised through the plant |
+| `hmi.trend.table` | `hmi/trend/test_window.py` |
+| `hmi.widgets` | `hmi/test_main_window.py`, `hmi/test_screen_geometry.py` and 1 more |
+| `hmi.widgets.bargraph` | **none directly**; exercised through the plant |
+| `hmi.widgets.base` | `hmi/test_main_window.py` |
+| `hmi.widgets.hotspots` | `hmi/test_screen_geometry.py` |
+| `hmi.widgets.icon_geometry` | **none directly**; exercised through the plant |
+| `hmi.widgets.icons` | **none directly**; exercised through the plant |
+| `net` | `hmi/test_bridge.py`, `net/test_engine_host.py` and 5 more |
+| `thermo.activity` | **none directly**; exercised through the plant |
+| `thermo.domains` | `equivalence/test_core_equivalence.py`, `equivalence/test_first_desorber_equivalence.py` and 6 more |
+| `thermo.extended_uniquac` | `equivalence/test_thermo_models_equivalence.py`, `thermo/test_urea_melt.py` |
+| `thermo.henry` | **none directly**; exercised through the plant |
+| `thermo.kinetics` | `equivalence/test_reactor_equivalence.py`, `equivalence/test_stripper_equivalence.py` and 1 more |
+| `thermo.kvalues` | **none directly**; exercised through the plant |
+| `thermo.memo` | `equivalence/test_service_equivalence.py` |
+| `thermo.parameters` | `equivalence/test_reactor_equivalence.py` |
+| `thermo.real_gas` | `equivalence/test_lp_absorber_decided_equivalence.py`, `equivalence/test_purge_valve_equivalence.py` and 3 more |
+| `thermo.speciation` | **none directly**; exercised through the plant |
+| `thermo.splits` | **none directly**; exercised through the plant |
+| `thermo.srk` | **none directly**; exercised through the plant |
+| `thermo.standard_state` | **none directly**; exercised through the plant |
+| `thermo.vle_grid` | **none directly**; exercised through the plant |
+| `units.absorption` | `core/test_units_of_measure.py`, `equivalence/test_lp_absorber_decided_equivalence.py` and 7 more |
+| `units.feed.feed_drum` | `equivalence/test_feed_equivalence.py` |
+| `units.feed.station` | `equivalence/test_ejector_equivalence.py`, `equivalence/test_feed_equivalence.py` |
+| `units.finishing` | `engine/test_dynamic_audit.py`, `equivalence/test_uf85_dosing_equivalence.py` and 1 more |
+| `units.synthesis.ccw_loop` | `equivalence/test_synthesis_loop_equivalence.py`, `units/synthesis/test_holdups_and_water.py` |
+| `units.synthesis.condenser_holdup` | `engine/test_dynamic_audit.py`, `equivalence/test_synthesis_loop_equivalence.py` and 1 more |
+| `units.synthesis.hp_split` | **none directly**; exercised through the plant |
+| `units.synthesis.reactor_calibration` | **none directly**; exercised through the plant |
+| `units.synthesis.reactor_column` | `equivalence/test_reactor_equivalence.py`, `units/synthesis/test_reactor.py` |
+| `units.synthesis.reactor_hydraulics` | `equivalence/test_reactor_equivalence.py`, `units/synthesis/test_reactor.py` and 1 more |
+| `units.synthesis.scrubber_sump` | `equivalence/test_synthesis_loop_decided_equivalence.py`, `units/synthesis/test_holdups_and_water.py` |
