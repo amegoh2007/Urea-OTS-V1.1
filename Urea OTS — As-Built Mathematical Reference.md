@@ -22207,3 +22207,18 @@ failure, beside two engine runs, is that assertion [I: the race]. Raised as A-39
 
 * `git status` clean and HEAD at 52cfb57 before the documents were edited; `pytest tests/docs` passes after.
 * The suite as CXI.1 gives it; `grep -rn "PyQt6"` below the HMI layer prints nothing.
+
+---
+
+# Part CXII — Session 101: B-118's scratch programme on session 100's plan; A-39 closed (2026-11-11)
+
+Session 101 ran the plan of `D:\Work\reports\Session 99 review and session 101 plan and prompt.md` (sections 3
+and 4) on the process engineer's decision table. Every experiment is a monkeypatch in a scratch script, run on a
+byte copy of the tree at 0312941; no file under `ureasim/` changed and no relation changed. The one change to the
+tree is the test of CXII.1. `[I]` marks an inference.
+
+## CXII.1 The frozen-console test waits for the running label (A-39)
+
+`tests/hmi/test_console_while_frozen.py:171` asserted `ENGINE RUNNING` as soon as the released plant's clock
+moved. It now waits for the label, up to 10 s, as the test waits for every other state. Run twenty times while
+ten of this session's engine arms ran beside it: 20 passed, 17.8 to 21.7 s each. A-39 is closed.

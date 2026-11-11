@@ -2,7 +2,7 @@
 
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165)
-**Last updated:** 2026-11-11, session 100
+**Last updated:** 2026-11-11, session 101
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -18,7 +18,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A three (A-33, A-38 and A-39), Section B five (B-118 with B-120 folded in, and
+* **Open.** `handoff.md`: Section A two (A-33 and A-38), Section B five (B-118 with B-120 folded in, and
   B-125 to B-128), Section C none, 8 open data gaps. Every data gap waits on a vendor curve or on one
   plant DCS readback session (`D:\Work\reports\DCS readback checklist.md`).
 * **Session 99** executed the resolution plan (`D:\Work\reports\Open gaps resolution plan and Opus 5.5
@@ -37,9 +37,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 101 | `docs/history/session-log.md` |
+| Session | 102 | `docs/history/session-log.md` |
 | Decision | 188 | `docs/decisions.md` |
-| As-Built Part | CXII | the As-Built reference, appended at its end |
+| As-Built Part | CXIII | the As-Built reference, appended at its end |
 | Handoff Section A | A-40 | `handoff.md` |
 | Handoff Sections B and C | B-133 | `handoff.md` |
 

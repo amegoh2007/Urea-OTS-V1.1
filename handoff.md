@@ -5,8 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-11, session 100 (session 99 reviewed on its runs: B-118, B-125 and B-128 rewritten;
-A-39 raised).
+**Last updated:** 2026-11-11, session 101 (A-39 closed).
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -21,8 +20,7 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 # Section A — Rewrite issues
 
-A-33 was raised 2026-11-11 by session 97's deep audit (As-Built Part CVIII); A-38 by session 99 (§CX.6);
-A-39 by session 100 (§CXI.4).
+A-33 was raised 2026-11-11 by session 97's deep audit (As-Built Part CVIII); A-38 by session 99 (§CX.6).
 
 ### A-33 — Without V1 mounted the equivalence layer does not run
 
@@ -38,13 +36,6 @@ mounted, and a switch that fails a release run on a V1 skip (recommended); (b) k
 `thermo.speciation`, `thermo.splits`, `thermo.srk`, `thermo.standard_state`, `thermo.vle_grid`,
 `units.synthesis.hp_split` or `units.synthesis.reactor_calibration`; six more are reached only by V1 equivalence
 suites (§CX.6). To do: a behaviour test of each, the thermo ones on the stores' own fixed points.
-
-### A-39 — The frozen-console test races the engine label
-
-*Raised 2026-11-11, session 100 (As-Built §CXI.4).* `tests/hmi/test_console_while_frozen.py:170-171` waits
-for the released plant's clock and asserts the label `ENGINE RUNNING` with no wait. It failed once beside two
-engine runs (§CX.7) and passes alone. To do: wait for the label as the test waits for everything else, and
-pass it twenty times beside an engine run.
 
 ---
 

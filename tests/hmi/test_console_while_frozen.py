@@ -168,7 +168,7 @@ def test_a_reset_and_a_restored_exercise_keep_a_frozen_console_live_past_the_wat
     # Released, the plant steps on from where it was put.
     rig.command({"type": "freeze", "on": False})
     rig.wait_for(lambda: (rig.t_sim or 0.0) > saved_t, 10.0, "the released plant stepping")
-    assert rig.engine_label().startswith("ENGINE RUNNING")
+    rig.wait_for(lambda: rig.engine_label().startswith("ENGINE RUNNING"), 10.0, "the running label")
 
 
 def test_the_watchdog_still_blanks_a_console_whose_engine_goes_silent(rig):
