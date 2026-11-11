@@ -36,7 +36,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   (Extended UNIQUAC both sides, margin 4.38 bar) holds 322E002 at full condensation, yet the 74.4 % N/C
   hump and collapse stay; the ratio's floor at the plant's 1.9397 changes nothing material; the stream that
   leaves the load ratio on the descent is 322E001's bottoms; row 116's re-pin carries 91 % of the tear's NH3.
-  B0 on the tree: 92.3 % trip-free and in band, AT-322701 under the plant-basis 3.0 on 56 of 120 samples;
+  B0 on the tree: 92.3 % passes decision 180's test, its AT-322701 under §CVIII.9's proposed 3.0 on 56 of 120;
   90.5 % trip-free, out of band 47 min; 74.4, 69.3 and 68.9 % latch at 4 680, 5 040 and 4 920 s. E2 to E4
   not run (E2's gate failed). Decision 188; no file under `ureasim/` changed.
   Suite: 2 212 passed, 5 862 skipped, none failed (20 min 20 s) (`E:` not mounted).

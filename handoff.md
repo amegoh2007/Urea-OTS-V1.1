@@ -100,9 +100,9 @@ And A-34's atoms closed tick by tick on a turndown (`tests/phase7/test_loop_atom
 * The 322F001 lift (decision 180): p_disch,eff = p_disch - 2.41 (1 - r^2), r the motive ratio.
 * On the as-built stripper, `unit_322e001.SLIP_GAIN` 4.0. P6 is out: it changes nothing.
 
-**Verification on the tree (§CXII.10, replacing §CVII.3).** 92.3 % is trip-free and in band, its
-AT-322701 under the plant-basis 3.0 on 56 of 120 samples; 90.5 % trip-free, out of band 47 min as in session
-95; 74.4, 69.3 and 68.9 % latch at 4 680, 5 040 and 4 920 s on 322E002's collapse.
+**Verification on the tree (§CXII.10, replacing §CVII.3).** 92.3 % passes, its AT-322701 under
+§CVIII.9's proposed 3.0 on 56 of 120 samples; 90.5 % trip-free, out of band 47 min as in session 95; 74.4,
+69.3 and 68.9 % latch at 4 680, 5 040 and 4 920 s on 322E002's collapse.
 
 **Session 101 (§CXII.6-9): the 74.4 % ramp; E2 to E4 not run, E2's gate failed.**
 * E1eu holds 322E002's fraction at 1 through the hump. Alone it leaves the as-built cold branch as it is
@@ -115,7 +115,7 @@ AT-322701 under the plant-basis 3.0 on 56 of 120 samples; 90.5 % trip-free, out 
   2 100 s; the loop loses reactive N from 1 800 s. No feed departs by more than 56 kmol/h (B-127).
 
 **Next step, scratch.** What sets 322E001's bottoms off the load ratio on the descent; its sump and
-322R001's inventory are mass-only holdups (B-126) [I]. Then E3 on the 74.4 % ramp before the holds.
+322R001's inventory are mass-only holdups (B-126) [I]. Then 322R001's species holdup on bundle A at 74.4 %.
 The process engineer's: E1's shape and seed criterion (B-125), and the bundle.
 
 **B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode: gain 0 removes it

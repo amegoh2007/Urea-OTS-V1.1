@@ -22326,7 +22326,7 @@ TT-322005 from L 0.80 to the latch instead.
 | 74.4 %, N1: floor 1.9397 | 4 430 (21_10, 21_2, 21_8, 22_1, 22_2) | latched before the hold; 181.4 to 190.2 C from L 0.80 to the latch | 3.423 / 2.236 [3.423 / 3.000] | 3.649 / 2.316 [3.649 / 3.018] | 0.0000 at 4 340 s (0.8351) | 1.9955 / 2.0160 | 22.63 / 37.93 | 2.18 | reported |
 | 74.4 %, N2: ratio fixed 2.0231 | 4 180 (21_10, 21_2, 21_8, 22_1, 22_2) | latched before the hold; 181.1 to 190.3 C from L 0.80 to the latch | 3.501 / 2.274 [3.501 / 3.000] | 3.861 / 2.370 [3.861 / 3.017] | 0.0000 at 3 860 s (0.7572) | 2.0231 / 2.0220 | 22.63 / 48.60 | 2.10 | reported |
 | 74.4 % to 3 120 s, N3: the probe | none | - | 3.423 / 2.211 [3.423 / 3.000] | 3.649 / 2.327 [3.649 / 3.018] | 0.2020 at 3 070 s (0.8350) | 2.0000 / 2.0210 | 22.63 / 38.45 | 2.29 | probe passive; reported |
-| 92.3 %, B0 | none | 182.40 [181.90, 182.55] | 3.399 / 3.005 [3.399 / 3.005] | 3.645 / 3.021 [3.645 / 3.021] | 0.8275 at 1 260 s (0.8515) | 2.0015 / 2.0280 | 22.62 / - | - | trip-free, TT in band; AT under the plant-basis 3.0 (§CXII.10) |
+| 92.3 %, B0 | none | 182.40 [181.90, 182.55] | 3.399 / 3.005 [3.399 / 3.005] | 3.645 / 3.021 [3.645 / 3.021] | 0.8275 at 1 260 s (0.8515) | 2.0015 / 2.0280 | 22.62 / - | - | **pass** (decision 180's test); AT under §CVIII.9's proposed 3.0 (§CXII.10) |
 | 90.5 %, B0 | none | 181.05 [178.28, 182.41] | 3.409 / 3.005 [3.409 / 3.005] | 3.645 / 3.017 [3.645 / 3.017] | 0.8354 at 1 500 s (0.8419) | 2.0000 / 2.0230 | 22.63 / - | - | **fail**: TT005 180.6-184.6 |
 | 74.4 %, B0 (the control) | 4 680 (21_10, 21_2, 21_8, 22_1, 22_2) | latched before the hold; 181.4 to 190.2 C from L 0.80 to the latch | 3.420 / 2.213 [3.420 / 3.005] | 3.647 / 2.351 [3.647 / 3.018] | 0.0000 at 4 320 s (0.8362) | 2.0000 / 2.0210 | 22.63 / 38.79 | 2.17 | **fail**: latched, PT 129.5-136.5 barg |
 | 69.3 %, B0 | 5 040 (21_10, 21_2, 21_8, 22_1, 22_2) | latched before the hold; 181.4 to 190.1 C from L 0.80 to the latch | 3.432 / 2.228 [3.432 / 3.005] | 3.662 / 2.373 [3.662 / 3.019] | 0.1035 at 4 800 s (0.8258) | 2.0000 / 2.0210 | 22.64 / 41.23 | 1.95 | **fail**: latched, TT005 181.5+/-2 |
@@ -22420,23 +22420,23 @@ which predates decision 185. The 74.4 % arm is session 99's control, sample for 
 
 | Hold | First latch | TT-322005 in the hold, mean [min, max] C | Plant reference | Also in the hold | Session 95, bundle A (§CVII.3) | Verdict |
 |---|---|---|---|---|---|---|
-| 92.3 % Book2 (2 h) | none | 182.40 [181.90, 182.55] | 182.64 C | AT-322701 2.937 to 3.037 (the trim's target 3.04); PT-329201 138.4 to 138.8 bar g | none; 182.40 [181.90, 182.50]; pass | trip-free and in band; AT-322701 under 3.0 on 56 of 120 samples |
-| 90.5 % 5 Nov (2 h 46 min) | none | 181.05 [178.28, 182.41] | ~182.6 C (Book2 at 92 %) | AT-322701 2.922 to 3.035 | none; 181.05 [178.30, 182.40]; out of band 47 min | trip-free; **out of band** on 47 of 166 samples |
+| 92.3 % Book2 (2 h) | none | 182.40 [181.90, 182.55] | 182.64 C | AT-322701 2.937 to 3.037 (the trim's target 3.04); PT-329201 138.4 to 138.8 bar g | none; 182.40 [181.90, 182.50]; pass | **pass** (decision 180's test); AT-322701 under §CVIII.9's proposed 3.0 on 56 of 120 samples |
+| 90.5 % 5 Nov (2 h 46 min) | none | 181.05 [178.28, 182.41] | ~182.6 C (Book2 at 92 %) | AT-322701 2.922 to 3.035 | none; 181.05 [178.30, 182.40]; out of band 47 min | trip-free; **fail**, out of decision 180's band on 47 of 166 samples |
 | 74.4 % 5 Nov (72 min) | 4 680 s (21.10, 21.2, 21.8, 22.1, 22.2) | latched before the hold; 181.4 to 190.2 C from L 0.80 to the latch | not logged | PT-329201 152.9 to 157.3 bar g after the latch | latched at 4 800 s | **fail** |
 | 69.3 % Book2 (3 h) | 5 040 s (21.10, 21.2, 21.8, 22.1, 22.2) | latched before the hold; 181.4 to 190.1 C from L 0.80 to the latch | 181.49 C | PT-329201 152.8 to 156.0 bar g after the latch | latched at 5 040 s | **fail** |
 | 68.9 % 5 Nov (46 min) | 4 920 s (21.10, 21.2, 21.8, 22.1, 22.2) | latched before the hold; 181.4 to 190.0 C from L 0.80 to the latch | not logged | PT-329201 152.7 to 155.4 bar g after the latch | latched at 4 740 s | **fail** |
 
-* **92.3 %.** TT-322005 holds Book2's band, trip-free, as in session 95. AT-322701 runs 2.937 to 3.037 in the
-  hold and is under 3.0 on 56 of its 120 samples, in three spells (4 920 to 6 300 s, 7 980 to 8 760 s and
-  10 740 to 11 760 s): a slow swing on consecutive samples, not a ring. The trim's target is 3.04, the
-  engine's 3.00 plus the plant's departure from its full-load band
-  (§CVII.2). The criterion's 3.0 to 3.3 is the plant's absolute band, where the plant reads 3.25 at 92.3 % and
-  3.21 at full load, while the engine's design reads 3.00. On the engine's basis the band sits 0.21 lower [I],
-  and the hold passes. The verdict turns on the basis, which is the process engineer's to decide. Session 95's
-  pass predates the AT clause, which §CVIII.9 added; it recorded AY-322701 at 3.00.
+* **92.3 %.** The hold passes decision 180's acceptance test, as in session 95: trip-free, TT-322005
+  182.40 [181.90, 182.55] C inside Book2's band. Against §CVIII.9's proposed AT clause (3.0 to 3.3, no
+  decision taken) AT-322701 runs 2.937 to 3.037 and is under 3.0 on 56 of its 120 samples, in three spells
+  (4 920 to 6 300 s, 7 980 to 8 760 s and 10 740 to 11 760 s): a slow swing on consecutive samples, not a
+  ring. The trim's target is 3.04, the engine's 3.00 plus the plant's departure from its full-load band
+  (§CVII.2). The clause's band is the plant's absolute one: the plant reads 3.25 at 92.3 % and 3.21 at full
+  load, the engine's design 3.00. On the engine's basis it would sit 0.21 lower, and the hold would meet it
+  [I]. Session 95's pass predates the clause; it recorded AY-322701 at 3.00.
 * **90.5 %.** Trip-free. TT-322005 runs 178.28 to 182.41 C and is under 180.6 C from 4 800 to 7 560 s,
-  47 of its 166 samples: session 95's spell to the minute (§CVII.3). The 92.3 % and 90.5 % holds do not
-  feel decision 185's heat term; the three low holds' latches move by -120 to +180 s.
+  47 of its 166 samples: session 95's spell to the minute (§CVII.3), so it fails decision 180's band. The
+  92.3 % hold matches session 95's within 0.05 C; the three low holds' latches move by -120 to +180 s.
 * **74.4, 69.3 and 68.9 %.** Each latches 21.2, 21.8, 21.10, 22.1 and 22.2 in one sample: at 4 680, 5 040 and
   4 920 s, against session 95's 4 800, 5 040 and 4 740 s. In each the melt N/C falls under 2.9 between 2 820 and
   2 880 s (322E002's collapse, §CVII.4), and the loop pressure then rises to the latch. TT-322005 holds 181.4 C
@@ -22466,7 +22466,7 @@ which predates decision 185. The 74.4 % arm is session 99's control, sample for 
    Bundle A holds TT-322005 at 92.3 % and 90.5 % on the descent and fails the three low
    holds (§CXII.10); E1eu with bundle A meets one of S2's five descent criteria (§CXII.7). The measured
    candidates for the next scratch step are 322E001's bottoms on the descent (§CXII.9) and 322R001's
-   species holdup (E3, B-126).
+   species holdup on bundle A (B-126's (b); the plan's E3 rested on E2, which did not run).
 
 ## CXII.13 Checks
 

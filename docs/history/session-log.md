@@ -4925,6 +4925,6 @@ Track S: E1eu's margin 4.38 bar at R 4.5; bundle A's seed departs through the li
 at full condensation, alone it leaves the as-built cold branch as it is, with bundle A the hump and collapse
 stay. Track N: the floor at 1.9397 changes nothing material; the ratio fixed raises the hump; N3 names
 322E001's bottoms; E5 puts 91 % of the tear's NH3 on row 116's re-pin; 322R001 has eleven trays. Track B: B0
-on the tree, 92.3 % trip-free and in band but AT-322701 under the plant-basis 3.0, 90.5 % out of band 47 min,
+on the tree, 92.3 % passing decision 180's test (AT-322701 under §CVIII.9's 3.0), 90.5 % out of band 47 min,
 the three low holds latched. E2 to E4 not run (E2's gate).
 Suite: 2 212 passed, 5 862 skipped, none failed (20 min 20 s); `E:` not mounted. The record is As-Built Part CXII.
