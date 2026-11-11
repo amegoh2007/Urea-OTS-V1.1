@@ -21514,3 +21514,177 @@ A; that arm was not run to the trip.
 ## CVII.7 Checks
 
 * `grep -rn "PyQt6"` below the HMI layer prints nothing. `pytest tests/docs`: 7 passed after the documents changed. `CLAUDE.md` is unchanged: no rule changed. No file under `ureasim/` changed.
+
+---
+
+# Part CVIII — Session 97: the deep audit of the committed engine (2026-11-11)
+
+Session 97 audited `ureasim/` at commit `ca081b8` on the process engineer's nine-pillar brief, read-only: no
+file under `ureasim/`, `tests/` or `tools/` changed and no relation changed. The full report is
+`D:\Work\reports\Deep audit 2026-11-11.md`; this Part is the record of what was measured and found. Statements
+marked [I] are inferences that need a measurement before a relation changes; the rest was read in the code at
+the cited lines, measured in scratch, or read from session 95's archived runs
+(`D:\Work\reports\B118_bundle_verification_s95\runs`). Fifteen handoff items were raised (A-31 to A-37,
+B-125 to B-132); no decision was taken.
+
+## CVIII.1 Coverage
+
+Read in full: `units/synthesis/carbamate_condenser.py`, `condenser_holdup.py`, `liquor_saturation.py`,
+`core/numeric.py`, `core/node.stable_pressure_step`, `control/process_loop.ProcessLoop.step`,
+`control/controller.PID.step` and `Controller.step`, the interlock classes of `control/interlocks.py`. Read in
+part: `reactor.py`, `reactor_inventory.py`, `control/valve.py`, `net/engine_host.py`, `net/server.py`,
+`engine/historian.py`, `tests/engine/test_dynamic_audit.py`. Scanned by script, all 263 modules (63 540
+lines): import direction, Qt below `hmi`, module length, exception handling. **Not examined:** the internals
+of `thermo/`, the `recirc/`, `desorption/`, `evaporation/` and `steam/` units, the ejector maps,
+`core/relief.py`, the transport FIFO, the snapshot encoder, the HMI widgets and the packet builders.
+
+## CVIII.2 Baseline measurements
+
+* No `PyQt6` import below `ureasim/hmi`; no upward import between the ranked layers; the largest module 600
+  lines; no bare `except`, no TODO marker.
+* The tick at the seed: 33.7 ms on the audit's machine, the test suite running beside it.
+* The suite: 2 154 passed, 5 862 skipped, none failed, 17 min 22 s. `E:\Simulator` was not mounted, so every
+  V1-side test skipped (83 test files guard on `v1_available()`): 73 % of the suite did not run (A-33).
+* By file name 75 of 237 modules have no `test_<module>*.py` (A-35); the list was not reconciled against
+  tests of other names.
+
+## CVIII.3 322E002's collapse in session 95's runs, read again (B-118)
+
+Session 95's `D_tick` (bundle A at 74.4 %, sampled every 2 s) and five other archived arms, no new run.
+
+| t s | L | melt N/C | P_bub bar a | sat. fraction | TT-322010 C | feed CO2 kmol/h | gas CO2 kmol/h | 322F001 suction t/h |
+|---|---|---|---|---|---|---|---|---|
+| 1 800 | 0.852 | 3.526 | 152.3 | 0.852 | 169.5 | 2 067 | 609 | 57.6 |
+| 2 400 | 0.803 | 3.293 | 147.6 | 0.910 | 170.5 | 2 096 | 666 | 61.9 |
+| 2 760 | 0.774 | 3.082 | 143.3 | 0.970 | 172.1 | 2 202 | 817 | 68.8 |
+| 2 880 | 0.764 | 2.811 | 145.4 | 0.935 | 170.7 | 2 332 | 1 004 | 73.6 |
+| 3 000 | 0.754 | 2.425 | 174.8 | 0.496 | 154.0 | 2 572 | 1 664 | 87.7 |
+| 3 120 | 0.744 | 2.418 | 178.8 | 0.447 | 156.6 | 2 575 | 1 662 | 95.3 |
+| 3 600 | 0.744 | 3.042 | 141.0 | 1.000 | 172.2 | 2 151 | 866 | 70.9 |
+| 4 080 | 0.744 | 2.451 | 177.9 | 0.464 | 160.7 | 2 488 | 1 529 | 90.7 |
+
+* **The collapse is the melt crossing N/C 3.0 downward**, onto the low-N/C branch of `bubble_p_322e002`
+  (`carbamate_condenser.py:304-308`, decisions 142 and 147). The bubble pressure's minimum, 143.3 bar a at
+  2 760 s, is the branch point. After the onset the 336 samples with a fraction below 0.6 all hold a melt N/C
+  of 2.23 to 2.58; the 177 samples at or above 0.9 hold 2.76 to 3.35.
+* **It is a recycle, with a period of 14 to 21 minutes.** The CO2 322E002 does not condense passes 322R001
+  as off-gas, 322E003 condenses it and 322F001 returns it: the feed's CO2 rises 25 % and the suction from
+  57.6 to 95.3 t/h while the load falls 13 %, which lowers the feed's N/C further. Collapse at 2 900 s,
+  recovery by 3 360 to 3 600 s, collapse at 3 840 s, recovery at 4 200 s, collapse at 4 320 s.
+* **The recycle's gain [I].** The branch rises 9.38 bar at N/C 2.8 and 38.04 bar at 2.6 (`low_nc_rise`'s own
+  figures), -47 and -143 bar per unit of N/C; through b_207 (0.0154 per bar) the fraction falls 0.72 and 2.2
+  per unit; the feed's N/C moves about +1.2 per unit of fraction in `D_tick`. The product is 0.87 between 3.0
+  and 2.8 and 2.6 below: a critical melt N/C near 2.8. The arms that do not collapse (`D_noP1`, `D_mfeed`,
+  `D_plain`) dip to 2.86 to 2.92 and recover; the arm that collapses passes 2.81.
+* **Why P1 on the load ratio brings it on [I for the cause].** Measured: with the reactor held, conversion
+  rises to 61 to 64 %, the stripper's top gas carries 40 % less NH3 (3 971 to 2 402 kmol/h) while the fresh
+  ammonia falls 19 %, and the loop goes ammonia-lean. Without P1 or on the feed mass the reactor is cold and
+  its off-gas returns ammonia with the CO2.
+* **The ratio could not act.** FFIC-321404's set point sat on its 2.0 floor from 960 to 1 680 s with
+  AT-322701 at 3.30 to 3.42, and moved 2.7 % in the whole run while the melt N/C moved from 3.65 to 2.42
+  (B-128).
+* **A correction to CVII.4.** `e_phieq_co2` is the flash's equilibrium GAS fraction of CO2 (0.178 at L 0.85,
+  0.000 at 154 C), not a condensed fraction: in the collapse the K-value flash asks to condense all the CO2
+  and the saturation fraction forbids it. `hpcc_flash_split` back-solves its design K-values on the live
+  feed (`carbamate_condenser.py:172-180`), so it does not see composition; the saturation law does.
+* Not settled: the reversals between 2 s samples inside the collapsed phase.
+
+## CVIII.4 The saturation law against Book2 (B-125)
+
+`saturation_fraction` (`liquor_saturation.py:98-121`) is f = max(1 - b_207 d, 0) with
+d = (P_bub - P_loop) - 3.5 bar. The 3.5 bar is the whole design head, so d = 0 at the design: the design point
+is on the law's edge, and each bar above it removes 1.54 % of all condensation. Above the branch
+`BUB_KN` 0.18 raises P_bub 26 bar per unit of melt N/C.
+
+| Band | TT-322010 C | melt N/C [I] | P_loop bar a | P_bub as built | d bar | f as built | f with K_N 0 |
+|---|---|---|---|---|---|---|---|
+| design | 170.0 | 3.079 | 140.7 | 144.2 | 0.0 | 1.000 | 1.000 |
+| Book2 92.3 % | 168.76 | 3.45 | 138.4 | 151.2 | +9.3 | 0.857 | 1.000 |
+| Book2 69.3 % | 168.8 | 3.39 | 133.1 | 149.7 | +13.1 | 0.798 | 0.920 |
+
+The melt N/C is AY-322701 plus 0.2, the offset the archived runs show between the two; the plant does not log
+it. On the law as built the plant's own steady bands lose 14 and 20 % of their condensation, which the plant
+does not. In every session 95 arm the fraction reads 0.85 to 0.93 from L 0.92 to L 0.80 (A923: 0.851 at
+960 s), the reactor's off-gas 30.8 t/h at 92.3 % against the design 22.4, and 322E002's feed 229 t/h at
+L 0.80, 0.92 of the seed. That is why P1's load-ratio and feed-mass bases differ: the feed does not follow
+the load.
+
+`T_prod` itself is an NTU quench (`carbamate_condenser.py:461-492`): T_adb 508 C, exp(-NTU) 0.030 to 0.043,
+so dT_prod / d ln UA is about -59 K, on one specific heat (`CP_GAS` 2.0) and one heat of reaction
+(`DH_CARB_KJMOL` 160); the equilibrium does not enter the outlet temperature.
+
+## CVIII.5 322R001's holdup has no composition (B-126)
+
+`reactor_inventory.py:328-329` sends on the tick's reaction product scaled to the hydraulic outflow; the
+holdup is one mass (135 904 kg at the seed, 36 minutes of residence). Measured 305 s after a 20 % cut of the
+CO2 demand: the reaction step makes 150.9 t/h of overflow, the vessel sends 226.2 t/h, drawing 49.3 t/h from
+its holdup and boiling 15.3 t/h, and the overflow carries 2 933 kmol/h more N and 576 kmol/h more C than the
+step produced, at the present composition. At a steady 92.3 % (arm A923) the melt N/C runs 3.65, 2.95, 3.21,
+3.04 over about 48 minutes with the stripper's slip gain at 4.0; Book2 holds AY-322701 at 3.19 to 3.25.
+Whether the missing inventory is the cause of B-120's mode is an inference [I].
+
+## CVIII.6 The loop's design boundary and the reactor's tear (B-127)
+
+`data/unit_322_loop.py:116-118`: in 134 215.2 kg/h, out 132 190.3 kg/h, residual +2 024.9 kg/h.
+`reactor.py:323-326` subtracts `REACT_TEAR_DES_KMOLH` (`data/synthesis_pin.py:85-93`) from the feed, scaled
+by the CO2 load ratio: 2 107.45 kg/h at the seed, NH3 129.1 kmol/h of it. Measured between the reactor's feed
+and its products at the seed: N -121.45, C -1.25, H -359.07, O -1.84 kmol/h. That is 5.1 % of the fresh
+ammonia (2 510.9 kmol/h) and more than its stoichiometric excess (about 103 kmol/h). Every other synthesis
+unit closes on N, C, H and O to rounding: 322E001, 322E002, 322E003 and the reactor from its corrected feed.
+`loop_pressure.py:268` credits the residual back. V1's reconciliation, flagged once as B-75; exact at the
+design. Off the design the sink follows the CO2 demand; PFD 308 fell to 0.50 of its seed at L 0.71 (CVII.5).
+The bias this leaves at turndown is of the order of 129 (s - r_308), at most about 27 kmol/h [I].
+
+## CVIII.7 Control and numerics
+
+* `ProcessLoop.step` returns on a bad PV before `pv1` and `pv2` advance (`process_loop.py:158-159` against
+  `:197-199`): the first good sample steps the output by Kc times the PV's move through the outage.
+  `Controller.step` demotes to MAN and resets (`controller.py:361-369`) (B-130).
+* `BandedInterlock.update_from_pv` and `HystereticInterlock.update_from_pv` (`interlocks.py:135-143`,
+  `:164-171`) read a NaN as healthy: both comparisons are false (B-131).
+* `bracketed_root` (`numeric.py:72-108`) returns the bracket's midpoint after 80 iterations with no flag, one
+  tolerance serving the bracket's width and the residual (A-37).
+* `carbamate_condenser.py:461` clamps the CO2 absorbed at zero: a net release of CO2 from the ejector's
+  liquor costs no heat. Not binding in `D_tick`; it binds as the fraction goes to zero (B-129).
+* `valve.py:233` and `:316` hold F_F at 0.96; `:377` uses 0.96 - 0.28 sqrt(Pv / Pc) on water's Pc. Each pair
+  is self-consistent; the callers were not checked valve by valve (B-132).
+* `RATIO_SP_MIN` 2.0 (`data/operator_commands.py:107`) is applied to the engine's ratio, whose design is
+  2.0231 for the plant's 2.086 molar (XCIII.3): 1.1 % of downward authority against the plant's 5.4 %
+  (B-128).
+
+## CVIII.8 Architecture, tests and documents
+
+* `thermo/empirical.py:74` imports `ureasim.data.design_point`; 66 imports in `ureasim/data/` reach `thermo`,
+  `core` and `control` (`data/unit_322f001.py:42` imports `ureasim.control`). `CLAUDE.md` section 1 gives
+  `data` no place in the ranking and its rules 2 and 7 pull opposite ways (A-31).
+* `hmi/state_access.py:35` imports `core.units_of_measure`, and the faceplates add and subtract the
+  atmosphere (`faceplates/controller.py:181`, `faceplates/master_setpoint.py:35,133,140`), against section
+  4a rule 1 and `docs/architecture.md` section 3.2 (A-32).
+* The conservation audit closes the mass of four holdups over a minute (`test_dynamic_audit.py:103-157`); no
+  test asserts an element, energy across the loop, or a load ramp (A-34).
+* `reactor.py:22-27` claims conservation by construction without naming the tear; this reference's
+  maintenance rule still names `D:\Work\Urea Simulation\backend` (A-36).
+
+## CVIII.9 The experiments proposed for B-118 (scratch; no decision taken)
+
+Session 95's runner, handles as departures on the engine's seed, 0.5 %/min.
+
+| Step | Experiment | Passes when |
+|---|---|---|
+| E0 | bundle A, the AY-322701 target ramped from 3.00 to the plant's absolute band value with the load; 74.4 % | the melt N/C stays above 2.9; no collapse by 4 800 s |
+| E0t | bundle A at 74.4 %, every tick logged from L 0.78 to L 0.74 | the reversals are classified: a period of two ticks is a ring (decision 78's class) |
+| E1 | the saturation law's N/C slope and margin fitted so d <= 0 at every Book2 band; null ramp | every packet leaf identical to the plain seed over 1 800 s |
+| E1r | E1 on the 74.4 % ramp, no bundle | the fraction 1 from L 1.0 to 0.80; 322E003's make 0.70 to 0.75 of seed at L 0.75 |
+| E2 | E1 + P1 on the condenser's own feed mass (anchor 250 638.935 kg/h) + P4 + the lift, five holds | the holds' criteria below |
+| E3 | E2 + 322R001's species holdup, five holds and 111 % | the criteria, and the N/C mode's amplitude halving in under two periods |
+
+Hold criteria: the 100 % seed identical over 600 ticks; Book2 92.3 % TT-322005 182.6 +/- 2 C, AY-322701 3.0
+to 3.3, no trip; 5 November 90.5 % no trip and TT-322005 180.6 to 184.6 C throughout; 74.4 % no trip,
+PT-329201 132.5 to 133.5 bar g +/- 3 bar; Book2 69.3 % TT-322005 181.5 +/- 2 C for 3 h, no trip; 68.9 % no
+trip; 105 % as session 78; Book2 111 % in band, the mode decaying. B-120's gain is measured after E3, at 4.0
+and 0, with the gas CO2 to 322R001 held above 603 kmol/h at 92.3 % (decision 181's figure).
+
+## CVIII.10 Checks
+
+* `grep -rn "PyQt6"` below the HMI layer prints nothing. The suite as CVIII.2. `git status` clean after the
+  audit; the documents changed only in logging it.

@@ -4876,3 +4876,14 @@ and §5 to `docs/decisions.md`; `handoff.md` as it stood to
 `docs/decided-classes.md`, one a line. `CLAUDE.md` §3a now holds the document map and the reading
 budget, and the As-Built reference's stale table of contents gave way to a reading guide. Checks: the
 PyQt6 grep prints nothing; `tests/docs` and `tests/test_run.py` pass, 22 tests; the suite was not run.
+
+### Session 97 — the deep audit of the committed engine (2026-11-11)
+
+On the process engineer's nine-pillar brief, read-only: no file under `ureasim/`, `tests/` or `tools/`
+changed, no relation changed, no decision taken. The record is As-Built Part CVIII; the report
+`D:\Work\reports\Deep audit 2026-11-11.md`. No critical finding; A-31 to A-37 and B-125 to B-132 raised.
+Measured: every synthesis unit closes on N, C, H and O but the reactor's tear (B-127); 322R001's holdup
+carries no composition (B-126); 322E002's saturation law contradicts Book2's bands (B-125). Session 95's
+collapse read again in its archived runs: 322E002's feed N/C crossing 3.0 on a recycle (§CVIII.3).
+B-118's scratch sequence E0 to E3 proposed (§CVIII.9). Suite: 2 154 passed, 5 862 skipped (V1 not
+mounted), none failed; the PyQt6 grep prints nothing.

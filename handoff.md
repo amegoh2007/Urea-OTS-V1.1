@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-11, session 96 (the tracker reduced to state; no item changed).
+**Last updated:** 2026-11-11, session 97 (the deep audit logged: A-31 to A-37 and B-125 to B-132 raised).
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -20,7 +20,52 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 # Section A — Rewrite issues
 
-*None open. Last raised: A-30.*
+Raised 2026-11-11, session 97, by the deep audit (As-Built Part CVIII; report
+`D:\Work\reports\Deep audit 2026-11-11.md`). None is decided. Each closes with the test it names.
+
+### A-31 — `data` has no place in the layering, and `thermo` imports it
+
+`thermo/empirical.py:74` imports `ureasim.data.design_point`; 66 imports in `ureasim/data/` reach `thermo`,
+`core` and `control` (§CVIII.8). `Claude.md` §1 rules 2 and 7 pull opposite ways. Options: (a) state
+`data`'s place in rule 2 and enforce the import directions by a test, `tests/test_layering.py`
+(recommended); (b) move the constants `thermo` reads into `thermo`.
+
+### A-32 — The console converts gauge and absolute pressure itself
+
+`hmi/faceplates/controller.py:181` and `master_setpoint.py:35,133,140` add and subtract the atmosphere;
+`hmi/state_access.py:35` imports `core` (§CVIII.8). One constant serves both, so no value is wrong.
+Options: (a) record it as §4a's decided exception and correct `docs/architecture.md` §3.2
+(recommended); (b) the engine publishes display values and takes unit-tagged set points.
+
+### A-33 — Without V1 mounted the equivalence layer does not run
+
+83 test files guard on `v1_available()`; on 2026-11-11 5 862 of 8 016 tests skipped (§CVIII.2).
+Options: (a) golden vectors of V1's outputs in `tests/equivalence/`, written by a tool when `E:` is
+mounted, and a switch that fails a release run on a V1 skip (recommended); (b) keep as built.
+
+### A-34 — No test covers an element, energy across the loop, or a load ramp
+
+`tests/engine/test_dynamic_audit.py:103-157` closes four holdups' mass for a minute (§CVIII.8). Proposed:
+`tests/phase7/test_loop_atoms.py`, each synthesis unit's N, C, H and O on every tick of a disturbance to
+1e-9 kmol/h, B-126 and B-127 its named exceptions until they close; a turndown test when B-118 closes.
+
+### A-35 — 75 of 237 modules have no test file of their name
+
+`Claude.md` §6 asks for a one-to-one mirror (§CVIII.2). Many are covered under another name. To do:
+one table of module against covering test, and an item for each module with none.
+
+### A-36 — Three records disagree with the code
+
+`reactor.py:22-27` claims conservation by construction without naming the tear (B-127); the As-Built
+reference's maintenance rule names V1's old path; §CVII.4's "condensed fraction" is the flash's gas
+fraction, corrected in §CVIII.3. To do: the first two, one line each.
+
+### A-37 — `bracketed_root` returns silently when it runs out of iterations
+
+`core/numeric.py:72-108`: the bracket's midpoint after 80 iterations, no flag, one tolerance for the width
+and the residual (§CVIII.7). A residual with a step in it (a memo bin edge, decision 163) can exhaust it
+unseen. Options: (a) count exhaustions in the engine's health, the result unchanged to the bit
+(recommended); (b) keep as built.
 
 ---
 
@@ -37,7 +82,6 @@ seed, does not, on every operating policy tried:
 * 70 to 85 %: trip 22.1 within 20 to 80 minutes (322E003's sump floods, or it vents and TT-322015
   passes 110 C), or trip 22.2; where neither fires, 322R001 collapses (TT-322005 158-172 C).
 * 90 to 95 %: a cold branch, TT-322005 168-178 C, conversion 36-48 %.
-* The verified envelope is 100 % to about 105 % load.
 
 **Acceptance tests (decision 180).** The 100 % design pin held to the bit, and five plant holds on the
 plant's own handles, TT-322005 inside Book2's band (+/- 2 K) and no trip:
@@ -50,8 +94,7 @@ plant's own handles, TT-322005 inside Book2's band (+/- 2 K) and no trip:
 | 74.4 %, 72 min | the same | TIC-329005 98.3 C, HV-322602 35-40 %, PT-329201 132.5-133.5 bar g at 69-75 % |
 | 68.9 %, 46 min | the same | the same |
 
-The licensor's windows (Operating Manual III §5.2): N/C 2.90-3.10, TT-322005 180-183 C, PT-329201
-136-143 bar.
+Licensor's windows (Operating Manual III §5.2): N/C 2.90-3.10, TT-322005 180-183 C, PT-329201 136-143 bar.
 
 **Established. Do not measure these again; cite the section.**
 
@@ -65,14 +108,19 @@ The licensor's windows (Operating Manual III §5.2): N/C 2.90-3.10, TT-322005 18
   condensation margin (§XCIV.3-4, §XCV.3); 322E001's feed-deficit bottoms term alone (§XCVI.2); the
   ramp's rate and HIC-322605's handling (Part CIV); V1's stripper slip gain at 70 % (§CIII.7); the
   reactor's conversion-deficit slip, P6 (§CVII).
-* Rejected: P5, the off-gas split at the live top temperature (§CVI.5). The S2 stripper terms and
-  slip gain 0 starve the carbamate source (486-502 against 603 kmol/h of gas CO2 at 92.3 %) and were
-  unbundled (decision 181).
+* Rejected: P5, the off-gas split at the live top temperature (§CVI.5). Unbundled (decision 181): the S2
+  stripper terms and slip gain 0, which starve the carbamate source (486-502 against 603 kmol/h at 92.3 %).
 * Boundary facts for every arm. Each handle starts on the engine's design seed and moves as a
   departure with the load (§CVI.5, §CVII.1). FFIC-321404's ratio is on the engine's basis: the
   plant's 2.115 is 2.047-2.053 here (§XCIII.3). HV-322605's anchor is 60.0 % at 100 %, so Book2's
   36.1 % is 43.27 % here (§CIV.1). FT-329403 is stream 901, 60.85 t/h at the design (§XCVIII.2).
   LT-329501 cannot reach Book2's 7 %: 322F001's suction is proportional to the level (§XCVI.2).
+* Session 95's collapse starts when 322E002's feed N/C falls through 3.0, onto the low-N/C branch
+  (decisions 142, 147): collapsed samples hold a melt N/C of 2.23-2.58, condensing ones 2.76-3.35. It is
+  a recycle of 14-21 minutes through 322R001, 322E003 and 322F001, its gain above one below about 2.8
+  (an inference); FFIC-321404's ratio sat on its floor and could not act (B-128; §CVIII.3).
+* 322E002's saturation fraction reads 0.85-0.93 from L 0.92 to 0.80 in every session 95 arm: 7-15 % of
+  its condensables recycle, its feed does not fall with the load, and P1's two bases differ (B-125).
 
 **Candidate bundle (decision 181). Scratch only; `ureasim/` is as built.**
 
@@ -82,25 +130,19 @@ The licensor's windows (Operating Manual III §5.2): N/C 2.90-3.10, TT-322005 18
 * The 322F001 lift (decision 180): p_disch,eff = p_disch - 2.41 (1 - r^2), r the motive ratio.
 * On the as-built stripper, `unit_322e001.SLIP_GAIN` 4.0. P6 is out: it changes nothing.
 
-**Session 95's verification on the five holds (Part CVII).** Report
-`D:\Work\reports\B-118 bundle verification s95.md`; scripts and runs in
-`D:\Work\reports\B118_bundle_verification_s95`.
+**Session 95's verification (§CVII.3-4; runs in `D:\Work\reports\B118_bundle_verification_s95`).**
+92.3 % passes (TT-322005 182.4 C, no trip). 90.5 % has no trip but is out of band for 47-50 minutes
+(down to 178.3 C). 74.4, 69.3 and 68.9 % hold 181.4-182.5 C through the ramp, then fail 960-1 680 s
+after it: 322E002's saturation fraction collapses from L 0.76, its duty from 40 to 3 MW, and the loop
+pressure reaches trip 22.2's 155.0 bar a. The collapse comes with P1 on the load ratio alone; without
+P1, or with P1 on the feed mass, 322E002 holds and the reactor falls to 161-179 C.
 
-| Hold | Result with the bundle |
-|---|---|
-| 92.3 % | passes: TT-322005 182.4 C, no trip |
-| 90.5 % | no trip; out of band for 47-50 minutes (down to 178.3 C), 182.4 C at its end |
-| 74.4, 69.3, 68.9 % | TT-322005 181.4-182.5 C through the ramp, then fail 960-1 680 s after it |
+**Open options and next step: the process engineer's choice.**
 
-The failure: 322E002's saturation fraction collapses from L 0.757-0.763, its duty from 40 to 3 MW, its
-CO2 passing as gas. 322R001's off-gas swings to 112 t/h and the loop pressure reaches trip 22.2's
-155.0 bar a. The collapse comes with P1 on the load ratio and with nothing else measured. Without P1,
-or with P1 on the feed-mass basis, 322E002 holds and the reactor falls to 161-179 C (§CVII.4).
-
-**Open options, for the process engineer.**
-
-* (a) Recommended. Continue on 322E002's low-load collapse under P1: a tick-resolution probe of its
-  switching, the scrubber recycle raising its feed against the load, and P1's basis.
+* (a) Recommended. Continue in scratch on the audit's sequence (§CVIII.9): E0, the AY-322701 target
+  ramped to the plant's absolute value; E0t, the tick-resolution probe; E1 and E1r, the saturation law
+  fitted on Book2 (B-125); E2, P1 on the condenser's own feed mass with P4 and the lift on the five
+  holds; E3, 322R001's species holdup (B-126), then B-120's gain measured. First: E0 and E0t at 74.4 %.
 * (b) Build the bundle now as decided divergences: one hold of five passes, one is trip-free and out
   of band, three trip.
 
@@ -109,8 +151,65 @@ gain 0 removes it at 92.3 % on the S2 prototype and at 111 % (§XCVIII.3), and a
 engine runs the reactor 12.4 K colder at 92.3 % (§CIII.7). The gain stays 4.0. Setting it to 0 waits
 on the process engineer's review, apart from B-118's bundle.
 
-**Next step.** The process engineer's choice of (a) or (b). On (a): the tick-resolution probe at
-74.4 %, from L 0.78 to the collapse, on session 95's runner.
+### B-125 — 322E002's saturation law has no margin at the design and contradicts Book2
+
+*Raised 2026-11-11, session 97 (§CVIII.4). Decisions 97 and 135's law.* `saturation_fraction` loses 1.54 %
+of all condensation per bar its deficit stands above zero, and the deficit is zero at the design. As
+built it gives 0.857 at Book2's 92.3 % band and 0.798 at 69.3 %, where the plant condenses fully; with
+`BUB_KN` at 0 it gives 1.000 and 0.920 (the melt N/C taken as AY-322701 + 0.2, an inference). The outlet
+temperature is an NTU quench of a 350 K spike, about -59 K per unit of ln UA. Options: (a) keep as built;
+(b) fit the N/C slope above the branch and a margin so the deficit is at most zero at every Book2 band,
+the seed unchanged, a harness switch, both sides measured (recommended, as B-118's steps E1 and E1r);
+(c) the outlet at the melt's bubble temperature, the conductance setting the duty, only if (b) fails.
+
+### B-126 — 322R001's 136 t of liquor has no composition
+
+*Raised 2026-11-11, session 97 (§CVIII.5).* `reactor_inventory.py:328-329` sends on the tick's reaction
+product scaled to the hydraulic outflow. Measured 305 s after a 20 % CO2 cut: the overflow carries
+2 933 kmol/h more N and 576 kmol/h more C than the reaction step produced. A candidate cause of B-120's
+loop mode (an inference). Options: (a) keep as built; (b) carry the holdup's species, the overflow at the
+holdup's composition, identical at the seed, decisions 141 and 146's class (recommended, as step E3).
+
+### B-127 — The loop's design boundary does not close, and the reactor's tear follows the CO2 load
+
+*Raised 2026-11-11, session 97 (§CVIII.6); V1's reconciliation, once flagged as B-75.* In 134 215.2,
+out 132 190.3 kg/h. The reactor removes 2 107.45 kg/h from its feed, NH3 129.1 kmol/h of it, 5.1 % of the
+fresh ammonia, scaled on the CO2 load ratio. Exact at the design; off it the stream it corrects need not
+follow the CO2 (PFD 308 at 0.50 of seed at L 0.71), a bias of at most about 27 kmol/h (an inference).
+Options: (a) keep as built; (b) trace which boundary row carries the 129 kmol/h and move the correction
+onto it as its departure, decision 104's class (recommended: the trace first, in scratch).
+
+### B-128 — FFIC-321404's 2.0 floor binds on the engine's basis
+
+*Raised 2026-11-11, session 97 (§CVIII.7).* `RATIO_SP_MIN` 2.0 is applied to the engine's ratio (design
+2.0231 for the plant's 2.086 molar): 1.1 % of downward authority against the plant's 5.4 %. Options: (a)
+keep as built; (b) the faceplate shows and takes the plant's basis; (c) the floor restated on the
+engine's basis. The process engineer's call (decision 160's class).
+
+### B-129 — 322E002 drops the heat of a net CO2 release
+
+*Raised 2026-11-11, session 97 (§CVIII.7).* `carbamate_condenser.py:461` clamps the CO2 absorbed at zero.
+It binds only as the saturation fraction goes to zero, on a start-up. Options: (a) keep as built; (b) let
+the term go negative, the outlet floored at the shell's temperature, the seed unchanged.
+
+### B-130 — `ProcessLoop` kicks on recovery from a bad PV
+
+*Raised 2026-11-11, session 97 (§CVIII.7); V1's behaviour.* The PV history does not advance through a bad
+PV (`process_loop.py:158-159`), so the first good sample steps the output by Kc times the PV's move.
+`Controller` demotes to MAN and resets. Options: (a) keep as built; (b) reseed the history on the first
+good sample, V1's on the harness switch.
+
+### B-131 — The interlocks read a non-finite PV as healthy
+
+*Raised 2026-11-11, session 97 (§CVIII.7).* `interlocks.py:135-143` and `:164-171`: a NaN fails both
+comparisons, so trip 22.2 does not fire on one. The dynamic audit's finite-value check mitigates it.
+Options: (a) keep as built; (b) a non-finite PV is live.
+
+### B-132 — Two forms of the liquid critical-pressure factor
+
+*Raised 2026-11-11, session 97 (§CVIII.7).* `valve.py:233` and `:316` hold F_F at 0.96; `:377` uses
+0.96 - 0.28 sqrt(Pv / Pc) on water's Pc. Each pair is self-consistent; no valve was checked. To do: a
+test that walks every valve in `data/` and asserts its sizing and its live law use one form.
 
 ---
 
