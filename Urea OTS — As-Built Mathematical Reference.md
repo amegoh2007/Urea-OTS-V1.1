@@ -22114,3 +22114,96 @@ cold-end and cooling-water temperatures for 5 November 13:00-13:30), which has n
   V1-side test skipped, so A-33 stays open.
 * No file under `ureasim/` was edited for an experiment; every prototype is a monkeypatch in the scratchpad.
 * Commits: bbdc3de (Wave 1), 27a855d (Wave 2), and the session's records with Wave 5's test.
+
+---
+
+# Part CXI — Session 100: session 99 reviewed on its own runs; B-118's next step restated (2026-11-11)
+
+Session 100 reviewed session 99 (Part CX) on the process engineer's request, against the tree and against the
+runs archived in `D:\Work\reports\B118_wave3_s99`, and wrote the next plan and its prompt (`D:\Work\reports\Session 99 review and session 101 plan and prompt.md`).
+No file under `ureasim/`, `tests/` or `tools/` changed, no relation changed, no decision was taken and no engine
+run was made: every figure of CXI.2 is read from session 99's `w3/run/runs/C744t.json` and `E0.json`, their 60 s
+samples. `[I]` marks an inference.
+
+## CXI.1 The record against the tree
+
+* Commits bbdc3de, 27a855d, 2d9a8f4 and 52cfb57 hold what Part CX says they hold. Wave 2's three switches are
+  class attributes read through the instance; each harness sets V1's side on its own instance or by argument
+  (`test_synthesis_loop_equivalence.py:771`, `test_process_loop_equivalence.py:307`), so no test leaves a class
+  switched.
+* `project.md` 96 lines, `handoff.md` 194, B-118 79; `CLAUDE.md` §3 carries the 400k auto-compact window.
+* The suite on 52cfb57, alone on the machine: 2 212 passed, 5 862 skipped (`E:` not mounted), none failed (17 min 05 s). Part CX's clean run, 2 208, was on
+  2d9a8f4; the four more are the stand-in test's cases, 17 at that commit and 21 as revised.
+
+## CXI.2 The control's ramp, read again (bundle A, 74.4 %, the tree with Waves 1 and 2)
+
+K_N's term is P_bub (1 - 1 / f_N), f_N = 1 + `BUB_KN` (N/C - `HPCC_NC_DES_LIVE`): the part of 322E002's bubble
+pressure the K_N line adds above the design melt. The deficit is (P_bub - P_loop) - 3.5 bar.
+
+| t s | L | ratio SP | ratio PV | AT-322701 | melt N/C | fraction | P_bub bar a | P_loop bar a | deficit bar | K_N's term bar | 322R001's off-gas t/h |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 60 | 0.995 | 2.0228 | 2.029 | 3.005 | 3.097 | 0.994 | 144.6 | 140.7 | 0.36 | 0.48 | 22.6 |
+| 300 | 0.975 | 2.0157 | 2.040 | 3.138 | 3.260 | 0.950 | 147.4 | 140.7 | 3.24 | 4.70 | 23.6 |
+| 600 | 0.951 | 2.0131 | 2.038 | 3.172 | 3.331 | 0.931 | 148.8 | 140.8 | 4.52 | 6.55 | 26.1 |
+| 960 | 0.921 | 2.0000 | 2.026 | 3.420 | 3.647 | 0.845 | 154.0 | 140.4 | 10.08 | 14.75 | 31.6 |
+| 1 320 | 0.892 | 2.0000 | 2.022 | 3.372 | 3.612 | 0.837 | 154.0 | 139.9 | 10.62 | 13.85 | 33.3 |
+| 2 400 | 0.803 | 2.0087 | 2.027 | 3.057 | 3.293 | 0.910 | 147.6 | 138.3 | 5.85 | 5.57 | 38.1 |
+| 2 640 | 0.783 | 2.0146 | 2.032 | 2.937 | 3.172 | 0.949 | 144.8 | 138.0 | 3.34 | 2.42 | 41.9 |
+| 2 760 | 0.774 | 2.0193 | 2.034 | 2.848 | 3.083 | 0.970 | 143.3 | 137.8 | 1.96 | 0.10 | 49.4 |
+| 2 880 | 0.764 | 2.0288 | 2.040 | 2.672 | 2.811 | 0.935 | 145.4 | 137.7 | 4.26 | - | 59.7 |
+| 2 940 | 0.759 | 2.0441 | 2.076 | 2.367 | 2.493 | 0.629 | 165.7 | 138.0 | 24.14 | - | 82.8 |
+
+* **The ratio never reached its floor at the plant.** The set point sits on 2.0000 to 2.0012 from 900 to 1 680 s;
+  the PV there is 2.021 to 2.028, and over the whole descent it runs 0.30 to 1.46 % above its set point (mean
+  1.03 %), the ammonia lagging the CO2's ramp. Its minimum is 2.0210 at 1 260 s, 0.1 % under the design's 2.0231.
+  The floor that bound is also the scratch operator's own limit (`opt_run95.py:230`, lo 2.0). The plant's ratio
+  is flat with load, 2.047 to 2.053 on the engine's basis in every band (§XCIII.3): it uses none of its downward
+  authority on a turndown.
+* **The hump is the K_N line.** The melt N/C rises from the first minute to 3.647 at 960 s with the fresh ratio
+  0.1 to 0.8 % over the design, worth about 0.01 to 0.08 of AT-322701 at §XCIII.3's sensitivity (0.14 for 1.43 %
+  of ratio). In 45 of the 46 samples to 2 760 s the deficit is positive, and in 36 of them K_N's term alone is
+  the whole deficit or more (0.05 to 1.58 of it). With Extended UNIQUAC's 1.3 bar per unit of N/C (§CX.8) in
+  K_N's place and nothing else changed, the deficit on those samples is positive in 9, at most 1.86 bar at
+  2 760 s, the loop pressure's fall [I: a static reading; the trajectory would differ].
+* **A feedback on the high side** [I]: N/C up, the K_N line raises the bubble pressure, the fraction falls, the
+  uncondensed gas returns through 322R001, 322E003 and 322F001, and the melt N/C rises further.
+* **The downswing starts at a ratio at or above the design.** AT-322701 falls under 3.00 at 2 520 s, the set
+  point 2.0117 (the scratch operator still winding back from the hump) and the PV 2.029. 322R001's off-gas
+  rises from 22.6 t/h at 60 s to 33.3 at 1 320 s and 49.4 at 2 760 s while the load falls 23 %, and 322E003's
+  make from 57.8 to 80.8 t/h, before the melt crosses 3.0 at 2 815 s. Which boundary stream carries the loop
+  from AT 3.42 to 2.85 at that ratio is not measured: no run logs the loop's N and C boundary.
+* E0 reads the same: melt N/C 3.654 at 960 s, the PV's minimum 2.0220, K_N's term the whole deficit or more in
+  36 of 44 samples.
+
+## CXI.3 What follows
+
+* **B-128 is not what failed E0.** §CX.8's "with the floor binding, a different target cannot move the ratio"
+  holds for the set point and not for the plant: the ammonia never fell to the floor, and the hump does not come
+  from an excess of it. A lower floor lets the operator wind further back before the downswing [I]. B-128 stays
+  a question of the faceplate, on the DCS readback checklist's row 15; its other side is one scratch arm, the
+  floor at 1.9397 (2.0 x 2.0231 / 2.086) in the scratch operator's limit and in the command's clamp.
+* **E1r is the experiment the runs point at, and it was not run.** E0's failure stopped the wave under the
+  plan's own rule, and E1 had failed a seed criterion that a law with no margin at the seed cannot meet. The
+  three faults are session 98's plan's: the stop at the first failed step, E0 placed before E1, and E1's
+  criterion of every leaf identical.
+* **E1's shape.** Session 99's fit keeps the K_N line above a ridge of 3.40 to 3.45; the hump reaches 3.65. The
+  variant to measure takes Extended UNIQUAC's shape on both sides (decisions 142 and 147's source), the K_N
+  line retired in the prototype: `BUB_KN` 0.18 is V1's calibration (`data/unit_322e002.py:152`), no document
+  behind it. Its margin on Book2's five bands is 4.38 bar by §CX.8's fit, to be confirmed.
+* **E1's seed criterion** is the process engineer's: the unit at the design feeds identical to the bit, the
+  console's tags unchanged and every leaf within a stated relative tolerance (§CX.8 measured 820 leaves, the
+  reactor's overflow CO2 by 1.1e-6); or a gate. A gate must bring about 4.4 bar in within the seed's own
+  neighbourhood of N/C, a kink at the design point [I]: not recommended.
+* **Session 95's table is stale** (decision 185, §CX.8): the five holds are run again on the tree before an
+  arm is scored against them.
+
+## CXI.4 The frozen-console test's race (A-39)
+
+`tests/hmi/test_console_while_frozen.py:170-171` waits for the released plant's clock to move and asserts the
+label `ENGINE RUNNING` on the next line with no wait, where every other step of the test waits. §CX.7's one
+failure, beside two engine runs, is that assertion [I: the race]. Raised as A-39.
+
+## CXI.5 Checks
+
+* `git status` clean and HEAD at 52cfb57 before the documents were edited; `pytest tests/docs` passes after.
+* The suite as CXI.1 gives it; `grep -rn "PyQt6"` below the HMI layer prints nothing.

@@ -4907,3 +4907,12 @@ switches, the seed identical on 3 694 leaves; decisions 185 to 187. Wave 3, scra
 binds, B-128); E0t classifies the collapse's chatter; E1 as fitted cannot keep the seed (a seed-gated E1 untested);
 stopped, E1r to E5 not run. The control departs from session 95's A744 through B-129's heat term alone. Wave 4 skipped. Wave 5: the stand-in table and test, checklist rows 15 and 16, the Körting draft, gap
 1's fits. `E:` not mounted. The record is As-Built Part CX.
+
+### Session 100 — session 99 reviewed on its own runs; the next plan (2026-11-11)
+
+On the process engineer's request. The tree holds what Part CX says; the suite on 52cfb57: 2 212 passed, 5 862 skipped (`E:` not mounted), none failed (17 min 05 s).
+Session 99's archived runs read again: on the 74.4 % ramp the melt N/C hump is 322E002's K_N line (its term the
+whole deficit in 36 of 46 samples), the ratio's PV never falls under 2.021 while its set point sits on the 2.0
+floor, and the downswing starts at a ratio at or above the design. So B-128 is not what failed E0, and E1r, not
+run, is the next experiment. B-118, B-125 and B-128 rewritten; A-39 raised (a test's race). The plan and its
+prompt written to `D:\Work\reports`. No code, relation or decision changed; the record is As-Built Part CXI.

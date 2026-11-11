@@ -5,8 +5,8 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-11, session 99 (the resolution plan's Waves 1, 2, 3 to E0 and 5; B-118, B-125 and
-B-128 rewritten).
+**Last updated:** 2026-11-11, session 100 (session 99 reviewed on its runs: B-118, B-125 and B-128 rewritten;
+A-39 raised).
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -21,7 +21,8 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 # Section A — Rewrite issues
 
-A-33 was raised 2026-11-11 by session 97's deep audit (As-Built Part CVIII); A-38 by session 99 (§CX.6).
+A-33 was raised 2026-11-11 by session 97's deep audit (As-Built Part CVIII); A-38 by session 99 (§CX.6);
+A-39 by session 100 (§CXI.4).
 
 ### A-33 — Without V1 mounted the equivalence layer does not run
 
@@ -37,6 +38,13 @@ mounted, and a switch that fails a release run on a V1 skip (recommended); (b) k
 `thermo.speciation`, `thermo.splits`, `thermo.srk`, `thermo.standard_state`, `thermo.vle_grid`,
 `units.synthesis.hp_split` or `units.synthesis.reactor_calibration`; six more are reached only by V1 equivalence
 suites (§CX.6). To do: a behaviour test of each, the thermo ones on the stores' own fixed points.
+
+### A-39 — The frozen-console test races the engine label
+
+*Raised 2026-11-11, session 100 (As-Built §CXI.4).* `tests/hmi/test_console_while_frozen.py:170-171` waits
+for the released plant's clock and asserts the label `ENGINE RUNNING` with no wait. It failed once beside two
+engine runs (§CX.7) and passes alone. To do: wait for the label as the test waits for everything else, and
+pass it twenty times beside an engine run.
 
 ---
 
@@ -104,19 +112,18 @@ And A-34's atoms closed tick by tick on a turndown (`tests/phase7/test_loop_atom
 **Session 95's verification (§CVII.3-4).** 92.3 % passes; 90.5 % is trip-free, 47-50 min out of band;
 74.4, 69.3 and 68.9 % fail 960-1 680 s after the ramp on 322E002's collapse, with P1 on the load ratio.
 
-**Session 99's Wave 3 (§CX.8): stopped at E0, its first step.**
-* E0 fails: AY-322701's target ramped to 3.192 does not move the ratio, whose set point stays within
-  0.0011 of its 2.0 floor on the descent (B-128). The melt N/C is 2.44 at 2 880 s (L 0.764); trip 22.2 at 4 920 s. The
-  control (bundle A) trips at 4 680 s, session 95's A744 at 4 800 s: B-129's heat term, nothing else.
-* E1 as fitted cannot keep the seed, whose fraction dips to 0.99988 and N/C walks 6.7e-4: a constant
-  margin moves it (820 leaves; the console's tags unchanged). A seed-gated E1 is untested (B-125).
+**Sessions 99 and 100 (§CX.8, §CXI.2-3): Wave 3 stopped at E0; E1r to E5 are not run.**
+* E0 fails (melt N/C 2.44 at 2 880 s, trip 22.2 at 4 920 s), and neither its target nor the ratio's floor is
+  why: the PV never falls under 2.021 while the set point sits on 2.000, and the plant's ratio is flat with
+  load. The control trips at 4 680 s, session 95's A744 at 4 800 s (B-129's heat term): that table is stale.
+* The descent's N/C hump (melt 3.65 at 960 s, fraction 0.84) is the K_N line: its term is the whole deficit
+  in 36 of 46 samples, and on Extended UNIQUAC's slope the deficit is at most 1.86 bar [I] (B-125).
+* The downswing through 3.0 starts at a ratio at or above the design; the loop's N and C boundary is unlogged.
+* E1 as fitted moves the seed by 1.1e-6 on 820 leaves, the console's tags unchanged: its criterion is open.
 
-**Open options and next step: the process engineer's choice.**
-
-* (a) E1 again, its margin and shape gated to zero at the seed's state, or a seed change of E1's size
-  accepted as its criterion (the console's tags unchanged); then E1r, E2 and E3 (§CVIII.9).
-* (b) Decide B-128 first, then E0 again: with the floor binding no ratio target acts on the descent.
-* (c) Build session 95's bundle (1 of 5 holds passed before B-129 changed the collapse; re-run first).
+**Next step, scratch (`D:\Work\reports\Session 99 review and session 101 plan and prompt.md`).** E1 on
+Extended UNIQUAC's shape both sides, seed and ramp (E1r); the loop's N and C boundary on the control; the
+five holds again on the tree; then E2 and E3 (§CVIII.9). The process engineer's: E1's seed criterion (B-125).
 
 **B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode: gain 0 removes it
 at 92.3 % on the S2 prototype and at 111 % (§XCVIII.3), and alone runs the reactor 12.4 K colder at
@@ -134,8 +141,11 @@ the seed unchanged, a harness switch, both sides measured (B-118's E1 and E1r); 
 melt's bubble temperature, the conductance setting the duty, only if (b) fails. Session 99 (§CX.8): the
 deficit is +6.4 to +11.2 bar at Book2's five bands; (b) needs a margin of 4.38 bar (ridge at 3.40 or
 above) to 11.20 bar (ridge at 3.0); the seed itself stands up to 0.0076 bar over the law's edge, so no
-constant margin leaves it unchanged. A margin gated to zero at the seed's state is untested; whether to
-try it or relax the seed condition is the process engineer's call (B-118's option (a)).
+constant margin leaves it unchanged. Session 100 (§CXI.2-3): on the 74.4 % ramp the K_N line is the whole
+deficit through the N/C hump, and the fit kept that line above its ridge, below the hump's 3.65. To measure:
+Extended UNIQUAC's shape on both sides (`BUB_KN` is V1's calibration, no document) with its margin. A gate
+must bring 4.4 bar in beside the design point, a kink where the loop sits [I]; whether the seed condition
+is relaxed to the design pin, the console's tags and a stated tolerance is the process engineer's call.
 
 ### B-126 — 322R001's 136 t of liquor has no composition
 
@@ -159,10 +169,11 @@ onto it as its departure, decision 104's class (recommended: the trace first, in
 *Raised 2026-11-11, session 97 (§CVIII.7).* `RATIO_SP_MIN` 2.0 is applied to the engine's ratio (design
 2.0231 for the plant's 2.086 molar): 1.1 % of downward authority against the plant's 5.4 %. Options: (a)
 keep as built; (b) the faceplate shows and takes the plant's basis; (c) the floor restated on the
-engine's basis. The process engineer's call (decision 160's class). Session 99 (§CX.8): on the
-74.4 % ramp the set point sits on the floor from 960 to 1 440 s (within 0.0011 of it on E0's target), so B-118's
-E0 cannot act until this is decided. The DCS readback checklist's row 15 asks the faceplate's limits and
-basis.
+engine's basis. The process engineer's call (decision 160's class). Sessions 99 and 100 (§CX.8, §CXI.2): on the
+74.4 % ramp the set point sits on the floor from 900 to 1 680 s, but the PV stays at 2.021-2.028 there (the
+ammonia lags the ramp) and the plant's ratio is flat with load (§XCIII.3): the floor is not what fails
+B-118's E0. Its other side, the floor at 1.9397, is one scratch arm, not yet run. The DCS readback
+checklist's row 15 asks the faceplate's limits and basis.
 
 ---
 
