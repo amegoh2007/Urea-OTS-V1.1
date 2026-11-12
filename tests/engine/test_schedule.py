@@ -110,7 +110,7 @@ def test_the_plants_schedule_is_v1s_order_every_unit_once():
     the network (4), 322E003 and HV-322604 (5), the loop's displayed indicators (6), the liquor
     train (7-13), unit 328 (14-20), 322C001 (22), the two LP condensers (23, 24), unit 324 (26-31) with unit
     335's UF85 dosing (30),
-    the steam users' meter, 323P001B's standby faceplate (33), the trips (34-36) and PT-329201
+    the steam users' meter, 323P001B's standby faceplate (33), the trips (34, 35) and PT-329201
     (37)."""
     s = P.schedule()
     assert s.order == P.ORDER and len(set(s.order)) == len(s.order) == 35
@@ -142,9 +142,9 @@ def test_the_plants_order_is_a_topological_order_of_its_torn_flowsheet():
 
 
 def test_every_one_tick_read_of_the_plant_is_declared_with_a_reason():
-    """81 declared tears, each read: the V1 recycles and their kin, every downstream
+    """78 declared tears, each read: the V1 recycles and their kin, every downstream
     pressure a unit reads before its owner steps, the steam users' draws, the trips' output; the
-    synthesis loop's 29 — PT-329201 to the six units that read it, the trips' latches to the feeds
+    synthesis loop's — PT-329201 to the seven units that read it, the trips' latches to the feeds
     (21.2's to 320K002 too, decided 2026-10-16: its flag shuts XV-322902) and the network, 322E003's sump to 322F001 (its mushy zone too) and to 322R001's pulse, the
     backlog PT-329201 recondensed to the sump, the reactor's overflow to 322E001, the steam
     network's saturations to the two shells and its LP pressure to 322E002's tube leak (B-82),
@@ -154,7 +154,7 @@ def test_every_one_tick_read_of_the_plant_is_declared_with_a_reason():
     and B-97's (decided 2026-10-16), 324F002's discharge temperature to 323C005; and B-105's two
     (decided 2026-10-22), 308's composition and temperature to 322E003."""
     s = P.schedule()
-    assert len(s.tears) == 81 and all(t.reason for t in s.tears)
+    assert len(s.tears) == 78 and all(t.reason for t in s.tears)
     assert set(s.tear_writes) == set(P.TEAR_WRITES)
 
 

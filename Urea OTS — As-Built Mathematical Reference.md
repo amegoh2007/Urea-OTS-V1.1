@@ -22971,3 +22971,85 @@ kept, `seedcheck101.py` writes them again) and `copy_tree.py`.
 * The suite on the tree, run alone after every arm had exited:
   2 212 passed, 5 862 skipped, none failed (18 min 01 s).
   `E:` is not mounted, so every V1-side test skips. A skip is not a pass, and A-33 stays open.
+
+# Part CXV — Session 105: trip 22.2 removed; the load-reduction procedure measured; the holdup bundle's cold branch (2026-11-12)
+
+Session 105 ran the plan approved on 2026-11-12 for the process engineer's instructions I-1 to I-3
+(`D:\Work\reports\Session 105 plan prompt s104.md`). Track T removed trip 22.2 from the product, the session's
+only build; every other experiment is a monkeypatch in a scratch script, run on a byte copy of the tree at the
+commit its result is claimed for. The scripts, configurations, run files and logs are in
+`D:\Work\reports\B118_s105`. `[I]` marks an inference.
+
+## CXV.1 Trip 22.2: the documentation recheck (I-1)
+
+The search was made afresh: every source below was opened in the session and its pages are named in
+`D:\Work\reports\Trip_22_2_recheck_s105\README.md`. Scanned documents were rendered at 200 dpi and read by
+Windows.Media.Ocr, and every page that could hold the trip was read visually. The search terms were `22.2`,
+`22_2`, `I22.2`, `TRIP_22`, `PSHH`, `PZHH`, `PAHH`, "high-high" pressure, `329201` and `SV32251`.
+
+| Source | Finding |
+|---|---|
+| Trip and Interlock Schedule UAN 01-3042-602 Rev. 03 as-built (`References\trip_and_interlock_schedule.md`) | Unit 322 holds trips 22.1 (TSHH-322015, 110 C) and 22.5 (N/C-meter flushing) only. Trip 21.2's initiators include no pressure. |
+| AC4 application software UD-MR-G00-FF-0004 rev. 01 (356 pages) | PC22.5 writes TRIP_22_1_FLAG1 and TRIP_22_5_FLAG1 (pages 43, 46), nothing else; PC29.5 writes TRIP_29_2 and TRIP_29_4 (page 184). No sheet reads PT-329201. |
+| Safeguards SG1 UD-MR-G00-FF-0006 and SG2 UD-MR-G00-FF-0007 | SG1's only pressure high-high trip is PSHH-320207 (2oo3) into trip 20.1, 320K002's machine trip, on its turbine exhaust (loop summary 320, page 131). SG2 is unit 383. |
+| Loop summary 329 UD-MR-329-EC-0001, sheet P 329201 (page 99, read visually) | Function PI, additional function AH only; 140 bar g normal, range 0-210 bar g. No Z or S function. |
+| Loop summaries 322 and 329, every sheet's function field | Switch and trip functions on flows, levels, temperatures, AT-329701 and the XV limit switches; none on a loop pressure. |
+| Functional diagrams UD-MR-322-FF-0002 and UD-MR-329-FF-0002 | No trip on PT-329201; PIC-329204 goes to 10 bar on trip 21.2. |
+| ESD specification UD-MR-G00-EC-0010 | Requirements only; no trip list. |
+| Operating Manual III UD-VT-G00-DC-0003 (353 pages) | Page 1-60: SV32251 and SV32252 protect the loop; PIA-329201 is an alarm. Page 5-8: "The upper limit of the action range is determined by the set pressure of the HP safety valves." |
+| P&ID 102 (`References\Sources\PIDs.pdf`, page 3) | SV32251/52/53 in the safety-valve note; PT-329201's functions taken from its loop sheet. |
+| Archive index UD-AM-G00-AB-0022 | Interlock and cause-and-effect documents exist only for package units and the Safeguards. |
+| Every other file under `References\` (152 files, text search) | 22.2 as a trip appears only in an AI-written report in `Gaps Closure\CCW cutoff\` (its 155.0 bar a "from the user prompt") and in the generic `scenarios\Scenarios6.docx`, written from V1. Neither is a plant document. |
+
+**Result.** No plant document draws an interlock numbered 22.2, and none draws a high-high pressure trip on the
+synthesis loop under any number. The loop is protected by the alarm PIA-329201 and, above it, by SV32251 /
+SV32252 (set 160.013 bar a, reseat 144.113, as built). The trip was removed (decision 189).
+
+## CXV.2 Trip 22.2 removed (T2): both sides
+
+**The port.** `SynthesisTrips.i_22_2`, the constants `TRIP_22_2_BARA` / `TRIP_22_2_RESET_BARA`, the label map
+`TRIP_LABELS` ("22.2 (simulator)"), the class `BandedInterlock`, the `trip_reset` command (no other latch used
+it), the HP ammonia pump start's acknowledgement of 22.2 and its refusal, the refusal of a CO2 demand and of
+XV-322902 while 22.2 is latched, `SYNTHESIS_TRIPS`, 22.2's entry in the pump faceplates' `PUMP_TRIPS` and the
+packet key `22_2` are removed. `SynthesisTrips.step`
+no longer reads the loop pressure, so the schedule's declared tears fall from 81 to 78 and PT-329201 has seven
+readers. `trip_label(key)` is `key.replace("_", ".")`. Nothing replaces the trip: the loop's limit is SV32251 /
+SV32252, as the plant's.
+
+**Saves.** A save made before the removal still holds the record. `data.retired_state.RETIRED_ATTRIBUTES` names
+`SynthesisTrips.i_22_2`, and the snapshot reader drops it before the object is rebuilt; every other shape
+difference is still refused, and a reference left dangling by a dropped record raises `SnapshotError` (the
+record holds only primitives, so none can). The six shipped exercises under `scenarios/` lose the record by a
+byte-level cut: no other byte changes, and each loads (`tests/engine/test_snapshot.py`).
+
+**The null proof.** Before (HEAD 0d9736a) and after (the working tree), the same 1 800 s null ramp and the same
+1 800 s hold, every leaf of the packet and of the state recorded every 10 s (180 records, 60 with state): the only
+differences are the ten leaves of 22.2 (the packet's `trips.22_2` and `trip_latched.22_2`, the state's
+`SYN-TRIPS.i_22_2` and its seven fields). No other leaf differs, on either run.
+
+**The equivalence harness.** The transcription carries V1's 22.2 (155.0 / 148.0 bar a, `SYN_P_TRIP_BARA`,
+`SYN_P_TRIP_RESET_BARA`) and runs it in the glue only with switch D-189 off; every other test runs with D-189 on.
+At a stepped loop pressure the port's pins do not move: the step to 155.5 or 160.5 bar a also drops FY-322403
+below its low limit on the first tick, so trip 21.2 latches and cuts the feeds as 22.2 used to.
+`test_the_loop_put_at_155_5_bar_stays_equal_through_21_2s_trip` holds the glue `==` the port for 600 ticks with
+every switch on (21.2 latched, the 321 flow 0.0). `test_v1s_trip_22_2_and_the_port_without_it_decided_divergence`
+runs both sides with D-189 off: V1 latches 22.2, shuts XV-322902 and stops the HP ammonia pumps; the port has no
+22.2, latches 21.2, 21.8 and 21.10, shuts XV-322902, cuts the 321 flow to 0.0 and ends at PT-329201 154.3152
+bar a. In B-106's test the loop first reaches 155.0 bar a at tick 1 905 and the port ends at 155.6793 bar a.
+V1's side there reads the port's stream 308 and LP header, so it moves with the port: at tick 2 000 it stands at
+141.6930 bar a, where it stood at 141.7178 while the port's 22.2 latched at tick 1 906 (HEAD, measured on a byte
+copy of commit 0d9736a, passes at 141.7178).
+
+**The suite.** V1's tree (`E:\Simulator\Urea Simulation`) was mounted for this session's suite, so the V1 sides
+ran: 8 079 passed and 4 failed, none skipped (1:17:05, alone). Two failures were T2's and are corrected: V1's
+handler still branches on `trip_reset`, now the one V1 command the rewrite refuses as unknown (decision 189), and
+B-106's V1 pin above. Two are not T2's. `test_a_bad_sample_costs_one_tick_of_control_action_and_nothing_else`
+(`tests/equivalence/test_co2_line_equivalence.py`) fails on the byte copy of commit 0d9736a as well: it asserts
+that after a bad sample PIC-322203 is, to the bit, the loop that never saw it, which decision 186 (session 99,
+B-130) made false by design, the first good sample reseeding the PV history; the module is skipped when V1 is
+absent, so session 99's and 103's suites did not run it (handoff B-134).
+`test_commands_reach_the_plant_between_ticks_with_the_plants_answer` (`tests/net/test_engine_host.py`) saw one of
+its two events late once; it passed eight times in eight alone, and T2 touched nothing in `ureasim/net`.
+
+**What it supersedes.** Decision 174 (kept as written), decision 83 as far as it names 22.2, 22.2's half of
+decision 187 and decided-class line 115 (marked superseded). Decision 189 holds the removal.

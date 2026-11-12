@@ -40,7 +40,8 @@ def _refused(plant, match, **cmd):
 @pytest.mark.skipif(not v1_available(), reason="V1 source tree not present")
 def test_every_command_v1_handles_is_answered():
     """The types V1's handler branches on, read from its source, are all the plant's or the
-    simulator's here."""
+    simulator's here, except V1's reset of its trip 22.2, which went with the trip (decision 189,
+    a decided divergence: V1 handles it, the rewrite refuses it as unknown)."""
     src = (V1_BACKEND / "main.py").read_text(encoding="utf-8")
     body = src[src.index("def handle_cmd(cmd: dict):"):src.index("# ----- FastAPI app -----")]
     types = set()
@@ -49,7 +50,7 @@ def test_every_command_v1_handles_is_answered():
         if branch:
             types |= set(re.findall(r'"([a-z0-9_]+)"', branch.group(1).split(" or ")[0]))
     types.discard("set")                        # the generic form, a fault only
-    assert types - set(PLANT_COMMANDS) - SIMULATOR_COMMANDS == set()
+    assert types - set(PLANT_COMMANDS) - SIMULATOR_COMMANDS == {"trip_reset"}
 
 
 def test_hand_valves_clamp_as_v1(plant):
@@ -83,7 +84,6 @@ def test_a_start_is_refused_while_the_pumps_flag_is_lost(plant):
     assert "acknowledged 321P002B fault" in r.text
     _ok(plant, type="pump_toggle", id="B", on=False)          # stopping is always allowed
     assert not st.pump_b.running
-    _refused(plant, "holds no latch to reset", type="trip_reset", id="21_2")
 
 
 def test_the_trip_21_2_hand_switches_are_keyswitches(plant):
@@ -102,24 +102,19 @@ def test_the_tempered_water_pumps_have_no_interlock(plant):
     assert (ccw.p329p006a, ccw.p329p006b) == (False, True)
 
 
-def test_a_trip_resets_only_once_its_cause_has_gone(plant):
-    trips = plant.units["SYN-TRIPS"]
-    trips.i_22_2.latched, trips.i_22_2.live = True, True
-    _refused(plant, r"trip 22\.2 \(simulator\) not reset: the cause is still live", type="trip_reset", id="22_2")
-    trips.i_22_2.live = False
-    assert _ok(plant, type="trip_reset").text == "reset trip 22.2 (simulator)"
-    _refused(plant, "holds no latch", type="trip_reset", id="22_1")
+def test_trip_reset_went_with_trip_22_2(plant):
+    """Decision 189: 22.2 held the only latch an operator reset; AC4's flags and I 22.1 hold none,
+    so the command is gone and the synthesis trips carry no 22.2."""
+    _refused(plant, "unknown command 'trip_reset'", type="trip_reset", id="21_2")
+    assert not hasattr(plant.units["SYN-TRIPS"], "i_22_2")
 
 
-def test_xv_322915_has_no_operator_open_and_a_tripped_valve_stays_shut(plant):
-    """B-59: XV-322915's only control is HS-322915. XV-322902 is held shut by trip 22.2: the
-    open is refused, the close is not."""
+def test_xv_322915_has_no_operator_open(plant):
+    """B-59: XV-322915's only control is HS-322915. (A trip's hold on XV-322902 is 21.2's, below;
+    V1's 22.2 hold is gone, decision 189.)"""
     _refused(plant, "no operator open", type="xv_toggle", id="322915")
     _ok(plant, type="keyswitch_set", id="HS-322915", on=True)
     assert plant.operator["HS-322915"] is True
-    plant.units["SYN-TRIPS"].i_22_2.latched = True
-    _ok(plant, type="xv_toggle", id="322902")                  # close
-    _refused(plant, r"held shut by trip 22\.2", type="xv_toggle", id="322902")
     _ok(plant, type="xv_toggle", id="322903")
     assert plant.operator["XV-322903"] is False
 
@@ -143,15 +138,9 @@ def test_trip_21_2_holds_xv_322902_and_xv_322903_shut(plant):
     _ok(plant, type="co2_set", value=67.0)
 
 
-def test_a_latched_trip_22_2_refuses_the_co2_demand(plant):
-    """B-88: trip 22.2 trips 320K002 and takes its demand to zero; while it is latched a demand
-    is refused with the trip's name, zero is not, and once it is reset the demand is taken."""
-    trips = plant.units["SYN-TRIPS"]
-    trips.i_22_2.latched = True
-    r = _refused(plant, r"320K002 is tripped by trip 22\.2 \(simulator\), latched", type="co2_set", value=50.0)
-    assert r.reason.endswith("before restoring the CO2 demand")
-    _ok(plant, type="co2_set", value=0.0)
-    trips.i_22_2.latched = False
+def test_the_co2_demand_is_refused_only_on_21_2s_flag(plant):
+    """B-88's refusal is 21.2's alone (decision 189: V1's 22.2 refusal is gone): with every flag
+    healthy a demand is taken."""
     _ok(plant, type="co2_set", value=50.0)
     assert plant.operator["320K002-CO2"] == 50.0
 

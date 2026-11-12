@@ -15,7 +15,7 @@ from __future__ import annotations
 from types import MappingProxyType
 
 __all__ = [
-    "FACEPLATE_MODES", "AUX_PUMP_SEEDS", "SYNTHESIS_TRIPS", "TRIP_21_HAND_SWITCHES", "RATIO_SP_MIN",
+    "FACEPLATE_MODES", "AUX_PUMP_SEEDS", "TRIP_21_HAND_SWITCHES", "RATIO_SP_MIN",
     "RATIO_SP_MAX",
     "STEAM_SP_MAX_BARA", "PIC_335201_OP_MAX_BARG", "CPL_MAX_FACTOR", "FIC_329409_SP_MAX_FACTOR",
     "TIC_329005_SP_MIN_C", "EXT_OVERRIDE_TAG",
@@ -89,11 +89,6 @@ AUX_PUMP_SEEDS = MappingProxyType({
     "328P001A": (True, "AUTO"), "328P001B": (False, "AUTO"),
     "328P003A": (True, "AUTO"), "328P003B": (False, "AUTO"),
 })
-
-#: The synthesis trips, by trip; only 22.2 holds a latch an operator resets — AC4's 21.2, 21.8 and
-#: 21.10 are live flags with no reset (decided 2026-10-09, handoff A-12). Source: V1 ``handle_cmd``
-#: ``trip_reset``; UD-MR-G00-FF-0004 PC21.
-SYNTHESIS_TRIPS = ("21_2", "21_8", "21_10", "22_2")
 
 #: AC4 PC21.5.1's hand switches on TRIP_21_2_FLAG1 (UD-MR-G00-FF-0004 page 20), maintained,
 #: released at the seed: HS-321634, HS-323604 and HS-322606 bypass the HP ammonia pumps', 323P001's

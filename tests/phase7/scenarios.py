@@ -9,9 +9,11 @@ comparison is of the same exercise:
   design feed lineup on; PT-329201's rise identified as a first-order-plus-dead-time step by Smith's
   two-point method and set against the 3 June 2025 start-up trend's band (tau 2884-4055 s, dead
   time at most 572 s, final 137.5-150.5 bar g).
-* **trip 22.2** — V1's ``test_ccw_loss_chain.py`` phase 2: both tempered-water pumps, 329P006A and
-  B, stopped; 322E003 loses its cooling, the loop pressure climbs to the high-high and trip 22.2
-  latches, cutting the CO2 and both HP ammonia pumps. Run to ten minutes past the latch.
+* **tempered-water loss** — V1's ``test_ccw_loss_chain.py`` phase 2: both tempered-water pumps,
+  329P006A and B, stopped; 322E003 loses its cooling and the loop pressure climbs. V1's trip 22.2
+  latches at its high-high, cutting the CO2 and both HP ammonia pumps, and V1 runs to ten minutes
+  past the latch. The port has no 22.2 (decision 189: no plant document draws a trip on the loop's
+  pressure, whose limit is SV32251 / SV32252) and runs the procedure's whole duration.
 * **HPCC rupture** — V1's ``tests/run_hpcc_rupture.py``: a 322E002 tube leak in steps of 0, 2.5,
   5, 10, 20 and 40 t/h, ten minutes each, the ammonia feed drum's level held (continuous make-up) so
   trip 21.2 stays dormant. V1 injects the shell's water into the process; the port runs its own
@@ -67,7 +69,7 @@ CORE_TAGS = (
     "EVAP_324.E001.urea_pct",
     "EVAP_324.E003.PT_324204",
     "EVAP_324.E003.urea_pct",
-    "trip_latched.21_2", "trip_latched.22_1", "trip_latched.22_2",
+    "trip_latched.21_2", "trip_latched.22_1",
 )
 
 #: Per-tick watches for ringing (handoff B-51): name -> (V1 state field, the rewrite's unit).
@@ -108,14 +110,15 @@ SCENARIOS = {
         title="Cold start: an empty, depressurised synthesis loop, the feeds on",
         duration_s=16000.0, sample_s=30.0, initial="cold_loop",
         notes="V1 test_transient_coldstart.py; DCS band from the 3 June 2025 start-up trend."),
-    "trip_22_2": Scenario(
-        name="trip_22_2",
-        title="Trip 22.2: both tempered-water pumps stopped, the loop to its high-high",
+    "tempered_water_loss": Scenario(
+        name="tempered_water_loss",
+        title="Tempered-water loss: both 329P006 pumps stopped, the loop to its limit",
         duration_s=48000.0, sample_s=10.0,
         script=((60.0, {"type": "pump_toggle", "id": "329P006A", "on": False}),
                 (60.0, {"type": "pump_toggle", "id": "329P006B", "on": False})),
         stop_after_trip=("22_2", 600.0),
-        notes="V1 test_ccw_loss_chain.py phase 2."),
+        notes="V1 test_ccw_loss_chain.py phase 2; the stop is V1's 22.2, which the port does "
+              "not publish (decision 189)."),
     "hpcc_rupture": Scenario(
         name="hpcc_rupture",
         title="HPCC rupture: a 322E002 tube leak, 0 to 40 t/h in six steps",

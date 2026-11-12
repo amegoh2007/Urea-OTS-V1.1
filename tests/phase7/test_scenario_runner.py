@@ -117,16 +117,16 @@ def _record(values, trips, side):
 
 
 def test_the_comparison_pairs_the_two_records_by_time():
-    v1 = _record({"a": [1.0, 2.0, 3.0], "f": [False, True, True]}, {"22_2": 2.0}, "v1")
-    port = _record({"a": [1.0, 2.5, 3.0], "f": [False, False, True]}, {"22_2": 2.5}, "port")
-    out = cmpmod.compare("trip_22_2", v1, port)
+    v1 = _record({"a": [1.0, 2.0, 3.0], "f": [False, True, True]}, {"21_2": 2.0}, "v1")
+    port = _record({"a": [1.0, 2.5, 3.0], "f": [False, False, True]}, {"21_2": 2.5}, "port")
+    out = cmpmod.compare("tempered_water_loss", v1, port)
     a = next(r for r in out["paths"] if r["path"] == "a")
     assert (a["max_gap"], a["max_gap_t_s"], a["v1_last"], a["port_last"]) == (0.5, 2.0, 3.0, 3.0)
     f = next(r for r in out["paths"] if r["path"] == "f")
     assert f["disagree_samples"] == 1
-    t22 = next(r for r in out["trips"] if r["trip"] == "22_2")
-    assert t22["port_minus_v1_s"] == 0.5
-    assert "| 22_2 | 2.0 | 2.5 | 0.5 |" in cmpmod.report_markdown(out)
+    t21 = next(r for r in out["trips"] if r["trip"] == "21_2")
+    assert t21["port_minus_v1_s"] == 0.5
+    assert "| 21_2 | 2.0 | 2.5 | 0.5 |" in cmpmod.report_markdown(out)
 
 
 @pytest.mark.skipif(not v1_available(), reason="V1 source tree not present on this machine")

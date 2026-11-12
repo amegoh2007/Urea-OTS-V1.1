@@ -30,7 +30,7 @@ def v1():
 def _packet(k: int) -> dict:
     """A packet at step k: a level, a flag, a nested controller, a path that appears at step 150
     and one that drops out at step 400, and a one-step spike at 333."""
-    pkt = {"LT_322504": 80.0 + math.sin(k / 37.0), "trip_22_2": k % 97 == 0,
+    pkt = {"LT_322504": 80.0 + math.sin(k / 37.0), "trip_21_2": k % 97 == 0,
            "controllers": {"FIC_329409": {"pv": 75.0 + 0.01 * k, "op": 50.0, "mode_auto": True}},
            "STREAMS": {"204": {"NH3": 1.0}}}
     if k >= 150:
@@ -64,7 +64,7 @@ def _same(a: dict, b: dict) -> None:
 def test_every_query_is_v1s(v1, dt):
     """At 1x (0.1 s steps) and at FAST's 60x (6 s), every window both rings serve is V1's."""
     mine, theirs = _drive(port, 2000, dt), _drive(v1, 2000, dt)
-    paths = ["LT_322504", "trip_22_2", "controllers.FIC_329409.pv",
+    paths = ["LT_322504", "trip_21_2", "controllers.FIC_329409.pv",
              "controllers.FIC_329409.mode_auto", "PT_329201", "TT_322014", "STREAMS.204.NH3",
              "never_logged"]
     newest = 1999 * dt

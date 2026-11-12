@@ -29,20 +29,17 @@ __all__ = ["PumpFaceplate", "interlock_text"]
 
 
 def interlock_text(state: Mapping[str, Any], pump_id: str) -> str:
-    """What holds a feed pump, as V1's faceplate words it, trip 22.2 named as the simulator's own
-    (decision 174); ``n/a`` for a pump with no trips."""
+    """What holds a feed pump, as V1's faceplate words it; ``n/a`` for a pump with no trips. AC4's
+    flags read the trip in both ``trips`` and ``trip_latched`` and hold no latch of their own, so
+    V1's "LATCHED (clears on START)", trip 22.2's, has no trip left to show (decision 189)."""
     keys = PUMP_TRIPS.get(pump_id)
     if keys is None:
         return "n/a"
     latched = get_path(state, "trip_latched") or {}
     live = get_path(state, "trips") or {}
     active = [k for k in keys if latched.get(k) and live.get(k)]
-    held = [k for k in keys if latched.get(k) and not live.get(k)]
     if active:
         return "TRIP " + ", ".join(trip_label(k) for k in active) + " ACTIVE"
-    if held:
-        return ("TRIP " + ", ".join(trip_label(k) for k in held)
-                + " LATCHED (clears on START)")
     return "CLEAR"
 
 

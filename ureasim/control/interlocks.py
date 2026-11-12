@@ -4,17 +4,17 @@ What this models
 ----------------
 The plant's trip schedule: 21.2 the urea synthesis's main trip and 21.8 / 21.10 the HP ammonia
 pumps' trips, built as Uhde's DCS application software executes them (AC4, PC21; decided
-2026-10-09, handoff A-12); 22.1 the LP absorber over-temperature steam flood; and 22.2 the
-synthesis high-high pressure emergency shutdown, which V1's logic still carries.
+2026-10-09, handoff A-12); and 22.1 the LP absorber over-temperature steam flood. V1's 22.2, a
+synthesis high-high pressure shutdown, is not built: no plant document draws it (decision 189).
 
 Source
 ------
 Uhde's "Application Software AC4", UD-MR-G00-FF-0004 rev 01 (ABB Advant PC diagrams): PC21.1.1
 (page 5, TRIP_21_8_FLAG1), PC21.1.2 (page 7, TRIP_21_10_FLAG1) and PC21.5.1 (page 20,
 TRIP_21_2_FLAG1); PC22.5.1 for I 22.1. V1 ``backend/main.py``, the "Trips (P1-2 stateful
-interlocks)" block of ``step_sim`` and the ``trip_reset`` command handler, for 22.2's latch and
-the classes 22.1 and 22.2 use. In V1 the logic and the actions it commands are written together
-inline; here they are separated — see below.
+interlocks)" block of ``step_sim`` and the ``trip_reset`` command handler, for the latch and the
+class 22.1 uses. In V1 the logic and the actions it commands are written together inline; here they
+are separated — see below.
 
 What is here and what is not
 ----------------------------
@@ -40,9 +40,6 @@ initiator, and a trainee has to learn the difference:
     does nothing at all, which is the correct and the frustrating behaviour.
   * **arming.** A trip whose initiator is trivially true on an idle plant must not latch itself
     during a black start.
-  * **the reset-block band.** 22.2 trips at its set point but refuses to reset until the
-    pressure has fallen well below it, so the plant cannot be reset onto the edge of the
-    condition it just tripped on.
   * **self-clearing, for one trip only.** 22.1 is a protective action rather than a shutdown:
     a limit with hysteresis, as the DCS's analogue input evaluates it, with no reset button.
     What it does to XV-322915 is the unit's (`units.absorption.vent_line.xv_322915_open`).
@@ -110,47 +107,6 @@ class Interlock:
             return False
         self.latched = False
         return True
-
-
-@dataclass
-class BandedInterlock(Interlock):
-    """A latching trip whose RESET is blocked by a wider band than its trip point.
-
-    Process utility
-    ---------------
-    Trip 22.2, synthesis high-high pressure. The interlock fires at ``trip_at`` and then
-    refuses to clear until the pressure has fallen below ``reset_below``. Without the band a
-    plant could be reset the instant it dipped a hair under the trip point and would trip
-    straight back, which is not how a logic solver behaves and is not what an operator should
-    be taught to expect.
-
-    Note which threshold is live when: while LATCHED the initiator is the reset band, so the
-    published ``live`` flag answers "can this be reset?" rather than "is it still tripping?".
-    That is V1's own arrangement and it is what makes :meth:`Interlock.reset` sufficient.
-    """
-
-    #: The initiator threshold [engineering units of the PV].
-    trip_at: float = float("inf")
-    #: The reset-block threshold, below the trip point.
-    reset_below: float = float("inf")
-    #: A non-finite PV is a live initiator (decided 2026-11-11, decision 187, handoff B-131); False
-    #: is V1's comparison, which reads a NaN as healthy. A class switch, so a saved exercise keeps
-    #: its shape.
-    nan_is_live: ClassVar[bool] = True
-
-    def update_from_pv(self, pv: float) -> bool:
-        """Evaluate against a process value and return the latch state. A failed measurement
-        (NaN or infinite) trips and blocks the reset, as a logic solver's bad-quality input does."""
-        if self.nan_is_live and not math.isfinite(pv):
-            self.live = self.latched = True
-            return self.latched
-        if self.latched:
-            self.live = pv >= self.reset_below        # reset-block band while latched
-        else:
-            self.live = pv >= self.trip_at            # initiator
-            if self.live:
-                self.latched = True
-        return self.latched
 
 
 @dataclass
@@ -418,7 +374,6 @@ class InterlockSet:
 
 __all__ = [
     "Interlock",
-    "BandedInterlock",
     "HystereticInterlock",
     "DcsTripFlag",
     "OnDelayTimer",

@@ -3,8 +3,8 @@
 What this is
 ------------
 The schedule's entries for V1's ``step_sim`` section 5 (322E003 with its tempered water, its sump
-and HV-322604), section 6 (the loop's displayed indicators), sections 34 and 36 (trips 21.2, 21.8
-and 21.10, as AC4 executes them, and 22.2) and section 37's loop pressure:
+and HV-322604), section 6 (the loop's displayed indicators), section 34 (trips 21.2, 21.8 and 21.10,
+as AC4 executes them) and section 37's loop pressure:
 
 =========  =========================================================  ===========================
 step       what it is                                                 the tick before it reads
@@ -21,14 +21,15 @@ HV-322604  the inert purge, its seat capped at what the shell would   PT-329201;
            have vented, discharging against 322C001 (handoff A-17)    pressure
 322-       the lags of ten displayed indications (`indicators`):      nothing
 DISPLAY    what the consoles show, nothing in the plant reads
-SYN-TRIPS  the trips' initiators on this tick's plant; their actions  PT-329201 (trip 22.2)
+SYN-TRIPS  the trips' initiators on this tick's plant; their actions  nothing
            the units take from the next tick (`synthesis`)
 PT-329201  the loop's pressure on this tick's boundary (`loop_pressure`)
 =========  =========================================================  ===========================
 
-V1 evaluates section 34 before I 22.1 (section 35) and 22.2 (section 36) after it; none reads
-another, so 21.x and 22.2 are one step, before ``TRIPS``. PT-329201 is the tick's last step, as
-V1's section 37 is.
+V1 evaluates section 34 before I 22.1 (section 35); neither reads the other, so 21.x is one step,
+before ``TRIPS``. V1's section 36, trip 22.2 on the loop's high-high pressure, is not built: no plant
+document draws it, and the loop's pressure is limited by SV32251 / SV32252 (decision 189).
+PT-329201 is the tick's last step, as V1's section 37 is.
 
 Source: V1 ``backend/main.py`` ``step_sim`` 7989-8204, 10086-10133, 10150-10171, 10345-10445.
 """
@@ -37,7 +38,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
 
-from ureasim.control.interlocks import BandedInterlock, Unit21TripInputs, Unit21Trips
+from ureasim.control.interlocks import Unit21TripInputs, Unit21Trips
 from ureasim.core.stream import MW_COMP, atom_ratio
 from ureasim.data.engine import DT_S
 from ureasim.data.operator_commands import TRIP_21_HAND_SWITCHES
@@ -52,8 +53,6 @@ from ureasim.data.unit_322_loop import (
     TRIP_21_8_PDY_L2_BAR,
     TRIP_21_8_RUN_TD_S,
     TRIP_21_8_STOP_TP_S,
-    TRIP_22_2_BARA,
-    TRIP_22_2_RESET_BARA,
 )
 from ureasim.data.unit_322r001 import C_ATOMS, N_ATOMS, NC_SPAN_MAX
 from ureasim.data.unit_323e003 import E003_M308_DES_KGH, E003_T_C, W_308
@@ -115,7 +114,7 @@ def _unit21_trips() -> Unit21Trips:
 
 @dataclass
 class SynthesisTrips:
-    """Trips 21.2, 21.8, 21.10 and 22.2 — what the feeds act on from the next tick.
+    """Trips 21.2, 21.8 and 21.10 — what the feeds act on from the next tick.
 
     Process utility
     ---------------
@@ -125,14 +124,11 @@ class SynthesisTrips:
     or a trip hand switch is; each pump's flag on 21.2, its suction's sub-cooling, XV-321901 shut,
     and XV-322901 not open 5 s after it starts. V1's 21.2 (321D003 below 5 % or a sub-cooling
     margin), 21.4 (the CO2 lost while synthesis runs; no flag in AC4) and 21.8 / 21.10 (a pump's
-    equipment fault) are gone. 22.2 is V1's: the loop's high-high pressure with its reset band
-    (not in AC4; XV-322902 is the Safeguard's). What each trip stops is the units'.
+    equipment fault) are gone, and so is V1's 22.2, the loop's high-high pressure, which no plant
+    document draws (decision 189). What each trip stops is the units'.
     """
 
     unit21: Unit21Trips = field(default_factory=_unit21_trips)
-    i_22_2: BandedInterlock = field(default_factory=lambda: BandedInterlock(
-        "22_2", "synthesis high-high pressure", trip_at=TRIP_22_2_BARA,
-        reset_below=TRIP_22_2_RESET_BARA))
 
     @property
     def i_21_2(self):
@@ -152,17 +148,16 @@ class SynthesisTrips:
     @property
     def latched(self) -> dict:
         """Each trip's latch, or its flag lost, by trip."""
-        return {i.tag: i.latched for i in (self.i_21_2, self.i_21_8, self.i_21_10, self.i_22_2)}
+        return {i.tag: i.latched for i in (self.i_21_2, self.i_21_8, self.i_21_10)}
 
     @property
     def trip_21_2(self) -> bool:
         """Trip 21.2's flag lost, which forces PIC-329204 and HV-329601 in unit 329 too."""
         return self.i_21_2.latched
 
-    def step(self, x: Unit21TripInputs, p_syn_bara: float, dt: float) -> dict:
-        """Evaluate the flags and 22.2's initiator on this tick's plant; return the trips."""
+    def step(self, x: Unit21TripInputs, dt: float) -> dict:
+        """Evaluate the flags on this tick's plant; return the trips."""
         self.unit21.step(x, dt)
-        self.i_22_2.update_from_pv(p_syn_bara)
         return self.latched
 
 
@@ -251,7 +246,7 @@ def _trips(plant, a, dt):
         pdy_321204_low=a["pdy_b_bar"] < TRIP_21_8_PDY_L2_BAR,
         hs_321634=a["hs_321634"], hs_323604=a["hs_323604"], hs_322606=a["hs_322606"],
         hs_321603=a["hs_321603"], hs_321604=a["hs_321604"])
-    return plant.units["SYN-TRIPS"].step(x, a["p_syn_bara"], dt)
+    return plant.units["SYN-TRIPS"].step(x, dt)
 
 
 def _pt329201(plant, a, dt):
@@ -304,8 +299,7 @@ def steps() -> dict:
             "xv_322902_open": State("320K002", "xv_322902_open"),
             "xv_321901_open": State("321", "xv_321901_open"),
             "xv_322901_open": State("321", "xv_322901_open"),
-            **{f"hs_{t}": Operator(f"HS-{t}") for t in TRIP_21_HAND_SWITCHES},
-            "p_syn_bara": p_syn}, _trips),
+            **{f"hs_{t}": Operator(f"HS-{t}") for t in TRIP_21_HAND_SWITCHES}}, _trips),
         "PT-329201": Step("PT-329201", "synthesis loop pressure", "322", 37, {
             "nh3_th": Result("321", "flow_total_th"), "co2_kgh": Result("320K002", "feed_kgh"),
             "m_308_kgh": Result("323E003", "m_308_kgh"),
@@ -338,8 +332,6 @@ def tears() -> tuple[DeclaredTear, ...]:
     return (
         DeclaredTear(State("PT-329201", "p_syn_bara"), "322E003", loop),
         DeclaredTear(State("PT-329201", "p_syn_bara"), "HV-322604", loop),
-        DeclaredTear(State("PT-329201", "p_syn_bara"), "SYN-TRIPS",
-                     "trip 22.2 reads PT-329201 before section 37 integrates it"),
         DeclaredTear(Tear("m_308_kgh"), "322E003",
                      "322E003 washes with 323P001's 308 of the tick before (V1 M308_KGH)"),
         DeclaredTear(Tear("w_308"), "322E003",

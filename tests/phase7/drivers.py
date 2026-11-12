@@ -275,7 +275,7 @@ def run_port(scenario: Scenario) -> dict:
     def trips():
         syn = u["SYN-TRIPS"]
         out = {key: getattr(syn, f"i_{key}").latched
-               for key in ("21_2", "21_8", "21_10", "22_2")}
+               for key in ("21_2", "21_8", "21_10")}
         out["22_1"] = u["TRIPS"].i_22_1.latched
         return out
 

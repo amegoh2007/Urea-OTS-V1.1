@@ -21,7 +21,7 @@ V1     unit                  module
                             the vacuum train
 31     329-USERS             `steam` — every user's draw on the headers' PFD basis
 33     SIC-323902            `recirc` — 323P001B's standby faceplate, stepped on its own output
-34-36  SYN-TRIPS             `synthesis_loop` — 21.2, 21.8, 21.10 (AC4), 22.2, acting next tick
+34     SYN-TRIPS             `synthesis_loop` — 21.2, 21.8, 21.10 (AC4), acting next tick
 35     TRIPS                 `absorption` — I 22.1, acting from the next tick
 37     PT-329201             `synthesis_loop` — the loop's pressure, the tick's last step
 =====  ====================  ======================================================================

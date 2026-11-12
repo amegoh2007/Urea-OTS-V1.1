@@ -24,7 +24,8 @@ from tests.phase7.drivers import COLD_P0_BARA, smith_foptd
 ATM_BAR = 1.01325
 
 #: The synthesis section's trips, listed whether they latched or not: V1's six; the port has no 21.4
-#: (no flag in AC4's application software, handoff A-12, decided 2026-10-09).
+#: (no flag in AC4's application software, handoff A-12, decided 2026-10-09) and no 22.2 (in no
+#: plant document, decision 189).
 TRIP_KEYS = ("21_2", "21_4", "21_8", "21_10", "22_1", "22_2")
 
 #: PT-329201's path in both packets [bar a].

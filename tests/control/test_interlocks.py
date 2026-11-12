@@ -19,7 +19,9 @@ What the transcription covers
     21_2 / 21_8 / 21_10   latch on a live condition; reset only once it has cleared
     21_4                  the same, but latched only while ARMED (synthesis running)
     22_1                  hysteretic self-clear, no operator reset
-    22_2                  latch at the trip point, reset blocked by a wider band
+    22_2                  latch at the trip point, reset blocked by a wider band — V1's only:
+                          no plant document draws it and the rewrite does not build it
+                          (decision 189); the transcription is kept as the record of V1's side
 
 The plant's 21.2, 21.8 and 21.10 are no longer V1's latches but AC4's live flags (handoff A-12,
 decided 2026-10-09); the latch classes' tests keep V1's trip names as their examples. AC4's logic
@@ -32,8 +34,8 @@ import itertools
 
 import pytest
 
+from ureasim.control import interlocks
 from ureasim.control.interlocks import (
-    BandedInterlock,
     HystereticInterlock,
     Interlock,
     InterlockSet,
@@ -234,43 +236,16 @@ def test_the_design_absorber_temperature_leaves_the_flood_shut():
 PV_22_2 = [140.7, 146.0, 152.0, 154.9, 155.0, 160.0, 152.0, 149.0, 148.0, 147.9, 140.7]
 
 
-def test_the_banded_trip_follows_v1_over_a_full_excursion():
-    trip = BandedInterlock("22_2", "Synthesis high-high pressure ESD",
-                           trip_at=SYN_P_TRIP_BARA, reset_below=SYN_P_TRIP_RESET_BARA)
-    latched = False
+def test_v1s_trip_22_2_latches_on_its_band_and_the_rewrite_has_no_such_trip():
+    """Decision 189, a decided divergence: V1 latches 22.2 at 155.0 bar a and holds it until the
+    loop falls below 148.0; no plant document draws the trip, and the rewrite builds none."""
+    latched, got = False, []
     for pv in PV_22_2:
         live, latched = _v1_banded(pv, latched)
-        assert trip.update_from_pv(pv) == latched
-        assert trip.live == live
-
-
-def test_the_plant_cannot_be_reset_onto_the_edge_of_the_condition_it_tripped_on():
-    """The band, stated as the operating rule it encodes."""
-    trip = BandedInterlock("22_2", trip_at=SYN_P_TRIP_BARA,
-                           reset_below=SYN_P_TRIP_RESET_BARA)
-    trip.update_from_pv(160.0)
-    assert trip.latched is True
-    trip.update_from_pv(154.0)          # below the trip point, still inside the band
-    assert trip.reset() is False
-    trip.update_from_pv(147.0)          # out of the band
-    assert trip.reset() is True
-    assert trip.latched is False
-
-
-def test_the_design_synthesis_pressure_leaves_the_esd_clear():
-    """PT-329201 reads 140.7 bar a at design, so the latch is clear and the action is zero."""
-    trip = BandedInterlock("22_2", trip_at=SYN_P_TRIP_BARA,
-                           reset_below=SYN_P_TRIP_RESET_BARA)
-    assert trip.update_from_pv(140.7) is False
-
-
-def test_a_trip_that_has_not_latched_uses_the_trip_point_not_the_band():
-    """150 bar a is above the reset band and below the trip point. It must not trip —
-    reading the wrong threshold here would trip the plant 7 bar early."""
-    trip = BandedInterlock("22_2", trip_at=SYN_P_TRIP_BARA,
-                           reset_below=SYN_P_TRIP_RESET_BARA)
-    assert trip.update_from_pv(150.0) is False
-    assert trip.live is False
+        got.append((live, latched))
+    assert got[3] == (False, False) and got[4] == (True, True)      # 154.9 clear, 155.0 trips
+    assert got[8] == (True, True) and got[9] == (False, True)       # 148.0 live, 147.9 resettable
+    assert not hasattr(interlocks, "BandedInterlock")
 
 
 # --------------------------------------------------------------------------------------
@@ -278,7 +253,7 @@ def test_a_trip_that_has_not_latched_uses_the_trip_point_not_the_band():
 # --------------------------------------------------------------------------------------
 
 def _schedule() -> InterlockSet:
-    """The plant's six trips, as V1 seeds them."""
+    """V1's seeded trips, its 22.2 aside (decision 189)."""
     trips = InterlockSet()
     trips.add(Interlock("21_2", "Urea synthesis main trip"))
     trips.add(Interlock("21_4", "Loss of CO2 feed -> NH3 main interlock"))
@@ -286,8 +261,6 @@ def _schedule() -> InterlockSet:
     trips.add(Interlock("21_10", "HP NH3 pump 321P002B equipment fault"))
     trips.add(HystereticInterlock("22_1", "322C001 over-temperature steam flood",
                                   trip_above=57.0, clear_below=55.0))
-    trips.add(BandedInterlock("22_2", "Synthesis high-high pressure ESD",
-                              trip_at=SYN_P_TRIP_BARA, reset_below=SYN_P_TRIP_RESET_BARA))
     return trips
 
 
@@ -304,7 +277,6 @@ def test_reset_all_clears_every_resettable_trip_whose_condition_has_recovered():
     trips = _schedule()
     for tag in ("21_2", "21_4", "21_8", "21_10"):
         trips[tag].update(True)
-    trips["22_2"].update_from_pv(160.0)
     trips["22_1"].update_from_pv(60.0)
     assert trips.any_latched is True
 
@@ -313,9 +285,8 @@ def test_reset_all_clears_every_resettable_trip_whose_condition_has_recovered():
 
     for tag in ("21_2", "21_4", "21_8", "21_10"):
         trips[tag].update(False)
-    trips["22_2"].update_from_pv(140.7)
     cleared = trips.reset()
-    assert set(cleared) == {"21_2", "21_4", "21_8", "21_10", "22_2"}
+    assert set(cleared) == {"21_2", "21_4", "21_8", "21_10"}
     #  22.1 is self-clearing and is never in a reset list — exactly V1's key tuple.
     assert "22_1" not in cleared
     assert trips["22_1"].latched is True
@@ -347,8 +318,8 @@ def test_the_packet_always_carries_every_trip():
     trips = _schedule()
     trips["21_2"].update(True)
     packet = trips.as_packet()
-    assert len(packet["trips"]) == 6
-    assert len(packet["trip_latched"]) == 6
+    assert len(packet["trips"]) == 5
+    assert len(packet["trip_latched"]) == 5
     assert packet["trip_latched"]["21_2"] is True
     assert packet["trip_latched"]["21_4"] is False
 
@@ -442,29 +413,24 @@ def test_the_trip_hand_switches_and_the_flags_have_no_reset():
 # -- B-131: a non-finite PV is a live initiator (decided 2026-11-11, decision 187) -------------------------------
 
 @pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
-def test_a_failed_measurement_trips_22_2_and_22_1_and_v1_reads_it_healthy(bad, monkeypatch):
-    """A NaN fails both of V1's comparisons, so V1 reads it as healthy; the rewrite trips on any
-    non-finite PV and holds the reset while it lasts. An infinite PV above the limit trips both."""
-    def pair():
-        return (BandedInterlock("22_2", trip_at=SYN_P_TRIP_BARA, reset_below=SYN_P_TRIP_RESET_BARA),
-                HystereticInterlock("22_1", trip_above=110.0, clear_below=108.0))
-
-    banded, hyst = pair()
-    assert banded.update_from_pv(bad) and banded.live and hyst.update_from_pv(bad) and hyst.live
-    assert banded.reset() is False
-    banded.update_from_pv(147.0)
+def test_a_failed_measurement_trips_22_1_and_v1_reads_it_healthy(bad, monkeypatch):
+    """A NaN fails V1's comparison, so V1 reads it as healthy; the rewrite trips on any non-finite
+    PV and clears once the measurement is back below the limit. An infinite PV above the limit
+    trips both. (22.2's half of decision 187 went with the trip, decision 189.)"""
+    hyst = HystereticInterlock("22_1", trip_above=110.0, clear_below=108.0)
+    assert hyst.update_from_pv(bad) and hyst.live
     hyst.update_from_pv(100.0)
-    assert banded.reset() is True and not hyst.latched
-    monkeypatch.setattr(BandedInterlock, "nan_is_live", False)
+    assert not hyst.latched
     monkeypatch.setattr(HystereticInterlock, "nan_is_live", False)
-    banded, hyst = pair()
-    assert banded.update_from_pv(bad) == hyst.update_from_pv(bad) == (bad == float("inf"))
+    hyst = HystereticInterlock("22_1", trip_above=110.0, clear_below=108.0)
+    assert hyst.update_from_pv(bad) == (bad == float("inf"))
 
 
 def test_on_finite_pvs_the_two_sides_are_the_same(monkeypatch):
-    """Over 22.2's excursion the switch changes nothing."""
-    ours = BandedInterlock("22_2", trip_at=SYN_P_TRIP_BARA, reset_below=SYN_P_TRIP_RESET_BARA)
-    got = [(ours.update_from_pv(pv), ours.live) for pv in PV_22_2]
-    monkeypatch.setattr(BandedInterlock, "nan_is_live", False)
-    v1 = BandedInterlock("22_2", trip_at=SYN_P_TRIP_BARA, reset_below=SYN_P_TRIP_RESET_BARA)
-    assert [(v1.update_from_pv(pv), v1.live) for pv in PV_22_2] == got
+    """Over 22.1's excursion the switch changes nothing."""
+    pvs = [43.0, 56.0, 57.5, 58.0, 56.0, 54.9, 43.0]
+    ours = HystereticInterlock("22_1", trip_above=57.0, clear_below=55.0)
+    got = [(ours.update_from_pv(pv), ours.live) for pv in pvs]
+    monkeypatch.setattr(HystereticInterlock, "nan_is_live", False)
+    v1 = HystereticInterlock("22_1", trip_above=57.0, clear_below=55.0)
+    assert [(v1.update_from_pv(pv), v1.live) for pv in pvs] == got

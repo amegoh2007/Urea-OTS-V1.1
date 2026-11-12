@@ -56,8 +56,8 @@ def test_a_trip_by_its_key():
     """The interlock ``i_<key>`` on the synthesis trips; an unknown key refused; the name the
     operator reads."""
     trip = object()
-    plant = SimpleNamespace(units={"SYN-TRIPS": SimpleNamespace(i_22_2=trip)})
-    assert cp._trip(plant, "22_2") is trip
+    plant = SimpleNamespace(units={"SYN-TRIPS": SimpleNamespace(i_21_2=trip)})
+    assert cp._trip(plant, "21_2") is trip
     with pytest.raises(cp._Refused, match="no trip '9_9'"):
         cp._trip(plant, "9_9")
     assert cp._trip_name("21_2") == "trip 21.2"

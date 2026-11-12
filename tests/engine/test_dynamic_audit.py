@@ -11,7 +11,7 @@ can:
    sums to its inventory's change, the selector's and the vacuum condensers' residuals stay zero,
    and nothing published is non-finite.
 2. **Control and safety logic.** Each trip initiator's path on the running plant: 21.2 by its trip
-   switch, carrying 21.8 and 21.10; 22.2 and 323P008's L2 on their measurements injected; 22.1 on
+   switch, carrying 21.8 and 21.10; SV32251 and 323P008's L2 on their measurements injected; 22.1 on
    its limit, which a process path reaches only after about twenty minutes. And the updated
    controllers' transfers: PIC-329205's PI and TIC-328008 on their rows leaving their limits on the
    first reversed tick (velocity forms, no windup), MAN to AUTO bumpless, FFIC-335406's ratio station
@@ -183,7 +183,7 @@ def test_trip_21_2_by_its_switch_carries_21_8_and_21_10_and_stops_the_pumps():
     _ok(sched, type="keyswitch_set", id="HS-321603", on=True)
     for _ in range(3):
         sched.tick()
-    assert trips.latched == {"21_2": True, "21_8": True, "21_10": True, "22_2": False}
+    assert trips.latched == {"21_2": True, "21_8": True, "21_10": True}
     assert (st.pump_a.running, st.pump_b.running) == (False, False)
     p = _packet(sched)
     assert [p[f"trip_latched.{k}"] for k in ("21_2", "21_8", "21_10")] == [True] * 3
@@ -195,23 +195,19 @@ def test_trip_21_2_by_its_switch_carries_21_8_and_21_10_and_stops_the_pumps():
     assert not r.ok and "21.8" in r.reason
 
 
-def test_trip_22_2_latches_on_its_pressure_and_resets_only_below_its_band():
-    """PT-329201 injected at 165 bar a, over 22.2's 155: latched on the tick, 320K002's demand
-    refused, the reset refused while the cause is live; at the design's 140.7, below the 148 reset
-    band, the reset is taken."""
+def test_the_loop_over_its_relief_set_lifts_sv32251_and_trips_nothing_of_its_own():
+    """PT-329201 injected at 165 bar a, over SV32251's set: the relief lifts on the tick and
+    relieves to atmosphere; no pressure trip latches, for none is drawn (decision 189). At the
+    design's pressure the valve reseats."""
     sched = _plant()
     loop, trips = sched.plant.units["PT-329201"], sched.plant.units["SYN-TRIPS"]
     loop.p_syn_bara = 165.0
     sched.tick()
-    assert trips.i_22_2.latched
-    r = apply_command(sched.plant, {"type": "co2_set", "value": 50.0}, sched.results)
-    assert not r.ok and "320K002 is tripped by trip 22.2" in r.reason
-    r = apply_command(sched.plant, {"type": "trip_reset", "id": "22_2"}, sched.results)
-    assert not r.ok and "still live" in r.reason
+    assert sched.results["PT-329201"].relief_lifted and sched.results["PT-329201"].m_relief_kgh > 0.0
+    assert set(trips.latched) == {"21_2", "21_8", "21_10"}
     loop.p_syn_bara = SYN_P_DES_BARA
     sched.tick()
-    _ok(sched, type="trip_reset", id="22_2")
-    assert not trips.i_22_2.latched
+    assert not sched.results["PT-329201"].relief_lifted
 
 
 def test_trip_22_1_floods_the_vent_line_until_its_keyswitch_closes_it():
@@ -424,7 +420,7 @@ def snapshot_text(session: EngineSession) -> dict:
 
 
 #: The instructor's and the operator's levers the fuzz draws on: the tube leak, both HP ammonia
-#: pumps' faults, the CO2 boundary cut and restored, trip resets, a restart, the tempered water,
+#: pumps' faults, the CO2 boundary cut and restored, a restart, the tempered water,
 #: the melt header over LV-324501B's relief, HV-322605 and 21.2's trip switch.
 FUZZ_MENU = (
     {"type": "trigger_fault", "id": "322E002", "value": 8.0},
@@ -434,8 +430,6 @@ FUZZ_MENU = (
     {"type": "clear_fault", "id": "A"},
     {"type": "co2_set", "value": 0.0},
     {"type": "co2_set", "value": 67.0},
-    {"type": "trip_reset"},
-    {"type": "trip_reset", "id": "22_2"},
     {"type": "pump_toggle", "id": "A", "on": True},
     {"type": "pump_toggle", "id": "329P006A", "on": False},
     {"type": "pic335201_set", "op": 4.0},

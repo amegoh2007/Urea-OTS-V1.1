@@ -1013,3 +1013,16 @@ decision on an item.
      process engineer, session 101). The lift departs from the plain seed at tick 3 (CVII.1's drift; 743
      physical leaves and 11 console strings over 18 000 ticks); kept for comparability with sessions 95 and 99,
      the criterion "every leaf identical" waived for it (As-Built §CXII.3).
+189. **Trip 22.2 removed: no plant document draws a trip on the synthesis loop's pressure** (2026-11-12, the
+     process engineer's instruction I-1 of session 105, after its recheck). The recheck (As-Built §CXV.1;
+     D:\Work\reports\Trip_22_2_recheck_s105) read the plant's as-built Trip and Interlock Schedule (UAN
+     01-3042-602 Rev. 03: unit 322 holds trips 22.1 and 22.5 only), AC4's application software, the Safeguards SG1
+     and SG2, the ESD specification, the loop summaries of units 320, 322 and 329, the functional diagrams of 322 and
+     329, P&ID 102, Operating Manual III and the archive's index: no interlock 22.2 and no synthesis high-high
+     pressure trip under any number; SV32251 / SV32252 are the loop's limit. The trip, its set points and label,
+     its latch, its actions on 320K002's demand, XV-322902 and the HP ammonia pumps, its refusals, its packet key,
+     `trip_reset` (no other latch used it) and `BandedInterlock` are removed; a save holding its record loads, the
+     record dropped (`data.retired_state`), and the six shipped exercises lose it. Supersedes decision 174,
+     decision 83 as far as it names 22.2 (its class stands for 21.2's flag, B-88), 22.2's half of decision 187 and
+     decided-class line 115. A decided divergence: V1's 22.2 (155.0 / 148.0 bar a) is the transcription's switch
+     D-189 (As-Built §CXV.2).

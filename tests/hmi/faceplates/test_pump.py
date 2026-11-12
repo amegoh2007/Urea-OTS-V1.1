@@ -1,8 +1,9 @@
 """The pump faceplate — `ureasim.hmi.faceplates.pump`.
 
 Pinned: exactly one of START and STOP is live; each sends an explicit run; the interlock line
-reads the trips that hold the feed pump as V1 words them, trip 22.2 named as the simulator's
-own (decision 174); a pump with no trips reads n/a.
+reads the trips that hold the feed pump as V1 words them; a pump with no trips reads n/a. V1's
+trip 22.2, which decision 174 named as the simulator's own, is in no plant document and is gone
+(decision 189), and with it the one latch the line showed apart from its trip.
 """
 
 from __future__ import annotations
@@ -25,16 +26,16 @@ def test_one_live_button_and_an_explicit_run(bridge):
 
 
 def test_the_interlock_line():
-    live = {"trips": {"21_8": True, "21_2": False}, "trip_latched": {"21_8": True, "21_2": True}}
+    """AC4's flags publish the same in ``trips`` and ``trip_latched``."""
+    live = {"trips": {"21_8": True, "21_2": False}, "trip_latched": {"21_8": True, "21_2": False}}
     assert interlock_text(live, "A") == "TRIP 21.8 ACTIVE"
-    held = {"trips": {}, "trip_latched": {"21_2": True}}
-    assert interlock_text(held, "B") == "TRIP 21.2 LATCHED (clears on START)"
-    assert interlock_text(held, "329P006A") == "n/a"
+    both = {"trips": {"21_2": True, "21_10": True}, "trip_latched": {"21_2": True, "21_10": True}}
+    assert interlock_text(both, "B") == "TRIP 21.2, 21.10 ACTIVE"
+    assert interlock_text({"trips": {}, "trip_latched": {}}, "A") == "CLEAR"
+    assert interlock_text(both, "329P006A") == "n/a"
 
 
-def test_trip_22_2_is_named_as_the_simulators_own():
-    """Decision 174: trip 22.2 is in no AC4 or SG1 page, so the faceplate names it as the simulator's."""
-    both = {"trips": {"22_2": True, "21_2": True}, "trip_latched": {"22_2": True, "21_2": True}}
-    assert interlock_text(both, "A") == "TRIP 21.2, 22.2 (simulator) ACTIVE"
-    held = {"trips": {}, "trip_latched": {"22_2": True}}
-    assert interlock_text(held, "B") == "TRIP 22.2 (simulator) LATCHED (clears on START)"
+def test_v1s_trip_22_2_is_not_shown():
+    """Decision 189: a packet carrying V1's 22.2 key holds no pump."""
+    stray = {"trips": {"22_2": True}, "trip_latched": {"22_2": True}}
+    assert interlock_text(stray, "A") == "CLEAR"

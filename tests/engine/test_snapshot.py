@@ -3,12 +3,15 @@
 The one property that matters: a plant restored from a snapshot runs, tick for tick, to the bit,
 what the saved plant would have run. Pinned here on the assembled plant mid-transient, through
 the JSON text and through a file, with the letdown's cache cleared so no hidden memory carries
-the answer; then the refusals: a foreign class, a damaged document, a different model.
+the answer; then the refusals: a foreign class, a damaged document, a different model, a
+reference to an object the save does not hold. A save made before a piece of the model was removed
+still loads, its retired state dropped (`data.retired_state`), and so does every shipped exercise.
 """
 
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -93,3 +96,67 @@ def test_a_snapshot_from_a_different_model_is_refused_with_the_difference():
     object.__setattr__(lp, "p_old_bara", lp.p_syn_bara)
     with pytest.raises(snapshot.SnapshotError, match="PT-329201"):
         snapshot.loads(snapshot.dumps(plant), build_plant()[1])
+
+
+#: The shipped exercises, the intro's LOAD list's fixed half (decision 171).
+SCENARIOS = Path(__file__).resolve().parents[2] / "scenarios"
+
+#: The class path a snapshot names for the synthesis trips.
+SYNTHESIS_TRIPS = "ureasim.engine.plant.synthesis_loop:SynthesisTrips"
+
+
+def _objects(data, out):
+    """Every tagged object in an encoded state, by its class path."""
+    if isinstance(data, dict):
+        if "$o" in data:
+            out.setdefault(data["$o"], []).append(data)
+        for v in data.values():
+            _objects(v, out)
+    elif isinstance(data, list):
+        for v in data:
+            _objects(v, out)
+    return out
+
+
+def _ids(data):
+    """Every ``$id`` in an encoded state."""
+    if isinstance(data, dict):
+        own = [data["$id"]] if "$id" in data else []
+        return own + [i for v in data.values() for i in _ids(v)]
+    if isinstance(data, list):
+        return [i for v in data for i in _ids(v)]
+    return []
+
+
+def test_a_save_holding_trip_22_2_loads_without_it():
+    """Decision 189: a save made while the model had trip 22.2 — latched, as a save taken over the
+    loop's old high-high would hold it — loads, the record dropped, the trips' shape the model's."""
+    _, plant = build_plant()
+    doc = json.loads(snapshot.dumps(plant))
+    (trips,) = _objects(doc["state"], {})[SYNTHESIS_TRIPS]
+    trips["a"]["i_22_2"] = {"$o": "ureasim.control.interlocks:BandedInterlock",
+                            "$id": max(_ids(doc["state"])) + 1,
+                            "a": {"live": True, "latched": True, "trip_at": 155.0,
+                                  "reset_below": 148.0}}
+    back = snapshot.loads(json.dumps(doc), build_plant()[1])
+    syn = back.units["SYN-TRIPS"]
+    assert not hasattr(syn, "i_22_2") and set(syn.latched) == {"21_2", "21_8", "21_10"}
+
+
+def test_a_reference_to_an_object_the_save_does_not_hold_is_refused():
+    _, plant = build_plant()
+    doc = json.loads(snapshot.dumps(plant))
+    doc["state"]["a"]["clock"] = {"$r": 999999}
+    with pytest.raises(snapshot.SnapshotError, match="refers to object 999999"):
+        snapshot.loads(json.dumps(doc))
+
+
+@pytest.mark.parametrize("path", sorted(SCENARIOS.glob("*.json")), ids=lambda p: p.stem)
+def test_every_shipped_exercise_loads_and_holds_no_retired_state(path):
+    """The six shipped exercises carry no trip 22.2 record (cut from them on 2026-11-12) and load on
+    the present model."""
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    (trips,) = _objects(doc["state"], {})[SYNTHESIS_TRIPS]
+    assert "i_22_2" not in trips["a"]
+    back = snapshot.load(str(path), build_plant()[1])
+    assert set(back.units["SYN-TRIPS"].latched) == {"21_2", "21_8", "21_10"}

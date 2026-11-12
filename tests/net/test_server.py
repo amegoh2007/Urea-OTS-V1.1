@@ -373,7 +373,7 @@ def test_every_command_is_the_engines_to_answer():
         port = await server.start("127.0.0.1", 0)
         console = await Client.connect(port)
         await console.pump(2)
-        kinds = SIMULATOR_COMMANDS + ["controller_set", "trip_reset", "assign"]
+        kinds = SIMULATOR_COMMANDS + ["controller_set", "pump_toggle", "assign"]
         for i, kind in enumerate(kinds, start=1):
             await console.send(protocol.command(i, {"type": kind}))
         await console.pump(2 + 2 * len(kinds))

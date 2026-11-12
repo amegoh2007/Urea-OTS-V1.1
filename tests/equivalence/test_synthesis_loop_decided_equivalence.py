@@ -6,7 +6,8 @@ what each side does is measured. A-16 (decision 32, a node relieving through its
 valves) and A-17 (decision 29, a line discharging against its receiver's live pressure) are classes
 decided on other units and applied to the loop under §5 rule 7. B-75, B-76 and B-78 items 1 to 3
 are the process engineer's decisions of 2026-10-03 on the loop's flagged sinks; B-88 is the decision
-of 2026-10-09 that trip 22.2 trips the CO2 boundary; B-77 (b), PT-329201 on the loop's vapour
+of 2026-10-09 that a trip shutting XV-322902 trips the CO2 boundary (21.2's alone since decision
+189, of 2026-11-12, removed V1's trip 22.2: switch D-189); B-77 (b), PT-329201 on the loop's vapour
 inventory, and A-12, trips 21.2, 21.8 and 21.10 as AC4 executes them, are the decisions of
 2026-10-09; B-91 (a), the loop's condensation capped by its liquor's bubble pressure, of
 2026-10-10, and B-92, the reactor's liquor at its bubble point, of 2026-10-14. Every other switch is
@@ -31,8 +32,9 @@ v1 = h.v1
 
 
 def test_sv32251_and_sv32252_relieve_the_loop_decided_divergence(v1):
-    """A-16. The loop put at 160.5 bar a (trip 22.2 latches and cuts the feeds from the next tick on
-    both sides). V1's assumed SV-32201, set at 161.01 bar a, never lifts: the loop falls on its
+    """A-16. The loop put at 160.5 bar a (21.2's flag is lost on the tick and AC4 cuts the feeds
+    from the next on both sides; V1's 22.2 latched with it until decision 189 removed it, and the
+    pins of both sides, measured again on 2026-11-12, stand). V1's assumed SV-32201, set at 161.01 bar a, never lifts: the loop falls on its
     boundary to 159.31 bar a in a minute. The port's SV32251 / SV32252, set at 160.01 bar a on
     Sempell's certified K orifices, lift at once and relieve 209 t/h of the reactor top's vapour,
     106 t/h of it ammonia: 157.69 bar a in a minute, V1's 159.31 (with B-91 (a) and B-92, decided 2026-10-10 and 2026-10-14: 157.6948 and
@@ -197,9 +199,11 @@ def test_the_mushy_zone_holds_back_into_the_sump_decided_divergence():
     assert r.holdup_kg == pytest.approx(HOLDUP_NLL_KG + m_ovf * h.DT / 3600.0, rel=1e-12)
 
 
-def test_trip_22_2_trips_the_co2_boundary_decided_divergence(v1):
-    """B-88 (decided 2026-10-09, option c). The loop put at 155.5 bar a: trip 22.2 latches on its
-    first tick and both sides shut XV-322902 from the next. V1 leaves 320K002 delivering the
+def test_a_trip_shutting_xv_322902_trips_the_co2_boundary_decided_divergence(v1):
+    """B-88 (decided 2026-10-09, option c). The loop put at 155.5 bar a: the pressure stepped onto
+    the loop starves the CO2 line, 21.2's flag is lost on its first tick and both sides shut
+    XV-322902 from the next through the Safeguard SG1 (V1's 22.2 latched with it until decision 189
+    removed it; the pins of both sides, measured again on 2026-11-12, stand). V1 leaves 320K002 delivering the
     instructor's 54.618 t/h into the blocked line, which packs until SV32064 lifts on tick 316
     (31.7 s) and still holds 159.70 bar a after a minute. The port trips the machine with the
     valve: the boundary's demand is zero from the same tick, the line holds 144.25 bar a and
@@ -499,8 +503,11 @@ def test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence(
     condense; V1's, condensing everything, falls to N/C 2.515 and 135.09 bar a (the transcription
     reads the port's 308 and LP header, so its side moves with the port's). 100 s on, the port's
     melt condenses 74.3 t/h where V1's condenses 198.8, and PT-329201 stands at 147.59 bar a
-    against 141.02; the port's loop reaches trip 22.2's 155 bar a at 190.7 s, where V1's stands at
-    141.72 bar a 9.3 s later (the session-69 valves and 322E006's water upstream, decisions 150
+    against 141.02; the port's loop reaches V1's trip 22.2 set point, 155 bar a, at 190.6 s and,
+    with no such trip (decision 189), stands at 155.68 bar a 9.4 s later, where V1's stands at
+    141.69 bar a (both sides measured on 2026-11-12; until then the port's 22.2 latched on its next
+    tick, 190.7 s, and V1's side, reading the port's, stood at 141.72) (the session-69 valves and
+    322E006's water upstream, decisions 150
     and 151, move the loop's feed in this fast transient: 101.9, 198.6, 147.64, 192.7 s and 141.72 (141.70 before decision 178)
     before them)."""
     def act(k, plant, s):
@@ -523,8 +530,9 @@ def test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence(
         pytest.approx(74.62, abs=0.01), pytest.approx(198.82, abs=0.01))
     assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(141.0214, abs=1e-4),
                                                    pytest.approx(147.5653, abs=1e-4))
-    trip = next(k for k, (_, res, _) in enumerate(hist) if res["SYN-TRIPS"]["22_2"])
-    assert trip == 1906 and hist[2000][2] == pytest.approx(141.7178, abs=1e-4)
+    over = next(k for k, (_, res, _) in enumerate(hist) if res["PT-329201"].p_syn_bara >= 155.0)
+    assert over == 1905 and hist[2000][2] == pytest.approx(141.6930, abs=1e-4)
+    assert hist[2000][1]["PT-329201"].p_syn_bara == pytest.approx(155.6793, abs=1e-4)
 
 
 def test_323d001s_liquor_reaches_322e003_as_it_is_decided_divergence(v1):

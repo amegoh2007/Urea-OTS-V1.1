@@ -8,9 +8,9 @@ inventories of section 4, in V1's order:
 =========  =====================================================  ===================================
 step       what it is                                             the tick before it reads
 =========  =====================================================  ===================================
-320K002    the CO2 machine, its governor, the discharge line,     PT-329201; 21.2's and 22.2's
-           PV-322203 under PIC-322203 (`co2_line`)                XV-322902, 22.2's demand to zero
-321        unit 321: the ratio cascade, 321P002 A/B, 321D003,     trips 21.2, 21.8, 21.10, 22.2
+320K002    the CO2 machine, its governor, the discharge line,     PT-329201; 21.2's XV-322902 and
+           PV-322203 under PIC-322203 (`co2_line`)                its demand to zero
+321        unit 321: the ratio cascade, 321P002 A/B, 321D003,     trips 21.2, 21.8, 21.10
            the motive's line transit (`feed.station`)
 322F001    the ejector on the live loop's suction and discharge   PT-329201; 322E003's sump level,
                                                                   its overflow's composition and
@@ -27,7 +27,7 @@ of this tick, on the PFD's basis (decision 47's class) — 322D001A/B's water bo
 shell is the raising, and the drums' steam space feeds the LP header (`units.steam.steam_network`).
 The scrubber, HV-322604, the trips and PT-329201 are `synthesis_loop`'s.
 
-A trip acts on the next tick: V1 sets its actions at the foot of the tick (sections 34 and 36), so
+A trip acts on the next tick: V1 sets its actions at the foot of the tick (section 34), so
 the units read the latches the trips left and apply them before they step.
 
 Source: V1 ``backend/main.py`` ``step_sim`` 7269-7987, 10086-10181; the units' modules.
@@ -66,8 +66,8 @@ from ureasim.data.unit_322e003 import LEVEL_NLL_PCT as SCRUB_LEVEL_NLL_PCT
 __all__ = ["StripperStep", "CondenserStep", "design_feed_station", "units", "steps", "tears",
            "TRIP_LATCHES"]
 
-#: The trips the feeds read, by trip: AC4's flags 21.2, 21.8 and 21.10 lost, 22.2's latch.
-TRIP_LATCHES = ("21_2", "21_8", "21_10", "22_2")
+#: The trips the feeds read, by trip: AC4's flags 21.2, 21.8 and 21.10 lost.
+TRIP_LATCHES = ("21_2", "21_8", "21_10")
 
 
 @dataclass(frozen=True)
@@ -128,8 +128,8 @@ def units() -> tuple[dict, dict]:
              "322E001": (BottomLevelLoop(),)})
 
 
-def _stop_machines(st: FeedStation, which: str = "AB") -> None:
-    """321P002 A and / or B stopped and their SICs forced to MAN at 0 %."""
+def _stop_machines(st: FeedStation, which: str) -> None:
+    """321P002 A or B stopped and its SIC forced to MAN at 0 %."""
     for pid, pump, sic in (("A", st.pump_a, st.sic_a), ("B", st.pump_b, st.sic_b)):
         if pid in which:
             pump.running = False
@@ -140,13 +140,13 @@ def _stop_machines(st: FeedStation, which: str = "AB") -> None:
 def _320k002(plant, a, dt):
     line = plant.units["320K002"]
     demand_th = a["raw_demand_th"]
-    # Trip 22.2, and 21.2's flag lost — which resets AC4's XVY_322902 flip-flop (PC21.5.1 .14),
-    # ANDed by the Safeguard SG1 into XV-322902's command (UD-MR-G00-FF-0006 PC20.1.1 .32; decided
+    # 21.2's flag lost — which resets AC4's XVY_322902 flip-flop (PC21.5.1 .14), ANDed by the
+    # Safeguard SG1 into XV-322902's command (UD-MR-G00-FF-0006 PC20.1.1 .32; decided
     # 2026-10-16): XV-322902 shut ...
-    if a["trip_21_2"] or a["trip_22_2"]:
+    if a["trip_21_2"]:
         line.xv_322902_open = False
-        # ... and the boundary's demand to zero, which the instructor restores once the trip is
-        # reset or the flag is back (handoff B-88, decided 2026-10-09, decision 83's class).
+        # ... and the boundary's demand to zero, which the instructor restores once the flag is
+        # back (handoff B-88, decided 2026-10-09, decision 83's class).
         plant.operator["320K002-CO2"] = demand_th = 0.0
     return line.step(*plant.loops["320K002"], demand_th, a["p_syn_bara"], dt)
 
@@ -161,8 +161,6 @@ def _321(plant, a, dt):
         _stop_machines(st, "A")
     if trips["21_10"]:  # PC21.1.2: 321P002B's
         _stop_machines(st, "B")
-    if trips["22_2"]:
-        _stop_machines(st)
     for pump in (st.pump_a, st.pump_b):     # a machine's own protection stops it on its fault
         if pump.fault:
             pump.running = False
@@ -227,8 +225,7 @@ def steps() -> dict:
     return {
         "320K002": Step("320K002", "CO2 machine and its discharge line", "320", 2, {
             "raw_demand_th": Operator("320K002-CO2"), "p_syn_bara": p_syn,
-            "trip_21_2": State("SYN-TRIPS", "latched.21_2"),
-            "trip_22_2": State("SYN-TRIPS", "latched.22_2")}, _320k002),
+            "trip_21_2": State("SYN-TRIPS", "latched.21_2")}, _320k002),
         "321": Step("321", "NH3 pumping station", "321", 2, {
             "co2_feed_th": Result("320K002", "feed_th"),
             **{f"trip_{t}": State("SYN-TRIPS", f"latched.{t}") for t in TRIP_LATCHES}}, _321),
@@ -272,9 +269,8 @@ def tears() -> tuple[DeclaredTear, ...]:
     loop = "PT-329201 is integrated at the foot of V1's tick, section 37"
     out = [DeclaredTear(State("PT-329201", "p_syn_bara"), u, loop)
            for u in ("320K002", "322F001", "322E001", "322E002", "322R001")]
-    trips = "V1 sets the trips' actions at the foot of the tick, sections 34 and 36"
-    out += [DeclaredTear(State("SYN-TRIPS", f"latched.{t}"), "320K002", trips)
-            for t in ("21_2", "22_2")]
+    trips = "V1 sets the trips' actions at the foot of the tick, section 34"
+    out += [DeclaredTear(State("SYN-TRIPS", "latched.21_2"), "320K002", trips)]
     out += [DeclaredTear(State("SYN-TRIPS", f"latched.{t}"), "321", trips) for t in TRIP_LATCHES]
     sump = "322F001 entrains the sump 322E003 fills later in the tick, section 5 (report D-6)"
     out += [DeclaredTear(State("322E003", "level_pct"), "322F001", sump),

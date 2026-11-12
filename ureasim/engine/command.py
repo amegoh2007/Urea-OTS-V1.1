@@ -44,7 +44,6 @@ from ureasim.data.operator_commands import (
     PIC_335201_OP_MAX_BARG,
     RATIO_SP_MAX,
     RATIO_SP_MIN,
-    SYNTHESIS_TRIPS,
     TRIP_21_HAND_SWITCHES,
     TIC_329005_SP_MIN_C,
 )
@@ -89,9 +88,8 @@ def _pump_toggle(plant: PlantState, cmd: Mapping, _r) -> str:
     """321P002 A/B, start / stop, and 329P006A/B, the tempered-water pumps.
 
     A 321P002 machine starts only while its AC4 trip flag (21.8 / 21.10, which carries 21.2) is
-    healthy and 22.2 is not latched; a refused start names what holds it. A restart acknowledges
-    22.2 once its cause has recovered and resolves the machine's own fault (the lube-oil
-    abstraction), as V1's faceplate does. Stopping is always allowed.
+    healthy; a refused start names what holds it. A restart resolves the machine's own fault (the
+    lube-oil abstraction), as V1's faceplate does. Stopping is always allowed.
     """
     pid, want = str(cmd.get("id", "")), _want(cmd)
     if pid in ("329P006A", "329P006B"):
@@ -107,11 +105,6 @@ def _pump_toggle(plant: PlantState, cmd: Mapping, _r) -> str:
     starting = (not pump.running) if want is None else (want and not pump.running)
     acked = []
     if starting:
-        trip = _trip(plant, "22_2")
-        if trip.latched and trip.reset():
-            acked.append(_trip_name("22_2"))
-        if _trip(plant, "22_2").latched:
-            raise _Refused(f"{pump.tag} cannot start: trip 22.2 latched, its cause still live")
         if _trip(plant, own).latched:
             why = ("trip 21.2's flag is lost — no HP ammonia pump running (HS-321634 bypasses it), "
                    "no 323P001 (HS-323604), no CO2 to the stripper (HS-322606) or a trip hand "
@@ -126,33 +119,6 @@ def _pump_toggle(plant: PlantState, cmd: Mapping, _r) -> str:
     pump.running = (not pump.running) if want is None else want
     done = f"{pump.tag} {'started' if pump.running else 'stopped'}"
     return done + (f"; acknowledged {', '.join(acked)}" if acked else "")
-
-
-def _trip_reset(plant: PlantState, cmd: Mapping, _r) -> str:
-    """Clear trip 22.2's latch once its cause has recovered. AC4's 21.2, 21.8 and 21.10 hold no
-    latch: they clear with their inputs, and the pumps and XV-321901 / XV-322901 are started and
-    opened again by hand."""
-    key = cmd.get("id")
-    if key == "22_1":
-        raise _Refused("I 22.1 holds no latch to reset: it releases XV-322915 itself once TT-322015 "
-                       "is back below its limit (AC4 PC22.5.1)")
-    if key in ("21_2", "21_8", "21_10"):
-        raise _Refused(f"{_trip_name(key)} holds no latch to reset: its flag clears with its inputs "
-                       "(AC4 PC21); start the pumps and open XV-321901 / XV-322901 again")
-    keys = SYNTHESIS_TRIPS if key in (None, "ALL") else (str(key),)
-    cleared, live = [], []
-    for k in keys:
-        trip = _trip(plant, k)
-        if not trip.latched or not trip.operator_resettable:
-            continue
-        if trip.reset():
-            cleared.append(_trip_name(k))
-        else:
-            live.append(_trip_name(k))
-    if live:
-        raise _Refused(f"{', '.join(live)} not reset: the cause is still live"
-                       + (f" ({', '.join(cleared)} reset)" if cleared else ""))
-    return f"reset {', '.join(cleared)}" if cleared else "no latched trip to reset"
 
 
 def _tube_leak(plant: PlantState, cmd: Mapping) -> str:
@@ -230,13 +196,10 @@ def _operator(tag: str, key: str, lo: float, hi: float, label: str | None = None
 
 
 def _co2_set(plant: PlantState, cmd: Mapping, _r) -> str:
-    """The CO2 asked of 320K002, the instructor's boundary. Trip 22.2 trips the machine and takes
-    the demand to zero (B-88): a demand is refused while it is latched, as XV-322902 is; and while
-    21.2's flag is lost, which shuts XV-322902 (decided 2026-10-16, decision 83's class)."""
+    """The CO2 asked of 320K002, the instructor's boundary. A demand is refused while 21.2's flag
+    is lost, which shuts XV-322902 and takes the demand to zero (B-88; decided 2026-10-16,
+    decision 83's class)."""
     value = _num(cmd, "value", 0.0, math.inf)
-    if value > 0.0 and _trip(plant, "22_2").latched:
-        raise _Refused(f"320K002 is tripped by {_trip_name('22_2')}, latched: reset the trip "
-                       "before restoring the CO2 demand")
     if value > 0.0 and _trip(plant, "21_2").latched:
         raise _Refused(f"XV-322902 is held shut by {_trip_name('21_2')}'s flag (AC4 PC21.5.1): "
                        "restore the flag before restoring the CO2 demand")
@@ -260,7 +223,7 @@ def _xv_toggle(plant: PlantState, cmd: Mapping, _r) -> str:
                        "the OVERRIDE CLOSE keyswitch, is its only control (keyswitch_set)")
     # The trips that hold each valve shut: 21.2's flag resets XV-321901's, XV-322901's,
     # XV-322902's and XV-322903's flip-flops (AC4 PC21.5.1, XV-322902 through the Safeguard SG1).
-    holding = {"321901": ("21_2",), "322901": ("21_2",), "322902": ("22_2", "21_2"),
+    holding = {"321901": ("21_2",), "322901": ("21_2",), "322902": ("21_2",),
                "322903": ("21_2",)}.get(xv, ())
     if xv in ("321901", "322901", "322902"):
         obj, attr = {"321901": (st, "xv_321901_open"), "322901": (st, "xv_322901_open"),
@@ -439,7 +402,6 @@ def _r323_ctrl_set(plant: PlantState, cmd: Mapping, _r) -> str:
 #: The plant's command types and their handlers.
 PLANT_COMMANDS: dict = {
     "pump_toggle": _pump_toggle,
-    "trip_reset": _trip_reset,
     "trigger_fault": _fault,
     "clear_fault": _fault,
     "controller_set": _controller_set,

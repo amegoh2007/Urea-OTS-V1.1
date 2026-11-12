@@ -157,11 +157,11 @@ SPEED_CONTROLLERS = MappingProxyType({
     "SIC_321951": SpeedController("321P002B", "pumpB", "FFIC-321404B"),
 })
 
-#: The synthesis trips that hold each feed pump, as V1's pump faceplate reads them: 21.2 and 22.2
-#: for both, 21.8 for A and 21.10 for B (AC4 PC21; V1's 21.4 has no flag there, handoff A-12). The
-#: tempered-water pumps carry none.
-PUMP_TRIPS = MappingProxyType({"A": ("21_2", "22_2", "21_8"),
-                               "B": ("21_2", "22_2", "21_10")})
+#: The synthesis trips that hold each feed pump, as V1's pump faceplate reads them: 21.2 for both,
+#: 21.8 for A and 21.10 for B (AC4 PC21; V1's 21.4 has no flag there, handoff A-12; V1's 22.2 is not
+#: built, decision 189). The tempered-water pumps carry none.
+PUMP_TRIPS = MappingProxyType({"A": ("21_2", "21_8"),
+                               "B": ("21_2", "21_10")})
 
 #: PIC-329207's three legs: the packet key, the command, the caption.
 MASTER_SP_LEGS = (

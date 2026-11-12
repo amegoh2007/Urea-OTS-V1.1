@@ -101,7 +101,7 @@ runs.
 
 The Phase 7 transient runner drives V1 and the rewrite through the same operating procedure at
 the same fixed 0.1 s step, one process each, and writes a comparison report outside the project
-tree (by default `<temp>/ureasim_phase7`). The scenarios are `cold_start`, `trip_22_2`,
+tree (by default `<temp>/ureasim_phase7`). The scenarios are `cold_start`, `tempered_water_loss`,
 `hpcc_rupture`, `vacuum_break` and `steady_state` (the design seed for an hour, every packet leaf
 compared); `--duration` shortens one for a smoke run:
 

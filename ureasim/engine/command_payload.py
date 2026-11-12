@@ -59,7 +59,7 @@ def _trip(plant: PlantState, key: str):
 
 
 def _trip_name(key: str) -> str:
-    """A synthesis trip as a refusal names it: "trip 21.2", "trip 22.2 (simulator)" (decision 174)."""
+    """A synthesis trip as a refusal names it: "trip 21.2"."""
     return "trip " + trip_label(key)
 
 

@@ -32,7 +32,10 @@ station protocol is — with every value exact:
 A snapshot names only ``ureasim`` classes; anything else is refused on save and on load. On load
 the restored plant's shape — every unit, controller and attribute — is checked against the
 present model's, and a snapshot saved by a different model is refused with the first difference
-named, never half-restored.
+named, never half-restored. The one tolerance is a retired attribute (`data.retired_state`): a
+piece of the model since removed, whose state an older save still holds, is dropped before the
+object is rebuilt, so that save still loads (trip 22.2, decision 189). A reference left pointing
+at a dropped record is refused.
 
 Source: the rewrite's (``project.md`` §3.6: "exercise save and restore are its serialisation");
 V1 had no exercise save. The protocol already reserves ``snapshot_save`` and ``snapshot_load``
@@ -50,6 +53,7 @@ from collections import deque
 from types import MappingProxyType
 from typing import Any
 
+from ureasim.data.retired_state import RETIRED_ATTRIBUTES
 from ureasim.engine.state import PlantState
 
 __all__ = ["FORMAT", "VERSION", "SnapshotError", "encode_state", "decode_state",
@@ -177,7 +181,11 @@ class _Decoder:
         if isinstance(data, list):
             raise SnapshotError("an untagged list in the snapshot")
         if "$r" in data:
-            return self.objs[data["$r"]]
+            try:
+                return self.objs[data["$r"]]
+            except KeyError:
+                raise SnapshotError(f"the snapshot refers to object {data['$r']}, which it does "
+                                    "not hold (a retired record referred to elsewhere?)") from None
         if "$f" in data:
             return float(data["$f"])
         if "$t" in data:
@@ -215,8 +223,10 @@ class _Decoder:
             cls = _resolve(data["$o"])
             obj = cls.__new__(cls)
             self.objs[data["$id"]] = obj
+            retired = RETIRED_ATTRIBUTES.get(data["$o"], ())
             for k, v in data["a"].items():
-                object.__setattr__(obj, k, self.dec(v))
+                if k not in retired:            # a removed piece's state, not rebuilt
+                    object.__setattr__(obj, k, self.dec(v))
             return obj
         raise SnapshotError(f"an untagged object in the snapshot: {sorted(data)[:3]}")
 

@@ -31,8 +31,12 @@ switches ``decided`` on, every state the glue integrates is ``==`` the port's on
   * "B-78" — 322E003's full sump holds its excess back in the scrubber, the forward-carbamate pulse
     is drawn from the sump, the mushy zone throttles the sump's line to 322F001; V1 deletes the
     excess, draws the pulse from nowhere and throttles the overflow into the sump;
-  * "B-88" — trip 22.2 trips 320K002 with XV-322902 and takes the boundary's CO2 demand to zero;
-    V1 shuts XV-322902 and leaves the machine delivering;
+  * "B-88" — a trip that shuts XV-322902 trips 320K002 with it and takes the boundary's CO2 demand
+    to zero (21.2's, since decision 189 removed 22.2); V1 shuts XV-322902 and leaves the machine
+    delivering;
+  * "D-189" — no trip 22.2: no plant document draws a trip on the synthesis loop's pressure, whose
+    limit is SV32251 / SV32252 (decided 2026-11-12, decision 189); V1 latches 22.2 at 155 bar a,
+    holds it live to 148, and with it shuts XV-322902 and stops both HP ammonia pumps;
   * "A-12" — trips 21.2, 21.8 and 21.10 as AC4's application software executes them (PC21: live
     flags on the pumps running, 323P001, the CO2 to the stripper, XV-321901 / XV-322901 and the
     sub-cooling; 21.2 resets the two valves, each pump's flag stops its machine), a machine's
@@ -116,7 +120,7 @@ V1_SUMP_SPAN_KG = BUNDLE_V1.v_sump_m3 * RHO_BOTTOM
 pytestmark = pytest.mark.skipif(not v1_available(), reason="V1 source tree not present")
 
 ALL = frozenset({"A-12", "A-16", "A-17", "B-75", "B-76", "B-77", "B-78", "B-88", "B-91",
-                 "B-92"})
+                 "B-92", "D-189"})
 DT = 0.1
 
 V1_NAMES = [
@@ -247,6 +251,18 @@ def _v1_state(v1):
         ac4=_unit21_trips(),
         trips={"21_2": False, "21_4": False, "21_8": False, "21_10": False, "22_2": False},
         latched={"21_2": False, "21_4": False, "21_8": False, "21_10": False, "22_2": False})
+
+
+def _v1_trip_22_2(v1, s):
+    """V1's trip 22.2 on PT-329201 (``step_sim`` section 36): latched at ``SYN_P_TRIP_BARA``, live
+    until the loop falls below ``SYN_P_TRIP_RESET_BARA``. No plant document draws it (decision
+    189): the glue runs it only with ``D-189`` off."""
+    if s.latched["22_2"]:
+        s.trips["22_2"] = s.p_syn >= v1["SYN_P_TRIP_RESET_BARA"]
+    else:
+        s.trips["22_2"] = s.p_syn >= v1["SYN_P_TRIP_BARA"]
+        if s.trips["22_2"]:
+            s.latched["22_2"] = True
 
 
 def _v1_tick(v1, s, x, decided):
@@ -512,12 +528,8 @@ def _v1_tick(v1, s, x, decided):
             pdy_321204_low=feed.subcooling_b_bar < TRIP_21_8_PDY_L2_BAR), dt)
         s.trips.update({"21_2": t2, "21_8": t8, "21_10": t10})
         s.latched.update({"21_2": t2, "21_8": t8, "21_10": t10})
-        if s.latched["22_2"]:
-            s.trips["22_2"] = s.p_syn >= v1["SYN_P_TRIP_RESET_BARA"]
-        else:
-            s.trips["22_2"] = s.p_syn >= v1["SYN_P_TRIP_BARA"]
-            if s.trips["22_2"]:
-                s.latched["22_2"] = True
+        if "D-189" not in decided:
+            _v1_trip_22_2(v1, s)
 
         def _stop(which="AB"):
             for pid, pump, sic in (("A", st.pump_a, st.sic_a), ("B", st.pump_b, st.sic_b)):
@@ -554,12 +566,8 @@ def _v1_tick(v1, s, x, decided):
         for tk in ("21_2", "21_8", "21_10"):
             if s.trips[tk]:
                 s.latched[tk] = True
-        if s.latched["22_2"]:
-            s.trips["22_2"] = s.p_syn >= v1["SYN_P_TRIP_RESET_BARA"]
-        else:
-            s.trips["22_2"] = s.p_syn >= v1["SYN_P_TRIP_BARA"]
-            if s.trips["22_2"]:
-                s.latched["22_2"] = True
+        if "D-189" not in decided:
+            _v1_trip_22_2(v1, s)
         # The actions, at the foot of the tick as V1 sets them (10112-10133, 10164-10169).
         def _stop():
             st.pump_a.running = st.pump_b.running = False
@@ -868,8 +876,9 @@ def test_the_constants_are_v1s(v1):
     assert (lp.SYN_LOOP_RESID_DES_KGH, lp.SYN_P_TAU_MIN) == (v1["SYN_LOOP_RESID_DES_KGH"],
                                                             v1["SYN_P_TAU_MIN"])
     assert not hasattr(lp, "SYN_LOOP_C_KG_PER_BAR") and not hasattr(lp, "SYN_P_PHASE_GAIN")
-    assert (lp.TRIP_22_2_BARA, lp.TRIP_22_2_RESET_BARA) == (v1["SYN_P_TRIP_BARA"],
-                                                             v1["SYN_P_TRIP_RESET_BARA"])
+    # Decision 189: the port has no trip 22.2; the glue reads V1's own, 155.0 and 148.0 bar a.
+    assert not hasattr(lp, "TRIP_22_2_BARA")
+    assert (v1["SYN_P_TRIP_BARA"], v1["SYN_P_TRIP_RESET_BARA"]) == (155.0, 148.0)
     assert (cw.FV_329409_OP_DES_PCT, cw.TV_329005_OP_DES_PCT, cw.FIC_329409_TAU_S,
             cw.FIC_329409_KC, cw.FIC_329409_TI_S, cw.TIC_329005_TAU_S, cw.TIC_329005_KC,
             cw.TIC_329005_TI_S, cw.TIC_329005_LOAD_GAIN_K) == (
@@ -881,17 +890,35 @@ def test_the_constants_are_v1s(v1):
     assert v1["SYN_PSV_SET_BARA"] == pytest.approx(161.01325, abs=1e-9)
 
 
-def test_trip_22_2_cuts_the_feeds_from_the_next_tick(v1):
-    """The loop put at 155.5 bar a: trip 22.2 latches on its first tick and both sides cut the CO2
-    and the ammonia from the next — V1 at the foot of its tick, the port at the head of the next —
-    and the glue stays ``==`` for a minute of the trip."""
+def test_the_loop_put_at_155_5_bar_stays_equal_through_21_2s_trip(v1):
+    """Every switch on: the loop put at 155.5 bar a, 21.2's flag lost on the tick, and the glue stays
+    ``==`` the port for a minute of the trip (the old 22.2 test's check, decision 189)."""
     def act(k, plant, s):
         if k == 0:
             plant.units["PT-329201"].p_syn_bara = s.p_syn = 155.5
     hist, sched, s = run_both(v1, 600, act)
-    assert s.latched["22_2"] and sched.plant.units["SYN-TRIPS"].latched["22_2"]
-    assert not s.line.xv_322902_open and not sched.plant.units["320K002"].xv_322902_open
+    assert s.latched["21_2"] and not s.latched["22_2"]
     assert hist[-1][1]["321"].flow_total_th == 0.0
+
+
+def test_v1s_trip_22_2_and_the_port_without_it_decided_divergence(v1):
+    """Decision 189 (2026-11-12): no plant document draws a trip on the loop's pressure. The loop
+    put at 155.5 bar a: V1's 22.2 latches on its first tick and cuts the CO2 and the ammonia from
+    the next. The port holds no 22.2; the pressure stepped onto the loop starves the CO2 line, so
+    21.2's flag is lost on the same tick and AC4 shuts XV-322902 and stops both pumps: after a
+    minute the feeds are cut and PT-329201 stands at 154.3152 bar a (both sides measured on
+    2026-11-12)."""
+    def act(k, plant, s):
+        if k == 0:
+            plant.units["PT-329201"].p_syn_bara = s.p_syn = 155.5
+    hist, sched, s = run_both(v1, 600, act, decided=ALL - {"D-189"}, check=False)
+    assert s.latched["22_2"] and not s.line.xv_322902_open
+    assert not (s.station.pump_a.running or s.station.pump_b.running)
+    trips = sched.plant.units["SYN-TRIPS"]
+    assert not hasattr(trips, "i_22_2") and trips.latched == dict.fromkeys(("21_2", "21_8", "21_10"), True)
+    assert not sched.plant.units["320K002"].xv_322902_open
+    assert hist[-1][1]["321"].flow_total_th == 0.0
+    assert hist[-1][1]["PT-329201"].p_syn_bara == pytest.approx(154.3152, abs=1e-4)
 
 
 # --------------------------------------------------------------------------------------

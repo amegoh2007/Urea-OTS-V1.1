@@ -62,7 +62,7 @@ Section numbers below index the table in §1.
 | 33 | 10072 | auxiliary faceplate trims (stepped for liveness; off the network) |
 | 34 | 10086 | Trips (P1-2 stateful interlocks) |
 | 35 | 10135 | Trip 22.1 (LP absorber 322C001 over-temperature steam-flood) |
-| 36 | 10150 | Trip 22.2 (synthesis high-high pressure -> ESD) |
+| 36 | 10150 | Trip 22.2 (synthesis high-high pressure -> ESD); not built: in no plant document (decision 189) |
 | 37 | 10181 | uniform process-stream registry (clickable stream inspector) |
 
 ## 2. One-tick recycle tears — `s.<attr>` read before it is written

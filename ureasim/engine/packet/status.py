@@ -51,7 +51,7 @@ def flags(t: Tick) -> dict:
 def _interlocks(t: Tick) -> dict:
     syn = t.units["SYN-TRIPS"]
     return {"21_2": syn.i_21_2, "21_8": syn.i_21_8, "21_10": syn.i_21_10,
-            "22_1": t.units["TRIPS"].i_22_1, "22_2": syn.i_22_2}
+            "22_1": t.units["TRIPS"].i_22_1}
 
 
 def trips(t: Tick) -> dict:
