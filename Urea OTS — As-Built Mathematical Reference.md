@@ -22477,3 +22477,115 @@ which predates decision 185. The 74.4 % arm is session 99's control, sample for 
 * The suite on the tree, run alone after every arm had exited:
   2 212 passed, 5 862 skipped, none failed (20 min 20 s).
   `E:` is not mounted, so every V1-side test skips. A skip is not a pass, and A-33 stays open.
+
+---
+
+# Part CXIII — Session 102: session 101 reviewed on its own runs; the loop's missing species inventory (2026-11-12)
+
+Session 102 reviewed session 101 (Part CXII) on the process engineer's request, against the tree and against
+session 101's run files, and wrote the next plan and its prompt
+(`D:\Work\reports\Session 101 review and session 103 plan and prompt.md`). No file under `ureasim/`, `tests/` or
+`tools/` changed, no relation changed, no decision was taken and no engine run was made: every figure of
+CXIII.2 and CXIII.3 is read from session 101's `runs/N3.json` (10 s samples), `runs/N3_probe.json`,
+`n3_windows.txt` and `n3_r001mass.txt`, or from `ureasim/data/unit_322r001.py`. `[I]` marks an inference.
+
+## CXIII.1 The record against the runs
+
+* Commits 366dbac, 55b4ec4 and b74f691 hold what Part CXII says they hold; 366dbac changes one line of
+  `tests/hmi/test_console_while_frozen.py`. Decision 188 is entry 188 of `docs/decisions.md`. The suite's log
+  ends 2 212 passed, 5 862 skipped in 1 220 s.
+* Read again from the run files and found as §CXII.6 to §CXII.10 give them: the humps of S2c, S2eu and S2euA
+  (3.404 at 970 s, 3.375 at 840 s, 3.556 at 1 210 s); S2euA's melt N/C under 3.0 at 2 970 s and its fraction
+  under 0.99 at 3 020 s; N2's hump, 3.861 at 1 690 s; N3's windows; the 92.3 % hold (TT-322005 182.40
+  [181.90, 182.50] C on its 120 samples of 60 s, AT-322701 2.937 to 3.037) and the 90.5 % hold (181.05
+  [178.30, 182.40] C), neither with a trip.
+* The faults are session 100's plan's. E3 was gated on E2 and E2 on S2, so 322R001's species holdup did not
+  run. §CXI.2 read the hump as the K_N line (§CXII.7 corrects it). The relaxed seed criterion asked every
+  leaf within 1e-5 relative, which a rounded leaf cannot meet (a flipped last digit is up to 2.5e-2,
+  §CXII.3). §CVIII.9's clause "AY-322701 3.0 to 3.3" is the plant analyser's absolute band, where every
+  other handle is a departure on the engine's seed (§CXII.10). A-38 was held to a time without engine runs,
+  and there was none.
+
+## CXIII.2 The 74.4 % descent read on 322R001's inventory (N3, bundle A)
+
+"Creates" is §CXII.9's booking: what the inventory sends on, less what its reaction step produced, less its
+own drawdown at the overflow's composition; the mean of the 300 s window that ends at the row. The bottoms'
+departure is 322E001's bottoms less their seed flow times the delivered CO2 ratio. The other columns are the
+sample at the row; the urea is `STREAMS.STRIP_BOT`'s.
+
+| t s | L | CO2 / seed | 322R001's overflow / seed | urea in the bottoms / seed | conversion % | 322R001 creates N / C kmol/h | bottoms' departure N / C kmol/h | melt N/C | AT-322701 |
+|---|---|---|---|---|---|---|---|---|---|
+| 300 | 0.975 | 0.977 | 1.008 | 1.002 | 55.2 | 61 / 19 | +131 / +41 | 3.260 | 3.138 |
+| 600 | 0.951 | 0.952 | 1.017 | 1.037 | 57.1 | 106 / 34 | +190 / +66 | 3.331 | 3.172 |
+| 900 | 0.926 | 0.930 | 1.003 | 1.047 | 60.2 | 203 / 61 | +218 / +62 | 3.578 | 3.382 |
+| 1 200 | 0.902 | 0.906 | 0.982 | 1.038 | 61.1 | 294 / 86 | +58 / -12 | 3.623 | 3.389 |
+| 1 500 | 0.877 | 0.881 | 0.948 | 0.996 | 62.0 | 292 / 88 | -69 / -66 | 3.557 | 3.327 |
+| 1 800 | 0.852 | 0.856 | 0.924 | 0.956 | 62.8 | 282 / 85 | -11 / -34 | 3.526 | 3.270 |
+| 2 100 | 0.828 | 0.832 | 0.890 | 0.904 | 63.5 | 263 / 83 | +269 / +117 | 3.404 | 3.160 |
+| 2 400 | 0.803 | 0.807 | 0.872 | 0.892 | 63.7 | 244 / 78 | +365 / +178 | 3.293 | 3.057 |
+| 2 700 | 0.778 | 0.782 | 0.862 | 0.914 | 63.9 | 235 / 79 | +320 / +167 | 3.147 | 2.907 |
+| 3 000 | 0.754 | 0.745 | 0.855 | 1.111 | 57.3 | 580 / 242 | +647 / +327 | 2.457 | 2.257 |
+
+* **322R001's inventory is the largest source of N and C on the descent.** From 900 to 2 700 s it creates 235
+  to 294 kmol/h of N, 12 to 13 % of the fresh ammonia at that load, where no feed leaves the load ratio by
+  more than 56 kmol/h (§CXII.9). Over 3 000 s it creates 213.2 kmol of N and 71.3 of C.
+* **Its mass.** To 3 000 s the reaction step sent the inventory 168 575 kg of liquor and the inventory sent on
+  176 973 kg: 8 398 kg more, 2 997 kg the inflow's lag (B-78 item 4), 4 108 kg forward pulse and backup,
+  1 293 kg its own drawdown. All of it left at the composition of that tick's reaction product
+  (`reactor_inventory.py:328-329`).
+* **The liquor does not fall with the load.** 322R001's overflow is 0.86 to 0.89 of the seed's at L 0.78 to
+  0.83, and the conversion rises from 54.2 to 63.9 %. The urea on the bottoms runs 31 to 161 kmol/h over the
+  CO2 ratio from 300 to 2 700 s. On the downswing the bottoms' departure is mostly that urea: at 2 400 s
+  103 kmol/h of urea, 206 N and 103 C of the +365 and +178.
+
+## CXIII.3 The loop's liquor against the hump and the collapse
+
+The loop's liquor is 153 t in four holdups (`N3_probe.json`, the seed): 322R001 135.9 t, 322E002 9.5 t,
+322E001's sump 3.9 t, 322E003's sump 3.8 t. Each passes its species on within the tick, so the loop's N/C is
+the algebra of one tick's flows and nothing stores it.
+
+At the design the overflow carries N 6 614.8 and C 2 205.1 kmol/h in 226 176.8 kg/h (`OVERFLOW_DES_KMOLH`,
+N/C 2.9998). 322R001's 135 903.7 kg (`M_LIQ_DES_KG`) is 36.05 minutes of it: 3 975 kmol of N and 1 325 of C.
+AT-322701 is the overflow's N/C. For that liquor to change its N/C at constant carbon,
+
+    delta N = (AT_2 - AT_1) x 1 325 kmol
+
+| Event (N3) | AT-322701 | delta N | As a rate | Against the fresh ammonia, 2 511 kmol/h at the design |
+|---|---|---|---|---|
+| the hump, 10 to 970 s | 3.000 to 3.423 | +560 kmol | 2 100 kmol/h | 84 % of it, for 16 minutes |
+| the collapse, 2 820 to 2 950 s | 2.778 to 2.336 | -586 kmol | 16 200 kmol/h | 6.5 times it |
+
+The ratio's PV stays between 0.1 % under and 0.8 % over its design on the ramp, at most 20 kmol/h of N. The
+plant's analyser moves 0.06 over its whole range: AY-322701 3.21 at full load, 3.25 at 92.3 % and 3.19 at
+69.3 % (Book2, §CXII.10).
+
+## CXIII.4 What follows
+
+* The hump and the collapse are movements that a loop holding its liquor's species could not make at those
+  rates [I: one well-mixed holdup at the overflow's composition; compartments make it slower still].
+* B-126 is the state the loop's N/C mode lacks, not one candidate of two. Session 95's recycle of 14 to 21
+  minutes (§CVIII.3), the swing of AT-322701 at 92.3 and 90.5 % (§CXII.10) and B-120's mode all run on a
+  loop whose longest lag, 36 minutes of reactor, is absent [I].
+* B-118's question of §CXII.12, what sets 322E001's bottoms off the load ratio, is answered as far as these
+  runs reach: the urea made on a circulation and a conversion that the missing inventory does not restrain,
+  and 322R001's creation. Their shares are not separable on a loop that does not conserve.
+* Not settled: whether the low-load collapse remains with the inventory in place. 322R001's carbamate source
+  (§CVI.1-4) and 322E002's low-N/C branch (decisions 142 and 147) are untouched by it.
+* The next scratch programme (the plan's section 4): 322R001's species holdup on bundle A at 74.4 %, as one
+  inventory and as twelve compartments, the hydraulics as built, each arm against a control; a discriminator
+  with the overflow unscaled; then the five holds, 111 % and B-120's gain. No step is gated on another.
+* Proposed, no decision taken: the hold's AT clause on the engine's basis, AT-322701 within 3.00 +/- 0.10
+  plus the plant's departure from its full-load band; E1's seed criterion as §CXII.12's (b), needed only
+  when a bundle goes to a build.
+
+## CXIII.5 The archive
+
+Session 101's scratch was not archived. Its scripts, configurations, run files and logs are now in
+`D:\Work\reports\B118_s101` (85 MB, with a README); the 163 MB of packet-leaf dumps of S1 were not
+kept, and `seedcheck101.py` writes them again.
+
+## CXIII.6 Checks
+
+* `git status` clean and HEAD at b74f691 before the documents were edited.
+* `pytest tests/docs tests/test_layering.py` passes after; `grep -rn "PyQt6"` below the HMI layer prints
+  nothing. The full suite was not run: no file it reads changed after session 101's run (§CXII.13).

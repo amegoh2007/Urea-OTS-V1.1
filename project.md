@@ -2,7 +2,7 @@
 
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165)
-**Last updated:** 2026-11-12, session 101
+**Last updated:** 2026-11-12, session 102
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -28,26 +28,25 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   stopped at E0, which fails (B-118's next step is the process engineer's); Wave 4 had nothing decided to
   build; Wave 5 tabled the data gaps' stand-ins and drafted the checklist rows and the Körting request.
   Suite: 2 208 passed, 5 862 skipped (V1 not mounted), none failed (§CX.10).
-* **Session 100** reviewed session 99 on its own runs (As-Built Part CXI): the 74.4 % ramp's N/C hump is
-  322E002's K_N line, the ratio's floor is not what failed E0, and E1r, not run, is the next experiment;
-  A-39 raised. The plan and its prompt: `D:\Work\reports\Session 99 review and session 101 plan and
-  prompt.md`. No code, relation or decision changed.
-* **Session 101** ran B-118's scratch programme on that plan (As-Built Part CXII); A-39 closed. E1eu
-  (Extended UNIQUAC both sides, margin 4.38 bar) holds 322E002 at full condensation, yet the 74.4 % N/C
-  hump and collapse stay; the ratio's floor at the plant's 1.9397 changes nothing material; the stream that
-  leaves the load ratio on the descent is 322E001's bottoms; row 116's re-pin carries 91 % of the tear's NH3.
-  B0 on the tree: 92.3 % passes decision 180's test, its AT-322701 under §CVIII.9's proposed 3.0 on 56 of 120;
-  90.5 % trip-free, out of band 47 min; 74.4, 69.3 and 68.9 % latch at 4 680, 5 040 and 4 920 s. E2 to E4
-  not run (E2's gate failed). Decision 188; no file under `ureasim/` changed.
+* **B-118's scratch programme (sessions 100 to 102, As-Built Parts CXI to CXIII).** No file under `ureasim/`
+  changed after session 99; A-39 closed; decision 188. E1eu (Extended UNIQUAC both sides, margin 4.38 bar)
+  holds 322E002 at full condensation, yet the 74.4 % N/C hump and collapse stay; the ratio's floor at the
+  plant's 1.9397 changes nothing material; row 116's re-pin carries 91 % of the tear's NH3. On the tree
+  (§CXII.10): 92.3 % passes decision 180's test; 90.5 % trip-free, out of band 47 min; 74.4, 69.3 and 68.9 %
+  latch at 4 680, 5 040 and 4 920 s. Session 102's review of those runs (§CXIII.2-3): the loop holds no
+  species, so its N/C moves at rates 322R001's 136 t forbid, and that inventory creates 235-294 kmol/h of N
+  on the descent. B-126's species holdup is the next step, scratch:
+  `D:\Work\reports\Session 101 review and session 103 plan and prompt.md`.
+  Session 101's runs: `D:\Work\reports\B118_s101`.
   Suite: 2 212 passed, 5 862 skipped, none failed (20 min 20 s) (`E:` not mounted).
 
 ## Next free numbers
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 102 | `docs/history/session-log.md` |
+| Session | 103 | `docs/history/session-log.md` |
 | Decision | 189 | `docs/decisions.md` |
-| As-Built Part | CXIII | the As-Built reference, appended at its end |
+| As-Built Part | CXIV | the As-Built reference, appended at its end |
 | Handoff Section A | A-40 | `handoff.md` |
 | Handoff Sections B and C | B-133 | `handoff.md` |
 

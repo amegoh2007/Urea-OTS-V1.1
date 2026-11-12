@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-12, session 101.
+**Last updated:** 2026-11-12, session 102.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -44,7 +44,7 @@ suites (§CX.6). To do: a behaviour test of each, the thermo ones on the stores'
 ### B-118 — Below 100 % load the engine holds no steady state on the plant's reactor window
 
 *Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to XCVIII, C, CIII to CVII and
-CX to CXII; decisions 177, 180, 181 and 188.*
+CX to CXIII; decisions 177, 180, 181 and 188.*
 
 **Problem.** The plant runs for hours at reduced load. The committed engine, ramped from its design
 seed, does not, on every operating policy tried:
@@ -104,19 +104,18 @@ And A-34's atoms closed tick by tick on a turndown (`tests/phase7/test_loop_atom
 §CVIII.9's proposed 3.0 on 56 of 120 samples; 90.5 % trip-free, out of band 47 min as in session 95; 74.4,
 69.3 and 68.9 % latch at 4 680, 5 040 and 4 920 s on 322E002's collapse.
 
-**Session 101 (§CXII.6-9): the 74.4 % ramp; E2 to E4 not run, E2's gate failed.**
-* E1eu holds 322E002's fraction at 1 through the hump. Alone it leaves the as-built cold branch as it is
-  (trip 22.1 at 2 840 s, its control's at 2 800 s); with bundle A the hump (3.56) and the collapse stay,
-  the melt N/C falling through 3.0 before the fraction leaves 1. The hump is not the K_N line (§CXI.2
-  corrected); 322E002's saturation does not initiate the collapse (B-125).
-* The floor at 1.9397 moves the hump by 0.002 and the collapse by 10 s; the ratio fixed at the seed's
-  raises the hump to 3.86 (B-128).
-* 322E001's bottoms leave the load ratio, -143 to +366 kmol/h of N over 960-2 760 s, over it from
-  2 100 s; the loop loses reactive N from 1 800 s. No feed departs by more than 56 kmol/h (B-127).
+**Sessions 101 and 102 (§CXII.6-9, Part CXIII): the 74.4 % ramp; E2 to E4 not run (the plan's gate).**
+* E1eu holds 322E002's fraction at 1 through the hump. Alone it leaves the as-built cold branch as it is;
+  with bundle A the hump (3.56) and the collapse stay, the melt N/C falling through 3.0 before the fraction
+  leaves 1: the hump is not the K_N line, and 322E002's saturation does not initiate the collapse (B-125).
+* 322E001's bottoms leave the load ratio (-143 to +366 kmol/h of N); no feed departs by more than 56. On the
+  downswing the excess is mostly urea; 322R001's inventory creates 235-294 kmol/h of N from 900 to 2 700 s.
+* The loop holds no species: its N/C is one tick's algebra. The hump would take 84 % of the fresh ammonia
+  into 322R001's 136 t for 16 minutes, the collapse 6.5 times it (§CXIII.3). B-126 is the mode's missing state.
 
-**Next step, scratch.** What sets 322E001's bottoms off the load ratio on the descent; its sump and
-322R001's inventory are mass-only holdups (B-126) [I]. Then 322R001's species holdup on bundle A at 74.4 %.
-The process engineer's: E1's shape and seed criterion (B-125), and the bundle.
+**Next step, scratch (B-126 (b)).** 322R001's species holdup on bundle A at 74.4 %, one inventory and twelve
+compartments, each against a control; then the five holds, 111 % and B-120's gain. The plan and its prompt:
+`D:\Work\reports\Session 101 review and session 103 plan and prompt.md`. The bundle is the process engineer's.
 
 **B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode: gain 0 removes it
 at 92.3 % on the S2 prototype and at 111 % (§XCVIII.3), and alone runs the reactor 12.4 K colder at
@@ -138,18 +137,22 @@ console strings flip a last digit, the largest departures last-digit flips; the 
 identical on the engine's anchor and not on its default (P_bub +0.146 bar). Options: (a) keep as built;
 (b) E1eu, on a seed criterion the process engineer restates (the design pin, each published tag to its last
 digit, the fraction); (c) the outlet at the melt's bubble temperature, only if (b) fails. Alone, (b) leaves
-the as-built cold branch as it is (§CXII.7): it goes to a build only within a bundle.
+the as-built cold branch as it is (§CXII.7): it goes to a build only within a bundle; it is measured next
+as a rider on B-126's holdup.
 
 ### B-126 — 322R001's 136 t of liquor has no composition
 
 *Raised 2026-11-11, session 97 (§CVIII.5).* `reactor_inventory.py:328-329` sends on the tick's reaction
 product scaled to the hydraulic outflow. Measured 305 s after a 20 % CO2 cut: the overflow carries
-2 933 kmol/h more N and 576 kmol/h more C than the reaction step produced. A candidate cause of B-120's
-loop mode (an inference). Options: (a) keep as built; (b) carry the holdup's species, the overflow at the
-holdup's composition, identical at the seed, twelve compartments on its eleven trays (§CIX.2, confirmed
-§CXII.4), decisions 141 and 146's class (recommended, step E3). N3 (§CXII.9): booked at their outflow
-compositions, the mass-only holdups leave the loop's N -89.5 and C -37.7 kmol over the 74.4 % descent;
-322R001's inventory takes in 3.0 t more than its reaction sends (its inflow's lag, B-78 item 4).
+2 933 kmol/h more N and 576 kmol/h more C than the reaction step produced. On the 74.4 % descent (N3,
+§CXII.9, §CXIII.2): in 3 000 s the inventory sends on 8.40 t more than its reaction sent it (the inflow's
+lag 3.00 t, B-78 item 4; pulse and backup 4.11 t; drawdown 1.29 t), all at the product's composition. Booked
+at the overflow's composition it creates 213 kmol of N and 71 of C, 235-294 kmol/h of N from 900 to 2 700 s,
+12-13 % of the fresh ammonia. The loop's 153 t of liquor (322R001 135.9 t, 322E002 9.5, 322E001 3.9, 322E003
+3.8) holds no species, so its N/C moves at rates an inventory forbids (§CXIII.3). Options: (a) keep as
+built; (b) carry the holdup's species, the overflow at the holdup's composition, the hydraulics as built,
+twelve compartments on its eleven trays (§CIX.2, confirmed §CXII.4), decisions 141 and 146's class
+(recommended). Next: (b) in scratch as B-118's next step; its seed's shift is measured there.
 
 ### B-127 — The loop's design boundary does not close, and the reactor's tear follows the CO2 load
 
