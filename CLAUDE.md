@@ -339,20 +339,32 @@ End (mandatory):
 5. List all open gaps in the final report (mandatory, 2026-10-03): every open `handoff.md` item
    and open data gap, each with its status in a line, not only those the session touched.
 
-## Sonnet + Opus Advisor Workflow
+## Advisor Workflow (Opus + Fable, Sonnet + Opus)
 
-When the active main model is any version of Claude Sonnet (binding from 2026-11-04), operate in
-hybrid mode with Claude Opus via the `advisor` tool (configured via `"advisorModel": "opus"` in
-`.claude/settings.json`) at matching effort and ultracode standards. A session run on Opus works as
-the rest of this file says.
+A session whose main model is any version of Claude Opus (binding from 2026-11-12, the process
+engineer's instruction) or of Claude Sonnet (binding from 2026-11-04) operates in hybrid mode with a
+stronger model through the `advisor` tool, at matching effort and ultracode standards. A session run
+on Fable works as the rest of this file says.
 
-1. **Stage 1 — Ingestion (Sonnet only).** Read and parse all required documents, source files,
-   images and media first. Never call the `advisor` tool before gathering context.
-2. **Stage 2 — Thinking & planning (Opus via the `advisor` tool).** Before writing or editing any
-   code, call the `advisor` tool (it takes no arguments) so Opus analyzes the context in the
-   transcript and produces the architecture and step-by-step plan.
-3. **Stage 3 — Execution (Sonnet only).** Implement Opus's plan strictly. If a blocker contradicts
-   the plan, call the `advisor` tool again before deviating.
-4. **Stage 4 — Testing & verification (Opus via the `advisor` tool).** When testing is required,
-   run the test commands via Sonnet and call the `advisor` tool afterward so Opus audits the test
+| Main model | Advisor | How it is set |
+|---|---|---|
+| Claude Opus | Claude Fable | `"advisorModel": "fable"` in `.claude/settings.json`, the project's default |
+| Claude Sonnet | Claude Opus | for that session: `claude --advisor opus`, or `/advisor opus` |
+
+The advisor is a server-side tool, not a sub-agent: §3's rule against sub-agents does not exclude it.
+It reads the whole transcript anew on every call, so it is called at the stages below and at a
+blocker, never between routine steps. Before Stage 2, confirm that the `advisor` tool is offered and
+which model answers (`/advisor` prints it). Where it is not offered — Fable access or its
+usage-credits consent missing (`/model fable` gives it), or the pairing refused — stop and tell the
+process engineer; do not work on without it.
+
+1. **Stage 1 — Ingestion (the main model only).** Read and parse all required documents, source
+   files, images and media first. Never call the `advisor` tool before gathering context.
+2. **Stage 2 — Thinking & planning (the advisor).** Before writing or editing any code, call the
+   `advisor` tool (it takes no arguments) so the advisor analyzes the context in the transcript and
+   produces the architecture and step-by-step plan.
+3. **Stage 3 — Execution (the main model only).** Implement the advisor's plan strictly. If a
+   blocker contradicts the plan, call the `advisor` tool again before deviating.
+4. **Stage 4 — Testing & verification (the advisor).** When testing is required, run the test
+   commands on the main model and call the `advisor` tool afterward so the advisor audits the test
    output and verifies edge-case coverage before marking the task complete.

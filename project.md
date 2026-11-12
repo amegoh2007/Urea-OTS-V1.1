@@ -2,7 +2,7 @@
 
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165)
-**Last updated:** 2026-11-12, session 103
+**Last updated:** 2026-11-12, session 104
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -37,12 +37,19 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   change no verdict. The bundle is a build candidate, not built; the options are §CXIV.11's and the process
   engineer's. Runs: `D:\Work\reports\B118_s101`, `D:\Work\reports\B118_s103`.
   Suite: 2 212 passed, 5 862 skipped, none failed (18 min 01 s) (`E:` not mounted).
+* **Session 104** wrote the plan prompt for session 105 (`D:\Work\reports\Session 105 plan prompt s104.md`)
+  on the process engineer's instructions of 2026-11-12, none of them built yet: trip 22.2 rechecked in the
+  plant documentation and removed if it is absent (decision 174 is then superseded); the plant's
+  load-reduction procedure, thirteen steps, fulfilled at reduced load, read as B-118's acceptance in
+  procedural form; B-126 (b)'s cold branch at 92.3 % (§CXIV.11's option (c)). An Opus session's advisor is
+  Fable (`CLAUDE.md`, Advisor Workflow; `.claude/settings.json`). No file under `ureasim/`, `tests/` or
+  `tools/` changed; no decision entry and no As-Built Part.
 
 ## Next free numbers
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 104 | `docs/history/session-log.md` |
+| Session | 105 | `docs/history/session-log.md` |
 | Decision | 189 | `docs/decisions.md` |
 | As-Built Part | CXV | the As-Built reference, appended at its end |
 | Handoff Section A | A-40 | `handoff.md` |

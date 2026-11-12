@@ -4950,3 +4950,16 @@ branch (the carbamate source first); AT-322701 falls while the seed's liquor was
 the trim's gain doubled and slip gain 0 change no verdict; 111 % swings. A build candidate, not built; no
 decision. Runs: `D:\Work\reports\B118_s103`. Suite: 2 212 passed, 5 862 skipped, none failed
 (18 min 01 s); `E:` not mounted. The record is As-Built Part CXIV.
+
+### Session 104 — an Opus session's advisor is Fable; the plan prompt for session 105 (2026-11-12)
+
+On the process engineer's request. `CLAUDE.md`'s advisor workflow now pairs an Opus session with Fable and a
+Sonnet session with Opus, and `.claude/settings.json` holds `"advisorModel": "fable"` (Claude Code's advisor
+documentation accepts the pairing). The plan prompt for session 105 was written to
+`D:\Work\reports\Session 105 plan prompt s104.md` on three instructions of 2026-11-12: trip 22.2 rechecked in
+the plant documentation and removed if it is absent; the plant's thirteen load-reduction steps fulfilled at
+reduced load, read as B-118's acceptance in procedural form; B-126 (b)'s cold branch at 92.3 % (§CXIV.11's
+option (c)). Read for it and not measured: session 95's operator moves PIC-329207 on an open-loop schedule of
+the load, where the procedure holds TT-322010 at 168-173 C with it; Operating Manual III's OCR text names
+trip 21.2 alone, its Section 3 has no OCR text and its Section 8's is 21 lines. No file under `ureasim/`,
+`tests/` or `tools/` changed; no decision entry and no As-Built Part.
