@@ -22589,3 +22589,385 @@ kept, and `seedcheck101.py` writes them again.
 * `git status` clean and HEAD at b74f691 before the documents were edited.
 * `pytest tests/docs tests/test_layering.py` passes after; `grep -rn "PyQt6"` below the HMI layer prints
   nothing. The full suite was not run: no file it reads changed after session 101's run (§CXII.13).
+
+---
+
+# Part CXIV — Session 103: 322R001's species holdup in scratch (B-126 (b)); the holds, 111 % and B-120's gain (2026-11-12)
+
+Session 103 ran the plan of `D:\Work\reports\Session 101 review and session 103 plan and prompt.md` (sections 3
+to 5). Every experiment is a monkeypatch in a scratch script, run on a byte copy of the tree at 067998f; no file
+under `ureasim/`, `tests/` or `tools/` changed and no relation changed. The scripts, configurations, run files and
+logs are in `D:\Work\reports\B118_s103` (CXIV.12). `[I]` marks an inference.
+
+## CXIV.1 The rig and C0
+
+* **The tree copy.** Every blob at HEAD written through `git cat-file --batch` (593 blobs, no checkout
+  conversion, 0 `.py` files with CRLF), so the thermodynamic node stores hit: C0 ran at 0.42 wall seconds per
+  simulated second alone, N3's speed. A copy from the working tree carries CRLF under `core.autocrlf` and misses
+  the stores.
+* **C0 reproduces the archive.** C0 (session 95's policy, bundle A, probe101, 10 s samples) is identical to
+  session 101's A744 on all 184 common samples to 11 040 s (`s_factor` excluded: A744 is sampled every 60 s),
+  to N3 on all 312 samples to 3 120 s and to N3's probe on all 312 rows; its events, its moves, its refusals and
+  its per-tick track are identical. The latch is first seen at 4 640 s on the 10 s grid and at 4 680 s on A744's
+  60 s grid. Plan section 2.1's table is reproduced from C0's run and probe (`tab21.py`) to its rounding. The rig
+  is unchanged, so session 101's B0 files stand as the controls of Track B's holds.
+
+## CXIV.2 The prototype and its own tests
+
+`proto103.py` wraps the engine step `synthesis._322r001`. The inventory's step runs as built: `m_liq_kg`, the
+level, the weir, HV-322605, the inflow's lag and the pulse's mass are untouched. The species are then carried:
+
+* **H1, one well-mixed holdup.** Seeded on the first tick at the reaction product's composition on the
+  inventory's mass. In: the reaction product (`reaction.overflow_kmolh`) and a positive forward pulse. Out: the
+  hydraulic outflow `m_out` and the carryover at the step-end composition. The exact backward step
+  M_new = M_old + m_in - m_draw, n_new = (n_old + in) / (1 + m_draw / M_new) closes every species to rounding.
+  The outflow becomes `overflow_kmolh`, 322E001's feed, and the result's; the carryover its `carry_kmolh`.
+* **H2, twelve compartments** on the eleven trays of UD-AU-322-DZ-0006-008 rev 04 (§CXII.4), equal shares (the
+  drawing gives no tray elevations: a stand-in). The product and the pulse enter compartment 1; compartments 1
+  to 11 keep their seed share and pass on what enters, each on its own backward step; compartment 12 sends the
+  outflow and takes the difference between the species' mass and `m_liq_kg`, with a guard at a tenth of its
+  share that never bound.
+* **The pulse is paired.** It enters 322R001 at `y_overflow`, the mass fractions 322F001 entrains on the same
+  tick (322E003's state as the tick before left it), and `probe103.py` books the same pulse out of 322E003 at
+  that composition. A negative pulse leaves 322R001 at the holdup's composition (compartment 1 in H2); 322E001's
+  backup returns at the top's (it was zero in every arm).
+* **AT-322701 and 322E003's N/C** read the holdup's outflow, the liquor the analyser samples ("at_outflow"; H1a
+  keeps the as-built reading of the reaction product).
+* **H0, the discriminator**, sends on the reaction product unscaled (`f_strip` 1), the hydraulics and the
+  residence throughput as built; it does not conserve the hydraulic outflow's mass.
+
+**The balance tests** (T1, T2: the 74.4 % policy to L 0.95, 660 s). 322R001's species balance closes to
+4.5e-13 kmol (H1) and 5.7e-14 kmol (H2) on every tick, and the probe books no creation to it (cumulative
+residual about 1e-11 kmol). The species' mass runs -54.7 to +4.3 kg about `m_liq_kg`; H2's twelfth compartment
+keeps at least 11 325 kg. 322E003's booking with the pulse paired agrees with session 101's to three decimals.
+
+**The null ramps** (L 1.0, 18 000 ticks, `seedcheck101.py`; the plain seed and bundle A as session 101 ran them):
+
+| Pair | Distinct leaves | Over 1e-5 relative | Console strings | Largest relative difference | 322E002's fraction min | Melt N/C range |
+|---|---|---|---|---|---|---|
+| bundle A against the plain seed | 752 | 417 | 11 | `LPCC_3232.C005.closure_kgh` | 0.99988 | 3.07816-3.07925 |
+| H0 against bundle A | 863 | 774 | 28 | `SCRUB_322E003.ccw.pb_push`, a sign flip of 1e-5 | 0.99995 | 3.07843-3.07908 |
+| H1 against bundle A | 849 | 741 | 24 | the same | 0.99997 | 3.07851-3.07872 |
+| H2 against bundle A | 851 | 744 | 24 | the same | 0.99998 | 3.07853-3.07872 |
+| H5 against bundle A | 857 | 751 | 24 | the same | 1.00000 | 3.07851-3.07859 |
+
+Bundle A against the plain seed is session 101's (§CXII.3: 752 leaves, 11 strings, the same fraction and walk);
+this table counts every leaf over 1e-5, the diagnostics included (417 against §CXII.3's 408 physical). The
+strings that differ are last-digit flips
+(FT-329403 60.84 / 60.85, FIC-329401, PV-323202, LV-323503 and their kind). The seed shift is reported; it
+stops nothing (plan section 3).
+
+## CXIV.3 Track H: 74.4 %, bundle A, session 95's policy (§CXII.6's columns)
+
+Every arm runs the ramp, the 1 h settle and the 72 min hold, 10 s samples, the probe on.
+
+| Arm | First latch [s] | TT-322005 in the hold [C] | AT-322701 max / min [to L 0.80] | melt N/C max / min [to L 0.80] | fraction min before the latch (to L 0.80) | ratio SP / PV min (ramp) | off-gas 60 s / L 0.80 [t/h] | make L 0.75 | criteria met |
+|---|---|---|---|---|---|---|---|---|---|
+| C0, the control | 4 640 (21.10, 21.2, 21.8, 22.1, 22.2) | latched; 181.4 to 190.3 from L 0.80 to the latch | 3.423 / 2.211 [3.423 / 3.000] | 3.649 / 2.327 [3.649 / 3.018] | 0.0000 at 4 280 (0.8350) | 2.0000 / 2.0210 | 22.63 / 38.45 | 2.29 | descent 0 of 5, hold 0 of 3 |
+| H0, unscaled | none | 179.62 [174.47, 181.54] | 3.113 / 3.000 [3.094 / 3.000] | 3.235 / 3.074 [3.204 / 3.074] | 0.9470 at 4 320 (0.9574) | 2.0102 / 2.0230 | 22.76 / 18.97 | 0.82 | 4 of 5, 2 of 3 (PT 138.25-138.30) |
+| H1, one holdup | none | 181.18 [181.06, 181.30] | 3.008 / 2.930 [3.008 / 2.976] | 3.238 / 3.019 [3.238 / 3.075] | 0.9375 at 11 040 (0.9451) | 2.0220 / 2.0230 | 22.57 / 53.58 | 1.47 | 2 of 5, 1 of 3 |
+| H1a, AT on the product | none | 181.24 [181.12, 181.36] | 3.037 / 2.744 [3.037 / 2.828] | 3.238 / 3.025 [3.238 / 3.075] | 0.9451 at 1 290 (0.9451) | 2.0206 / 2.0230 | 22.57 / 53.78 | 1.46 | 1 of 5, 1 of 3 |
+| H2, twelve compartments | none | 181.18 [181.06, 181.32] | 3.007 / 2.992 [3.006 / 3.000] | 3.197 / 3.047 [3.197 / 3.049] | 0.9223 at 11 040 (0.9492) | 2.0214 / 2.0230 | 22.57 / 55.61 | 1.52 | 3 of 5, 1 of 3 |
+| H3, H2 with the ratio fixed at 2.0231 | none | 181.06 [181.00, 181.13] | 3.007 / 2.992 [3.006 / 3.000] | 3.196 / 3.048 [3.196 / 3.049] | 0.8280 at 11 040 (0.9493) | 2.0231 / 2.0230 | 22.57 / 55.60 | 1.52 | 3 of 5, 2 of 3 |
+| H4, H2 with E1eu | none | 181.19 [181.07, 181.33] | 3.008 / 2.997 [3.008 / 3.000] | 3.194 / 3.048 [3.194 / 3.048] | 0.9460 at 11 040 (1.0000) | 2.0212 / 2.0230 | 22.49 / 55.54 | 1.52 | 4 of 5, 1 of 3 |
+| H5, H2 with the loop's holdups | none | 181.14 [181.02, 181.27] | 3.005 / 2.999 [3.005 / 3.000] | 3.195 / 3.073 [3.195 / 3.073] | 0.9536 at 1 630 (0.9536) | 2.0214 / 2.0230 | 22.53 / 55.37 | 1.57 | 3 of 5, 2 of 3 |
+| H2 with the AT trim's gain doubled | none | 181.30 [181.12, 181.50] | 3.007 / 2.992 [3.007 / 3.000] | 3.197 / 3.047 [3.197 / 3.048] | 0.9493 at 1 170 (0.9493) | 2.0196 / 2.0230 | 22.57 / 55.62 | 1.52 | 3 of 5, 1 of 3 |
+
+The hold's other figures:
+
+| Arm | PT-329201 in the hold [bar g] | AT-322701 in the hold (target 2.982) | AT's slope [1/h]; share of steps that way | hump, its time [s] | melt N/C under 3.0 / 2.9 [s] | gas CO2 to 322R001 in the hold [kmol/h] |
+|---|---|---|---|---|---|---|
+| C0 | 152.90-157.26 (latched) | 0.000-2.856 | - | 3.649 at 970 | 2 820 / 2 860 | - |
+| H0 | 138.25-138.30 | 3.016-3.028 | -0.0001; 0.46 | 3.235 at 3 120 (3.204 at 1 220 to L 0.80) | never | 389-435 |
+| H1 | 136.07-136.52 | 2.610-2.720 | -0.090; 1.00 | 3.238 at 1 510 | 3 310 / 5 540 | 973-1 010 |
+| H1a | 136.19-136.63 | 2.606-2.643 | -0.029; 1.00 | 3.238 at 1 520 | 3 410 / 6 050 | 964-1 001 |
+| H2 | 136.07-136.55 | 2.591-2.720 | -0.110; 1.00 | 3.197 at 1 170 | 3 600 / 5 820 | 971-1 023 |
+| H3 | 135.96-136.20 | 2.563-2.720 | -0.133; 1.00 | 3.196 at 1 170 | 3 610 / 5 710 | 976-1 055 |
+| H4 | 136.09-136.57 | 2.591-2.721 | -0.110; 1.00 | 3.194 at 1 250 | 3 620 / 5 840 | 967-1 022 |
+| H5 | 136.01-136.46 | 2.625-2.759 | -0.112; 1.00 | 3.195 at 1 690 | 4 850 / 7 340 | 955-1 017 |
+| gain doubled | 136.18-136.88 | 2.618-2.721 | -0.088; 1.00 | 3.197 at 1 180 | 3 600 / 5 840 | 966-1 015 |
+
+* **The better of H1 and H2 is H2**: 4 criteria against 3, provisionally on the descent (3 of 5 against 2 of 5)
+  and again on the full count. H1 misses the melt N/C band by its hump, 3.238 against 3.2286.
+* **No arm with a species holdup latches at 74.4 %.** The hump falls from 3.649 to 3.197 (H2) and comes 200 s
+  later; the collapse's latch at 4 640 s does not come; TT-322005 holds 181.0-181.4 C through the hold, inside
+  the licensor's window (180-183 C) and above the 69.3 % band's lower edge (179.5 C). No hold arm swings: one
+  extremum of AT and none of TT-322005 above the thresholds.
+* **AT-322701 drifts one way through every holdup arm's hold**, every consecutive step downward, -0.09 to -0.13
+  per hour, from 2.69-2.73 to 2.60-2.64; in H2 the trim's set point climbs 2.050 to 2.097 through the hold, on
+  its integral action (kc 0.05, Ti 1 800 s against an error near -0.3), far from its 2.6 bound and its step limit.
+  The arm with the gain doubled (kc 0.10, nothing else changed) drifts at -0.088 per hour against -0.110: a
+  fifth less, not stopped. H3, the ratio fixed, drifts at -0.133. The melt N/C follows AT under 3.0 at 3 600 s
+  and under 2.9 at 5 820 s, 2.782 at the hold's end, without a collapse, and 322E002's fraction falls to 0.92.
+  H0 alone holds AT flat (-0.0001 per hour). **The drift is the seed's liquor washing out of 322R001**, read
+  on the 3 h hold at 69.3 % (H2's bundle, `out/tab21_B2_693.txt`): the holdup's release, what it sends on
+  beyond its reaction's product, falls from 459 kmol/h of N at 2 100 s to 80 at 5 700 s, 15 at 12 900 s and
+  zero by 15 300 s, and AT-322701 follows it down and levels, -0.0155 per hour over the last hour and -0.003
+  over the last half hour (2.452), while the melt N/C (+0.025 per hour) and 322E002's fraction (+0.046) turn
+  up under the trim's set point (2.211). At 74.4 % the release is still 20-24 kmol/h at the hold's end and AT
+  still falls at -0.066 per hour over its last half hour.
+* **PT-329201 sits on the clause's upper edge** (136.5 bar g): H2 136.55, H4 136.57, H1 136.52; H3 and H5 meet it.
+  The hold counts of H2 to H5 differ on this clause alone, by 0.05 bar: they do not discriminate the arms.
+* **The reactor's off-gas at L 0.80 is 55.6 t/h** in H2 against 22.6 t/h at 60 s, and 322E003's make at L 0.75
+  is 1.52 times the seed's. The descent's off-gas criterion fails in every holdup arm; C0's was 38.45.
+* **H1a**: the analyser on the reaction product reads 2.744 on the descent, where the outflow reads 2.930: the
+  analyser's placement moves the trim by the holdup's lag.
+* **H0 answers the discriminator.** Unscaled, the 970 s hump goes (3.204 to L 0.80) and the latch goes, with AT
+  in band throughout; TT-322005 runs 174.47-181.54 C in the hold and PT-329201 138.3 bar g. The hump is the
+  scaling `reactor_inventory.py:328-329` applies to one tick's product. H0 is not a candidate: it does not
+  conserve the outflow's mass.
+* **The species' mass against `m_liq_kg`**: -2 543 to +4.7 kg (H1), -2 577 to +4.6 kg (H2), -2 584 to +3.3 kg
+  (H5): the inflow's lag stores up to 2.6 t of mass that has no species. H2's twelfth compartment keeps at least
+  7 636 kg (of 11 325); the guard never bound. Negative pulses: 293 kg (H1), 386 kg (H2) in all; the backup zero.
+
+## CXIV.4 Plan section 2.1's table read from H2
+
+C0's table is section 2.1's (CXIV.1). H2's, the same rows; "creates" is session 101's booking (the mass-only
+gain at the overflow's composition less the exchange), split into the inflow lag's part and the pulse's at the
+overflow's composition; the true residual is 322R001's own species balance; the release is what the holdup sent
+on less the reaction's product. Window means, kmol/h of reactive N / C.
+
+| t s | L | CO2 / seed | overflow / seed | bottoms' urea / seed | conversion % | creates N / C | lag N / C | pulse N / C | true residual | release N / C | bottoms' departure N / C | melt N/C | AT-322701 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 300 | 0.976 | 0.977 | 1.007 | 1.006 | 54.5 | 50 / 26 | 14 / 5 | 51 / 17 | 1e-11 | 24 / 17 | -55 / -31 | 3.110 | 3.000 |
+| 600 | 0.952 | 0.952 | 1.015 | 1.011 | 56.3 | 74 / 33 | -2 / -1 | 98 / 33 | 2e-10 | 57 / 27 | +5 / -2 | 3.123 | 3.000 |
+| 900 | 0.927 | 0.930 | 1.004 | 1.001 | 59.1 | 129 / 63 | 85 / 28 | 107 / 36 | 1e-11 | 187 / 82 | +29 / +9 | 3.182 | 3.000 |
+| 1 200 | 0.902 | 0.904 | 0.992 | 0.978 | 60.7 | 186 / 69 | 89 / 30 | 168 / 56 | 3e-11 | 230 / 84 | +87 / +33 | 3.196 | 3.000 |
+| 1 500 | 0.878 | 0.881 | 0.983 | 0.963 | 62.0 | 246 / 60 | 82 / 27 | 215 / 72 | 5e-11 | 284 / 73 | +483 / +165 | 3.189 | 3.001 |
+| 1 800 | 0.853 | 0.856 | 0.966 | 0.942 | 61.8 | 368 / 53 | 112 / 37 | 257 / 86 | 2e-11 | 429 / 73 | +426 / +78 | 3.130 | 3.002 |
+| 2 100 | 0.829 | 0.831 | 0.945 | 0.909 | 61.8 | 401 / 26 | 78 / 26 | 262 / 87 | 4e-11 | 446 / 41 | +184 / -70 | 3.082 | 3.004 |
+| 2 400 | 0.804 | 0.806 | 0.930 | 0.885 | 61.8 | 429 / 7 | 76 / 25 | 245 / 82 | 4e-11 | 476 / 23 | +108 / -129 | 3.053 | 3.006 |
+| 2 700 | 0.779 | 0.782 | 0.904 | 0.842 | 62.4 | 434 / -2 | 82 / 27 | 221 / 74 | 8e-11 | 478 / 12 | +162 / -109 | 3.056 | 3.005 |
+| 3 000 | 0.755 | 0.757 | 0.885 | 0.812 | 62.7 | 416 / -9 | 89 / 30 | 188 / 63 | 7e-11 | 466 / 7 | +275 / -61 | 3.055 | 2.997 |
+
+* The holdup creates nothing (its residual is rounding). It releases N: from 1 800 s it sends on 430-480 kmol/h
+  more N than its reaction produced, and almost no more C. The seed's liquor is richer in N than the turned-down
+  product, and the trim holds the outflow, not the product, at 3.0 [I].
+* Session 101's booking would call the release creation (416 kmol/h at 3 000 s). Its split shows what it booked:
+  the lag's part 76-112 kmol/h of N, the pulse's 188-262.
+* The bottoms' departure no longer reaches C0's +647 / +327 at 3 000 s: +275 / -61.
+
+## CXIV.5 The loop's atoms by holdup, and H5
+
+Booked to 3 000 s (`holdres.py`), kmol of reactive N / C created by each holdup, its booked gain less its exchange:
+
+| Arm | 322R001, session 101's booking | 322R001, true | 322E003 (booking / pulse paired) | 322E001 | 322E002 | created in the loop, in all | the loop's input |
+|---|---|---|---|---|---|---|---|
+| C0 | 213.2 / 71.4 | - | -77.5 / -25.1 (-) | 9.1 / 4.5 | -3.8 / -7.0 | 118.5 / 39.0 | 2 398 / 1 152 |
+| H1 | 199.0 / 35.5 | 1e-11 | -116.1 / -35.7 (2.1 / 0.7) | 10.1 / 4.7 | 19.1 / 8.0 | 29.8 / 13.0 | 2 400 / 1 147 |
+| H2 | 227.8 / 27.1 | 2e-12 | -125.2 / -39.5 (2.1 / 0.7) | 8.1 / 3.7 | 23.4 / 9.9 | 32.0 / 13.9 | 2 429 / 1 162 |
+| H5 | true contents: 0 | 1e-11 | 0 | 0 (line 0) | 0 | 0.017 / 0.006 | 2 458 / 1 177 |
+
+* With 322R001's species carried, what the loop creates on the descent falls from 118.5 / 39.0 kmol to
+  32.0 / 13.9 (H2). The rest is the mass-only bookings: 322E002's level is an indicator (the reactor takes the
+  whole make), so its 23 kmol of N is a booking and not a holding; 322E001's sump 8; 322E003's 2 with the pulse
+  paired.
+* **H5** (`proto103loop.py`) adds species holdups in 322E003's sump (explicit step: the suction and the pulse
+  leave at `y_overflow`, the composition they were drawn at, and `y_overflow` is set to the holdup's contents
+  after the step), 322E002 (a constant-mass lag on its liquid make, 9 463 kg, the seed's level holdup; 322R001's
+  feed becomes the gas plus the lag's outflow) and 322E001's sump (the bottoms line a well-mixed stage of its own,
+  2 195 kg at the seed, at least 1 497 kg; the drain and the backup at the sump's composition; 323C003 reads the
+  drain at it). Each holdup's balance closes to 6e-14 kmol a tick; each species' mass equals the vessel's to
+  1e-10 kg. **The loop's atoms close**: to 3 000 s the residual is -0.017 kmol of reactive N against 2 458 in,
+  -0.006 of C, -0.059 of H and -0.015 of O; to 11 040 s -0.043, -0.008, -0.147 and -0.024 against 7 778 of N
+  in. The one term it does not close is the loop gas, PT-329201's excess, mass only: -0.47 kmol of N to
+  3 000 s, +1.33 to 11 040 s. The balance test (T5) and the null ramp passed first (CXIV.2).
+* H5 moves the melt N/C's fall under 3.0 from 3 600 to 4 850 s and meets PT's clause; AT still drifts
+  (-0.112 per hour). The NH3/CO2 of 322R001's feed under the lag is 2.826 at the hold's end, the condenser's
+  melt N/C 2.825.
+
+## CXIV.6 Track B: the holds and 111 %
+
+H2's bundle (bundle A and 322R001's twelve compartments) and H4's (with E1eu, which met 5 criteria against
+H2's 4), on the five holds of decision 180 (`cfg95.py`) and on Book2's 111 % band. The controls are session
+101's B0 holds (§CXII.10; 60 s samples) and, at 111 %, bundle A alone on the same policy. The holdup arms are
+sampled every 10 s; the AT counts on the 60 s grid are given beside where they differ.
+
+| Hold | Arm | First latch [s] | TT-322005 in the hold, mean [min, max] [C] | AT-322701 in the hold (target); out of +/- 0.10 on the 60 s grid | PT-329201 [bar g] | AT's slope [1/h] | gas CO2 to 322R001 [kmol/h] | decision 180 | CVIII.9 clauses met |
+|---|---|---|---|---|---|---|---|---|---|
+| 92.3 % | control (A923) | none | 182.40 [181.90, 182.55] | 2.937-3.037 (3.040); 2 of 120 | 138.38-138.84 | +0.011 | 436-514 | passes | 2 of 3 |
+| | H2's bundle | 6 990 (22.1) | 173.68 [160.84, 182.99] | 2.772-3.008; 35 of 120 | 138.06-139.67 | +0.053 | 254-438 | fails | 0 of 3 |
+| | H4's bundle | none | 173.90 [161.26, 182.98] | 2.788-3.012; 34 of 120 | 138.12-139.65 | -0.088 | 263-1 016 | fails | 1 of 3 |
+| 90.5 % | control (A905) | none | 181.05 [178.28, 182.41] | 2.922-3.035 (3.024); 1 of 166 | 137.90-138.57 | +0.021 | 406-517 | fails (out of band) | 1 of 3 |
+| | H2's bundle | 6 800 (22.1) | 176.18 [161.29, 182.84] | 2.678-2.987; 74 of 166 | 137.87-139.38 | +0.056 | 284-348 | fails | 0 of 3 |
+| | H4's bundle | 7 020 (22.1) | 176.38 [161.78, 182.82] | 2.692-2.991; 72 of 166 | 137.92-139.36 | +0.044 | 285-373 | fails | 0 of 3 |
+| 74.4 % | control (A744) | 4 680 | latched | latched | 152.91-157.26 | - | - | fails | 0 of 3 |
+| | H2's bundle (H2) | none | 181.18 [181.06, 181.32] | 2.591-2.720 (2.982); 72 of 72 | 136.07-136.55 | -0.110 | 971-1 023 | passes (trip-free; no band) | 1 of 3 |
+| | H4's bundle (H4) | none | 181.19 [181.07, 181.33] | 2.591-2.721; 72 of 72 | 136.09-136.57 | -0.110 | 967-1 022 | passes (trip-free; no band) | 1 of 3 |
+| 69.3 %, 3 h | control (A693) | 5 040 | latched | latched | 152.82-156.00 | - | - | fails | 0 of 3 |
+| | H2's bundle | none | 181.07 [180.61, 181.53] | 2.451-2.658 (2.984); 180 of 180 | 135.24-136.94 | -0.064 | 1 020-1 126 | passes | 2 of 3 |
+| | H4's bundle | none | 181.06 [180.61, 181.52] | 2.450-2.659; 180 of 180 | 135.25-136.92 | -0.065 | 1 013-1 120 | passes | 2 of 3 |
+| 68.9 % | control (A689) | 4 920 | latched | latched | 152.71-155.40 | - | - | fails | 0 of 2 |
+| | H2's bundle | none | 180.71 [180.58, 180.84] | 2.539-2.654 (2.987); 46 of 46 | 135.19-135.66 | -0.154 | 1 021-1 086 | passes (trip-free; no band) | 1 of 2 |
+| | H4's bundle | none | 180.71 [180.58, 180.83] | 2.541-2.655; 46 of 46 | 135.19-135.64 | -0.153 | 1 015-1 078 | passes (trip-free; no band) | 1 of 2 |
+
+The 74.4 % and 68.9 % holds have no TT-322005 band (it is not in the 5 November trends): decision 180's test
+there is the trip alone. The AT clause is §CVIII.9's, 3.00 plus the plant's departure, +/- 0.10.
+
+* **The species holdup removes the three low holds' latch**, on both bundles. Three of decision 180's five
+  holds pass where the control passed one, but they are not alike: 69.3 % passes on its band (3 h, TT-322005
+  inside 179.5-183.5 C), 74.4 and 68.9 % on the trip alone, and the control's one pass, 92.3 %, is the hold on
+  Book2's 755 samples, the strongest of the five.
+* **The low holds are not yet steady inside their spans.** AT-322701 falls through every low hold and the melt
+  N/C with it: in the 69.3 % hold (H2's bundle) the melt N/C from 2.766 to 2.647, 322E002's fraction from 0.913
+  to 0.744 (0.721 at 15 660 s), while the trim's set point climbs 2.059 to 2.211 on its integral action; at 74.4 %
+  the melt N/C falls 2.856 to 2.782 and the set point 2.050 to 2.097. The 69.3 % hold levels in its last half
+  hour, as the holdup's release ends (CXIV.3), at AT-322701 2.452, 0.53 under §CVIII.9's 2.984. None reaches a
+  latch inside its hold.
+* **Latched arms** (H2's bundle at 92.3 and 90.5 %, H4's at 90.5 %): their hold figures describe the trip and
+  what follows it.
+* **It loses 92.3 %, and 90.5 % latches**, on both bundles: the cold branch of B-118's problem statement.
+  H2's bundle latches at 92.3 % (trip 22.1); H4's goes down to 161.3 C and back without a latch. Read on
+  B2_923's series, the first term to fail is 322R001's carbamate source: the gas CO2 from 322E002 falls
+  832 (3 000 s), 595 (3 840 s), 356 (4 200 s), 257 kmol/h (4 560 s) while TT-322010 drifts 170.9 to
+  168.8 C (§CVI.1-4: 322E002's flash loses half its CO2 gas per kelvin); the off-gas CO2 then rises
+  155 to 362 kmol/h by 5 400 s and TT-322005 falls from 4 400 s, to 173.8 C by 5 400 s, conversion 62.9 to
+  41.9 %. The melt N/C (3.05-3.25), 322E002's fraction (1.0) and AT-322701 (2.97-3.01) do not move first.
+  TT-322005 recovers to 182.9 C by 9 600 s, after the latch. Why the holdup moves TT-322010 at 92.3 % is not
+  measured.
+* **H4's bundle (E1eu) changes nothing a hold scores**: it matches H2's bundle to 0.02 K at 69.3 and 68.9 %.
+
+**111 %** (session 84's verdict, `an84_103.py`, validated on session 84's A111_C1t run against §XCVIII.3; Book2's
+10-90 % bands TT-322004 171.92-172.59 C, TT-322005 182.27-183.13 C, PT-329201 142.48-143.66 bar a, AY 3.242-3.259,
+and level drifts under 0.5 %/h). Means over the 2 h hold, the last hour beside:
+
+| Arm | TT-322004 [C] | TT-322005 [C] | PT-329201 [bar a] | AT-322701 | FT-329403 [t/h] | what fails besides the bands | spans over 2 h | verdict |
+|---|---|---|---|---|---|---|---|---|
+| control (bundle A) | 183.20 / 183.20 | 184.91 / 184.96 | 144.32 / 144.40 | 2.894 / 2.894 | 74.81 / 74.78 | 324E001's level -1.50 %/h (-2.09); HIC-322604 at its high bound | AT 0.001, TT-322005 0.2 K | FAIL / FAIL |
+| H2's bundle | 176.54 / 171.41 | 184.42 / 183.84 | 144.22 / 143.95 | 2.886 / 2.966 | 69.75 / 66.23 (in) | LIC-329504 -32.6 %/h (-72.7); carbamate deposition; PIC-329204, MASTER-329207 and HIC-322604 at their high bounds | TT-322004 21.5 K, TT-322005 3.8 K, AT 0.299, conversion 12.45 points | FAIL / FAIL |
+| H2's bundle, slip gain 0 | 178.16 / 180.68 | 183.29 / 184.98 | 144.11 / 144.44 | 2.968 / 2.965 | 68.06 / 70.08 | 323F010 -10.2 %/h (+13.0), overfilled to 101 %; carbamate deposition; MASTER-329207 and HIC-322604 at their high bounds | TT-322005 9.0 K (0.3 K in the last hour), TT-322004 13.3 K | FAIL / FAIL |
+| H4's bundle | 176.56 / 171.39 | 184.38 / 183.77 | 144.19 / 143.92 | 2.880 / 2.960 | 69.76 / 66.18 (in) | LIC-329504 -32.5 %/h (-73.8); carbamate deposition; PIC-329204, MASTER-329207 and HIC-322604 at their high bounds | TT-322004 21.5 K, TT-322005 3.9 K, AT 0.298, conversion 12.54 points | FAIL / FAIL |
+
+* On this rig the control itself misses all of Book2's 111 % bands: XCVIII.3's retuned policy without the
+  prototype C1 holds quietly 2.3 K hot at TT-322005 and 11 K hot at TT-322004.
+* The holdup adds a slow swing at 111 % and drives three handles to their bounds, on both bundles (H4's
+  matches H2's to 0.1 K); the slip gain at 0 does not remove it (CXIV.7).
+
+## CXIV.7 Track G: the stripper's slip gain (B-120)
+
+On H2's bundle, `unit_322e001.SLIP_GAIN` 4.0 (the Track B arms) and 0 (`proto103g.py` sets the constant
+`stripper.py:469` reads at call time). The swings
+after the ramp, before any latch (extrema counted on a turn above 0.02 in AT and 0.3 K in TT-322005), and the gas
+CO2 to 322R001 in the hold against decision 181's 603 kmol/h:
+
+| Load | Arm | Slip gain | First latch [s] | AT-322701: extrema; periods [s]; amplitudes; range | TT-322005: extrema; periods [s]; amplitudes [K]; range [C] | gas CO2 to 322R001 in the hold, mean [min, max]; samples under 603 |
+|---|---|---|---|---|---|---|
+| 92.3 % | control (A923, 60 s) | 4.0 | none | 8; 2 700, 3 000, 2 580; 0.61, 0.21, 0.049; 2.858-3.468 | 4; 2 880; 2.9, 0.6; 179.9-182.8 | 493 [436, 514]; 120 of 120 |
+| | H2's bundle | 4.0 | 6 990 | 2; -; 0.041; 2.970-3.011 | 1; -; -; 162.3-182.9 | 329 [254, 438]; 242 of 242 before the latch |
+| | H2's bundle | 0 | none | 3; -; 0.15; 2.890-3.040 | 3; 7 060; 21.0; 161.9-182.9 | 593 [224, 794]; 325 of 720 |
+| 111 % | control (bundle A) | 4.0 | none | 5; 1 090, 2 190; 0.033, 0.919; 2.610-3.784 | 3; -; 0.4; 183.8-185.0 | 596 [589, 604]; 678 of 720 |
+| | H2's bundle | 4.0 | none | 4; 8 890; 0.199, 0.174; 2.740-3.039 | 5; 8 230; 11.9, 3.9; 172.6-185.4 | 800 [295, 1 544]; 269 of 720 |
+| | H2's bundle | 0 | none | 6; 8 480, 6 430; 0.097, 0.111, 0.147; 2.890-3.037 | 5; 6 810; 6.9, 8.9; 176.1-185.1 | 567 [216, 835]; 321 of 720 |
+
+* **At 92.3 %** the gain at 0 keeps H2's bundle off the latch, but not on the reactor's window: TT-322005 goes
+  down the cold branch to 161.9 C and back to 182.9 C, one cycle (three extrema, 7 060 s between the highs),
+  and the gas CO2 to 322R001 swings 224 to 794 kmol/h about a mean of 593. At 4.0 it stays low (254-438)
+  until the latch. The control
+  passes decision 180's test with the gas CO2 under 603 kmol/h on every sample (436-514): B-120's 603
+  kmol/h criterion is met by no arm, and it is not what separates a passing 92.3 % hold from a failing one.
+* **At 111 %** the gain at 0 cuts AT-322701's swing on H2's bundle from 0.20 to 0.10-0.15 and leaves TT-322005's
+  (6.9-8.9 K, period 6 810 s against 11.9 K, 8 230 s). It does not remove the mode, as it did on the S2
+  prototype (§XCVIII.3), and it overfills 323F010 (CXIV.6). The control's swing after the ramp (AT 0.92) has
+  decayed by the hold (span 0.001).
+
+## CXIV.8 What the results mean
+
+* **The low-load collapse is the loop's missing species state.** With 322R001's liquor carried by species
+  (H1, H2) the descent's hump falls from 3.649 to 3.197-3.238, the collapse does not come, and none of the
+  74.4, 69.3 and 68.9 % holds latches, on either bundle and with the ratio fixed. With the product unscaled
+  (H0, which does not conserve mass) the hump goes too. §CXII.10's latches are the loop's N/C moving at one
+  tick's algebra (§CXIII.3), not a law of a unit. Of the plan's three outcomes this is the first: the hump
+  shrinks and the collapse goes.
+* **The holdup's cost at turndown is its seed.** 136 t at the design composition is richer in N than the
+  turned-down product: it releases up to 480 kmol/h of N beyond its reaction on the descent and goes on
+  releasing until about 15 000 s at 69.3 %. AT-322701 follows it down and levels 0.53 under §CVIII.9's target;
+  the trim's integral, at session 95's tuning, is turning it at the hold's end. No low hold meets the AT clause
+  inside its span.
+* **92.3 and 90.5 % go onto the cold branch.** The bundle loses the hold the control passed. The first term to
+  fail is 322R001's carbamate source, the gas CO2 from 322E002 with TT-322010 falling (§CVI.1-4): B-118's
+  90-95 % mechanism. The melt N/C, 322E002's fraction and AT-322701 do not lead it. The holdup does not remove
+  the cold branch; why it moves TT-322010 at 92.3 % is the next term to measure.
+* **What does not move the holds:** E1eu (H4 matches H2 to 0.02 K at every hold scored); the ratio fixed (H3:
+  AT drifts faster, the latch still gone); the trim's gain doubled (the drift a fifth slower). H5 closes the
+  loop's atoms to 7e-6 of the N in and delays the melt N/C's fall under 3.0 by 1 250 s; its hold scores are
+  H2's but for PT's 0.05 bar.
+* **111 %.** On this rig bundle A misses Book2's bands quietly (no C1). The holdup adds a swing of 8 000-9 000 s
+  and drives three handles to their bounds; the slip gain at 0 cuts AT's part of it by a quarter to a half and
+  overfills 323F010.
+* **B-120.** Neither gain gives a hold on the holdup bundle at 92.3 or 111 %, and no arm reaches 603 kmol/h of
+  gas CO2 to 322R001 at 92.3 %, the passing control included (436-514): the criterion does not separate a
+  passing hold from a failing one.
+* **The plan's rule** ("if H1 or H2 holds the 74.4 % hold, B-126 (b) is the candidate for a build") is read on
+  decision 180's test, B-118's acceptance test: H2 is trip-free through the 74.4 % hold, which has no
+  TT-322005 band, TT-322005 at 181.06-181.32 C. On the plan's own three hold clauses H2 meets one, the no-latch
+  clause; it misses PT by 0.05 bar and AT by 0.3. On decision 180's reading the condition is met: **B-126 (b) is
+  a build candidate**, with the costs above. It is not built.
+
+## CXIV.9 The prototype's limits
+
+* The reaction step is unchanged: it reacts the tick's feed in one pass, and the holdup carries its product.
+  The compartments carry the product; they do not react.
+* H2's compartments are equal shares: UD-AU-322-DZ-0006-008 gives no tray elevations.
+* The inflow's lag stores mass without species: the species' mass runs up to 2.6 t under `m_liq_kg`.
+* AT-322701 reads the holdup's outflow; where the analyser's sample point sits is the plant's (H1a measures the
+  difference).
+* H5's 322E003 sump keeps its bubble pressure on the overflow, as built; 322E002's lag holds the seed's level
+  mass, not its indication; 322E001's bottoms line is a mixed stage for a dead time; the loop gas is mass only.
+
+## CXIV.10 Not run
+
+* H3, H4 and H5 on H1, and Track B and G on H1: the plan runs them on the better arm only.
+* Track G at 92.3 and 111 % on H4's bundle: the plan runs Track G on the better holdup arm.
+* At 111 %, the prototype C1 (322E003's condensation capacity lifted by the shell's margin, Part XCVI) is not in
+  this rig; the arms and their control run XCVIII.3's retuned policy without it.
+* H4's bundle at 74.4 % is H4 itself, not run twice; the trim's gain doubled was run at 74.4 % only.
+
+## CXIV.11 Options for the process engineer (no decision taken)
+
+**The candidate bundle.** Bundle A (322F001's lift, p_disch,eff = p_disch - 2.41 (1 - r^2), decision 180;
+322E002's UA on the battery-limit CO2 demand ratio to the power 0.77; the wall loss on a stagnant reactor only;
+`unit_322e001.SLIP_GAIN` 4.0) with 322R001's species holdup in twelve compartments (H2: the overflow and the
+carryover at the twelfth compartment's composition, the hydraulics, the level and the weir as built, the
+forward pulse paired at 322E003's composition, AT-322701 on the outflow).
+
+**Its seed shift** (the 18 000-tick null ramp at L 1.0, against the plain seed): 849 distinct leaves differ,
+742 by more than 1e-5 relative, 24 console strings flip a last digit (AT-322701 3.000 / 2.999, FT-329403 60.85 /
+60.86, FIC-329401 6495.0 / 6494.7 among them); the largest relative difference is a sign flip of 1e-5,
+`SCRUB_322E003.ccw.pb_push`. Bundle A alone: 752, 417 and 11. Decision 180's first test, the 100 % design pin
+held to the bit, is met by neither: a build re-pins the seed or the process engineer restates the seed
+criterion, as B-125's (b) asks.
+
+**Options.**
+
+* (a) Keep as built. B-118 stands: the three low holds latch on bundle A.
+* (b) Build the bundle. Three of decision 180's five holds pass (69.3 % on its band; 74.4 and 68.9 % on the
+  trip); 92.3 % is lost and 90.5 % latches on the cold branch; AT-322701 misses §CVIII.9's clause at every low
+  hold until the seed's liquor has washed out (about 4 h at 69.3 %); 111 % swings with three handles at their
+  bounds. A seed criterion is needed first.
+* (c) Keep (b) in scratch and measure its cold branch first (recommended): on the bundle at 92.3 %, why
+  TT-322010 falls and takes 322E002's CO2 gas with it (§CVI.1-4's recorders on B2_923's descent and settle),
+  and whether the holdup's seed composition (the design liquor against the turned-down product) is what moves
+  it. A build that loses Book2's best-documented hold is a regression on the strongest evidence.
+* (d) With (b) or (c), H5's loop holdups: the loop's atoms closed tick by tick (7e-6 of the N in) and PT's
+  clause met at 74.4 %; no other score moves. Three more holdups to build and test.
+
+B-120: gain 0 is no remedy on the holdup bundle at either load; nothing here argues against decision 181's
+4.0. B-125: the holdup bundle does not need E1eu; this supports its option (a).
+
+## CXIV.12 The archive
+
+`D:\Work\reports\B118_s103` (README inside): `run/` (the runner, the prototypes `proto103.py`,
+`proto103loop.py`, `proto103g.py`, the probe `probe103.py`, the scorers `score103.py`, `tab21.py`,
+`holdres.py`, `loopres.py`, `gswing.py`, `an84_103.py`, the configurations `cfg/`, the run files and logs
+`runs/`, the scored outputs `out/`), `seed/` (the null ramps' logs and comparisons; the 31 MB dumps are not
+kept, `seedcheck101.py` writes them again) and `copy_tree.py`.
+
+## CXIV.13 Checks
+
+* `git status` clean and HEAD at 067998f before the documents were edited; no file under `ureasim/`, `tests/`
+  or `tools/` changed in the session.
+* `grep -rn "PyQt6"` below the HMI layer prints nothing; `pytest tests/docs tests/test_layering.py` passes
+  after the edits.
+* The suite on the tree, run alone after every arm had exited:
+  2 212 passed, 5 862 skipped, none failed (18 min 01 s).
+  `E:` is not mounted, so every V1-side test skips. A skip is not a pass, and A-33 stays open.

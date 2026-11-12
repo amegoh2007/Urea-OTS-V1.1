@@ -4938,3 +4938,15 @@ no species, so its N/C is one tick's algebra, and the hump and the collapse are 
 6.5 times it as rates into 322R001's 136 t. B-126's species holdup, which session 100's plan had gated behind
 E2, is B-118's next step. B-118, B-125 and B-126 rewritten. The plan and its prompt written to
 `D:\Work\reports`. No code, relation or decision changed; the record is As-Built Part CXIII.
+
+### Session 103 — B-126 (b)'s species holdup in scratch; the holds, 111 % and B-120's gain (2026-11-12)
+
+On the process engineer's prompt (`D:\Work\reports\Session 101 review and session 103 plan and prompt.md`),
+scratch only. C0 reproduces session 101's A744 and N3 sample for sample. 322R001's species holdup (one inventory,
+twelve compartments) closes to 6e-14 kmol a tick; at 74.4 % the hump falls from 3.649 to 3.197 and the latch
+goes; H0 (unscaled) shows the hump is the scaling; H5 closes the loop's atoms to 7e-6. On the holds the holdup
+bundle passes 69.3 % on its band and 74.4 and 68.9 % trip-free, loses 92.3 % and latches 90.5 % on the cold
+branch (the carbamate source first); AT-322701 falls while the seed's liquor washes out. E1eu, the ratio fixed,
+the trim's gain doubled and slip gain 0 change no verdict; 111 % swings. A build candidate, not built; no
+decision. Runs: `D:\Work\reports\B118_s103`. Suite: 2 212 passed, 5 862 skipped, none failed
+(18 min 01 s); `E:` not mounted. The record is As-Built Part CXIV.

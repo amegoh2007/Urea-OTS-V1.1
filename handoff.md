@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-12, session 102.
+**Last updated:** 2026-11-12, session 103.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -44,7 +44,7 @@ suites (§CX.6). To do: a behaviour test of each, the thermo ones on the stores'
 ### B-118 — Below 100 % load the engine holds no steady state on the plant's reactor window
 
 *Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to XCVIII, C, CIII to CVII and
-CX to CXIII; decisions 177, 180, 181 and 188.*
+CX to CXIV; decisions 177, 180, 181 and 188.*
 
 **Problem.** The plant runs for hours at reduced load. The committed engine, ramped from its design
 seed, does not, on every operating policy tried:
@@ -69,57 +69,49 @@ And A-34's atoms closed tick by tick on a turndown (`tests/phase7/test_loop_atom
 
 **Established. Do not measure these again; cite the section.**
 
-* The responsible term is 322R001's carbamate source, the gas CO2 from 322E002 less the off-gas CO2.
-  It is gone by L 0.85 on the ramp. The column's budget closes on every tick. 322E002's flash loses
-  half its CO2 gas per kelvin of TT-322010 (§CVI.1-4).
-* 322E003's flood and vent are symptoms of the reactor's collapse (§CV.3). Its sump factor does not
-  throttle; the sump fills only after the trip stops the motive (§CVII.5).
+* The cold branch's term is 322R001's carbamate source, the gas CO2 from 322E002 less the off-gas CO2;
+  322E002's flash loses half its CO2 gas per kelvin of TT-322010; the column's budget closes on every tick
+  (§CVI.1-4). On the holdup bundle it is again the first term to fail at 92.3 % (§CXIV.6).
+* The low holds' latch (session 95's collapse: 322E002's feed N/C through 3.0 onto the low-N/C branch, a
+  recycle of 14-21 minutes, §CVIII.3, §CX.8) is the loop's missing species state: with 322R001's liquor
+  carried by species it does not come at 74.4, 69.3 or 68.9 %, and with the product unscaled the hump goes
+  (§CXIII.3, §CXIV.3, §CXIV.6). 322E003's flood and vent are its symptoms (§CV.3, §CVII.5).
 * Measured and not the cause: TT-322011's vent-top correlation and 322E002 over-quenching (Part XCI);
-  322E001's overhead fraction, flat on the ramp (§XCIV.2); 322E003's liquor, tempered water and
-  condensation margin (§XCIV.3-4, §XCV.3); 322E001's feed-deficit bottoms term alone (§XCVI.2); the
-  ramp's rate and HIC-322605's handling (Part CIV); V1's stripper slip gain at 70 % (§CIII.7); the
-  reactor's conversion-deficit slip, P6 (§CVII); E0, AY-322701's target ramped with the load (§CX.8).
-* Rejected: P5, the off-gas split at the live top temperature (§CVI.5). Unbundled (decision 181): the S2
-  stripper terms and slip gain 0, which starve the carbamate source (486-502 against 603 kmol/h at 92.3 %).
+  322E001's overhead fraction (§XCIV.2); 322E003's liquor, tempered water and condensation margin (§XCIV.3-4,
+  §XCV.3); 322E001's feed-deficit bottoms term (§XCVI.2); the ramp's rate and HIC-322605's handling (Part CIV);
+  the slip gain at 70 % (§CIII.7); P6 (§CVII); E0 (§CX.8); E1eu (§CXII.7, §CXIV.3); the ratio's floor
+  (§CXII.8); the AT trim's gain (§CXIV.3).
+* Rejected: P5 (§CVI.5). Unbundled (decision 181): the S2 stripper terms and slip gain 0 (§CVII).
 * Boundary facts for every arm. Each handle starts on the engine's design seed and moves as a
   departure with the load (§CVI.5, §CVII.1). FFIC-321404's ratio is on the engine's basis: the
   plant's 2.115 is 2.047-2.053 here (§XCIII.3). HV-322605's anchor is 60.0 % at 100 %, so Book2's
   36.1 % is 43.27 % here (§CIV.1). FT-329403 is stream 901, 60.85 t/h at the design (§XCVIII.2).
   LT-329501 cannot reach Book2's 7 %: 322F001's suction is proportional to the level (§XCVI.2).
-* Session 95's collapse is 322E002's feed N/C falling through 3.0 onto the low-N/C branch (decisions
-  142, 147), a recycle of 14-21 minutes through 322R001, 322E003 and 322F001, its gain above one below
-  about 2.8 [I]; the ratio sat on its floor (B-128; §CVIII.3). It chatters at the tick (§CX.8).
-* 322E002's saturation fraction reads 0.85-0.93 from L 0.92 to 0.80 in every session 95 arm: 7-15 % of
-  its condensables recycle, its feed does not fall with the load, and P1's two bases differ (B-125).
 
-**Candidate bundle (decision 181). Scratch only; `ureasim/` is as built.**
+**Bundle A (decision 181), scratch only; `ureasim/` is as built.** P1, 322E002's UA on the battery-limit
+CO2 demand ratio to the power 0.77 (§CVII.1); P4, the wall loss on a stagnant reactor only; the 322F001 lift
+p_disch,eff = p_disch - 2.41 (1 - r^2) (decision 180); `unit_322e001.SLIP_GAIN` 4.0.
 
-* P1: 322E002's UA on the battery-limit CO2 demand ratio to the power 0.77. On that basis the seed is
-  identical on every leaf; on `co2_scale` it is not (§CVII.1).
-* P4: the reactor's wall loss on a stagnant reactor only.
-* The 322F001 lift (decision 180): p_disch,eff = p_disch - 2.41 (1 - r^2), r the motive ratio.
-* On the as-built stripper, `unit_322e001.SLIP_GAIN` 4.0. P6 is out: it changes nothing.
+**The holds, on bundle A (§CXII.10) and with B-126 (b)'s holdup added (§CXIV.6).**
 
-**Verification on the tree (§CXII.10, replacing §CVII.3).** 92.3 % passes, its AT-322701 under
-§CVIII.9's proposed 3.0 on 56 of 120 samples; 90.5 % trip-free, out of band 47 min as in session 95; 74.4,
-69.3 and 68.9 % latch at 4 680, 5 040 and 4 920 s on 322E002's collapse.
+| Hold | Bundle A | Bundle A and 322R001's species holdup |
+|---|---|---|
+| 92.3 % | passes | fails: the cold branch (latch 6 990 s; with E1eu 161.3 C, no latch) |
+| 90.5 % | trip-free, out of band 47 min | latches 6 800 s on the cold branch |
+| 74.4 % | latches 4 680 s | trip-free; AT-322701 falling 0.11 per hour |
+| 69.3 %, 3 h | latches 5 040 s | passes; AT-322701 levels at 2.45 as the seed's liquor washes out |
+| 68.9 % | latches 4 920 s | trip-free; AT-322701 falling 0.15 per hour |
+| 111 % | quiet, out of Book2's bands | out of band, swinging (8 000-9 000 s), three handles at their bounds |
 
-**Sessions 101 and 102 (§CXII.6-9, Part CXIII): the 74.4 % ramp; E2 to E4 not run (the plan's gate).**
-* E1eu holds 322E002's fraction at 1 through the hump. Alone it leaves the as-built cold branch as it is;
-  with bundle A the hump (3.56) and the collapse stay, the melt N/C falling through 3.0 before the fraction
-  leaves 1: the hump is not the K_N line, and 322E002's saturation does not initiate the collapse (B-125).
-* 322E001's bottoms leave the load ratio (-143 to +366 kmol/h of N); no feed departs by more than 56. On the
-  downswing the excess is mostly urea; 322R001's inventory creates 235-294 kmol/h of N from 900 to 2 700 s.
-* The loop holds no species: its N/C is one tick's algebra. The hump would take 84 % of the fresh ammonia
-  into 322R001's 136 t for 16 minutes, the collapse 6.5 times it (§CXIII.3). B-126 is the mode's missing state.
-
-**Next step, scratch (B-126 (b)).** 322R001's species holdup on bundle A at 74.4 %, one inventory and twelve
-compartments, each against a control; then the five holds, 111 % and B-120's gain. The plan and its prompt:
-`D:\Work\reports\Session 101 review and session 103 plan and prompt.md`. The bundle is the process engineer's.
+**Next step.** The holdup bundle is a build candidate under the plan's rule (§CXIV.8); the options are
+§CXIV.11's and the process engineer's. Recommended, scratch: its cold branch at 92.3 %, why TT-322010 falls
+and takes 322E002's CO2 gas with it, and whether the holdup's design-composition seed moves it.
 
 **B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode: gain 0 removes it
 at 92.3 % on the S2 prototype and at 111 % (§XCVIII.3), and alone runs the reactor 12.4 K colder at
-92.3 % (§CIII.7). The gain stays 4.0; 0 waits on the process engineer, apart from B-118's bundle.
+92.3 % (§CIII.7). On the holdup bundle (§CXIV.7) gain 0 neither holds 92.3 % (TT-322005 161.9-182.9 C, one
+cycle) nor removes the 111 % mode, and no arm reaches 603 kmol/h of gas CO2 to 322R001 at 92.3 %, the
+passing control included. The gain stays 4.0.
 
 ### B-125 — 322E002's saturation law has no margin at the design and contradicts Book2
 
@@ -137,22 +129,26 @@ console strings flip a last digit, the largest departures last-digit flips; the 
 identical on the engine's anchor and not on its default (P_bub +0.146 bar). Options: (a) keep as built;
 (b) E1eu, on a seed criterion the process engineer restates (the design pin, each published tag to its last
 digit, the fraction); (c) the outlet at the melt's bubble temperature, only if (b) fails. Alone, (b) leaves
-the as-built cold branch as it is (§CXII.7): it goes to a build only within a bundle; it is measured next
-as a rider on B-126's holdup.
+the as-built cold branch as it is (§CXII.7); as a rider on B-126's holdup (H4, §CXIV.3, §CXIV.6) it
+matches the holdup without it at every hold scored: no bundle measured needs it.
 
 ### B-126 — 322R001's 136 t of liquor has no composition
 
 *Raised 2026-11-11, session 97 (§CVIII.5).* `reactor_inventory.py:328-329` sends on the tick's reaction
 product scaled to the hydraulic outflow. Measured 305 s after a 20 % CO2 cut: the overflow carries
 2 933 kmol/h more N and 576 kmol/h more C than the reaction step produced. On the 74.4 % descent (N3,
-§CXII.9, §CXIII.2): in 3 000 s the inventory sends on 8.40 t more than its reaction sent it (the inflow's
-lag 3.00 t, B-78 item 4; pulse and backup 4.11 t; drawdown 1.29 t), all at the product's composition. Booked
-at the overflow's composition it creates 213 kmol of N and 71 of C, 235-294 kmol/h of N from 900 to 2 700 s,
-12-13 % of the fresh ammonia. The loop's 153 t of liquor (322R001 135.9 t, 322E002 9.5, 322E001 3.9, 322E003
-3.8) holds no species, so its N/C moves at rates an inventory forbids (§CXIII.3). Options: (a) keep as
-built; (b) carry the holdup's species, the overflow at the holdup's composition, the hydraulics as built,
-twelve compartments on its eleven trays (§CIX.2, confirmed §CXII.4), decisions 141 and 146's class
-(recommended). Next: (b) in scratch as B-118's next step; its seed's shift is measured there.
+§CXII.9, §CXIII.2) the inventory sends on 8.40 t more than its reaction sent it, at the product's
+composition, and creates 213 kmol of N and 71 of C booked at the overflow's. The loop's 153 t of liquor
+(322R001 135.9 t, 322E002 9.5, 322E001 3.9, 322E003 3.8) holds no species (§CXIII.3).
+Measured in scratch (Part CXIV): (b), the holdup's species carried in twelve compartments on its eleven trays,
+the overflow at the last one's composition, the hydraulics as built (decisions 141 and 146's class), on bundle
+A. Its balance closes to 6e-14 kmol a tick. The 74.4 % hump falls from 3.649 to 3.197 and the latch goes at
+74.4, 69.3 and 68.9 %; the seed's N-rich liquor washes out for about 4 h at 69.3 % (AT-322701 levels 0.53 under
+the target); 92.3 and 90.5 % then fall onto the cold branch. Its seed against the plain seed: 849 leaves differ,
+742 above 1e-5, 24 console strings by a last digit (bundle A alone 752, 417, 11). The loop's other holdups
+(H5) close the loop's atoms to 7e-6 of the N in. A build candidate under the plan's rule, not built. Options
+(§CXIV.11): (a) keep as built; (b) build the bundle, a seed criterion restated first; (c) measure its cold
+branch at 92.3 % first (recommended); (d) the loop's other holdups with it.
 
 ### B-127 — The loop's design boundary does not close, and the reactor's tear follows the CO2 load
 
