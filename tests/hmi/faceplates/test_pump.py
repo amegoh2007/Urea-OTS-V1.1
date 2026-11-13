@@ -1,6 +1,8 @@
 """The pump faceplate — `ureasim.hmi.faceplates.pump`.
 
-Pinned: exactly one of START and STOP is live; each sends an explicit run; the interlock line
+Pinned: exactly one of START and STOP is live; each sends an explicit run, with the command the
+pump's row names (decision 222: the auxiliary pairs send ``aux_pump_toggle`` with the tag as their
+id, and every icon that opens the faceplate drives its machine on the engine); the interlock line
 reads the trips that hold the feed pump as V1 words them; a pump with no trips reads n/a. V1's
 trip 22.2, which decision 174 named as the simulator's own, is in no plant document and is gone
 (decision 189), and with it the one latch the line showed apart from its trip.
@@ -39,3 +41,40 @@ def test_v1s_trip_22_2_is_not_shown():
     """Decision 189: a packet carrying V1's 22.2 key holds no pump."""
     stray = {"trips": {"22_2": True}, "trip_latched": {"22_2": True}}
     assert interlock_text(stray, "A") == "CLEAR"
+
+
+def test_an_auxiliary_pair_sends_its_own_command_and_reads_n_a(bridge):
+    """Decision 222: 323P001A's faceplate shows the packet's PUMPS state and sends V1's
+    ``aux_pump_toggle`` with no mode; the interlock line reads n/a, as V1's did."""
+    pump = {"t": "pump", "tag": "323P001A", "bind": "PUMPS.323P001A", "id": "323P001A"}
+    face = PumpFaceplate(bridge, pump)
+    face.show()
+    assert face.status_field.text() == "RUNNING" and face.interlock_field.text() == "n/a"
+    face.stop_button.click()
+    assert bridge.sent[-1] == {"type": "aux_pump_toggle", "id": "323P001A", "on": False}
+    face.close()
+
+
+def test_every_icon_that_opens_the_faceplate_drives_its_machine():
+    """Each bound pump icon's command, sent with its id, stops and starts the machine on the
+    engine, and the packet path the icon reads follows it."""
+    from ureasim.data.faceplates import PUMP_COMMANDS
+    from ureasim.data.screen_layout import OVERLAYS
+    from ureasim.engine.command import apply_command
+    from ureasim.engine.packet import build_packet
+    from ureasim.engine.plant import build_plant
+    from ureasim.engine.scheduler import Scheduler
+    from ureasim.hmi.state_access import get_path
+
+    icons = [e for els in OVERLAYS.values() for e in els
+             if e["t"] == "pump" and e.get("bind") and e.get("id")]
+    assert sorted(e["tag"] for e in icons) == sorted(PUMP_COMMANDS)
+    sch, plant = build_plant()
+    s = Scheduler(sch, plant)
+    s.tick()
+    for e in icons:
+        for on in (False, True):
+            assert apply_command(plant, {"type": PUMP_COMMANDS[e["tag"]], "id": e["id"],
+                                         "on": on}).ok, e["tag"]
+            pkt = build_packet(plant, s.results, s.tears_read, sim_mode="SLOW", t_wall=0.0)
+            assert bool(get_path(pkt, e["bind"])["on"]) is on, (e["tag"], on)

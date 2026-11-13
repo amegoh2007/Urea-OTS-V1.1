@@ -42,6 +42,7 @@ key(s)                  what                                               modul
 ``BOUNDARY_SINKS``      the overflows leaving the plant (not V1's, A-15)   `status`
 ``ANALYSERS``           AI-329701, the drums' solids (not V1's, B-90)      `steam`
 ``HAND_SWITCHES``       the keyswitches' positions (not V1's, decision 98) `status`
+``PUMPS``               auxiliary pumps' run state (not V1's, decision 222) `status`
 ``flags`` ...           the alarms, the trips, their latches               `status`
 ``ratio`` ...           the N/C block, EXT. OVERRIDE, the SIC faceplates   `unit_321`
 ``sim_mode``            the instructor's pacing                            here
@@ -77,9 +78,10 @@ DIAGNOSTIC_BLOCKS = ("RECYCLE_TEAR_RESIDUAL", "sm_diagnostics", "CONSEQUENCE_TRA
                      "RECYCLE_CLASSIFICATION", "SPECIES_323_324")
 
 #: The port's packet keys V1 does not publish: the boundary sinks (handoff A-15, decided
-#: 2026-10-03), the analysers that show a 322E002 tube leak (handoff B-90, decided 2026-10-09) and
-#: the keyswitches' positions (decision 98, 2026-10-10).
-PORT_BLOCKS = ("BOUNDARY_SINKS", "ANALYSERS", "HAND_SWITCHES")
+#: 2026-10-03), the analysers that show a 322E002 tube leak (handoff B-90, decided 2026-10-09),
+#: the keyswitches' positions (decision 98, 2026-10-10) and the auxiliary pumps' run state
+#: (decision 222, 2026-11-13).
+PORT_BLOCKS = ("BOUNDARY_SINKS", "ANALYSERS", "HAND_SWITCHES", "PUMPS")
 
 #: The port's leaves inside a block V1 does publish: the CO2 demand in per cent of design, which
 #: V1's 322-1 panel computed in the browser and the port's publishes (decision 220, 2026-11-13).
@@ -119,6 +121,7 @@ def build_packet(plant: PlantState, results: Mapping[str, Any], tears_read: Any,
         "BOUNDARY_SINKS": status.boundary_sinks(t),
         "ANALYSERS": steam.analysers(t),
         "HAND_SWITCHES": status.hand_switches(t),
+        "PUMPS": status.pumps(t),
         "flags": status.flags(t),
         "ratio": unit_321.ratio(t),
         "ext_override": unit_321.ext_override(t),

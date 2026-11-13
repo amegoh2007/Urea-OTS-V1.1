@@ -42,6 +42,18 @@ DECIDED_EDITS = (
         "note": ("FIC-328402 on PFD 735, 328P003's feed from 328D003 compartment II to 328E007 and "
                  "the desorbers (31114 kg/h = 31.4 m3/h des), via FV-328402"),
     }),
+    # Decided 2026-11-13 (decision 222, the process engineer's instruction I-4): the auxiliary pump
+    # pairs whose run state the engine holds open the START / STOP faceplate. Each icon binds the
+    # pump's state, at V1's own path for 322P002 and in the port's PUMPS block for the others, and
+    # loses its drawn default.
+    *((sid, f"p{tag.lower()}", {"bind": path, "id": tag, "def": None}) for sid, tag, path in (
+        ("screen-328-2", "322P002A", "ABSORB_328.D003.P002A"),
+        ("screen-328-2", "322P002B", "ABSORB_328.D003.P002B"),
+        ("screen-323-2", "323P001A", "PUMPS.323P001A"),
+        ("screen-323-2", "323P001B", "PUMPS.323P001B"),
+        ("screen-328-2", "328P003A", "PUMPS.328P003A"),
+        ("screen-328-2", "328P003B", "PUMPS.328P003B"),
+    )),
 )
 
 #: The process engineer's decisions that put on a screen a console element V1's screens lack:

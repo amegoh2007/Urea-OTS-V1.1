@@ -13,6 +13,10 @@ flooded vessel loses. V1 has no such streams.
 21.2's five (AC4 PC21) — which the screens' keyswitches show (decided 2026-10-10, decision 98). V1
 has none of the five and does not publish HS-322915's.
 
+``PUMPS`` is the port's: the run state and mode of the auxiliary pumps a screen draws whose state V1
+held and never published, 323P001A / B and 328P003A / B, which their START / STOP faceplates show
+(decided 2026-11-13, decision 222). 322P002's pair stays at V1's own path, under ``ABSORB_328``.
+
 Source: V1 ``backend/main.py`` ``State`` 7157-7174 (the keys and their order), ``step_sim``'s flag
 writes (7379-10414) and 11302-11318.
 """
@@ -23,7 +27,10 @@ from ureasim.data.operator_commands import TRIP_21_HAND_SWITCHES
 from ureasim.engine.packet._common import Tick
 from ureasim.engine.plant.boundary import BOUNDARY_SINKS
 
-__all__ = ["flags", "trips", "trip_latched", "boundary_sinks", "hand_switches"]
+__all__ = ["flags", "trips", "trip_latched", "boundary_sinks", "hand_switches", "pumps"]
+
+#: The auxiliary pumps a screen draws whose run state V1 kept and did not publish (decision 222).
+_PUMPS = ("323P001A", "323P001B", "328P003A", "328P003B")
 
 
 def flags(t: Tick) -> dict:
@@ -71,6 +78,12 @@ def boundary_sinks(t: Tick) -> dict:
         r = t.r(unit)
         out[unit] = {"m_kgh": round(getattr(r, flow), 1), "t_c": round(getattr(r, temp), 2)}
     return out
+
+
+def pumps(t: Tick) -> dict:
+    """Each auxiliary pump's run state and mode under its tag (decision 222)."""
+    return {tag: {"on": bool(t.operator[tag]["on"]), "mode": t.operator[tag]["mode"]}
+            for tag in _PUMPS}
 
 
 def hand_switches(t: Tick) -> dict:

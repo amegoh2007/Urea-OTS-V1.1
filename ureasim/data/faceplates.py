@@ -36,7 +36,7 @@ from ureasim.data.operator_commands import FACEPLATE_MODES
 
 __all__ = [
     "HandValve", "HAND_VALVES", "LOOP_COMMANDS", "CAS_MASTERS", "CAS_UNWIRED",
-    "SpeedController", "SPEED_CONTROLLERS", "PUMP_TRIPS", "MASTER_SP_LEGS",
+    "SpeedController", "SPEED_CONTROLLERS", "PUMP_TRIPS", "PUMP_COMMANDS", "MASTER_SP_LEGS",
     "Malfunction", "MALFUNCTIONS", "CO2_DEMAND_MAX_FRAC", "CO2_DEMAND_STEP_FRAC",
     "CO2_STEP_COMMAND", "CO2_STEP_FIELD", "CO2_DEMAND_PCT_DECIMALS", "CO2_DEMAND_TH_DECIMALS",
     "loop_command",
@@ -165,6 +165,19 @@ SPEED_CONTROLLERS = MappingProxyType({
 #: built, decision 189). The tempered-water pumps carry none.
 PUMP_TRIPS = MappingProxyType({"A": ("21_2", "21_8"),
                                "B": ("21_2", "21_10")})
+
+#: The command each pump's START / STOP sends, by the pump's tag: the machines V1's pump faceplate
+#: drove (``pump_toggle``), and the auxiliary pairs whose run state the engine holds
+#: (``aux_pump_toggle``, V1's own handler, which V1's front end never sent). Decided 2026-11-13
+#: (decision 222, the process engineer's instruction I-4): every pump icon whose machine has a run
+#: state opens the faceplate. Source: V1 ``frontend/app.js`` 554-598, ``backend/main.py``
+#: ``handle_cmd`` (``pump_toggle``, ``aux_pump_toggle``).
+PUMP_COMMANDS = MappingProxyType({
+    "321P002A": "pump_toggle", "321P002B": "pump_toggle",
+    "329P006A": "pump_toggle", "329P006B": "pump_toggle",
+    **{tag: "aux_pump_toggle" for tag in ("322P002A", "322P002B", "323P001A", "323P001B",
+                                          "328P003A", "328P003B")},
+})
 
 #: PIC-329207's three legs: the packet key, the command, the caption.
 MASTER_SP_LEGS = (

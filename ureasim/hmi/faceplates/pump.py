@@ -10,6 +10,10 @@ cannot invert the intent. For the feed pumps the interlock line reads the synthe
 hold the pump: a trip whose cause is live blocks the start, a latch whose cause has recovered is
 acknowledged by the START itself (the engine does it; this only says so).
 
+Which command the buttons send is the pump's row in `ureasim.data.faceplates.PUMP_COMMANDS`: the
+feed and tempered-water pumps V1's faceplate drove, and the auxiliary pairs whose run state the
+engine holds (decision 222). No AUTO / MAN is shown or sent, as in V1.
+
 Source: V1 ``frontend/app.js`` 554-598 and ``index.html`` (``#pumpModal``).
 """
 
@@ -20,7 +24,7 @@ from typing import Any, Mapping
 from PyQt6.QtCore import QObject
 from PyQt6.QtWidgets import QLineEdit, QWidget
 
-from ureasim.data.faceplates import PUMP_TRIPS
+from ureasim.data.faceplates import PUMP_COMMANDS, PUMP_TRIPS
 from ureasim.data.unit_322_loop import trip_label
 from ureasim.hmi.faceplates.base import Faceplate
 from ureasim.hmi.state_access import get_path
@@ -44,13 +48,15 @@ def interlock_text(state: Mapping[str, Any], pump_id: str) -> str:
 
 
 class PumpFaceplate(Faceplate):
-    """A pump the engine models: 321P002A / B, 329P006A / B."""
+    """A pump whose run state the engine holds: 321P002A / B, 329P006A / B, and the auxiliary
+    pairs 322P002A / B, 323P001A / B and 328P003A / B."""
 
     def __init__(self, bridge: QObject, element: Mapping[str, Any],
                  parent: QWidget | None = None) -> None:
         tag = str(element.get("tag", element.get("id", "PUMP")))
         super().__init__(bridge, tag, parent)
         self.pump_id, self.bind = str(element["id"]), str(element["bind"])
+        self.command_type = PUMP_COMMANDS[tag]
         tag_field = self.add_row("Pump", QLineEdit(tag, self))
         tag_field.setReadOnly(True)
         self.status_field = self.add_row("Status", QLineEdit(self))
@@ -71,4 +77,4 @@ class PumpFaceplate(Faceplate):
         self.mark(self.stop_button, on, "primary")
 
     def command(self, on: bool) -> None:
-        self.send({"type": "pump_toggle", "id": self.pump_id, "on": on})
+        self.send({"type": self.command_type, "id": self.pump_id, "on": on})
