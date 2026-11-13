@@ -2,7 +2,7 @@
 
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165)
-**Last updated:** 2026-11-12, session 104
+**Last updated:** 2026-11-13, session 105
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -14,12 +14,13 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Built.** Phases 0 to 7 of the port are complete, 196 checklist items
   (`docs/history/phase-checklist.md`). The whole plant runs — units 321 to 329 and the parts of 335 V1
   models, 320K002 a boundary feed (decision 73) — on a headless engine with a single local console
-  (decision 149). Every module under `ureasim/` is at or below 600 lines (decision 152).
+  (decision 149). Every module under `ureasim/` is at or below 600 lines (decision 152). Trip 22.2 is removed
+  (decision 189).
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A two (A-33 and A-38), Section B five (B-118 with B-120 folded in, and
-  B-125 to B-128), Section C none, 8 open data gaps. Every data gap waits on a vendor curve or on one
+* **Open.** `handoff.md`: Section A three (A-33, A-38 and A-40), Section B eight (B-118 with B-120 folded
+  in, B-125 to B-128, B-133, B-135 and B-136), Section C none, 8 open data gaps. Every data gap waits on a vendor curve or on one
   plant DCS readback session (`D:\Work\reports\DCS readback checklist.md`).
 * **Session 99** executed the resolution plan (`D:\Work\reports\Open gaps resolution plan and Opus 5.5
   prompt s98.md`) on the process engineer's decision table (As-Built Part CX). Wave 1 closed A-31, A-32,
@@ -37,23 +38,22 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   change no verdict. The bundle is a build candidate, not built; the options are §CXIV.11's and the process
   engineer's. Runs: `D:\Work\reports\B118_s101`, `D:\Work\reports\B118_s103`.
   Suite: 2 212 passed, 5 862 skipped, none failed (18 min 01 s) (`E:` not mounted).
-* **Session 104** wrote the plan prompt for session 105 (`D:\Work\reports\Session 105 plan prompt s104.md`)
-  on the process engineer's instructions of 2026-11-12, none of them built yet: trip 22.2 rechecked in the
-  plant documentation and removed if it is absent (decision 174 is then superseded); the plant's
-  load-reduction procedure, thirteen steps, fulfilled at reduced load, read as B-118's acceptance in
-  procedural form; B-126 (b)'s cold branch at 92.3 % (§CXIV.11's option (c)). An Opus session's advisor is
-  Fable (`CLAUDE.md`, Advisor Workflow; `.claude/settings.json`). No file under `ureasim/`, `tests/` or
-  `tools/` changed; no decision entry and no As-Built Part.
+* **Session 105** (As-Built Part CXV) removed trip 22.2 (decision 189), the only build, and measured the
+  plant's thirteen load-reduction steps in scratch under decision 190: L1, L6 and (bundle A) L3 are needed;
+  L3 is not fulfilled (B-136); the L2 board loop as approved fails; criterion (e) is met on no engine. On the
+  engine the CO2 line's SV32064 lifts before the loop's reliefs (B-135). The holdup bundle's cold branch at
+  92.3 % follows 322E001's `g_hc` and is not L3's or the ramp rate's doing (B-126). Runs:
+  `D:\Work\reports\B118_s105`. Suite on HEAD: 8 082 passed, 1 failed (A-40), none skipped.
 
 ## Next free numbers
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 105 | `docs/history/session-log.md` |
-| Decision | 190 | `docs/decisions.md` |
-| As-Built Part | CXV | the As-Built reference, appended at its end |
-| Handoff Section A | A-40 | `handoff.md` |
-| Handoff Sections B and C | B-133 | `handoff.md` |
+| Session | 106 | `docs/history/session-log.md` |
+| Decision | 197 | `docs/decisions.md` |
+| As-Built Part | CXVI | the As-Built reference, appended at its end |
+| Handoff Section A | A-41 | `handoff.md` |
+| Handoff Sections B and C | B-137 | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers
 here before it writes anything else.

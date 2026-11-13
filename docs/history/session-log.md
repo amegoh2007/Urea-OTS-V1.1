@@ -4963,3 +4963,15 @@ option (c)). Read for it and not measured: session 95's operator moves PIC-32920
 the load, where the procedure holds TT-322010 at 168-173 C with it; Operating Manual III's OCR text names
 trip 21.2 alone, its Section 3 has no OCR text and its Section 8's is 21 lines. No file under `ureasim/`,
 `tests/` or `tools/` changed; no decision entry and no As-Built Part.
+
+### Session 105 — trip 22.2 removed; the load-reduction procedure measured; the holdup bundle's cold branch (2026-11-12 to 13)
+
+On the process engineer's instructions I-1 to I-3. Built: trip 22.2's removal (decision 189, commit 18a7656), the
+only change under `ureasim/`. Measured in scratch on byte copies of the tree (As-Built Part CXV; runs in
+`D:\Work\reports\B118_s105`): the thirteen steps' map, their directions at the seed and at 92.3 %, five steps left
+out, the procedure as the operator at five holds. L1, L6 and (on bundle A) L3 are needed; L3 is not fulfilled
+(B-136); the L2 board loop as approved fails and helps no hold; the seed carries the 2 900 s mode; the CO2 line's
+SV32064 lifts before the loop's reliefs (B-135); the holdup bundle's cold branch follows 322E001's `g_hc` and is not
+L3's or the ramp rate's doing. The first reduced-load pass ran on a broken restore and was discarded; the repaired
+rig reproduces its source to the bit. Decisions 190 to 196. Reviewed mid-session,
+`D:\Work\reports\Session 105 interim review and closing prompt.md`. Suite on HEAD: 8 082 passed, 1 failed (A-40), none skipped.

@@ -1026,3 +1026,25 @@ decision on an item.
      decision 83 as far as it names 22.2 (its class stands for 21.2's flag, B-88), 22.2's half of decision 187 and
      decided-class line 115. A decided divergence: V1's 22.2 (155.0 / 148.0 bar a) is the transcription's switch
      D-189 (As-Built §CXV.2).
+190. **The load-reduction procedure is the turndown's acceptance** (2026-11-12, the process engineer's instruction
+     I-2 of session 105). The thirteen steps L1-L13 (As-Built §CXV.3) are judged on (a) the handle on the console as
+     on the DCS, (b) its direction alone at the seed and at a reduced load, (c) the consequence of leaving it out, (d)
+     its settled departure against the plant's, (e) decision 180's five holds passed with TT-322010 inside 168-173 C
+     (168.82-173.82 C on the engine's 170.0 C seed), the levels the procedure names in their bands and the licensor's
+     windows met, and (f) every AUTO and CAS loop in mode, its PV near its set point and its output off its bounds.
+     Decision 180's holds stand; the procedure adds (a)-(d) and (f) to them. Measured: As-Built §CXV.14.
+191. **B-126 (b) taken as option (c), in scratch** (2026-11-12, session 105's plan, D1). 322R001's twelve-compartment
+     species holdup (session 103's `proto103.py`) is measured against bundle A in scratch only; nothing is built.
+192. **L4 holds the engine's seed ratio** (2026-11-12, D2). The procedure's N/C 2.0 is held as FFIC-321404's seed,
+     2.0231315 on the engine for the plant's 2.086; the offset stays B-128's, open.
+193. **A save keeps loading when state is removed** (2026-11-12, D3). A removed record is named in
+     `data.retired_state` and dropped on load, every other shape difference still refused; the shipped exercises are
+     cut at the byte level (decision 189).
+194. **L5 and L10 are reported as found, with no handle built** (2026-11-12, D4). L5 has no handle by decision 73: the
+     CO2 feed's oxygen is a fixed composition. L10's FT-322402 is an indicator on stream 755 with no valve (decision
+     81); the gap is handoff B-133.
+195. **Session 105 builds only the removal of trip 22.2** (2026-11-12, D5). Every other experiment of the session is
+     a monkeypatch in scratch.
+196. **A relief-valve lift fails a hold** (2026-11-12, D6, worded as the process engineer's R2 of the closing review).
+     Under decision 180's test a hold in which SV32251, SV32252 or SV32064 lifts fails, whatever the other criteria
+     read. SV32064, the CO2 line's relief, is the one that lifts first on the engine (As-Built §CXV.12, handoff B-135).

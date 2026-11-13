@@ -22978,7 +22978,9 @@ Session 105 ran the plan approved on 2026-11-12 for the process engineer's instr
 (`D:\Work\reports\Session 105 plan prompt s104.md`). Track T removed trip 22.2 from the product, the session's
 only build; every other experiment is a monkeypatch in a scratch script, run on a byte copy of the tree at the
 commit its result is claimed for. The scripts, configurations, run files and logs are in
-`D:\Work\reports\B118_s105`. `[I]` marks an inference.
+`D:\Work\reports\B118_s105`. `[I]` marks an inference. The session was reviewed mid-way
+(`D:\Work\reports\Session 105 interim review and closing prompt.md`); the sections below carry the review's
+corrections.
 
 ## CXV.1 Trip 22.2: the documentation recheck (I-1)
 
@@ -23013,8 +23015,9 @@ it), the HP ammonia pump start's acknowledgement of 22.2 and its refusal, the re
 XV-322902 while 22.2 is latched, `SYNTHESIS_TRIPS`, 22.2's entry in the pump faceplates' `PUMP_TRIPS` and the
 packet key `22_2` are removed. `SynthesisTrips.step`
 no longer reads the loop pressure, so the schedule's declared tears fall from 81 to 78 and PT-329201 has seven
-readers. `trip_label(key)` is `key.replace("_", ".")`. Nothing replaces the trip: the loop's limit is SV32251 /
-SV32252, as the plant's.
+readers. `trip_label(key)` is `key.replace("_", ".")`. Nothing replaces the trip. The plant's documents name SV32251 /
+SV32252 as the loop's limit (§CXV.1); on the engine the first relief to lift is the CO2 line's SV32064 (set
+161.013 bar a), with the loop 0.6 to 1.9 bar under SV32251's set (§CXV.12, handoff B-135).
 
 **Saves.** A save made before the removal still holds the record. `data.retired_state.RETIRED_ATTRIBUTES` names
 `SynthesisTrips.i_22_2`, and the snapshot reader drops it before the object is rebuilt; every other shape
@@ -23047,9 +23050,673 @@ B-106's V1 pin above. Two are not T2's. `test_a_bad_sample_costs_one_tick_of_con
 (`tests/equivalence/test_co2_line_equivalence.py`) fails on the byte copy of commit 0d9736a as well: it asserts
 that after a bad sample PIC-322203 is, to the bit, the loop that never saw it, which decision 186 (session 99,
 B-130) made false by design, the first good sample reseeding the PV history; the module is skipped when V1 is
-absent, so session 99's and 103's suites did not run it (handoff B-134).
+absent, so session 99's and 103's suites did not run it (handoff A-40).
 `test_commands_reach_the_plant_between_ticks_with_the_plants_answer` (`tests/net/test_engine_host.py`) saw one of
 its two events late once; it passed eight times in eight alone, and T2 touched nothing in `ureasim/net`.
 
 **What it supersedes.** Decision 174 (kept as written), decision 83 as far as it names 22.2, 22.2's half of
 decision 187 and decided-class line 115 (marked superseded). Decision 189 holds the removal.
+
+## CXV.3 The procedure's map (L-a)
+
+The process engineer's thirteen steps of 2026-11-12 (decision 190), each with its handle as the tree has it
+(`data/faceplates.py`, `data/screen_layout.py`, `data/operator_commands.py`, read at the commit), what it is watched
+on, and the plant's own value where the record holds one. Every handle is a departure from the engine's seed.
+
+| Step | Handle on the console (command) | Watched | The plant at reduced load |
+|---|---|---|---|
+| L1 close HIC-322605, hold the reactor level | HIC-322605 hand station, 322R001's discharge (`hic605_set`; seed 60.0 %) | LT-322504 (a 1.5 m top band) | HV-322605 closes with the load (5 November trends) |
+| L2 raise the LP steam pressure: hold the loop's pressure and TT-322010 at 168-173 C | MASTER-329207 over PIC-329207 A/B/C (`master207_set`; seed 5.01325 bar a) | PT-329201, TT-322010 | PT-329207 4.05 to 4.40 bar g from 100 to 69 %; TT-322010 -0.42 K at 92.2 %, -0.44 at 80.4 %, -1.18 at 69.5 % (Book2) |
+| L3 lower the HP stripper's steam | PIC-329204 (`pic329204_set`; seed 19.7 bar a), 329D005 | 322E001's steam, TT-322004 | 19.0 to 16.6 bar g from 100 to 69 % |
+| L4 hold N/C at 2.0 | FFIC-321404 A/B on SIC-321950 / 951 (`ratio_set`; seed 2.0231315) | AT-322701, the melt's N/C | the plant's 2.086 against the engine's 2.0231 (B-128) |
+| L5 lower the air with the CO2, 0.6 vol% O2 | none: 320K002 is a boundary feed (decision 73) | O2 in the CO2 feed | the feed's composition is a constant, `data/unit_320.CO2_FEED_MOLFRAC` (O2 0.0060): 0.60 mol % at every load, by construction |
+| L6 close the HP ejector, hold 322E003's overflow level | HIC-322602, 322F001's spindle (`hic_set`; seed 74.0 %) | LT-329501, 322F001's suction | HV-322602 follows L^1.6 (5 November) |
+| L7 close the HP scrubber's vent | HIC-322604 (`hic604_set`; seed 72.0 %) | the purge, TT-322011 | 55.0 to 46.5 % from 100 to 69 % |
+| L8 raise 322E003's CCW temperature | TIC-329005 (`tic_set`; seed 80.0 C) | 322E003's duty and uncondensed gas | 86.5 to 94-98 C from 100 to 69 % |
+| L9 slow the HP carbamate pump | SIC-323901, CAS under LIC-323502 (seed 59.93 rpm) | LIC-323502, stream 308 | 323P001B at 0.74-0.77 of its full-load speed at 90.5 % (5 November) |
+| L10 lower the ammonia water to the LP absorber, FT-322402 | **none on the console or the plant's DCS**: FT-322402 indicates stream 755, 322P002's draw to 322C001, with no valve (B-39, decision 81) | 322C001's vent | 30.9 m3/h held from 92 to 111 % (Book2) |
+| L11 lower the desorber feed | FIC-328402, stream 735 (AUTO; seed 31.4 m3/h) | 328D003's level | 37.0 m3/h at 92 % against 40.2 at 102 % (Book2) |
+| L12 lower the evaporation feed; the ejectors accordingly | FIC-324401, CAS under LIC-323507 (seed 92.75 m3/h); HIC-329605, HIC-329606 hand stations | LIC-323507 (323D002), PT-324201, PT-324204 | FIC-324401 53 m3/h at 75 % against 92 (5 November) |
+| L13 every AUTO and CAS loop on its set point | every loop of `data/faceplates.py` | its mode, PV - SP, output | - |
+
+Two points are not the engine's to settle. L2's range: Operating Manual III gives 168-173 C for 322E001's outlet
+(TT-322004), held with PIC-329204 (section 4.1.5, page 4-28), and the process engineer gives it for 322E002's
+solution to the reactor (TT-322010); the arms hold TT-322010 as instructed and report TT-322004 against the manual's
+range (§CXV.11). L10: the plant's DCS has no handle on stream 755 either, so the step has no move to make on the
+console as on the plant (handoff B-133).
+
+## CXV.4 Each step's direction at the seed (L-b, engine S)
+
+Each arm moves one handle by the step shown at t = 0 on the engine's 100 % design seed, the plain tree with no
+prototype, and holds it; the control moves nothing. Same engine, runner (`cfg105.py`), policy and 10 s sampling:
+each arm differs from the control in its one move. A cascade slave is moved by a set-point bump in AUTO; its
+control takes the same slave to AUTO with a bump of 0. The arms ran on `treeA` (§CXV.10). The first pass ran
+1 800 s; L2, L3 and L6 were run again to 9 000 s (`LB_S9_*`, the closing review's A4).
+
+| Step | Move | Arm minus control at 300 / 900 / 1 800 s | Direction |
+|---|---|---|---|
+| L1 | HIC-322605 -2 % (+2) | LT-322504 +4.2 / +10.2 / +20 % (-4 / -9.6 / -19); 322R001's overflow -7.29 t/h | as the procedure: the level held up |
+| L2 | MASTER-329207 +0.1 bar (-0.1) | TT-322010 +0.106 / -0.032 / -0.263 K (-0.074 / -0.010 / -0.004); PT-329201 +0.041 / +0.055 / +0.005 bar; 322E002's steam -3.0 / -4.7 / -4.9 t/h; melt N/C +0.023 / +0.079 / +0.163 | first response; settled values below |
+| L3 | PIC-329204 -0.2 bar (+0.2) | 322E001's steam -258 / -110 / -66 kg/h (+281 / +226 / +224); TT-322004 -0.3 / -0.4 / -0.3 K | as the procedure |
+| L4 | ratio +0.02 (-0.02) | AT-322701 -0.004 / +0.057 / +0.163 (-0.022 / -0.046 / -0.063) | the N/C follows the ratio |
+| L6 | HIC-322602 -2 % (+2) | LT-329501 true -4.0 / -4.0 / -3.4 % (+4.5 / +5.0 / +3.6); 322F001's suction -1 004 / -1 018 / -182 kg/h | first response; settled values below |
+| L7 | HIC-322604 -2 % (+2) | the purge -136 / -135 / -134 kg/h (+138 / +138 / +137); 322E003's uncondensed gas +143 / +128 / +111 kg/h; TT-322011 -0.9 / -1.0 / -0.9 K | as the procedure |
+| L8 | TIC-329005 +1 K (-1) | 322E003's tempered-water duty -8.7 / -23.1 / -37.6 kW (nil); uncondensed +68 / +182 / +281 kg/h | as the procedure upward; nil downward, the seed condensing fully |
+| L9 | SIC-323901 -2 rpm (+2) | stream 308 -1 224 / -1 229 / -1 229 kg/h; LIC-323502 +0.68 / +2.17 / +4.25 % (-0.74 / -3.05 / -8.41) | as the procedure |
+| L11 | FIC-328402 -1 m3/h (+1) | stream 735 -914 / -990 / -991 kg/h; 328D003's level +0.011 / +0.044 / +0.096 % | as the procedure |
+| L12 | FIC-324401 -2 m3/h (+2) | LIC-323507 +0.15 / +0.51 / +1.06 % (-0.15 / -0.51 / -1.05); PT-324201 within 0.001 bar | as the procedure |
+| L12 | HIC-329605, HIC-329606 +/-2 % | PT-324201 and PT-324204 within 0.001 bar | no effect at the seed |
+
+L5, L10 and L13 have no handle (§CXV.3).
+
+**The 9 000 s arms (A4).** Arm minus control. The first response is the departure at 600 s; the settled value
+is the mean over the last 1 800 s, with its range there, except where the difference swings on a mode: there it
+is the cycle mean, over whole cycles from minimum to minimum. The control itself is flat after 600 s: TT-322010
+169.9998-170.0049 C, PT-329201 140.700-140.704 bar a, the melt's N/C 3.0776-3.0794.
+
+| Arm | Column | First response (600 s) | At 1 800 / 4 500 / 9 000 s | Settled (range) | Turning points of the difference (s) |
+|---|---|---|---|---|---|
+| L2 +0.1 bar | TT-322010 | +0.057 K | -0.263 / -0.217 / +0.044 K | -0.085 K, cycle mean 1 790-7 560 s (0.34, 0.29 peak to peak) | minima 1 790, 4 520-4 970, 7 560; maxima 3 450, 6 350 |
+| L2 +0.1 bar | PT-329201 | +0.057 bar | +0.005 / -0.050 / -0.224 bar | -0.165 bar, still falling | none |
+| L2 +0.1 bar | 322E002's steam | -3 994 kg/h | -4 903 / -5 585 / -754 kg/h | -4 623 kg/h, cycle mean 1 790-7 560 s | 1 330, 2 720, 4 230, 5 590, 7 290 |
+| L2 +0.1 bar | the melt's N/C | +0.046 | +0.163 / +0.138 / -0.018 | +0.103, cycle mean 1 790-7 560 s (0.17) | maxima 1 820, 4 690-4 960, 7 660 |
+| L2 -0.1 bar | TT-322010 | -0.015 K | -0.004 / -0.013 / -0.014 K | -0.013 K (0.005) | 1 380, 2 870, 4 340, 5 890, 8 190 |
+| L2 -0.1 bar | PT-329201 | -0.053 bar | -0.002 / +0.028 / +0.088 bar | +0.076 bar, still rising | none |
+| L3 -0.2 bar | 322E001's steam | -193 kg/h | -66 / -34 / -84 kg/h | -65 kg/h (60) | 1 400, 2 660, 3 760, 5 550, 6 720 |
+| L3 -0.2 bar | TT-322004 | -0.3 K | -0.3 / -0.4 / -0.4 K | -0.4 K | - |
+| L3 +0.2 bar | 322E001's steam | +253 kg/h | +224 / +200 / +204 kg/h | +194 kg/h (19) | - |
+| L3 +0.2 bar | TT-322004 | +0.3 K | +0.3 / +0.3 / +0.4 K | +0.33 K | - |
+| L6 -2 % | LT-329501 (true) | -4.4 % | -3.4 / -3.5 / -3.3 % | -3.06 % (0.8) | - |
+| L6 -2 % | 322F001's suction | -1 644 kg/h | -182 / -275 / -150 kg/h | +161 kg/h (891) | 2 310, 3 540, 5 190, 6 690, 8 000 |
+| L6 +2 % | LT-329501 (true) | +5.2 % | +3.6 / +4.1 / +3.5 % | +3.70 % (0.9) | - |
+
+**What the 9 000 s arms settle.**
+
+* **L6.** The 1 800 s reading stands as a settled direction: closing 322F001's spindle 2 % holds 322E003's level
+  3.1 % lower to 9 000 s, opening it 3.7 % higher. 322F001's suction returns to the control's within its swing,
+  as the suction is proportional to the level (§XCVI.2). The procedure closes the ejector "to hold" the level; on the
+  engine the close lowers it.
+* **L2.** Upward, the move excites a mode of about 2 900 s at the seed: TT-322010's difference reaches its minima
+  at 1 790, about 4 700 and 7 560 s and its maxima at 3 450 and 6 350 s, the melt's N/C and 322E002's steam on the
+  same period, little damped over three cycles. Over two whole cycles, minimum to minimum (1 790-7 560 s),
+  TT-322010's cycle mean stands 0.085 K under the control's (-0.092 and -0.076 K a cycle, 0.34 and 0.29 K peak to
+  peak): the move's settled effect on TT-322010 is downward, against the procedure, and the
+  first ten minutes upward are the first response. The loop pressure has not settled at 9 000 s: +0.1 bar on
+  MASTER-329207 takes PT-329201 0.22 bar down by then and still falling. Downward, -0.1 bar holds TT-322010 0.013 K
+  lower, in the procedure's sense, and takes PT-329201 0.088 bar up, still rising. The two directions are not
+  mirror images.
+* **The mode at the seed.** The seed carries the 2 700-3 000 s mode bundle A shows after a ramp (§CXIV.7): the
+  control at rest does not show it, a 0.1 bar step on MASTER-329207 excites it, and the downward step excites it at
+  about one seventieth of the amplitude (the melt's N/C range 0.0024 against 0.17). The plain tree holds it with no prototype.
+* **L3.** Settled as at 1 800 s: -0.2 bar on PIC-329204 holds 322E001's steam 65 kg/h lower and TT-322004 0.4 K
+  lower; +0.2 bar 194 kg/h and 0.33 K higher. The steam's response decays from its first response by two thirds
+  downward, and the downward steam carries a swing of 60 kg/h on the same mode.
+
+## CXV.5 The reduced-load direction tests (L-b, engine R): the first pass discarded, the restore repaired
+
+**The first pass is discarded.** The 27 arms `LB_R_*` restored `runs/A923_hold_start.json`, A923s's state at its
+settle's end (4 560 s), and were to be read as bundle A at 92.3 %. They ran on a different plant: the control,
+`LB_R_c`, moves no handle, and its first sample already departs from the run the snapshot was cut from, and keeps
+departing (the closing review's §3.1, checked here on the same files):
+
+| Column | A923s, 4 570 s | LB_R_c, 10 s after the restore | A923s, 5 160 s | LB_R_c, 600 s |
+|---|---|---|---|---|
+| `ej_suction_kgh` | 56 823 | 37 584 | 57 478 | 49 116 |
+| `e_feed_co2` (kmol/h) | 2 202 | 1 915 | 2 234 | 2 111 |
+| `melt_nc` | 3.184 | 3.562 | 3.064 | 3.306 |
+| `hpcc_steam_kgh` | 94 120 | 88 257 | 97 723 | 97 933 |
+| LT-322504 (%) | 77.2 | 76.8 | 76.0 | 54.3 |
+| `pic204_floor` (bar a) | 18.79 | 18.24 | 18.79 | 18.24 |
+| `spindle_cap` | 1 | 0.6415 | 1 | 0.6415 |
+
+The session's own check of the snapshot (save, load, save again, §CXV.10) proved the file, not the continuation.
+Three of the first pass's arms (`LB_R_L11_m`, `LB_R_L12f_p`, `LB_R_L12f_m`) were stopped by the closing review; the
+others ran to 1 800 s; two latch 22.1 near 1 080 s with nothing moved but one handle. No arm of the first pass is read.
+
+**The fault.** The scratch prototypes and the runner take references from the plant on their first call, which on a
+restored run is the reduced state, not the design seed:
+
+* `ej_proto`'s seed motive (`STATE["m_seed"]`, 322F001's motive on its first call). The friction part of the lift
+  scales on (m / m_seed)^2 (decision 180's prototype), so a restored run takes the 92.3 % motive as the seed and loses
+  the friction relief: the ejector's suction falls from 56 823 to about 37 500 kg/h on the first tick. This is the
+  plant's departure.
+* proto95's boot tick: the runner binds 322E002's UA to the CO2 demand after its boot tick, so the boot tick runs on
+  the pinned UA, the seed's own. Harmless at the seed; on a restored run it is one tick at the full-load UA.
+* The runner's seed handles (`DES`: PIC-329204, MASTER-329207, TIC-329005, TT-322013, TT-322004) are read from the
+  plant at start. They set the diagnostic laws (`pic204_floor`, the HIC-322602 feed-forwards) and the
+  departure-form schedules; with the operator frozen they move no handle.
+
+**The rig and its test.** `opt_run105r.py` is `opt_run105.py` with six exact patches (`mk_rig105.py`): a clock offset
+(`t_offset`, the restored run's time on the source run's grid: the snapshot is written before the source's tick at
+4 560.1 s, so the restored boot tick is that tick), a replay of a source run's handles (at each 10 s trim time the
+values the source recorded are sent, a handle only where its value differs from the plant's), and the boot tick on
+the live demand (`boot_ua_live`). `cfg105r.py` presets `ej_proto`'s seed motive from `seed_refs`, measured on the
+design seed by `seedref105.py` (42 762.054 kg/h, the PFD's row 116 on the engine's ratio basis, §CXII.5), and the
+configuration gives the seed's `DES`. The test the closing review set: a restored run on the source run's own
+commands, whose first 600 s equal A923s from 4 570 s on every plant output (`cmp_rig105.py`, 60 common samples):
+
+| Run | Plant columns equal to the bit on every sample | First sample |
+|---|---|---|
+| `RG_A923s_raw`: restored, A923s's commands replayed, no seed references (the first pass's rig) | 39 of 228 | `ej_suction_kgh` 37 476, `melt_nc` 3.563: the first pass's departure reproduced |
+| `RG_A923s_fix`: the same with the seed's references preset | 222 of 227 | equal to the bit |
+
+The five columns `RG_A923s_fix` does not reproduce are `e_d_shell`, `e_d_spike`, `e_d_ntu`, `e_d_mix` and
+`e_d_total`, terms94's decomposition of TT-322010 as departures from the seed's own terms, which terms94 takes on its
+first call; TT-322010 itself, and every other column the runs record (the reactor's, 322E002's, 322E003's, the
+stripper's, the ejector's, the levels, the loops' set points and outputs, `e_feed_co2` and `e_gas_co2` included),
+is equal to the bit on all 60 samples. The rig passes. `spindle_cap`, the runner's estimate of 322F001's capacity
+taken at start, reads 0.9887 against 1; it moves no handle in a replayed or a frozen run.
+
+**The second pass.** The 27 configurations are rewritten as `LB_R2_*` with the seed's references and run on the rig,
+the control and L2, L3 and L6 first (`sched4.py`, `jobs7_lb.txt`); what ran and what it shows is §CXV.5a.
+
+## CXV.5a The second pass at 92.3 % (engine R2)
+
+The 27 configurations of §CXV.5 rewritten with the seed's references (`LB_R2_*`): each restores A923s's state
+at its settle's end, the operator frozen as in the seed arms, one handle bumped once at the restore, 1 800 s,
+10 s samples; the control `LB_R2_c` bumps nothing. 20 arms and two controls (the common one and L9's cascade
+control) ran, from 22:17 to 23:50; five configurations did not start (§CXV.15). The control is not at rest: with A923s's trims frozen, LT-322504 falls from 77.2 to 71.7 % over
+the 1 800 s, TT-322005 stands at 182.4 C, and no trip latches; the arms are read against it. Arm minus control at
+300 / 900 / 1 800 s; no arm latches.
+
+| Step | Move | Arm minus control at 300 / 900 / 1 800 s | Direction at 92.3 % |
+|---|---|---|---|
+| L1 | HIC-322605 -2 % (+2) | LT-322504 +4.4 / +10.2 / +17.5 % (-4.6 / -11.1 / -21.8); 322R001's overflow -7.29 t/h (+7.29) | as the procedure |
+| L2 | MASTER-329207 +0.1 bar (-0.1) | TT-322010 +0.151 / +0.160 / -0.112 K (-0.154 / -0.163 / -0.101); PT-329201 +0.048 / +0.092 / +0.057 bar (-0.050 / -0.098 / -0.084); 322E002's steam -2.5 / -3.7 / -6.4 t/h (+2.6 / +2.9 / +2.2) | upward: up for 900 s, down at 1 800 s, as at the seed; downward: down throughout |
+| L3 | PIC-329204 -0.2 bar (+0.2) | 322E001's steam -274 / -250 / -218 kg/h (+273 / +248 / +214); TT-322004 -0.3 / -0.4 / -0.3 K (+0.2 / +0.4 / +0.4) | as the procedure |
+| L4 | ratio +0.02 (-0.02) | AT-322701 -0.009 / +0.010 / +0.078 (-0.001 / -0.026 / -0.020); the NH3 feed +0.31 / +0.37 / +0.39 t/h | the N/C follows the ratio |
+| L6 | HIC-322602 -2 % (+2) | LT-329501 true -3.2 / -3.5 / -3.5 % (+3.7 / +4.4 / +4.0); 322F001's suction -144 / -432 / -337 kg/h (+276 / +973 / +239) | closing lowers 322E003's level, as at the seed |
+| L7 | HIC-322604 -2 % (+2) | the purge -93 / -97 / -102 kg/h (+102 / +106 / +112); uncondensed +143 / +142 / +167 kg/h; TT-322011 -1.1 / -1.1 / -1.2 K | as the procedure |
+| L8 | TIC-329005 +1 K (-1) | 322E003's tempered-water duty +0.03 / +0.12 / +2.4 kW (-0.03 / -0.11 / -2.8); uncondensed +71 / +194 / +324 kg/h; TT-322011 -0.2 / -0.6 / -1.2 K | the duty does not move; the uncondensed gas rises |
+| L9 | SIC-323901 -2 rpm (+2) | stream 308 -1 224 / -1 229 / -1 229 kg/h; LIC-323502 +0.62 / +2.18 / +4.39 % (-0.62 / -2.19 / -4.79) | as the procedure |
+| L11 | FIC-328402 -1 m3/h (+1) | stream 735 -915 / -990 / -991 kg/h; 328D003's level +0.011 / +0.044 / +0.097 % | as the procedure |
+| L12 | FIC-324401 -2 m3/h (+2) | LIC-323507 +0.12 / +0.30 / +0.26 % (-0.16 / -0.70 / -1.83); PT-324201 within 0.002 bar | as the procedure |
+
+At 92.3 % every step's first response has the seed's sign, L8's duty excepted: at 92.3 % 322E003's tempered water
+takes no more duty from a raised TIC-329005 and the step shows as uncondensed gas alone. L2 upward turns at the same
+age as at the seed, so the 1 800 s readings at 92.3 % are first responses, as the seed's were (§CXV.4); no arm of
+the second pass ran past 1 800 s.
+
+## CXV.6 The holdup bundle's cold branch at 92.3 % (C1)
+
+Session 103's B2_923 (bundle A with 322R001's twelve-compartment species holdup, 10 s) against its control,
+session 95's A923 (bundle A, 60 s), both on session 95's policy, read on the 60 s grid with terms94's records
+(322E002's outlet temperature as departures: `e_d_shell`, `e_d_spike`, `e_d_ntu`, `e_d_mix`). Neither crosses
+155 bar a (B2_923 peaks at 140.80 bar a, A923 at 140.77), so both stand as controls on the new tree (§CXV.10).
+Arm minus control.
+
+* **The seed.** The two part before the ramp: the holdup bundle's seed holds TT-322010 0.10 K higher, AT-322701
+  3.000 against 3.005 and the melt's N/C 0.015 lower. A seed shift, reported.
+* **The first term.** At 60 s the spike term, +0.089 K, with 322E002's feed CO2 +5.2 kmol/h, its mass flow -133
+  kg/h and its steam +455 kg/h. Read each against its own seed, the first departure is 322E003's at 120 s: 67.7
+  kg/h of uncondensed gas against 18.2, 10.8 kg/h recondensed against -8.2.
+* **The ramp's end (960 s).** TT-322010 +2.04 K: the NTU term +1.07, the spike +0.55, the shell +0.14 K; 322E002's
+  feed CO2 +210 and its gas CO2 to 322R001 +93 kmol/h; its mass flow +4.67 t/h. The arm's AT-322701, the analyser
+  on the holdup's outflow, still reads 3.000 where the control's reads 3.399, so the control's trim has cut its
+  ratio to 2.0015 and the arm's stands at 2.0257; the arm's melt N/C is 0.46 lower.
+* **1 800 to 2 400 s.** TT-322010 +1.5 and +1.4 K: the NTU term +5.6 and +7.5, the spike -3.9 and -6.1 K;
+  322E002's mass flow +25 to +33 t/h and its duty -5.5 and -10.7 MW.
+* **The settle's end (4 560 s).** TT-322010 -0.70 K (the NTU term -2.5 K), the gas CO2 to 322R001 -223 kmol/h,
+  LT-322504 -12.1 %.
+* **The hold.** TT-322005 runs up to 21 K below the control's (7 200 s); 22.1 latches at 6 990 s.
+
+`[I]` Why the holdup moves TT-322010: carried by species, 322R001's 136 t answer the ramp's composition change
+late, and the analyser on its outflow with them. The ratio trim, acting on AT-322701, holds the ratio where the
+control's cuts it, so 322E002 receives more ammonia-rich liquor; its throughput and its feed CO2 rise, the NTU
+quench of its outlet falls short, and TT-322010 runs hot through the ramp. As the reactor's own N/C arrives, the
+throughput turns, the gas CO2 to 322R001 falls, and TT-322010 and the reactor follow the cold branch §CVI.1 named.
+
+## CXV.6a The stripper at 92.3 % (B7), and PIC-329204 left at its seed (A5)
+
+C1 follows 322E002's terms; 322E001's columns move first. `g_hc` is the stripper's composition penalty on the
+reactor feed's water (`units/synthesis/stripper.py`, ported from V1):
+
+    g_hc = clamp(1 - ETA_KW * (hc_react - REACTOR_FEED_HC_DES), ETA_FLOOR, 1.05)
+    ETA_KW 1.50, REACTOR_FEED_HC_DES 0.39824, ETA_FLOOR 0.50;  hc_react = 322R001's feed H2O / CO2 (`w_feed`)
+    slip = max(1 - g_nc, 0) + max(1 - g_hc, 0);   eta_t = eta_t_steam * g_nc * g_hc * g_t
+
+It is a function of `w_feed` alone, so it falls exactly as 322R001's feed carries more water per CO2. The shell
+bound is `shell_cap` times the design steam, 66 899 kg/h; `shell_cap` follows PIC-329204's set point (1.142 at the
+seed's 19.70 bar a, 1.065 at 18.9 bar a, where L3 takes it at 92.3 %).
+
+| Run | Engine, ramp | t (s) | w_feed | g_hc | slip | 322E001 steam (kg/h) / bound | gas CO2 to 322R001 (kmol/h) | 322E002 mass flow (t/h) | Latch |
+|---|---|---|---|---|---|---|---|---|---|
+| A923s | bundle A, 0.5 %/min | 1 210 | 0.445 | 0.930 | 0.070 | 66 110 / 71 310 | 548 | 242.5 | none |
+| A923s | | 3 010 | 0.408 | 0.986 | 0.016 | 63 590 / 70 910 | 539 | 241.8 | |
+| C2_a_923_r025 | bundle A, 0.25 %/min | 1 210 | 0.422 | 0.965 | 0.037 | 65 610 / 73 390 | 511 | 244.4 | none |
+| B2_923 | holdup, 0.5 %/min | 1 210 | 0.436 | 0.944 | 0.069 | 69 330 / 71 110 | 691 | 250.9 | 22.1 at 6 990 s |
+| B2_923 | | 3 010 | 0.516 | 0.823 | 0.181 | 71 320 / 71 250 (on it) | 832 | 262.0 | |
+| B2_923 | | 4 510 | 0.423 | 0.964 | 0.044 | 54 740 / 71 850 | 258 | 221.4 | |
+| C2_h_923_r025 | holdup, 0.25 %/min | 3 010 | 0.506 | 0.839 | 0.166 | 71 320 / 71 250 (on it) | 822 | 262.0 | 22.1 at 7 360 s |
+| C2_h_923_r025 | | 4 510 | 0.441 | 0.936 | 0.070 | 60 260 / 72 320 | 430 | 228.7 | |
+| A5_h_923_noL3 | holdup, PIC-329204 at 19.70 bar a | 3 010 | 0.531 | 0.801 | 0.204 | 76 460 / 76 400 (on it) | 954 | - | 22.1 at 7 320 s |
+| A5_h_923_noL3 | | 4 810 | 0.431 | 0.951 | 0.058 | 55 890 / 76 600 | 295 | - | |
+
+On the bound: B2_923 from 1 550 s, C2_h from 1 860 s, A5 from 1 620 to 3 130 s; A923s and C2_a never.
+Their lowest `g_hc`: A923s 0.930 (1 210 s), C2_a 0.954, B2_923 0.823 (3 010 s), C2_h 0.839, A5 0.801.
+
+* **Why `g_hc` falls to 0.82 on the holdup engine and to 0.93 on bundle A.** By its definition, because 322R001's
+  feed reaches H2O / CO2 0.516 on the holdup engine (3 010 s) and 0.445 on bundle A (1 210 s, then back to 0.40-0.43).
+  On the holdup engine the rise comes with 322E002's throughput 20 t/h above bundle A's and the gas CO2 to the
+  reactor 290 kmol/h above it; stream 308 falls meanwhile (26.6 against 40.9 t/h at 3 010 s). Where the extra water
+  per CO2 comes from is not read in these columns `[open]`.
+* **A5: PIC-329204 left at its seed.** The review's first reading was that the bound may be L3's own doing (the cap
+  lowered from 1.142 to 1.065). With PIC-329204 at 19.70 bar a the cap stays 1.14, the stripper still goes onto it,
+  now at 76.4 t/h, `g_hc` falls lower (0.801 against 0.823), the slip rises higher (0.204 against 0.181) and the gas
+  CO2 to 322R001 peaks higher (965 against 832 kmol/h). The same collapse follows: the gas CO2 falls to 295 kmol/h by
+  4 810 s, TT-322005 from 182.4 C to 162.3 C by 7 210 s, and 22.1 latches at 7 320 s, 330 s after B2_923. Lowering the
+  stripper's steam pressure does not cause the cold branch, and holding it does not avoid it. The steam rides
+  whatever bound it is given while `g_hc` is low.
+* **The slower ramp.** C2_h, at half the ramp's rate, follows the same sequence and latches 22.1 at 7 360 s,
+  370 s after B2_923. One ramp rate does not separate a state from a swing: session 103's unlatched arms went down
+  and came back on a cycle of about 7 000 s (§CXIV.6, §CXIV.7), and a ramp of 1 848 s is still short against it.
+  C2's second half, the holdup re-seeded at the ramp's end, was not run (§CXV.15).
+* `[I]` The order is the same on every holdup arm: `w_feed` rises, `g_hc` falls and the slip rises, the steam
+  goes onto its bound, the gas CO2 to 322R001 peaks, then falls by two thirds, and TT-322005 follows it down. The
+  bound and the slip are concurrent in these records; A5 shows that the bound's level is not what decides the
+  outcome. Which of `w_feed` and the gas CO2 drives the other is not separated.
+
+## CXV.7 The procedure as the operator at 92.3 % (L-c)
+
+The arms run session 95's policy (S95: L1 HIC-322605 on LT-322504, L3 PIC-329204, L7 HIC-322604 and L8 TIC-329005
+on the plant's departures, L6 HIC-322602 on L^1.6 and LT-329501, L9 and L12 in their cascades, L11 FIC-328402 on
+328D003, the ratio trimmed on AT-322701) with L2 added as a board operator's loop: MASTER-329207 re-typed every
+300 s on TT-322010, its target the first reading plus w(L) times the plant's departure (Book2: -0.42 K at 92.2 %,
+-0.44 at 80.4 %, -1.18 at 69.5 %), at most 0.05 bar a a move, 0.05 bar per K, a 0.1 K deadband, inside the seed's
+-0.1 / +0.7 bar (`mk_lc.py`). L2t keeps the trim; L2r holds the ratio at the seed's 2.0231315 (D2, decision 192).
+These arms are session 95's policy with one loop added; the approved plan's P13 carried two more loops, which were
+not run (§CXV.15). The control is S95 itself: session 101's A923 on bundle A (§CXV.10: the rerun is equal to it on
+every leaf), session 103's B2_923 on the holdup bundle. The controls are sampled every 60 s, the arms every 10 s;
+ranges are read on the 60 s grid. Hold: 4 560 to 11 760 s.
+
+| Arm | Latch | TT-322005 (band 180.6-184.6) | TT-322010 | AT-322701 (target 3.040) | LT-322504 | PT-329201 bar g | MASTER-329207 bar a | Loops off (f) |
+|---|---|---|---|---|---|---|---|---|
+| A923, the control (bundle A) | none | 181.9-182.5 | 169.7-170.0 | 2.937-3.037 | 76.0-81.1 | 138.38-138.84 | 5.07 | not recorded |
+| LC_a_L2t_923 | none | 180.8-182.6 | 169.3-170.2 | 2.851-3.246 | 71.6-86.3 | 138.19-139.02 | 5.01-5.19 | LIC-323507 -3.75 %, PIC-324203 at 100 %, nine others beyond 2 % |
+| LC_a_L2r_923 | none | 181.0-182.6 | 169.2-170.2 | 2.869-3.199 | 72.2-84.7 | 138.25-138.92 | 5.01-5.19 | LIC-323507 -3.74 %, LIC-323502 +1.34 %, PIC-323203 at 0 %, PIC-324203 at 100 % |
+| B2_923, the control (holdup bundle) | 22.1 at 6 990 s | 162.3-181.4 | 168.8-169.5 | 2.970-3.002 | 64.8-69.7 | 138.06-138.37 | 5.01-5.07 | not recorded |
+| LC_h_L2t_923 | 22.1 at 6 370 s | 162.8-177.0 | 169.1-169.7 | 3.007-3.027 | 65.1-69.8 | 138.02-138.60 | 4.91-5.04 | LIC-323507 -4.98 %, PIC-324203 at 100 %, five others beyond 2 % |
+| LC_h_L2r_923 | 22.1 at 6 220 s | 163.4-176.8 | 169.1-169.7 | 3.006-3.024 | 65.2-69.4 | 138.00-138.54 | 4.91-5.04 | LIC-323507 -5.13 %, PIC-324203 at 100 %, three others beyond 2 % |
+
+**Bundle A.** Both arms hold 92.3 % without a latch, TT-322005 in Book2's band and TT-322010 inside 168.82-173.82 C,
+and no sample reaches SV32251's set (peak 140.77 bar a). From the ramp to the end the arms carry a cycle of about
+3 000 s, MASTER-329207 between 5.12 and 5.19 bar a, TT-322010 169.3-170.2 C, AT-322701 2.87-3.20, LT-322504 72-85 %.
+The cycle is bundle A's own mode, not the loop's: the control carries it damped (A923s's gas CO2 to 322R001 607.9,
+389.5, 585.4 and 438.4 kmol/h at 610, 2 410, 3 310 and 5 110 s; §CXIV.7), the plain tree carries it at the seed when
+MASTER-329207 is stepped (§CXV.4), and the board loop keeps it alive. `[I]` A 300 s integrating move on a variable
+that swings with the mode, against a handle whose effect on TT-322010 turns sign after about ten minutes (§CXV.4),
+feeds the mode instead of damping it. AT-322701 and the licensor's N/C window fail on the swing; the control's
+AT-322701 misses its target band by 0.003.
+
+**The holdup bundle (C3).** Both arms fall onto the cold branch, as the control does, and latch 22.1 620 and 770 s
+before it. Read against the control with C1's terms (`c1.py`, 10 s against 10 s): the arm parts at 10 s, on
+MASTER-329207's first move. The board loop finds TT-322010 above its target (the seed less 0.42 K, 169.58 C) through
+the ramp and lowers MASTER-329207 to 4.91 bar a, where the control's schedule raises it to 5.07; TT-322010 runs 0.07 K
+colder at 600 s, 0.50 K at 1 800 s and 1.09 K at 3 600 s, the column's carbamate term (the gas CO2 from 322E002, less
+the off-gas's: `b_gas_K`) 1.5, 11.7 and 28.9 K short of the control's. That is C1's first term (§CXV.6) moved the way
+the cold branch moves it, and the latch comes earlier. The trim makes no difference here (L2t against L2r: the latch
+150 s apart, every range within 0.4 K or 0.02).
+
+**The L2 loop as approved, measured.** The approved design holds TT-322010 on a point inside a window 5 K wide. It
+fails, and it leaves the plant's schedule (S95's MASTER-329207, built on the plant's PT-329207) upward on bundle A and
+downward on the holdup bundle, where the procedure and the plant raise the pressure:
+
+| Hold | Engine | MASTER-329207, the schedule (control) | MASTER-329207, the loop's arms, before any latch |
+|---|---|---|---|
+| 92.3 % | bundle A | 5.07 (A923s) | 5.12-5.19 (L2t, L2r) |
+| 92.3 % | holdup | 5.07 (B2_923) | 4.91-5.04 |
+| 74.4 % | bundle A | - (S95 latches at 4 840 s) | 5.01-5.28 (L2r, latched at 4 370 s); 5.68 at 7 200 s is after the latch |
+| 74.4 % | holdup | 5.26 (B2_744) | 4.91 (L2t, L2r) |
+| 69.3 % | holdup | 5.36 (B2_693) | 4.91-5.08 (L2t), 4.91-5.16 (L2r) |
+
+L2's window is met with no loop: TT-322010 stands 169.6-170.0 C on A923, 171.2-171.3 C on B2_744 and 169.9-171.0 C on
+B2_693, all inside 168.82-173.82 C. A loop on it helps no hold. Against its control, it latches earlier on both holdup
+arms at 92.3 % (by 620 and 770 s), latches at 69.3 % where the control passes (L2r, §CXV.9), takes TT-322010 under the
+window at 69.3 % where the control keeps it inside (L2t, 168.6 C), and cycles on bundle A at 92.3 %, where the
+control's N/C passes and the arms' fails. At 74.4 % on the holdup bundle it changes no verdict.
+
+## CXV.8 Leaving a step out at 92.3 % (L-d, criterion (c))
+
+Each arm is LC_a_L2r_923 (bundle A, §CXV.7) with one step's handle held at its seed; 10 s samples, hold 4 560-11 760
+s. The base is the cycling arm, at 92.3 % only, where leaving a step out costs least. Five of the nine arms ran; four
+did not start (§CXV.15).
+
+| Arm | Held at its seed | Latch | TT-322005 (band 180.6-184.6) | TT-322010 (168.82-173.82) | AT-322701 (3.040) | LT-322504 | Reading |
+|---|---|---|---|---|---|---|---|
+| LC_a_L2r_923, the base | - | none | 181.0-182.6 | 169.2-170.2 | 2.868-3.209 | 72.2-84.7 | - |
+| LD_a_923_noL1 | HIC-322605 | none | 179.3-182.7 | 167.8-170.8 | 2.879-3.554 | 36.1-36.5 | L1 needed: without it 322R001's level stands at the funnel (B-118's band reading) and TT-322005 and TT-322010 leave their bands |
+| LD_a_923_noL2 | MASTER-329207 (5.01 bar a) | none | 178.0-180.6 (mean 179.6) | 169.4-169.9 | 2.940-3.068 | 74.0-80.9 | the raise of L2 needed for TT-322005, not for TT-322010 |
+| LD_a_923_noL3 | PIC-329204 | none | 181.7-183.0 | 166.2-171.0 | 2.801-4.160 | 71.2-88.4 | L3 needed on bundle A: without it the swing grows and TT-322010 leaves its window; PIC-323202 and PIC-323203 shut |
+| LD_a_923_noL6 | HIC-322602 | 22.1 at 2 460 s (the settle) | - | - | - | - | L6 needed: without it the plant trips |
+| LD_a_923_noL7 | HIC-322604 | none | 181.7-182.5 | 169.4-170.1 | 2.891-3.168 | 73.6-83.8 | no cost measured at 92.3 % |
+
+LD_a_923_noL6's PT-329201 reaches SV32251's set after its latch (160.020 bar a at 9 206.8 s). No arm lifts a relief
+before a latch. LD_a_923_noL2 differs from the base in MASTER-329207 alone, held at 5.01 bar a where the board loop
+moves it within 5.01-5.19; it is not a test of S95's schedule (5.07 bar a), which A923s passes.
+
+## CXV.9 The procedure at 90.5, 74.4, 69.3 and 68.9 % (L-c), and the long hold (C4)
+
+The arms and their policies are §CXV.7's. Bundle A's S95 runs at 74.4, 69.3 and 68.9 % and the plain tree's are
+rerun on the new tree (§CXV.10): their archives reached 155.0 bar a and latched 22.2. A latched arm is read up to its
+latch. "Peak" is PT-329201's highest 10 s sample before the latch. Six arms that had latched were stopped by the
+closing review 600 s or more after their latch (§CXV.15); each is read to its latch.
+
+| Hold | Engine | Arm | Latch (s) | Peak bar a | Hold, before any latch |
+|---|---|---|---|---|---|
+| 90.5 % | bundle A | S95 (A905, archived) | none | 140.77 | trip-free; TT-322005 178.3-182.4 C, under its band (180.6-184.6) 47 min (session 101), AT-322701 2.922-3.035 (target 3.024): fails decision 180 |
+| 90.5 % | bundle A | L2r | none | 140.78 | TT-322005 181.7-182.5, TT-322010 169.4-170.2, AT-322701 2.858-3.146 (target 3.024): TT-322005 inside its band where A905's is not, the L2 loop and the held ratio not separated |
+| 90.5 % | holdup | S95 (B2_905, archived) | 22.1 at 6 800 | - | - |
+| 90.5 % | holdup | L2r | 22.1 at 5 840 | 140.78 | TT-322005 out of its band before the latch |
+| 74.4 % | plain | S95 | 22.1 at 2 800 (the ramp) | 140.70 | - |
+| 74.4 % | plain | L2r | 22.1 at 3 000 (the ramp) | 140.70 | - |
+| 74.4 % | bundle A | S95 | 21.2, 21.8, 21.10, 22.1 at 4 840 (the settle) | 159.36 | - |
+| 74.4 % | bundle A | L2r | 21.2, 21.8, 21.10, 22.1 at 4 370 (the settle) | 159.49 | - |
+| 74.4 % | holdup | S95 (B2_744, archived) | none | 140.80 | TT-322005 181.1-181.3, TT-322010 171.2-171.3, AT-322701 2.591-2.720 |
+| 74.4 % | holdup | L2t | none | 140.78 | TT-322005 181.0-181.2, TT-322010 170.2-170.8, AT-322701 2.599-2.764 |
+| 74.4 % | holdup | L2r | none | 140.78 | TT-322005 180.9-181.1, TT-322010 169.7-170.8, AT-322701 2.577-2.763 |
+| 69.3 % | plain | S95 | 22.1 at 2 800 (the ramp) | 140.70 | - |
+| 69.3 % | plain | L2r | 22.1 at 3 000 (the ramp) | 140.70 | - |
+| 69.3 % | bundle A | S95 | 21.2, 21.8, 21.10, 22.1 at 5 230 | 159.71 | - |
+| 69.3 % | bundle A | L2r | 21.2, 21.8, 21.10, 22.1 at 4 750 | 159.74 | - |
+| 69.3 % | holdup | S95 (B2_693, archived) | none | 140.80 | trip-free and in TT-322005's band, with L3 unfulfilled (§CXV.11); AT-322701 2.451-2.658 |
+| 69.3 % | holdup | L2t | none | 140.78 | TT-322005 180.4-181.6, TT-322010 168.6-169.8 (under the window), AT-322701 2.436-2.689 |
+| 69.3 % | holdup | L2r | 22.1 at 11 300 (the hold) | 140.78 | TT-322010 167.6-169.7, LT-329501 (true) 60.8-100 % |
+| 68.9 % | plain | S95, L2r | 22.1 at 2 810, 3 000 (the ramp) | 140.70 | - |
+| 68.9 % | bundle A | S95 | 21.2, 21.8, 21.10, 22.1 at 5 070 | 159.59 | - |
+| 68.9 % | bundle A | L2r | 21.2, 21.8, 21.10, 22.1 at 4 870 | 159.67 | - |
+| 68.9 % | holdup | S95 (B2_689, archived) | none | - | TT-322005 180.6-180.8 |
+| 68.9 % | holdup | L2r | none | 140.78 | TT-322005 180.3-180.5, TT-322010 168.2-169.7 (under the window), LT-329501 (true) 61.6-83.3 % |
+
+**Bundle A without trip 22.2.** At 74.4, 69.3 and 68.9 % the loop pressure that latched 22.2 at 155.0 bar a in
+session 95's and 101's runs climbs on to 159.4-159.7 bar a, where 21.2, 21.8, 21.10 and 22.1 latch on one 10 s
+sample. The tick record of the 74.4 % arm (§CXV.12) orders them: SV32064, the CO2 line's relief, lifts first; the
+four trips follow within 4 s. No 10 s sample before the latch reaches SV32251's set. After the latch PT-329201 reaches
+the set, 160.013 bar a, in every bundle A arm (4 462 to 8 352 s): that lift is the latched plant's, not the hold's.
+
+**The holdup bundle at 69.3 %.** The procedure's L2r arm latches where the control passes. Through the ramp the board
+loop finds TT-322010 at 170.8 C, 2 K over its target (the seed less the plant's 1.18 K, 168.82 C, the window's lower
+edge), and lowers MASTER-329207 to its bound, 4.91 bar a, where the control's schedule raises it to 5.36. TT-322010
+falls through the target at 9 600 s; the loop raises MASTER-329207 again, LT-329501 rises from 62 to 88 % between
+8 400 and 10 800 s, and 322E003's sump floods into 22.1 at 11 300 s. The L2t arm, the same with the trim kept, does
+not latch to 18 120 s, but TT-322010 falls under the window (168.6 C). The trim separates the two; the board loop
+worsens both against the control.
+
+**The evaporation feed (L12, B6).** LIC-323507 (323D002's level, compartment I) is the master of FIC-324401 in
+cascade. Its tuning is V1's, `data/unit_323d002.py`: Kc 1.0, Ti 4 030 s, output 0-150 t/h, direct acting, taken from
+V1 `main.py` `State.__init__`, with V1's note that Ti is the vessel's settling time (V_I / Q); the plant's DCS tuning
+table has no LIC-323507 row. FIC-324401's own Kc 0.4 and Ti 30 s are the table's (`Master_PID_Tuning_Constants.md`).
+Read on the loop record before any latch:
+
+| Hold | Engine | Arm | 323D002 (set point 10 %) | FIC-324401's output |
+|---|---|---|---|---|
+| 92.3 % | bundle A | LC_a_L2r_923 | 3.19-6.32 % in the hold | off its bounds |
+| 74.4 % | bundle A | LC_a_S95_744 | 2.43 % lowest before the latch (4 840 s) | off its bounds |
+| 69.3 % | bundle A | LC_a_S95_693 | empty from 5 190 s; latch 5 230 s | off its bounds |
+| 68.9 % | bundle A | LC_a_S95_689 | 1.13 % lowest before the latch (5 070 s) | off its bounds |
+| 74.4 % | holdup | LC_h_L2r_744, LC_h_L2t_744 | empty from 4 800 s to the end | 100 % from 5 010 s |
+| 69.3 % | holdup | LC_h_L2r_693, LC_h_L2t_693 | empty from 4 760 s (L2t recovers to 8.5 % late in the hold) | 100 % from 4 940 s |
+
+On the holdup bundle LIC-323507 lowers FIC-324401's set point by about 1.5 m3/h in ten minutes while the ramp cuts
+323D002's inflow faster, so the vessel empties and the slave runs wide open against a set point still falling. On
+bundle A the vessel is drawn down to 1-3 % before the latch at 74.4 and 68.9 % and empties at 69.3 %. Criterion (c)
+for L12 is met by the engine on both bundles: the cascade alone does not follow the load, and the plant lowers the
+evaporation feed by hand with it (L12: 53 m3/h at 75 %, 5 November).
+
+**C4: the long hold at 69.3 %.** With the trim (B2_693, 18 120 s): AT-322701 falls from 2.95 at the ramp's end to
+2.452 at 16 800 s and stays there to 18 000 s, 0.53 under its target, while the trim raises the ratio from 2.024 to
+2.209 and is still raising it; the melt's N/C stands at 2.64. It does not return within the run. With the ratio held
+(LC_h_L2r_693): latched at 11 300 s; to the latch AT-322701 follows the trim's path within 0.02 (2.517 against 2.531
+at 10 800 s). §CXV.13 reads the loop's nitrogen at this hold's end.
+
+## CXV.10 The rig and its controls
+
+Every arm ran on `treeA`, a byte copy of commit 18a7656 written from its git blobs with LF line ends by session
+103's `copy_tree.py`. Its thermodynamic node store matches the working tree's but for the build-time field
+`seconds` of `.vle_activity_grid.json`, which no reader uses. The runners are session 95's `opt_run95.py` (through
+`cfg95.py`) and this session's `opt_run105.py` (through `cfg105.py`): `opt_run95.py` with a 10 s sample, a loop
+record (`loops`: each faceplate loop's mode, PV, SP and output) and the board loop of §CXV.7. The rig was checked
+before an arm was read:
+
+| Check | Against | Result |
+|---|---|---|
+| T2r105: session 103's H2 balance test (holdup bundle, 660 s at L 0.95), rerun | session 103's T2 | equal on all 66 common samples, every common leaf |
+| LC_a_L2t_100: session 95's N100A (bundle A at 100 %) with the board loop on | session 95's N100A (60 s) | the loop makes no move; equal on every common leaf but `s_factor` |
+| C0: session 103's control, bundle A on session 95's 74.4 % policy, 10 s, 4 700 s | session 103's C0 | equal on all 463 samples to 4 630 s; at 4 640 s the archive latches 22.2 (with 21.2, 21.8, 21.10 and 22.1 on its cut) and the runs part |
+| A923s: session 101's A923 (bundle A at 92.3 %, 60 s), rerun with its hold-start snapshot written | session 101's A923 | equal on all 196 samples, every leaf; the snapshot is A923's state at its settle's end (4 560 s) |
+| The hold-start snapshot, loaded and saved again on the tree (`roundtrip105.py`) | the file A923s wrote | 39 891 leaves; only the note and the save time differ |
+
+`cmp_common.py` compares the leaves both runs record and counts the ones only the new runner writes (`loops`, the
+board's fields); `s_factor` is left out, as it depends on the sample interval. Two more runners serve the
+closing review: `opt_run105r.py`, the restore rig (§CXV.5), and `cfg105t.py`, which wraps the scheduler's tick
+to record PT-329201's and the CO2 line's peaks, each relief's lifts and every trip's first latch to the tick
+(§CXV.12), as `p7rec.py` does for the Phase 7 scenarios.
+
+**C0 past the archive.** Without the trip, C0's loop pressure keeps rising: PT-329201 156.69 bar a at 4 700 s, its
+end. It does not reach SV32251's set, 160.013 bar a, in that time. §CXV.9 follows bundle A's 74.4 % hold to its
+end on the same policy (LC_a_S95_744).
+
+**Which archives stand as controls.** A run archived before the removal is a control on the new tree only if it
+never reached 155.0 bar a, where 22.2 latched; until then the two trees are the same model (§CXV.2's null proof).
+Session 101's A923 (peak 140.77 bar a) and A905 and session 103's B2_923 (140.80), B2_744 (140.80), B2_693,
+B2_689 and B2_905 stand; bundle A at 74.4, 69.3 and 68.9 % and the plain tree are rerun (§CXV.9).
+
+**The first reduced-load L-b pass.** The 27 arms from the hold-start snapshot failed on load at first:
+`opt_run105.py` carried session 80's removal of `PreEvaporator.exact_boil_step` from the reference plant, meant for
+snapshots saved before decision 162, and the tree's own snapshot carries the field. The runner now removes it only
+from a snapshot that lacks it; seven arms that failed were run again from the start, and no arm was read from the
+failed pass. That pass is discarded for a second fault, the restore's references (§CXV.5).
+
+## CXV.11 Step L3 against its purpose (B5)
+
+L3 lowers the HP stripper's steam "to prevent hydrolysis of urea and the loss of pressure in the recirculation
+section" (the process engineer's procedure of 2026-11-12, decision 190's step L3). Read under decision 190, its watched variables on every hold and
+engine (`l3tab105.py`, `hyd105.py`). The window is the hold before any latch; where an arm latches before its hold,
+the 600 s before the latch ("pre-latch"). `xi_hyd` is 322E001's hydrolysis extent, kmol/h of urea
+(`StripperResult.xi_hydrolysis`), as a ratio to the seed's 88.1 kmol/h; `xi_urea` is 322R001's urea formation,
+kmol/h (seed 1 303). Steam against feed is (1 + steam departure) / (1 + feed departure). PIC-323202 holds 323D001's
+pressure and PIC-323203 the 1.13 bar a gas space of 323F004 and 323E011, on 323E011's vent (`data/unit_323e011.py`);
+their PV and SP are bar a.
+
+| Hold, arm | Engine | Window | Feed | Steam | Steam / feed | TT-322004 C (seed 172.0) | Biuret wt % (seed 0.243) | xi_hyd / seed | xi_hyd / xi_urea (seed 0.068) | 323D001 bar a (seed 3.20) | PIC-323202 PV / SP, OP | PIC-323203 PV / SP, OP |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 92.3 %, A923s | bundle A | hold | -7.1 % | -5.0 % | 1.023 | 180.7-182.2 | 0.319 | 1.87 | 0.129 | 3.19 | n/r, 27.8 % | n/r, 39.8 % |
+| 90.5 %, A905 | bundle A | hold | -9.1 % | -5.8 % | 1.036 | 182.9-184.2 | 0.302 | 2.03 | 0.148 | 3.20 | n/r, 65.7 % | n/r, 42.5 % |
+| 74.4 %, LC_a_S95_744 | bundle A | pre-latch | -25.9 % | -6.2 % | 1.266 | 194.6-195.2 | 1.303 | 6.42 | 0.383 | 2.52 | 2.52 / 3.20, 0.3 % | 0.94 / 1.13, 0.3 % |
+| 69.3 %, LC_a_S95_693 | bundle A | pre-latch | -30.0 % | -10.4 % | 1.280 | 194.8-196.0 | 1.406 | 7.10 | 0.431 | 2.69 | 2.69 / 3.20, 0.6 % | 1.01 / 1.13, 0.1 % |
+| 68.9 %, LC_a_S95_689 | bundle A | pre-latch | -30.7 % | -10.6 % | 1.290 | 195.3-196.5 | 1.430 | 7.14 | - | 2.64 | 2.64 / 3.20, 0.6 % | 0.99 / 1.13, 0.1 % |
+| 92.3 %, B2_923 | holdup | hold to the latch | -13.2 % | -16.1 % | 0.967 | 180.6-182.0 | 0.405 | 2.05 | 0.203 | 3.14 | n/r, 0.8 % | n/r, 0.7 % |
+| 90.5 %, B2_905 | holdup | hold to the latch | -13.7 % | -17.3 % | 0.958 | 182.5-183.9 | 0.451 | 2.41 | - | 3.11 | n/r, 0.3 % | n/r, 0.0 % |
+| 74.4 %, B2_744 | holdup | hold | -20.4 % | -5.0 % | 1.193 | 192.2-192.8 | 0.862 | 5.47 | 0.327 | 2.61 | n/r, 0.0 % | n/r, 0.0 % |
+| 74.4 %, LC_h_L2t_744 | holdup | hold | -20.2 % | -5.0 % | 1.190 | 192.1-192.7 | 0.813 | 5.25 | - | 2.68 | 2.68 / 3.20, 0.0 % | 0.99 / 1.13, 0.0 % |
+| 69.3 %, B2_693 | holdup | hold | -22.9 % | -9.8 % | 1.170 | 193.0-194.0 | 0.932 | 6.22 | 0.374 | 2.84 | n/r, 0.0 % | n/r, 0.0 % |
+| 69.3 %, LC_h_L2t_693 | holdup | hold | -23.0 % | -9.8 % | 1.171 | 193.4-193.7 | 0.892 | 6.05 | - | 2.88 | 2.88 / 3.20, 0.0 % | 1.02 / 1.13, 0.0 % |
+| 68.9 %, B2_689 | holdup | hold | -23.5 % | -10.0 % | 1.176 | 193.4-194.2 | 0.933 | 6.25 | 0.381 | 2.87 | n/r, 0.0 % | n/r, 0.0 % |
+| ramp at L 0.77-0.82, LC_o_S95_744 | plain | pre-latch, on the ramp | -14.1 % | -0.5 % | 1.158 | 183.5-190.1 | 0.160 | 1.74 | 0.183 | 3.31 | 3.31 / 3.20, 74.2 % | 1.14 / 1.13, 46.9 % |
+
+The plain tree's 69.3 and 68.9 % rows are the 74.4 % row within 0.01 bar and 0.3 K (the three are read at the same
+point of the same ramp before their latches at 2 800-2 810 s). "n/r": the 60 s runs keep no loop record.
+
+* **TT-322004.** The plant's falls with the load, 172.25 C at 111 % to 166.6 C at 92.3 % (§XCVI.2). The engine's
+  rises with the cut on every engine: 9-12 K at 90-92 %, 20-25 K at the low holds.
+* **Steam against feed.** At 90-92 % on bundle A the steam follows the feed within 2-4 %; on the holdup bundle at
+  90-92 % the steam falls further than the feed (the stripper is off its bound by then, §CXV.6a). At the low holds
+  the feed falls 20-31 % and the steam 5-11 %: the stripper runs 17-29 % more steam per tonne of feed than at the seed.
+* **Hydrolysis.** 322E001 hydrolyses 1.9-2.4 times the seed's urea at 90-92 % and 5.3-7.1 times at the low holds.
+  At 69.3 % on the holdup bundle (B2_693) that is 548 kmol/h against 88, 37 % of the 1 463 kmol/h 322R001 forms, which
+  is itself above the seed's 1 303 at 69 % of the CO2. `[I]` The hydrolysed urea returns to 322R001 as ammonia and CO2
+  through 322E001's off-gas and is formed again: a recirculation of urea between the reactor and the stripper. Its
+  cost in steam and in product is not separated here.
+* **Biuret.** 0.81-0.93 wt % in 322E001's bottoms at the low holds on the holdup bundle and 1.30-1.43 on bundle A,
+  against the seed's 0.243.
+* **The recirculation section.** At the low holds 323D001 stands at 2.5-2.9 bar a against its 3.20 set point, with
+  PIC-323202 and PIC-323203 both shut (output 0-0.6 %), PIC-323202's PV 0.3-0.7 bar under its set point. The
+  engine shuts PV-323203 where the plant's runs open in the 5 November turndown (about 94 % at 09:28, the window's
+  mean 78.2 %; session 93, §CV).
+* **The handle's authority.** At the seed PIC-329204 lowered 0.2 bar takes 322E001's steam down 193 kg/h at 600 s
+  and 65 kg/h settled, and TT-322004 down 0.4 K settled (§CXV.4, `LB_S9_L3_p`); at 92.3 % the same move takes the
+  steam down 218-274 kg/h and TT-322004 0.3-0.4 K (§CXV.5a). `[I]` On that gain, about 2 K of TT-322004 a bar, the
+  engine's 21 K rise at the low holds would need some 10 bar off PIC-329204; the plant lowers it 2.4 bar from 100 to
+  69 % (§CXV.3).
+
+**Reading under decision 190.** Both consequences the step names appear on the engine, at every reduced load and on
+every engine: the hydrolysis is several times the seed's, and the recirculation section stands under its pressure
+with both its controllers shut. Step L3 is not fulfilled: its direction is the procedure's (§CXV.4, §CXV.5a), its
+size is not, and the handle has no authority over the term. The term is §XCVI.2's, V1's feed-deficit rise of
+TT-322004, filed there as "not the cause" of the trip; it is not restated here. Under decision 190 it is L3's
+failure, 2.3 times larger at the low holds than where §XCVI.2 measured it. The scorer prints TT-322004 and scores
+nothing on it. Handoff B-136 holds the options; nothing is decided.
+
+## CXV.12 The CO2 line's relief lifts first (B1, B2)
+
+**The cold start, before and after the removal** (`p7/cold_start_B.json` on commit 0d9736a, `p7/cold_start_A.json`
+on 18a7656; the p7rec tick record):
+
+| | Before (0d9736a) | After (18a7656) |
+|---|---|---|
+| Peak PT-329201 | 155.011 bar a at 3 314.2 s | 158.108 bar a at 3 425.8 s |
+| Peak on the CO2 line | 158.271 bar a | 161.017 bar a at 3 426.5 s |
+| First event | 22.2 at 3 314.2 s | SV32064 lifts at 3 426.6 s: 1 608 kg in 103 s |
+| Then | 21.2, 21.8, 21.10 at 3 314.3 s | 21.2, 21.8, 21.10 at 3 525.5 s |
+| SV32251 / SV32252 | no lift | no lift |
+
+**The initiator that latches first after the lift is FY-322403's low limit in trip 21.2.** FY-322403 is the CO2
+flow to the loop; 21.2 falls on the tick it drops under 5 % of the design CO2, 2.73 t/h (`TRIP_21_2_FY_L2_FRAC`).
+The 5 s of `TRIP_21_2_FY_TD_S` (UD-MR-G00-FF-0004 PC21.5.1) is an on-delay on the healthy signal, FY-322403 above
+its L2 (`Unit21Trips.step`, `control/interlocks.py`), so it delays only the flag's return, not the trip. 21.8 and
+21.10 carry 21.2's flag in their AND, so they fall on the same tick. With XV-322902 open, SV32064 vents the compressor's delivery: FY-322403 reads 49.96 t/h at 3 420 s,
+11.70 at 3 450 s and 7.76 at 3 510 s, and is 0 at 3 540 s with XV-322902 shut and 21.2 latched at 3 525.5 s. `[I]`
+On the 30 s record FY-322403 crosses 2.73 t/h between 3 510 and 3 540 s; the latch at 3 525.5 s is the crossing's
+tick. The loop
+stands 2.9 bar under the line (158.108 against 161.017 bar a) and 1.9 bar under SV32251's set when the line's relief
+lifts. The line relieves first because it carries the compressor's discharge pressure, the loop's pressure plus the
+line's drop, against a set 1.0 bar above SV32251's (161.013 against 160.013 bar a, `data/unit_320`).
+
+**Bundle A at 74.4 % (B2t_a_S95_744, LC_a_S95_744 rerun to 4 900 s with the tick record).** Same order:
+
+| t (s) | Event | PT-329201 bar a | CO2 line bar a |
+|---|---|---|---|
+| 4 831.0 | PT-329201's highest before the latch | 159.380 | 160.906 |
+| 4 833.6 | the line's peak | 159.368 | 161.016 |
+| 4 833.7 | SV32064 lifts, 59.5 t/h; 476 kg in 30.3 s | 159.368 | 161.01 |
+| 4 837.6 | 21.2, 21.8, 21.10 latch | 159.341 | 159.42 |
+| 4 837.7 | 22.1 latches | | |
+| 4 900.0 | the window's end; XV-322902 shut, the line at its reseat | 159.544, rising | 145.013 |
+
+SV32064 lifts with the loop 0.64 bar under SV32251's set; SV32251 does not lift in the window. The relief draws the
+line down onto the loop's pressure between 4 837.5 s (line 159.422, loop 159.341 bar a) and 4 838.0 s (159.172
+against 159.239 bar a): the CO2 flow to the loop stops there, and 21.2, whose on-delay holds only its return, falls
+on that tick. FY-322403 is not on the tick record, so that its fall is the initiator is inferred. `[I]`
+
+**Is this B-88's symptom?** No. B-88's symptom (As-Built Part LXIII) was SV32064 lifting after 22.2 had latched,
+with XV-322902 shut while the boundary still delivered (decision 83). Here no trip has latched, XV-322902 is open, and
+the line rises with the loop until its own relief lifts. It is a new finding: on the engine the first relief on the
+synthesis side is the CO2 line's, while §CXV.1's documents name SV32251 / SV32252 as the loop's protection. Handoff
+B-135 holds it, with options and no decision (R3).
+
+**The Phase 7 scenarios, before and after.** Each scenario ran on both commits with the tick record:
+
+| Scenario | Before (0d9736a) | After (18a7656) |
+|---|---|---|
+| cold_start | 22.2 at 3 314.2 s, then 21.2, 21.8, 21.10 | SV32064 lifts at 3 426.6 s, then 21.2, 21.8, 21.10 at 3 525.5 s (above) |
+| trip_22_2 (before) / tempered_water_loss (after, the same exercise renamed) | 22.1 at 93.9 s; peak 146.907 bar a | equal on every recorded value but 22.2's own key |
+| hpcc_rupture | no trip; peak 145.421 bar a at 3 600 s | equal on every recorded value but 22.2's own key |
+| steady_state | no trip; peak 140.702 bar a | equal on every recorded value but 22.2's own keys |
+| vacuum_break | no trip; peak 140.716 bar a | equal on every recorded value but 22.2's own key |
+
+The cold start's two runs part at 3 330 s, the first sample after 22.2's latch on commit 0d9736a.
+
+**The relief rule (decision 196, R2).** A lift of SV32251, SV32252 or SV32064 fails a hold. `score105.py` reads
+SV32251 / SV32252 on the 10 s samples and the tick record's peak, and SV32064 on the hold's 10 s verify rows
+(`320K002.relief_lifted`, `320K002.relief_kgh`) before the latch; a lift shorter than 10 s between two samples is
+not seen, and an arm with no hold sample before its latch is "not read". Every arm was scored again, the archived
+controls with them (`verkeys105.py`): of the 126 run files, the discarded first pass and the rig's among them, 106
+have hold verify rows before any latch, 60 to 1 080 each, and every row carries `320K002.relief_lifted`,
+`320K002.relief_kgh` and `PT-329201.relief_lifted`; no row shows a lift. The other 20 are not read: 14 latch before
+their hold (bundle A and the plain tree at 74.4, 69.3 and 68.9 %, `LD_a_923_noL6`, the tick run) and 6 have no hold
+verify row (C0, C0p, T2, T2r105, `LC_a_L2t_100` and the working copy of A923, whose archived file has 120). Every bundle A arm at 74.4, 69.3 and 68.9 % latches before its hold, so the rule
+is not read there; on the tick record SV32064 lifts before the latch (above).
+
+## CXV.13 The loop's nitrogen and carbon at the hold's end (B8)
+
+From session 103's atom probes (`probe103`, every tick across the HP synthesis loop's boundary), the last 600 s of
+B2_693 (69.3 %, 18 120 s) and B2_744 (74.4 %, 11 040 s) against the seed, kmol/h, and N per C of the CO2 feed:
+
+| Stream | N seed | N, B2_693's end | C seed | C, B2_693's end | N per feed C, seed | B2_693 | B2_744 |
+|---|---|---|---|---|---|---|---|
+| fresh NH3 | 2 505.1 | 1 884.6 | 4.0 | 3.0 | 2.0809 | 2.2599 | 2.1455 |
+| CO2 feed | 89.7 | 62.2 | 1 203.8 | 833.9 | 0.0745 | 0.0745 | 0.0745 |
+| stream 308 | 664.4 | 494.0 | 323.3 | 241.4 | 0.5519 | 0.5924 | 0.4833 |
+| 322E001's bottoms (the drain) | 3 043.6 | 2 292.3 | 1 524.7 | 1 077.1 | 2.5283 | 2.7489 | 2.5613 |
+| vent | 94.4 | 39.1 | 5.3 | 2.7 | 0.0784 | 0.0469 | 0.0523 |
+| the reactor's tear (B-127) | 121.4 | 84.1 | 1.3 | 0.9 | 0.1009 | 0.1009 | 0.1009 |
+
+At the seed N in 3 259.2, out 3 259.5 kmol/h; C in 1 531.1, out 1 531.3. At B2_693's end N in 2 440.8, out 2 415.6,
+net +25.2; C in 1 078.3, out 1 080.7, net -2.4; the drain's N/C 2.128 against 1.996; the melt's N/C 2.644 against
+3.079. At B2_744's end N net -10.0, C net +20.0, the drain's N/C 2.125, the melt's 2.786.
+
+* **The stream that carries the nitrogen out is 322E001's bottoms.** Per C of the CO2 feed it carries 8.7 % more
+  N at 69.3 % than at the seed (2.749 against 2.528), and the fresh ammonia rises with it (2.260 against 2.081) as the
+  trim raises the ratio (§CXV.9's C4). The vent's N falls by 40 %; 308's rises by 7 %.
+* **B-127's tear** removes N in a fixed proportion to the CO2 (0.1009 per C at every hold): it scales on the CO2 load
+  ratio and does not follow the bottoms. It neither causes nor absorbs the bottoms' rise.
+* **§CXV.11's stripper** against it: at 69.3 % 322E001 hydrolyses 548 kmol/h of urea, each mole releasing two of
+  ammonia and one of CO2 into its stream. `[I]` The bottoms' higher N per C is consistent with a stripper running
+  21-22 K hot with 6 times the seed's hydrolysis; which of the two carries
+  the extra N into the bottoms is not separated by these records.
+
+## CXV.14 The thirteen steps against decision 190's criteria (C1)
+
+(a) the handle on the console as on the DCS; (b) its direction at the seed and at 92.3 %; (c) the cost of leaving it
+out; (d) its settled departure against the plant's; (e) decision 180's five holds with TT-322010 inside 168.82-173.82
+C, the levels in their bands and the licensor's windows; (f) every AUTO and CAS loop in mode, near its set point and
+off its bounds. A criterion with no valid arm is "not measured".
+
+| Step | (a) | (b) seed / 92.3 % | (c) | (d) | Arms and columns |
+|---|---|---|---|---|---|
+| L1 | HIC-322605 | as the procedure / as the procedure | needed: without it LT-322504 36 %, TT-322005 and TT-322010 out of band | not measured | LB_S_L1, LB_R2_L1, LD_a_923_noL1: LT-322504, TT-322005, TT-322010 |
+| L2 | MASTER-329207 | upward against the procedure settled (-0.085 K cycle mean, a 2 900 s mode), downward with it / first response as the seed's | the raise needed for TT-322005 at 92.3 % on bundle A; the board loop helps no hold | not measured | LB_S9_L2, LB_R2_L2, LD_a_923_noL2, LC_*: TT-322010, TT-322005, PT-329201 |
+| L3 | PIC-329204 | as the procedure / as the procedure | needed on bundle A (TT-322010 out of window, AT-322701 to 4.16); on the holdup bundle not the cause of the latch (A5) | fails: TT-322004 +9 to +25 K against the plant's -5.4 K at 92.3 % | LB_S9_L3, LB_R2_L3, LD_a_923_noL3, A5: TT-322004, steam, xi_hyd, 323D001 |
+| L4 | FFIC-321404 ratio | the N/C follows / the N/C follows | not measured (no arm) | the engine's 2.0231 for the plant's 2.086 (B-128) | LB_S_L4, LB_R2_L4: AT-322701 |
+| L5 | none (decision 73) | n/a: 0.60 mol % O2 by construction | n/a | met by construction | `data/unit_320.CO2_FEED_MOLFRAC` |
+| L6 | HIC-322602 | closing lowers 322E003's level, settled / the same | needed: without it 22.1 at 2 460 s | not measured | LB_S9_L6, LB_R2_L6, LD_a_923_noL6: LT-329501 true |
+| L7 | HIC-322604 | as the procedure / as the procedure | no cost measured at 92.3 % | not measured | LB_S_L7, LB_R2_L7, LD_a_923_noL7: purge, TT-322011 |
+| L8 | TIC-329005 | as the procedure upward / the duty does not move, uncondensed gas rises | not measured (noL8 not run) | not measured | LB_S_L8, LB_R2_L8: duty, uncondensed |
+| L9 | SIC-323901 | as the procedure / as the procedure | not measured (noL9 not run) | not measured | LB_S_L9, LB_R2_L9: stream 308, LIC-323502 |
+| L10 | none on the console or the DCS (B-133) | n/a | n/a | n/a | - |
+| L11 | FIC-328402 | as the procedure / as the procedure | not measured (noL11 not run) | not measured | LB_S_L11, LB_R2_L11: stream 735, 328D003 |
+| L12 | FIC-324401; HIC-329605 / 606 | FIC as the procedure, the ejectors no effect / FIC as the procedure, the ejectors not run | needed, shown by the engine: 323D002 empties on the cascade alone (§CXV.9) | not measured | LB_S_L12*, LB_R2_L12f, LC_h_*: LIC-323507, FIC-324401 |
+| L13 | every loop | n/a | n/a | n/a | fails on every arm read: LIC-323507 under its set point, PIC-324203 at 100 %, PIC-323202 / 203 shut at the low holds |
+
+(e), the five holds: met on no engine. Bundle A passes decision 180 at 92.3 % (A923s, as session 101's A923), is
+trip-free at 90.5 % with TT-322005 under its band (A905; the L2r arm holds the band, the loop and the held ratio
+not separated) and latches at 74.4, 69.3 and 68.9 %; the holdup bundle latches at 92.3 and 90.5 % and holds 74.4, 69.3 and 68.9 % trip-free, with TT-322004
+20-22 K hot and L3 unfulfilled; the plain tree latches at every low hold on the ramp. No arm meets the licensor's N/C
+window and AT-322701's target on every hold, and no arm meets (f).
+
+## CXV.15 What was not run
+
+| Arm or item | Reason |
+|---|---|
+| LD_a_923_noL8, noL9, noL11, noL12 | not started: the closing review's A2 (vi); their base, LC_a_L2r_923, cycles on bundle A's mode |
+| LC_a_L2t_693, LC_o_L2t_693, LC_a_L2t_744, LC_o_L2t_744 | not started: A2 (vi); bundle A and the plain tree latch at 69.3 and 74.4 % on S95 and on L2r |
+| LB_R2_L12f_c, L12e5_p, L12e5_m, L12e6_p, L12e6_m | not started: the pool's cutoff (no arm to start after 23:30) |
+| LC_o_S95_923, LC_o_L2r_923, LC_o_S95_905, LC_o_L2r_905 | not started: the run pool's cutoff of the afternoon queue |
+| P13's L8 loop and its L12 ejector loop | not built: no plant target for either (`mk_lc.py`); the L-c arms are session 95's policy with one loop added |
+| C2's second half, the holdup re-seeded at the ramp's end | not built: needs a seeding option (`mk_ld.py`) |
+| The first reduced-load pass, `LB_R_*` (27 arms) | run on a broken restore and discarded (§CXV.5) |
+
+Stopped after the latch by the closing review (A2 (ii)), each 600 s or more past it, t of the last sample and the
+latch: LC_o_S95_693 (15 000 s; 2 800 s), LC_o_L2r_744 (5 700; 3 000), LC_h_L2r_905 (8 400; 5 840), LC_o_S95_689
+(4 600; 2 810), LC_o_L2r_689 (5 000; 3 000), C2_h_923_r025 (8 300; 7 360). Stopped from the first L-b pass (A2
+(iii)): LB_R_L11_m, LB_R_L12f_p and LB_R_L12f_m.
+
+## CXV.16 The suite on HEAD
+
+The full suite ran on HEAD 18a7656 on 2026-11-13, alone (every arm had ended at 00:57) and with V1's tree on `E:`
+mounted: 8 082 passed and 1 failed, none skipped (58 min 25 s). The failure is
+`test_a_bad_sample_costs_one_tick_of_control_action_and_nothing_else`, the test decision 186 made wrong (handoff
+A-40), left failing and logged by the process engineer's R1. `test_commands_reach_the_plant_between_ticks_with_the_plants_answer`
+(`tests/net/test_engine_host.py`), which saw one event late in §CXV.2's run, passed. The two failures T2 corrected after
+§CXV.2's run, `test_every_command_v1_handles_is_answered` and B-106's
+`test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence`, pass on HEAD. The closing review set 01:00 as the latest start; the suite started at 01:23, the session
+having been held by a usage limit from about 22:30, and no arm ran beside it.
