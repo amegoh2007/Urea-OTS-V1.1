@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Callable, Mapping
 
 from ureasim.control.process_loop import ProcessLoop
@@ -47,7 +48,14 @@ from ureasim.data.operator_commands import (
     TRIP_21_HAND_SWITCHES,
     TIC_329005_SP_MIN_C,
 )
-from ureasim.data.unit_321 import PUMP_RATED_RPM
+from ureasim.data.faceplates import (
+    CO2_DEMAND_MAX_FRAC,
+    CO2_DEMAND_PCT_DECIMALS,
+    CO2_DEMAND_STEP_FRAC,
+    CO2_DEMAND_TH_DECIMALS,
+    CO2_STEP_FIELD,
+)
+from ureasim.data.unit_321 import CO2_DES_KGH, PUMP_RATED_RPM
 from ureasim.data.unit_322c001 import C001_CPL_DES_KGH
 from ureasim.data.unit_322e002 import LEAK_DEFAULT_TH
 from ureasim.data.unit_322e003 import CCW_KGH_DES, CCW_T_OUT_DES_C
@@ -195,16 +203,60 @@ def _operator(tag: str, key: str, lo: float, hi: float, label: str | None = None
     return handler
 
 
-def _co2_set(plant: PlantState, cmd: Mapping, _r) -> str:
-    """The CO2 asked of 320K002, the instructor's boundary. A demand is refused while 21.2's flag
-    is lost, which shuts XV-322902 and takes the demand to zero (B-88; decided 2026-10-16,
-    decision 83's class)."""
-    value = _num(cmd, "value", 0.0, math.inf)
+def _co2_demand(plant: PlantState, value: float) -> None:
+    """Write the CO2 asked of 320K002, refused above zero while 21.2's flag is lost, which shuts
+    XV-322902 and takes the demand to zero (B-88; decided 2026-10-16, decision 83's class). The
+    instructor's ``co2_set`` and 322-1's ``co2_step`` share it, so neither restores the feed past
+    the trip."""
     if value > 0.0 and _trip(plant, "21_2").latched:
         raise _Refused(f"XV-322902 is held shut by {_trip_name('21_2')}'s flag (AC4 PC21.5.1): "
                        "restore the flag before restoring the CO2 demand")
     plant.operator["320K002-CO2"] = value
+
+
+def _co2_set(plant: PlantState, cmd: Mapping, _r) -> str:
+    """The CO2 asked of 320K002 in t/h, the instructor's boundary (decision 73)."""
+    value = _num(cmd, "value", 0.0, math.inf)
+    _co2_demand(plant, value)
     return f"320K002 CO2 demand {value:g}"
+
+
+def _half_up(x: float, decimals: int) -> float:
+    """``x`` rounded to ``decimals`` places, a half upward, on its exact binary value: V1's
+    ``Math.round`` and ``toFixed`` for the non-negative values the CO2 panel steps."""
+    return float(Decimal(x).quantize(Decimal(1).scaleb(-decimals), rounding=ROUND_HALF_UP))
+
+
+def _co2_step(plant: PlantState, cmd: Mapping, _r) -> str:
+    """One press of 322-1's CO2 FEED panel: the demand on 320K002 stepped by 2 % of design.
+
+    Process utility
+    ---------------
+    The control-room hand station V1 drew on 322-1 (decision 220, 2026-11-13): the operator
+    raises or lowers the CO2 sent to the urea plant in steps of 2 % of the design feed, between
+    none and 120 %. The machine itself stays a boundary with no curve, speed or governor
+    (decision 73); only the demand moves.
+
+    Equation (V1 ``frontend/co2_compressor.js``, ``render`` then ``step``)
+    --------
+        pct  = clamp(round1(demand / design * 100), 0, 120)
+        pct' = clamp(round1(pct + 2 * dir), 0, 120)
+        demand' = round3(design * pct' / 100)            [t/h]
+    The first line is V1's resync of its readout to the published demand, which snaps an
+    instructor's off-grid value onto the 0.1 % grid before the step.
+    """
+    direction = cmd.get(CO2_STEP_FIELD)
+    if direction not in (-1, 1) or isinstance(direction, bool):
+        raise _Refused(f"co2_step needs {CO2_STEP_FIELD!r} = +1 or -1")
+    design_th = CO2_DES_KGH / 1000.0
+    top = CO2_DEMAND_MAX_FRAC * 100.0
+    pct = _clamp(_half_up(plant.operator["320K002-CO2"] / design_th * 100.0,
+                          CO2_DEMAND_PCT_DECIMALS), 0.0, top)
+    pct = _clamp(_half_up(pct + CO2_DEMAND_STEP_FRAC * 100.0 * direction, CO2_DEMAND_PCT_DECIMALS),
+                 0.0, top)
+    value = _half_up(design_th * pct / 100.0, CO2_DEMAND_TH_DECIMALS)
+    _co2_demand(plant, value)
+    return f"320K002 CO2 demand {pct:.1f} % ({value:g} t/h)"
 
 
 def _hic2_set(plant: PlantState, cmd: Mapping, _r) -> str:
@@ -407,6 +459,7 @@ PLANT_COMMANDS: dict = {
     "controller_set": _controller_set,
     "ratio_set": _ratio_set,
     "co2_set": _co2_set,
+    "co2_step": _co2_step,
     "cpl_set": _operator("FIC-322404", "value", 0.0, CPL_MAX_FACTOR * C001_CPL_DES_KGH,
                          "FT-322404"),
     "hic_set": _operator("HIC-322602", "value", 0.0, 100.0),

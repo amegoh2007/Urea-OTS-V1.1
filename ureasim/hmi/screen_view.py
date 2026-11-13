@@ -76,7 +76,8 @@ class Stage(QWidget):
                          on_activate: Callable[[Mapping[str, Any]], None],
                          on_context: Callable[[Mapping[str, Any], QPoint], None],
                          on_moved: Callable[[Mapping[str, Any], float, float], None],
-                         on_drag: Callable[[Mapping[str, Any]], None] | None = None
+                         on_drag: Callable[[Mapping[str, Any]], None] | None = None,
+                         on_command: Callable[[Mapping[str, Any]], None] | None = None
                          ) -> None:
         """Wire every overlay's signals to the screen's handlers."""
         for widget in self._overlays:
@@ -85,6 +86,8 @@ class Stage(QWidget):
             widget.moved.connect(on_moved)
             if on_drag is not None:
                 widget.drag_requested.connect(on_drag)
+            if on_command is not None:
+                widget.command_requested.connect(on_command)
 
     def paintEvent(self, event) -> None:
         p = QPainter(self)
@@ -111,6 +114,8 @@ class ScreenView(QGraphicsView):
         An overlay was dragged in edit-layout mode.
     element_dragged(element)
         An overlay was dragged in run mode, toward the trend window.
+    command_requested(command)
+        A button drawn on an overlay asked for an engine command; the main window sends it.
     """
 
     navigate = pyqtSignal(str)
@@ -118,6 +123,7 @@ class ScreenView(QGraphicsView):
     element_context = pyqtSignal(object, QPoint)
     element_moved = pyqtSignal(str, str, float, float)
     element_dragged = pyqtSignal(object)
+    command_requested = pyqtSignal(object)
 
     def __init__(self, screen_id: str, elements: Iterable[Mapping[str, Any]],
                  bind_map: BindMap, parent: QWidget | None = None):
@@ -126,7 +132,7 @@ class ScreenView(QGraphicsView):
 
         self.stage = Stage(screen_id, elements, bind_map)
         self.stage.connect_overlays(self._on_activate, self._on_context, self._on_moved,
-                                    self.element_dragged.emit)
+                                    self.element_dragged.emit, self.command_requested.emit)
 
         scene = QGraphicsScene(self)
         scene.setSceneRect(QRectF(0, 0, STAGE_W, STAGE_H))

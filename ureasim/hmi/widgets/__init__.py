@@ -24,6 +24,7 @@ from ureasim.hmi.widgets.hotspots import (
 )
 from ureasim.hmi.widgets.icons import BlockValveWidget, PumpWidget
 from ureasim.hmi.widgets.indicator import IndicatorWidget
+from ureasim.hmi.widgets.step_panel import StepPanelWidget
 
 #: Layout type code -> widget class. Mirrors ``screen_layout.ELEMENT_TYPES``.
 WIDGET_REGISTRY: dict[str, type[OverlayWidget]] = {
@@ -37,6 +38,7 @@ WIDGET_REGISTRY: dict[str, type[OverlayWidget]] = {
     "ae": AnalyserWidget,
     "ovrd": OverrideButtonWidget,
     "btn": PushButtonWidget,
+    "step": StepPanelWidget,
 }
 
 
@@ -67,4 +69,5 @@ __all__ = [
     "IndicatorWidget", "BargraphWidget", "PumpWidget", "BlockValveWidget",
     "NavHotspotWidget", "StreamHotspotWidget",
     "AnalyserWidget", "HandSwitchWidget", "OverrideButtonWidget", "PushButtonWidget",
+    "StepPanelWidget",
 ]

@@ -23,7 +23,8 @@ do (`CLAUDE.md` §4a rule 2):
 Source: V1 ``frontend/app.js`` — the hand-valve table (``CMD``, ``NOTE``, ``TTL``, 516-531), the
 generic controller's routing (``CAS_MASTER``, ``CAS_UNWIRED``, ``T``, 691-768), the pump interlock
 (570-579), the SIC faceplates (861-1165) and the MASTER SP faceplate (1167-1282); ``index.html``
-(the faceplates' fields); the engine's handlers for the port's corrections.
+(the faceplates' fields); ``co2_compressor.js`` (322-1's CO2 feed hand station); the engine's
+handlers for the port's corrections.
 """
 
 from __future__ import annotations
@@ -36,7 +37,9 @@ from ureasim.data.operator_commands import FACEPLATE_MODES
 __all__ = [
     "HandValve", "HAND_VALVES", "LOOP_COMMANDS", "CAS_MASTERS", "CAS_UNWIRED",
     "SpeedController", "SPEED_CONTROLLERS", "PUMP_TRIPS", "MASTER_SP_LEGS",
-    "Malfunction", "MALFUNCTIONS", "CO2_DEMAND_MAX_FRAC", "loop_command",
+    "Malfunction", "MALFUNCTIONS", "CO2_DEMAND_MAX_FRAC", "CO2_DEMAND_STEP_FRAC",
+    "CO2_STEP_COMMAND", "CO2_STEP_FIELD", "CO2_DEMAND_PCT_DECIMALS", "CO2_DEMAND_TH_DECIMALS",
+    "loop_command",
 ]
 
 
@@ -202,8 +205,20 @@ MALFUNCTIONS = (
 # The instructor's boundary
 # ======================================================================================
 
-#: The CO2 demand the instructor's panel offers on 320K002 (``co2_set``, in t/h), as a fraction of
-#: the design feed: from none to V1's hard ceiling of 120 %. The battery-limit CO2 rate is a boundary
-#: condition outside the simulated plant, no operator lever (decision 73). Source: V1
+#: The CO2 demand on 320K002, as a fraction of the design feed: from none to V1's hard ceiling of
+#: 120 %. The instructor's panel sets it in t/h (``co2_set``); 322-1's CO2 FEED panel steps it
+#: (``co2_step``), V1's own hand station restored (decision 220, 2026-11-13). The machine stays a
+#: boundary with no curve, speed or governor (decision 73). Source: V1
 #: ``frontend/co2_compressor.js`` (``MIN``, ``MAX``; its 54.618 t/h is `unit_321.CO2_DES_KGH`).
 CO2_DEMAND_MAX_FRAC = 1.20
+
+#: One press of the CO2 FEED panel's DOWN or UP: 2 % of the design feed. Source: V1
+#: ``frontend/co2_compressor.js`` (``STEP``).
+CO2_DEMAND_STEP_FRAC = 0.02
+#: The command a press sends and its payload field, the step's direction (+1 or -1).
+CO2_STEP_COMMAND, CO2_STEP_FIELD = "co2_step", "dir"
+#: V1's two roundings of the step, kept so that UP then DOWN returns a demand to the bit: the
+#: per cent to one decimal (``Math.round(x * 10) / 10``) and the demand to the kilogram per hour
+#: (``toFixed(3)`` on t/h), each rounding a half upward. Source: V1 ``frontend/co2_compressor.js``
+#: (``step``, ``render``).
+CO2_DEMAND_PCT_DECIMALS, CO2_DEMAND_TH_DECIMALS = 1, 3

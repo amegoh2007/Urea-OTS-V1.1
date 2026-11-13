@@ -52,7 +52,7 @@ one line, with its decision number.
 - two saturating rises that describe one end state sharing one ceiling (decision 69)
 - a published instrument pinned on the PFD's and the plant's value where V1 pinned a model pseudo-quantity, the pseudo-quantity kept inside its own unit (decision 70)
 - one atmosphere, 1.01325 bar, and one gravity, 9.80665 m/s2, in every relation and display, a relief valve keeping the atmosphere its sheet states (decision 71)
-- a machine outside the simulation's scope a boundary that delivers what the process asks of it, with no curve, speed or operator lever (decision 73)
+- a machine outside the simulation's scope a boundary that delivers what the process asks of it, with no curve, speed or operator lever (decision 73) — but 320K002's demand, which the operator steps from 322-1's CO2 FEED panel (decision 220)
 - a line's dead time on its isometrics' as-built straight pipe and elbow arcs, each size at its own bore, where V1 estimated a run (decision 74)
 - a known continuous inflow — a restriction orifice's rated steam — put where its P&ID ties it in, and taken out of the PFD row that carries it (decision 75)
 - a loop with a row in the plant DCS's tuning table (`References/Master_PID_Tuning_Constants.md`, checked on its faceplate photograph) on that row, its derivative and filter included, its gain read onto the PV the model carries (decisions 76, 77)

@@ -30,9 +30,10 @@ re-anchor an equation during the rewrite. Port it exactly, then prove it ports e
 329 and the parts of 335 V1 models. **320K002, the CO2 compressor, is outside it:** a fully
 automated boundary feed (`units/synthesis/co2_compressor.py`) whose hardwired governor and surge
 protection deliver the demanded CO2 into the discharge line at whatever pressure the line presents —
-no curve, no speed, no surge, no operator command and no faceplate. The battery-limit CO2 rate is the
-instructor's boundary condition (`co2_set`, on the instructor's panel), never a process screen's
-control. Do not model
+no curve, no speed, no surge, no faceplate and no operator command on the machine itself. The
+battery-limit CO2 rate is the instructor's boundary condition (`co2_set`, on the instructor's panel);
+322-1's CO2 FEED panel, V1's own hand station restored (2026-11-13, decision 220), steps the same
+demand by 2 % of design (`co2_step`) and moves nothing else. Do not model
 the machine's curves, its governor or its antisurge loop.
 
 ---
@@ -264,9 +265,11 @@ none of them is optional:
    exposes — exactly what V1's operator screens allowed; re-classifying a plant control would
    change what a trainee is being taught, which §5 forbids. The controls that are not plant
    equipment — malfunctions, pacing, freeze, reset, exercise save and restore, and the
-   battery-limit `co2_set` — live in the Instructor menu's panel. The one exception is the
+   battery-limit `co2_set` — live in the Instructor menu's panel. The exceptions are the
    start-up intro's LOAD button, an exercise restore before the plant first runs, at the process
-   engineer's explicit request of 2026-11-05 (decision 171). No command is refused for who
+   engineer's explicit request of 2026-11-05 (decision 171), and 322-1's CO2 FEED panel, V1's own
+   hand station restored, which steps the battery-limit demand by 2 % of design (`co2_step`;
+   2026-11-13, decision 220) while `co2_set` stays on the panel. No command is refused for who
    sent it; whether the plant will *accept* it — a latched trip, an interlock, a closed valve —
    is the engine's answer, and it travels back to the console's status bar with its process
    reason. Station roles, the station token, the roster and unit assignment by section were the

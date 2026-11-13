@@ -6,7 +6,8 @@ What is being proved
 the demanded CO2 into the discharge line at whatever pressure the line presents. Pinned: the
 delivery is the demand, never negative; the discharge line it feeds closes its design point
 exactly; a part load and a line packing up behind a shut XV-322902 take the demand without a
-surge, a stonewall or a lag; and no operator command reaches the demand.
+surge, a stonewall or a lag; and the demand is set by the instructor's ``co2_set`` and stepped
+only by 322-1's CO2 FEED panel (decision 220).
 """
 
 from __future__ import annotations
@@ -73,11 +74,13 @@ def test_a_shut_isolation_packs_the_line_until_sv32064_relieves_the_demand():
     assert r.relief_kgh == pytest.approx(CO2_DES_KGH, rel=1e-3)
 
 
-def test_no_process_screen_reaches_the_demand_decided_divergence():
-    """The battery-limit CO2 rate is the instructor's boundary, never a trainee's control (decision
-    73). V1's screen 322-1 carried its COMPRESSOR SPEED hand station, which sends ``co2_set``
-    (``frontend/co2_compressor.js``); the port's screens send it from no element, and of the
-    console's modules only the instructor's panel does (decision 149)."""
+def test_the_demand_is_the_instructors_and_322_1s_step_decided_divergence():
+    """Decision 73 keeps 320K002 a boundary with no curve, speed or governor; decision 220
+    (2026-11-13) restores V1's 322-1 hand station as the CO2 FEED panel. Both sides: V1's panel
+    sent ``co2_set`` with a t/h its browser computed (``frontend/co2_compressor.js``); the port's
+    panel sends ``co2_step`` from that one element and the engine computes the demand. ``co2_set``
+    comes from no screen element, and of the console's modules only the instructor's panel sends
+    it (decision 149)."""
     import pathlib
 
     from ureasim.data.screen_layout import OVERLAYS
@@ -85,6 +88,8 @@ def test_no_process_screen_reaches_the_demand_decided_divergence():
     if js.exists():
         assert "type: 'co2_set'" in js.read_text(encoding="utf-8", errors="replace")
     assert all(e.get("cmd") != "co2_set" for els in OVERLAYS.values() for e in els)
+    assert [(sid, e["k"]) for sid, els in OVERLAYS.items() for e in els
+            if e.get("cmd") == "co2_step"] == [("screen-322-1", "co2step")]
     hmi = pathlib.Path(__file__).resolve().parents[3] / "ureasim" / "hmi"
     senders = {p.relative_to(hmi).as_posix() for p in hmi.rglob("*.py")
                if "co2_set" in p.read_text(encoding="utf-8")}

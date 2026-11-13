@@ -191,7 +191,9 @@ screens exposed. The controls that are not plant equipment — pacing, freeze, r
 injection, the battery-limit CO2 demand (`co2_set`) and exercise save and restore — sit in the
 Instructor menu's panel, so the process screens stay true to the DCS. The separation is the
 console's layout: no command is refused for who sent it. The one exception is the start-up intro's
-LOAD button, which restores a saved exercise before the held plant first runs (decision 171). The
+LOAD button, which restores a saved exercise before the held plant first runs (decision 171), and
+322-1's CO2 FEED panel, V1's own hand station, which steps the same CO2 demand by 2 % of design from
+the process screen (`co2_step`, decision 220). The
 exercises are the instructor's folder (`UREASIM_EXERCISES`, or `~/ureasim-exercises`), which SAVE
 writes, and the repository's `scenarios`, shipped beside it and never written.
 

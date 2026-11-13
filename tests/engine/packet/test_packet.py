@@ -25,7 +25,7 @@ import json
 import pytest
 
 from ureasim.data import screen_layout
-from ureasim.engine.packet import DIAGNOSTIC_BLOCKS, PORT_BLOCKS
+from ureasim.engine.packet import DIAGNOSTIC_BLOCKS, PORT_BLOCKS, PORT_LEAVES
 from ureasim.hmi.state_access import get_path
 from tests.equivalence.v1_loader import V1_BACKEND, v1_available
 
@@ -73,7 +73,9 @@ def _port_paths(d, prefix="") -> set:
 def test_the_key_paths_are_v1s(design):
     """Every leaf V1 publishes is at its path in the port's packet, every dictionary V1 builds by
     comprehension is a dictionary there, and the port publishes nothing V1 does not — V1's
-    diagnostic blocks aside, which V1 publishes and the port, decided, does not (A-19 (a)). Dictionaries whose keys are data (species, streams, flags,
+    diagnostic blocks aside, which V1 publishes and the port, decided, does not (A-19 (a)), and the
+    port's own blocks and leaves (`PORT_BLOCKS`, `PORT_LEAVES`) aside, which V1 does not publish.
+    Dictionaries whose keys are data (species, streams, flags,
     controllers, a leaf that is itself a dictionary such as a stream's composition) are compared
     at their own path."""
     leaves, dynamic = _v1_paths()
@@ -81,6 +83,10 @@ def test_the_key_paths_are_v1s(design):
     keep = lambda p: p.split(".")[0] not in DIAGNOSTIC_BLOCKS          # noqa: E731
     leaves, dynamic = set(filter(keep, leaves)), set(filter(keep, dynamic))
     assert not set(PORT_BLOCKS) & {p.split(".")[0] for p in leaves | dynamic}
+    # The port's own leaves: absent from V1, present in the port, each in a block V1 publishes.
+    assert not set(PORT_LEAVES) & (leaves | dynamic)
+    assert {p.split(".")[0] for p in PORT_LEAVES} <= {p.split(".")[0] for p in leaves}
+    assert all(get_path(design.packet, p) is not None for p in PORT_LEAVES)
     pkt = {k: v for k, v in design.packet.items() if k != "_health" and k not in PORT_BLOCKS}
     assert set(PORT_BLOCKS) <= set(design.packet)
     for path in leaves | dynamic:
@@ -90,20 +96,20 @@ def test_the_key_paths_are_v1s(design):
             node = node[key]
     for path in dynamic:
         assert isinstance(get_path(pkt, path), dict), path
-    for path in _port_paths(pkt):
+    for path in _port_paths(pkt) - set(PORT_LEAVES):
         assert path in leaves or any(path.startswith(f"{d}.") for d in dynamic) or any(
             path.startswith(f"{leaf}.") for leaf in leaves), path
     assert not set(DIAGNOSTIC_BLOCKS) & set(pkt)
 
 
 def test_every_binding_the_consoles_carry_resolves(design):
-    """All 274 of the screens' bound paths read a value, unit 335's four UF85 faceplate fields
+    """All 275 of the screens' bound paths read a value, unit 335's four UF85 faceplate fields
     since session 55 (decision 123). Six are decision 98's: the five trip 21.2 keyswitches'
-    ``HAND_SWITCHES`` and AI-329701."""
+    ``HAND_SWITCHES`` and AI-329701; one is decision 220's, the CO2 FEED panel's demand."""
     paths = {e[f] for els in screen_layout.OVERLAYS.values() for e in els for f in PATH_FIELDS
              if isinstance(e.get(f), str) and e[f]}
     unresolved = {p for p in paths if get_path(design.packet, p) is None}
-    assert len(paths) == 274 and unresolved == set()
+    assert len(paths) == 275 and unresolved == set()
 
 
 def test_the_packet_is_json_with_its_clocks_and_health(design):

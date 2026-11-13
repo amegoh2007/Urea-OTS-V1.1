@@ -47,7 +47,8 @@ DEFAULT_OUT = Path(__file__).resolve().parents[1] / "ureasim" / "data" / "screen
 
 #: Element types V1 defines. A record carrying anything else is a parse failure, not a
 #: new feature — the widget registry in `hmi/widgets` is keyed on exactly this set.
-KNOWN_TYPES = {"ind", "nav", "avalve", "pump", "bar", "strm", "xv", "hs", "ae", "ovrd", "btn"}
+KNOWN_TYPES = {"ind", "nav", "avalve", "pump", "bar", "strm", "xv", "hs", "ae", "ovrd", "btn",
+               "step"}
 
 # The decided tables live beside this tool (moved verbatim, session 110); re-exported here.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -356,6 +357,7 @@ Field reference
     fy       mirror the symbol vertically inside its own box
     fs       type size [px] the slide specified for this box
     tag      DCS tag as printed on the drawing
+    cap      caption a step panel prints over its readout
     bind     dot-path into the engine state snapshot
     u        engineering unit shown beside the value
     dec      decimal places
@@ -366,7 +368,8 @@ Field reference
     ctl      controller tag a panel readout routes its faceplate to
     ctlBind  dot-path that faceplate reads as its PV
     ctlU     unit that faceplate shows, when it differs from ``u``
-    cmd      command id for a clickable block valve or hand switch
+    cmd      command id for a clickable block valve or hand switch, or the engine command a
+             step panel's DOWN and UP send
     xv       the block-valve state a hand switch or override reflects
     latch    interlock id an override pushbutton is armed by
     id       pump duty designator (A / B)
@@ -400,6 +403,7 @@ ELEMENT_TYPES = {{
     "ae":     "AnalyserWidget",        # analyser element
     "ovrd":   "OverrideButtonWidget",  # override pushbutton
     "btn":    "PushButtonWidget",      # generic pushbutton
+    "step":   "StepPanelWidget",       # caption, readout, DOWN and UP engine steps
 }}
 
 #: Screens in tab-bar order, with the title shown in the header.
@@ -428,7 +432,7 @@ SCREEN_TITLES = {
 #: Field emission order. Geometry first, then identity, then behaviour — so a diff between
 #: two generated files lines up column-wise and is readable.
 _FIELD_ORDER = ["k", "t", "x", "y", "w", "h", "rot", "fx", "fy", "fs",
-                "tag", "bind", "u", "dec", "mode", "cas", "fp", "face",
+                "tag", "cap", "bind", "u", "dec", "mode", "cas", "fp", "face",
                 "ctl", "ctlBind", "ctlU",
                 "cmd", "xv", "latch", "id", "def", "goto", "stream", "route", "note"]
 

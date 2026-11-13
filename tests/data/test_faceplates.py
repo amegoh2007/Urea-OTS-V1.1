@@ -76,3 +76,15 @@ def test_the_speed_controllers_and_the_master_legs_are_engine_commands(plant):
     for _leg, _key, command, _caption in fp.MASTER_SP_LEGS:
         assert command in PLANT_COMMANDS
     assert set(fp.PUMP_TRIPS) == {"A", "B"}
+
+
+def test_the_co2_feed_panels_command_is_the_engines_step(plant):
+    """Decision 220: the command and field 322-1's CO2 FEED panel sends are the engine's
+    ``co2_step``, and the only element that sends it is that panel."""
+    from ureasim.data.screen_layout import OVERLAYS
+
+    assert PLANT_COMMANDS[fp.CO2_STEP_COMMAND].__name__ == "_co2_step"
+    assert apply_command(plant, {"type": fp.CO2_STEP_COMMAND, fp.CO2_STEP_FIELD: 1}).ok
+    senders = [(sid, e["k"]) for sid, els in OVERLAYS.items() for e in els
+               if e.get("cmd") == fp.CO2_STEP_COMMAND]
+    assert senders == [("screen-322-1", "co2step")]

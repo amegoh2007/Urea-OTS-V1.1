@@ -98,6 +98,16 @@ HS_BG = "#1a2808"
 HS_BORDER = "#4a6b2f"
 HS_TEXT = "#a0e060"
 
+#: Step panel (322-1's CO2 FEED, decision 220), V1's ``co2_compressor.js``: the panel is RATIO
+#: with buttons in the tab colours; a dead button is drawn at V1's 0.32 opacity.
+STEP_PANEL_BORDER = "#99dadd"
+STEP_PANEL_CAPTION = "#eaf7f8"
+STEP_PANEL_VALUE = "#38f5b0"
+STEP_PANEL_UNIT = "#7fbfa8"
+STEP_BUTTON_DEAD = "#173a3e"
+STEP_BUTTON_DEAD_TEXT = "#8fb3b5"
+STEP_BUTTON_DEAD_OPACITY = 0.32
+
 #: Hover highlight for transparent hotspots (nav, stream).
 HOTSPOT_HOVER_BORDER = "rgba(127, 208, 216, 217)"
 HOTSPOT_HOVER_BG = "rgba(80, 160, 220, 41)"

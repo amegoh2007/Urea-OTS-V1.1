@@ -32,6 +32,7 @@ Field reference
     fy       mirror the symbol vertically inside its own box
     fs       type size [px] the slide specified for this box
     tag      DCS tag as printed on the drawing
+    cap      caption a step panel prints over its readout
     bind     dot-path into the engine state snapshot
     u        engineering unit shown beside the value
     dec      decimal places
@@ -42,7 +43,8 @@ Field reference
     ctl      controller tag a panel readout routes its faceplate to
     ctlBind  dot-path that faceplate reads as its PV
     ctlU     unit that faceplate shows, when it differs from ``u``
-    cmd      command id for a clickable block valve or hand switch
+    cmd      command id for a clickable block valve or hand switch, or the engine command a
+             step panel's DOWN and UP send
     xv       the block-valve state a hand switch or override reflects
     latch    interlock id an override pushbutton is armed by
     id       pump duty designator (A / B)
@@ -76,6 +78,7 @@ ELEMENT_TYPES = {
     "ae":     "AnalyserWidget",        # analyser element
     "ovrd":   "OverrideButtonWidget",  # override pushbutton
     "btn":    "PushButtonWidget",      # generic pushbutton
+    "step":   "StepPanelWidget",       # caption, readout, DOWN and UP engine steps
 }
 
 #: Screens in tab-bar order, with the title shown in the header.
@@ -220,6 +223,7 @@ OVERLAYS = {
         {'k': 'nav-extr', 't': 'nav', 'x': 1231, 'y': 472, 'w': 101, 'h': 21, 'tag': 'EXTR STEAM -> 329-1', 'goto': 'screen-329-1'},
         {'k': 'nav-c003', 't': 'nav', 'x': 1220, 'y': 572, 'w': 92, 'h': 21, 'tag': '323C003 -> 323-1', 'goto': 'screen-323-1'},
         {'k': 'ovrhs322606', 't': 'ovrd', 'x': 900, 'y': 634, 'w': 120, 'h': 18, 'tag': 'HS-322606', 'cmd': 'HS-322606', 'xv': 'HAND_SWITCHES.HS_322606', 'latch': '21_2', 'note': "HS-322606 BYPASS CO2 TO 322E001 (XV-322902, FY-322403), a maintained control-room keyswitch on AC4 PC21's trip 21.2 (UD-MR-G00-FF-0004): the lamp is amber while 21.2's flag is lost, green while the key is turned"},
+        {'k': 'co2step', 't': 'step', 'x': 104, 'y': 378.5, 'w': 196, 'h': 53, 'tag': '320K002', 'cap': 'CO2 FEED', 'bind': 'CO2_FEED.demand_pct', 'u': '%', 'dec': 1, 'cmd': 'co2_step', 'note': 'CO2 demand on 320K002 in % of the 54.618 t/h design feed; DOWN and UP step it by 2 %, from 0 to 120 %'},
     ],
     'screen-329-1': [
         {'k': 'pic329207b', 't': 'ind', 'x': 1116, 'y': 57, 'tag': 'PIC-329207B', 'bind': 'STEAM_SYSTEM.PIC_329207B.pv', 'u': 'BAR A', 'dec': 2, 'mode': 'STEAM_SYSTEM.PIC_329207B.mode', 'fp': 'MASTER_SP_329207'},

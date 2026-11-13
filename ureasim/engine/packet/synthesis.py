@@ -6,6 +6,8 @@ for the loop (`ureasim.engine.plant.synthesis`, `synthesis_loop`) and the lagged
 V1's section 6 (`ureasim.units.synthesis.indicators`, step ``322-DISPLAY``). Where the port has
 decided a divergence the value is the port's: the stripper's steam on its PFD row (decision 52),
 PT-329201's relief through 322R001's certified valves under V1's ``SV_32201`` keys (decision 32).
+One leaf is the port's own: ``CO2_FEED.demand_pct``, the CO2 FEED panel's readout, which V1's
+browser computed from ``raw_th`` (decision 220).
 
 Two V1 diagnostics are evaluated here, as V1 evaluates them beside its scrubber and read nowhere:
 the overhead's free acid CO2 and its pressure-building push (`pressure_building_overhead`).
@@ -16,7 +18,9 @@ Source: V1 ``backend/main.py`` 10504-10600 (ejector, CO2 feed, stripper), 11029-
 
 from __future__ import annotations
 
+from ureasim.data.faceplates import CO2_DEMAND_PCT_DECIMALS
 from ureasim.data.unit_320 import CO2_MASSFRAC_CO2, CO2_T_FEED_C
+from ureasim.data.unit_321 import CO2_DES_KGH
 from ureasim.data.unit_322e003 import CCW_P_IN_BARA, CCW_P_OUT_BARA
 from ureasim.engine.packet._common import MW_COMP, Tick, comp_pct, faceplate, th
 from ureasim.units.synthesis.stripper import (
@@ -55,7 +59,8 @@ def ejector(t: Tick) -> dict:
 
 
 def co2_feed(t: Tick) -> dict:
-    """320K002 through XV-322902 to 322E001: FT/FY-322403, the vent PV-322203 and PIC-322203."""
+    """320K002 through XV-322902 to 322E001: FT/FY-322403, the vent PV-322203 and PIC-322203, and
+    the CO2 demand in t/h and in per cent of design."""
     line, res = t.units["320K002"], t.r("320K002")
     pic = t.loops["320K002"][0]
     return {
@@ -64,6 +69,9 @@ def co2_feed(t: Tick) -> dict:
         "TI_322017": round(CO2_T_FEED_C, 1),
         "pure_th": round(res.feed_th * CO2_MASSFRAC_CO2, 2),
         "raw_th": round(t.operator["320K002-CO2"], 2),
+        # The demand in per cent of design, the CO2 FEED panel's readout (decision 220).
+        "demand_pct": round(t.operator["320K002-CO2"] / (CO2_DES_KGH / 1000.0) * 100.0,
+                            CO2_DEMAND_PCT_DECIMALS),
         "vent_th": round(res.vent_th, 2),
         "Load": round(res.load_pct, 1),
         "XV_322902": bool(line.xv_322902_open),

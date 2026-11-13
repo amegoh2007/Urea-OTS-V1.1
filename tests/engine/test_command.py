@@ -9,6 +9,7 @@ was silent, each with the process reason the operator reads.
 
 from __future__ import annotations
 
+import math
 import re
 
 import pytest
@@ -143,6 +144,59 @@ def test_the_co2_demand_is_refused_only_on_21_2s_flag(plant):
     healthy a demand is taken."""
     _ok(plant, type="co2_set", value=50.0)
     assert plant.operator["320K002-CO2"] == 50.0
+
+
+def _v1_co2_step(demand_th: float, direction: int) -> float:
+    """V1's 322-1 hand station, ``frontend/co2_compressor.js``, as the browser computed it:
+    ``render`` snaps the readout to the demand, ``step`` adds 2 % and sends ``toFixed(3)``."""
+    js_round = lambda v: math.floor(v + 0.5)                       # noqa: E731  Math.round
+    clamp = lambda v: max(0.0, min(120.0, v))                      # noqa: E731
+    pct = clamp(js_round(demand_th / 54.618 * 100 * 10) / 10)
+    pct = clamp(js_round((pct + 2.0 * direction) * 10) / 10)
+    return float(f"{54.618 * pct / 100:.3f}")
+
+
+def test_the_co2_feed_panel_steps_the_demand_as_v1s_did(plant):
+    """Decision 220: one press is 2 % of the 54.618 t/h design; UP then DOWN returns the design
+    demand to the bit; an off-grid demand is snapped onto the 0.1 % grid before the step, as V1's
+    readout snapped it; the demand stops at 120 % and at none. Over the whole 0.1 % grid each step
+    is V1's own."""
+    assert plant.operator["320K002-CO2"] == 54.618
+    r = _ok(plant, type="co2_step", dir=1)
+    assert plant.operator["320K002-CO2"] == 55.71 and "102.0 %" in r.text
+    _ok(plant, type="co2_step", dir=-1)
+    assert plant.operator["320K002-CO2"] == 54.618
+    _ok(plant, type="co2_set", value=50.0)                         # 91.545 %: snapped to 91.5
+    _ok(plant, type="co2_step", dir=1)
+    assert plant.operator["320K002-CO2"] == 51.068
+    _ok(plant, type="co2_set", value=64.995)                       # 119.0 %
+    for _ in range(2):
+        _ok(plant, type="co2_step", dir=1)
+        assert plant.operator["320K002-CO2"] == 65.542            # 120.0 %
+    _ok(plant, type="co2_set", value=0.5)                          # 0.9 %
+    for _ in range(2):
+        _ok(plant, type="co2_step", dir=-1)
+        assert plant.operator["320K002-CO2"] == 0.0
+    for tenth in range(0, 1201):
+        start = float(f"{54.618 * tenth / 1000:.3f}")
+        for direction in (-1, 1):
+            plant.operator["320K002-CO2"] = start
+            _ok(plant, type="co2_step", dir=direction)
+            assert plant.operator["320K002-CO2"] == _v1_co2_step(start, direction), (tenth, direction)
+
+
+def test_the_co2_feed_panel_cannot_restore_the_feed_past_trip_21_2(plant):
+    """While 21.2's flag is lost the step up is refused with the instructor's reason, and the
+    demand is unchanged; a step down to none is taken. A direction other than +1 or -1 is
+    refused."""
+    plant.units["SYN-TRIPS"].i_21_2.latched = True
+    _ok(plant, type="co2_set", value=0.0)
+    _refused(plant, r"XV-322902 is held shut by trip 21\.2's flag", type="co2_step", dir=1)
+    assert plant.operator["320K002-CO2"] == 0.0
+    _ok(plant, type="co2_step", dir=-1)
+    plant.units["SYN-TRIPS"].i_21_2.latched = False
+    for bad in (0, 2, True, "1", None):
+        _refused(plant, r"co2_step needs 'dir' = \+1 or -1", type="co2_step", dir=bad)
 
 
 def test_322p002_runs_while_either_of_its_pair_does(plant):

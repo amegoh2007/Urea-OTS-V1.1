@@ -15,7 +15,9 @@ pressure the line presents. What it drops is the machine itself: no curve, no sp
 surge and no stonewall, so no fitted or digitised map stands between the demand and the loop.
 
 The demand is the battery-limit CO2 rate, PFD 101's ``CO2_DES_KGH`` at design. It is the
-instructor's boundary condition (``co2_set``), never a trainee's control.
+instructor's boundary condition (``co2_set``), and 322-1's CO2 FEED panel steps it by 2 % of
+design (``co2_step``; decision 220, V1's own hand station restored). Either moves the demand
+only: the machine has no speed or curve for a command to reach.
 
 Why a perfect governor, and not an open boundary
 ------------------------------------------------

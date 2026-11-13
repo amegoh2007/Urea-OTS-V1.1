@@ -154,6 +154,7 @@ class MainWindow(QMainWindow):
             view.element_context.connect(self.on_element_context)
             view.element_moved.connect(self.on_element_moved)
             view.element_dragged.connect(self.on_element_dragged)
+            view.command_requested.connect(self.on_overlay_command)
             self._views[screen_id] = view
             self._stack.addWidget(view)
         column.addWidget(self._stack, 1)
@@ -321,6 +322,16 @@ class MainWindow(QMainWindow):
     # ----------------------------------------------------------------------------------
     # Element interaction
     # ----------------------------------------------------------------------------------
+
+    @pyqtSlot(object)
+    def on_overlay_command(self, command: Mapping[str, Any]) -> None:
+        """Send the command a button drawn on an overlay asked for (322-1's CO2 FEED panel).
+
+        The engine answers it like any faceplate's: a refusal arrives on `on_command_result`
+        with its process reason.
+        """
+        if not self.bridge.send_command(dict(command)):
+            self.statusBar().showMessage("not connected — command not sent", 4000)
 
     @pyqtSlot(object)
     def on_element_activated(self, element: Mapping[str, Any]) -> None:

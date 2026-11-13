@@ -86,6 +86,14 @@ DECIDED_ADDITIONS = (
                       "bind": "ANALYSERS.AI_329701", "u": "uS/cm", "dec": 3,
                       "note": ("AI-329701, the LP condensate's conductivity in 329D001 on its "
                                "0-30 uS/cm range: a 322E002 tube leak's ammonium bicarbonate")}),
+    # Decided 2026-11-13 (decision 220, the process engineer's instruction I-1): V1's CO2 feed
+    # hand station on 322-1 restored, at V1's own place (frontend/co2_compressor.js: left 6, top
+    # 352, 196 x 53; the slide's marker meets AT-322701). The engine holds the demand and steps it.
+    ("screen-322-1", {"k": "co2step", "t": "step", "x": 104, "y": 378.5, "w": 196, "h": 53,
+                      "tag": "320K002", "cap": "CO2 FEED", "bind": "CO2_FEED.demand_pct",
+                      "u": "%", "dec": 1, "cmd": "co2_step",
+                      "note": ("CO2 demand on 320K002 in % of the 54.618 t/h design feed; DOWN and "
+                               "UP step it by 2 %, from 0 to 120 %")}),
 )
 
 #: Element types the process engineer decided to render as another type, every element of the

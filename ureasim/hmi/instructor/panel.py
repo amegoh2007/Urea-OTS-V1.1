@@ -10,8 +10,9 @@ screens so they stay true to the DCS (`project.md` decision 149):
 * **Malfunctions** — every equipment fault the engine can inject, armed and cleared
   (`ureasim.data.faceplates.MALFUNCTIONS`);
 * **Boundary** — the CO2 asked of 320K002 (``co2_set``), the battery-limit rate: a boundary
-  condition outside the simulated plant, with no operator lever (decision 73), offered from none
-  to V1's 120 % of the design feed (`ureasim.data.faceplates.CO2_DEMAND_MAX_FRAC`);
+  condition outside the simulated plant (decision 73), which 322-1's CO2 FEED panel also steps
+  (decision 220), offered from none to V1's 120 % of the design feed
+  (`ureasim.data.faceplates.CO2_DEMAND_MAX_FRAC`);
 * **Exercises** — save the plant under a name with a note, and restore a saved one after a
   confirmation, from the list the engine's side holds.
 

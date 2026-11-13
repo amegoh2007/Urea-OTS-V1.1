@@ -44,12 +44,16 @@ class OverlayWidget(QWidget):
         Dragged to a new centre in edit-layout mode.
     drag_requested(element)
         Dragged in run mode: the console starts a drag of the element's tag to the trend.
+    command_requested(command)
+        A button drawn on the element itself was pressed in run mode (322-1's CO2 FEED panel,
+        decision 220): the engine command the element names, which the console sends as it is.
     """
 
     activated = pyqtSignal(object)
     context_requested = pyqtSignal(object, QPoint)
     moved = pyqtSignal(object, float, float)
     drag_requested = pyqtSignal(object)
+    command_requested = pyqtSignal(object)
 
     def __init__(self, element: Mapping[str, Any], parent: QWidget | None = None):
         super().__init__(parent)

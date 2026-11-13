@@ -70,7 +70,7 @@ from ureasim.engine.packet import (
 from ureasim.engine.packet._common import Tick
 from ureasim.engine.state import PlantState
 
-__all__ = ["build_packet", "DIAGNOSTIC_BLOCKS", "PORT_BLOCKS"]
+__all__ = ["build_packet", "DIAGNOSTIC_BLOCKS", "PORT_BLOCKS", "PORT_LEAVES"]
 
 #: V1's packet keys the port does not publish: its solver audit (module docstring).
 DIAGNOSTIC_BLOCKS = ("RECYCLE_TEAR_RESIDUAL", "sm_diagnostics", "CONSEQUENCE_TRANSPORT",
@@ -80,6 +80,10 @@ DIAGNOSTIC_BLOCKS = ("RECYCLE_TEAR_RESIDUAL", "sm_diagnostics", "CONSEQUENCE_TRA
 #: 2026-10-03), the analysers that show a 322E002 tube leak (handoff B-90, decided 2026-10-09) and
 #: the keyswitches' positions (decision 98, 2026-10-10).
 PORT_BLOCKS = ("BOUNDARY_SINKS", "ANALYSERS", "HAND_SWITCHES")
+
+#: The port's leaves inside a block V1 does publish: the CO2 demand in per cent of design, which
+#: V1's 322-1 panel computed in the browser and the port's publishes (decision 220, 2026-11-13).
+PORT_LEAVES = ("CO2_FEED.demand_pct",)
 
 
 def build_packet(plant: PlantState, results: Mapping[str, Any], tears_read: Any, *,

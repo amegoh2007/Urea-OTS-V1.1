@@ -29,10 +29,10 @@ def test_every_element_opens_v1s_faceplate(bridge):
     # None: 67 navigation hotspots, the 22 pumps the overlays bind to nothing (inert, as in V1),
     # and 11 of unit 335's instruments, which bind nothing. The 2 analysers and 12 stream hotspots
     # open the stream inspector. Decision 98 adds trip 21.2's five keyswitches and AI-329701's
-    # indicator.
+    # indicator; decision 220 adds 322-1's CO2 FEED panel, whose body opens the demand's indicator.
     assert opened == {
         None: 67 + 22 + 11, "StreamInspector": 2 + 12,
-        "IndicatorFaceplate": 139 + 1, "ControllerFaceplate": 82,
+        "IndicatorFaceplate": 139 + 1 + 1, "ControllerFaceplate": 82,
         "HandValveFaceplate": 22, "BlockValveFaceplate": 10, "PumpFaceplate": 4,
         "SpeedFaceplate": 8, "MasterSetpointFaceplate": 5, "KeyswitchFaceplate": 1 + 5,
         "RouteFaceplate": 2,
