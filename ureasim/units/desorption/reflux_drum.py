@@ -421,7 +421,7 @@ class RefluxDrum:
     def step(self, loops: RefluxDrumLoops, m_737_kgh: float, t_c002_c: float,
              p_c002_bara: float, m_c002_kg: float, in_c002_kgh: float, m_c002_over_kgh: float,
              m_718a_kgh: float, m_793_kgh: float, t_793_c: float, p_e011_bara: float,
-             dt: float) -> RefluxDrumResult:
+             dt: float, *, pump_running: bool = True) -> RefluxDrumResult:
         """Advance 328D001 and 328E004 by one tick.
 
         Arguments
@@ -479,12 +479,15 @@ class RefluxDrum:
                / max(p_c002_bara, C002_P_FLOOR_BARA))
         reflux_sp = loops.tic_328008.step(h2o, dt)
         # FT-328404 reads the 775 delivered when the heel held it back (decision 11).
-        m_775 = loops.fic_328404.step(dt, cas_sp=reflux_sp, flow_cap=self.cap_775_kgh)
+        # 328P002A and B both stopped deliver nothing: FT-328404 reads no 775 (decision 227).
+        run = 1.0 if pump_running else 0.0
+        m_775 = loops.fic_328404.step(dt, cas_sp=reflux_sp,
+                                      flow_cap=self.cap_775_kgh if pump_running else 0.0) * run
 
         # ----- LIC-328501 -> LV-328501, a pure gain on its linear trim (decision 23) -----------
         level = lt_328501_pct(self.m_kg)
         lic_op = loops.lic_328501.step(level, dt)
-        m_776 = D001_M776_DES_KGH * (lic_op / LV501_OP_DES_PCT)
+        m_776 = D001_M776_DES_KGH * (lic_op / LV501_OP_DES_PCT) * run
 
         # ----- the heat: the inlets' sensible, 737's condensation and formation, 328E004 -------
         m_pre = self.m_kg

@@ -91,7 +91,7 @@ def _328d001(plant, a, dt):
     return plant.units["328D001"].step(
         *plant.loops["328D001"], a["m_737_kgh"], a["t_c002_c"], a["p_c002_bara"],
         a["m_c002_kg"], a["in_c002_kgh"], a["m_c002_over_kgh"], a["m_718a_kgh"], a["m_793_kgh"],
-        a["t_793_c"], a["p_e011_bara"], dt)
+        a["t_793_c"], a["p_e011_bara"], dt, pump_running=bool(a["p002_running"]))
 
 
 def steps() -> dict:
@@ -143,7 +143,8 @@ def steps() -> dict:
             "m_c002_over_kgh": Result(c002, "m_overflow_kgh"),
             "m_718a_kgh": Tear("m_718a_kgh"), "m_793_kgh": Result(d003, "m_793_kgh"),
             "t_793_c": Result(d003, "t_ii_c"),
-            "p_e011_bara": State("323E011", "p_bara")}, _328d001),
+            "p_e011_bara": State("323E011", "p_bara"), "p002_running": Operator("328P002")},
+            _328d001),
     }
 
 

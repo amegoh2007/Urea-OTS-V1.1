@@ -44,7 +44,7 @@ RETIRED_BOUNDARY = ("PIC-335201.barg",)
 #: decision 227 (each pump pair given a run state: its flag and its two machines).
 ADDED_OPERATOR = ("GRANULATION-HEADERS", "HIC-335602", "335P002", "335P002A", "335P002B", "329P003",
                   "329P003A", "329P003B", "328P007", "328P007A", "328P007B", "328P006", "328P006A",
-                  "328P006B")
+                  "328P006B", "328P002", "328P002A", "328P002B")
 
 #: Attributes a save made before they existed lacks, by the class path a snapshot names, filled
 #: from the present model's object at the same path. source = decision 224 (2026-11-14).
