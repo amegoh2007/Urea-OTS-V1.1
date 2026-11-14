@@ -332,6 +332,7 @@ def test_simulator_and_unknown_commands_are_not_the_plants(plant):
 #: Each pair decision 227 gives a run state, and the flow its two machines stopped must stop: the
 #: unit's result and its field.
 PAIR_FLOWS = {
+    "328P007": ("328C004", "m_export_kgh"),
     "329P003": ("323E003", "q_kw"),
     "335P002": ("335", "delivered_kgh"),
 }

@@ -82,7 +82,8 @@ def _328c003(plant, a, dt):
 def _328c004(plant, a, dt):
     return plant.units["328C004"].step(
         *plant.loops["328C004"], a["m_749_kgh"], a["t_749_c"], a["w_749"], a["m_735_kgh"],
-        a["p_c002_bara"], a["t_740_c"], dt, p_lp_bara=a["p_lp_bara"])
+        a["p_c002_bara"], a["t_740_c"], dt, p_lp_bara=a["p_lp_bara"],
+        pump_running=bool(a["p007_running"]))
 
 
 def _328d001(plant, a, dt):
@@ -132,7 +133,8 @@ def steps() -> dict:
             "m_749_kgh": Result(c003, "m_747_kgh"), "t_749_c": Result(c003, "t_749_c"),
             "w_749": Result(c003, "w"), "m_735_kgh": Result(d003, "m_735_kgh"),
             "p_c002_bara": Result(c002, "p_bara"), "t_740_c": Result("328E007", "t_740_c"),
-            "p_lp_bara": State("329", "p_lp_bara")}, _328c004),
+            "p_lp_bara": State("329", "p_lp_bara"), "p007_running": Operator("328P007")},
+            _328c004),
         "328D001": Step("328D001", "reflux drum and 328E004", "328", 20, {
             "m_737_kgh": Result(c002, "m_737_kgh"), "t_c002_c": Result(c002, "t_c"),
             "p_c002_bara": Result(c002, "p_bara"), "m_c002_kg": Result(c002, "m_kg"),

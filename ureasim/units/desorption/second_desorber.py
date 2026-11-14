@@ -395,7 +395,8 @@ class SecondDesorber:
 
     def step(self, loops: SecondDesorberLoops, m_749_kgh: float, t_749_c: float, w_749: dict,
              m_735_kgh: float, p_c002_bara: float, t_740_c: float,
-             dt: float, p_lp_bara: float = P_LP_BARA) -> SecondDesorberResult:
+             dt: float, p_lp_bara: float = P_LP_BARA, *,
+             pump_running: bool = True) -> SecondDesorberResult:
         """Advance 328C004 by one tick.
 
         Arguments
@@ -411,6 +412,9 @@ class SecondDesorber:
             LV-328505 at, so their vapour pressure there (B-46).
         p_lp_bara
             The LP header's pressure FV-329401 draws from (B-73); its default the header's design.
+        pump_running
+            Either of 328P007A / B running, which deliver 740 through LV-328505 (decision 227).
+            False: LV-328505 passes nothing.
 
         The order is V1's: the ratio and the steam; the level loop, the recycle (V1 steps
         FIC-328406 in 328D003's stage) and the letdown; the duty, the boil-up and the overhead;
@@ -457,7 +461,7 @@ class SecondDesorber:
             C004_M739_DES_KGH, lv_op / 100.0, p1, LV505_P2_BARA, C004_RHO_KGM3,
             LV505_OP_DES_PCT / 100.0, LV505_P1_DES_BARA, LV505_P2_BARA, C004_RHO_KGM3,
             characteristic=LV505_CHAR, fl=LV505_FL, pv_bara=pv_740,
-            pv_des_bara=LV505_PV_DES_BARA)
+            pv_des_bara=LV505_PV_DES_BARA) * (1.0 if pump_running else 0.0)
         # The draws take only the liquid above the heel plus what arrives, net of what boils
         # (decisions 11, 24): the recycle first — in cascade the only draw — then the letdown.
         # Inert at every normal state.

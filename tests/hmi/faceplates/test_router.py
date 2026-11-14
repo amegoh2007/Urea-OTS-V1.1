@@ -26,7 +26,7 @@ def test_every_element_opens_v1s_faceplate(bridge):
             opened[type(face).__name__ if face else None] += 1
             if face is not None:
                 face.deleteLater()
-    # None: 67 navigation hotspots, the 12 pumps the overlays bind to nothing (inert, as in V1),
+    # None: 67 navigation hotspots, the 10 pumps the overlays bind to nothing (inert, as in V1),
     # and 11 of unit 335's instruments, which bind nothing. The 2 analysers and 12 stream hotspots
     # open the stream inspector. Decision 98 adds trip 21.2's five keyswitches and AI-329701's
     # indicator; decision 220 adds 322-1's CO2 FEED panel, whose body opens the demand's indicator;
@@ -37,9 +37,9 @@ def test_every_element_opens_v1s_faceplate(bridge):
     # GRANULATION HEADERS panel, whose body opens the count's indicator. Decision 227 gives each pump
     # pair of `RUN_STATE_PAIRS` after 322P002 its two icons' START / STOP faceplate.
     assert opened == {
-        None: 67 + 12 + 9, "StreamInspector": 2 + 12,
+        None: 67 + 10 + 9, "StreamInspector": 2 + 12,
         "IndicatorFaceplate": 139 + 1 + 1 + 1 + 2 + 1, "ControllerFaceplate": 81,
-        "HandValveFaceplate": 22 + 2, "BlockValveFaceplate": 10, "PumpFaceplate": 4 + 6 + 4,
+        "HandValveFaceplate": 22 + 2, "BlockValveFaceplate": 10, "PumpFaceplate": 4 + 6 + 6,
         "SpeedFaceplate": 8, "MasterSetpointFaceplate": 5, "KeyswitchFaceplate": 1 + 5,
     }
 
