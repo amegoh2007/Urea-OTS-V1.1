@@ -302,7 +302,8 @@ class FirstDesorber:
     def step(self, lic: ProcessLoop, m_738_kgh: float, t_738_c: float,
              m_748_kgh: float, y_748: dict, m_750_kgh: float, y_750: dict, m_775_kgh: float,
              p_c003_bara: float, p_d001_bara: float, dt: float, *, t_d001_c: float = D001_T_C,
-             t_c003_c: float = C003_T_C, t_c004_c: float = C004_T_C) -> FirstDesorberResult:
+             t_c003_c: float = C003_T_C, t_c004_c: float = C004_T_C,
+             pump_running: bool = True) -> FirstDesorberResult:
         """Advance 328C002 by one tick.
 
         Arguments
@@ -346,6 +347,8 @@ class FirstDesorber:
             LV503_OP_DES_PCT / 100.0, LV503_P1_DES_BARA, C003_P_BARA, C002_RHO_KGM3,
             characteristic=LV503_CHARACTERISTIC, fl=LV503_FL,
             pv_bara=liquor_pv_bara(self.w, t_pre), pv_des_bara=LV503_PV_DES_BARA)
+        # 328P006A and B both stopped: LV-328503 has no pump head and passes nothing (decision 227).
+        m_743 *= 1.0 if pump_running else 0.0
 
         # ----- the duty and the boil-up: energy-limited, anchored on the design duty. A
         # negative duty condenses vapour (decided divergence, handoff B-42; V1 clamps at 0) -----

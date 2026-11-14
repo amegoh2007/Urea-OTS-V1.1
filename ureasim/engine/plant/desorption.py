@@ -70,7 +70,8 @@ def _328c002(plant, a, dt):
     return plant.units["328C002"].step(
         *plant.loops["328C002"], a["m_738_kgh"], a["t_738_c"], a["m_748_kgh"], dict(a["y_748"]),
         a["m_750_kgh"], dict(a["y_750"]), a["m_775_kgh"], a["p_c003_bara"], a["p_d001_bara"], dt,
-        t_d001_c=a["t_d001_c"], t_c003_c=a["t_c003_c"], t_c004_c=a["t_c004_c"])
+        t_d001_c=a["t_d001_c"], t_c003_c=a["t_c003_c"], t_c004_c=a["t_c004_c"],
+        pump_running=bool(a["p006_running"]))
 
 
 def _328c003(plant, a, dt):
@@ -124,7 +125,7 @@ def steps() -> dict:
             "p_c003_bara": State(c003, "p_bara"),
             "p_d001_bara": State("328D001", "p_bara"),
             "t_d001_c": State("328D001", "t_c"), "t_c003_c": State(c003, "t_c"),
-            "t_c004_c": State(c004, "t_c")}, _328c002),
+            "t_c004_c": State(c004, "t_c"), "p006_running": Operator("328P006")}, _328c002),
         c003: Step(c003, "hydrolyser and 328E021", "328", 18, {
             "m_746_kgh": Result(c002, "m_743_kgh"), "w_746": Result(c002, "w"),
             "t_c002_c": Result(c002, "t_c"), "p_c002_bara": Result(c002, "p_bara"),
