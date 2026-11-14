@@ -53,6 +53,8 @@ DECIDED_EDITS = (
         ("screen-323-2", "323P001B", "PUMPS.323P001B"),
         ("screen-328-2", "328P003A", "PUMPS.328P003A"),
         ("screen-328-2", "328P003B", "PUMPS.328P003B"),
+        ("screen-323-2", "323P008A", "PUMPS.323P008A"),
+        ("screen-323-2", "323P008B", "PUMPS.323P008B"),
         ("screen-323-2", "328P002A", "PUMPS.328P002A"),
         ("screen-323-2", "328P002B", "PUMPS.328P002B"),
         ("screen-328-1", "328P006A", "PUMPS.328P006A"),

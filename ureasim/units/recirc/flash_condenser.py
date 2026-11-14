@@ -402,7 +402,7 @@ class FlashCondenser:
              t_d001_over_c: float = E011_T786_C, m_f004_over_kgh: float = 0.0,
              t_f004_c: float = F004_T_SP_C,
              t_e003_c: float = E003_T_C,
-             t_d003_ii_c: float = D003_TII_C) -> FlashCondenserResult:
+             t_d003_ii_c: float = D003_TII_C, pump_running: bool = True) -> FlashCondenserResult:
         """Advance 323E011 / 323D011 by one tick.
 
         Arguments
@@ -427,6 +427,9 @@ class FlashCondenser:
             The producers' live temperatures of this tick: 323F004's for 701, 323E003's for 321
             and 328D003's compartment II's for 791 (decided 2026-10-16, handoff B-31). Each
             defaults to its producer's design, so an inlet at design is V1's.
+        pump_running
+            Either of 323P008A / B running (decision 227). False: nothing is drawn, as AC4's stop on
+            LT-323503's L2 draws nothing; the trip's own state is left as it is.
 
         The order is V1's: the controllers act on the state at the top of the tick; the vent,
         the generation and the draws follow; the pressure steps on the OLD holdup and on the
@@ -485,7 +488,7 @@ class FlashCondenser:
         else:
             self.p008_tripped = level < self.l2_pct
         tripped = self.p008_tripped
-        if tripped:
+        if tripped or not pump_running:
             m_718a = m_718b = 0.0
             self.lag_state[LINE_718A_LAG_KEY] = 0.0
         # 323P008 can deliver only the liquid above the heel plus what arrives on the tick
