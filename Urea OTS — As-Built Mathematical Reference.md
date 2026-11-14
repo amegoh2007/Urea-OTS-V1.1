@@ -24599,3 +24599,288 @@ loads on any clamp; a re-anchored reactor on the loop; the suite (nothing it tes
 
 The literature search returned no relation that can be ported; the one number, a design approach of 90 to 95 %
 (US 5 767 313; a licensor's tray paper), agrees with the plant's Fundamentals. Sources are listed in the report.
+
+# Part CXXI — Session 111: the melt header computed on AC4 PC35.2; the pump pairs given a run state (2026-11-14)
+
+Session 111 builds handoff B-137 (the granulator's twelve header valves, PIC-335201 computed) and A-41 (START /
+STOP on the pump pairs with no run state). Decisions 224 to 227 hold what is built. The measurements are on the
+engine at the design seed, 100 % load, read every 10 ticks; the scratch runners and their outputs are archived in
+`D:\Work\reports\Session_111_console`.
+
+## CXXI.1 The control structure as built (decision 224)
+
+AC4 PC35.2 as configured (UD-MR-G00-FF-0004, PDF pages 249 to 252; read in §CXX.4): LIC-324501's output X sets
+
+    E1      = 2.8 + min(X / 50, 1)                 [bar g]   PIC-335201's cascade set point, 2.8 to 3.8
+    h_B     = clamp(2 (X - 50), 0, 100)            [%]       LV-324501B, open only above X = 50
+
+PIC-335201 (PT-335201, 0 to 4 bar g) is reverse acting on LV-324501A: K 0.65, Ti 40 s (the DCS tuning table),
+Kc = 0.65 x 100 / 4 = 16.25 % per bar on decision 10. Its deadzone is 0, not the table's 2 %: decision 93 (the
+deadzone class) sets every loop's deadzone to 0. The DZ 2 % arm is measured in §CXXI.4 against it. LIC-324501
+runs the tuning table's K 0.85 and Ti 200 s. The seed X is 35.0 %, where 2.8 + 35 / 50 = 3.5 bar g to the bit;
+LV-324501A is at 75.35 % and LV-324501B shut.
+
+V1's exclusive route selector (relay forward or recycle) remains the harness's side,
+`SecondEvaporator(ac4_header=False)`. The decided-equivalence tests drive both and assert both: V1's selector
+sends the drain one way, AC4's header passes forward and recycle at once.
+
+## CXXI.2 The header solve (`units/finishing/melt_header.py`)
+
+Every flow is a fraction of PFD 402's drain (`unit_324.P2_DES_KGH`), each factor exactly 1.0 at the seed:
+
+    phi_noz = (N / 10) sqrt(P / 3.5)                                    the header valves online, N 0 to 12
+    phi_hv  = (m_hv,full / m_des) cv(h_hv) sqrt((P + 1.01325 - 1.1) / dP_case)   HV-335602, Pos. 150, Kvs 25
+    phi_B   = m_B,full cv(h_B) / m_des                                  LV-324501B, decision 150's law
+    (1 / r^2 + kappa) phi_A^2 + 2 kappa beta phi_A - (1 + delta + kappa - kappa beta^2) = 0     LV-324501A
+         r = cv(h_A) / cv(h_A,des),  beta = phi_B,  delta = (3.5 - P) / dP_A,des,
+         kappa = rho g c Q_des^2 / (Q_ref^2 1e5 dP_A,des),  335P001's curve H = 71 - 5 (Q / 80)^2 m
+    h_A = u(P)                                                          PIC-335201's step on PV = P
+    g(P) = phi_A(u(P), P) - phi_noz(P) - phi_hv(P) = 0
+
+dP_A,des = 6.9 - 3.7 = 3.2 bar (the loop summary's LV-324501 pressures; `unit_335.LV_324501A_DP_DES_BAR` is now
+the difference of `unit_324.LV_324501_P_UP_BARA` and `LV_324501_P_DOWN_BARA`, bit-identical to the old alias).
+With beta = 0 the quadratic gives phi_A = 1.0 exactly at the seed. The solve tries the last committed header
+first (exact at the seed and at a parked header), then brackets the root on [0, P_dead] and closes it by the
+Illinois false position to a residual at or below 1e-12. PIC-335201 is evaluated on a trial copy at each trial
+header and committed once, at the root. With 335P001A and B stopped, P = 0 and nothing passes.
+
+The drain leaves 324F003 limited by its heel: when the solve asks more than the holdup above 1 kg can give in
+the tick, the drain is the heel's and `header.capped` is set.
+
+HV-335602 (decision 225): Flowserve UD-MR-G00-DZ-0048 Pos. 150, DN 50, seat 32, Kvs 25, equal percentage 50:1,
+its sizing case read on the sheet; stroked toward HIC-335602 at 100 % in 3 s opening and 25 s closing
+(UD-MR-335-EC-0001 H 335602). Fully open on the design header it passes about 48 t/h. Its flow goes to 335D004
+on its own leaf, `EVAP_324.E003.drain_335D004_th`, counted in the selector's mass closure and added neither to
+the product nor to 323D002.
+
+Unit-alone, on the tick the operator moves a valve (before PIC-335201 answers): 9 valves 3.62, 11 valves 3.39,
+12 valves 3.28 bar g. With 324F003's holdup on LIC-324501, 70 to 120 % of PFD 402 on its matching 7 to 12 valves
+settles on the design header within 0.03 bar with LV-324501B shut. With one valve fewer than the load asks for,
+the header rides E1's 3.8 bar g ceiling and LV-324501B returns the excess.
+
+## CXXI.3 The engine arms (A1 to A6)
+
+Commands at 10 s; 3 600 s unless stated. P is PIC-335201's PV in bar g; X is LIC-324501's output in %.
+
+| Arm | Result |
+|---|---|
+| seed (A1) | 10 valves, P 3.500, X 35.0, LIC-324501 54.7 %, LV-324501A 75.3 %, FT-335401 62.19 m3/h, constant over 3 600 s; X 34.9 from about 1 800 s (the as-built drain's own drift, m_402 within 16 kg/h on HEAD 89428cc) |
+| V1's selector on the same tree | LIC-324501.op 75.3 % to the end, P held at 3.5 by the boundary as at HEAD |
+| 10 -> 9 (A2) | P 3.62 at once, then to E1's 3.8 ceiling by 600 s; X past 50 at 360 s; LV-324501B 7 to 21 %, LIC-324501 53 to 64 %: a slow swing over the recycle (LV-324501B -> 323D002 -> LIC-323507 raises the evaporator feed), not settled at 3 600 s |
+| 9 -> 10 at 1 810 s (A3) | X back below 50, LV-324501B shut, P 3.73 to 3.78 inside the band at 3 600 s |
+| 10 -> 11 (A4) | P 3.44, then down with X to E1's 2.8 floor at 900 s; LIC-324501 recovers 43 to 56 % by 3 600 s, X 2.2, P 2.84 |
+| 10 -> 12 (A5) | P falls to the 2.8 floor by 600 s; at 2.8 bar g 12 valves pass more than the feed; 324F003 drains to its heel by 2 400 s; LV-324501A 100 %, P 2.61 below the floor |
+| 10 -> 0 (A5) | dead head 7.06 bar g; LV-324501A shut; X to 84-90; LV-324501B 68-79 % returns the whole drain; LIC-324501 peaks 93 % at 180 s, back to 56 % by 900 s |
+| HV-335602 open at 10 s, closed at 300 s (A6) | the drain 48-49 t/h to 335D004; P to 2.84-3.19; X to 0; LIC-324501 down to 5.8 % at 300 s; after the close 5.4 % rising, 22 % at 900 s |
+
+A1 is not met to the bit, by structure: registered before the run. LIC-324501's output is X, no longer a valve
+stroke, so LIC-324501.op differs from the control from the first tick; every other leaf differs by the
+control's own drift.
+
+## CXXI.4 Two findings for the process engineer
+
+**LV-324501B's seat relay.** Decision 150's 2 % trim floor on LV-324501B is 6.6 % of PFD 402. With one valve
+fewer, the excess at a fixed feed is 6.2 % of PFD 402, under that floor: unit-alone at a fixed feed the valve
+relays at its seat (1 218 flips in 1 000 s). On the engine at 9 valves and 100 % load it does not relay, because
+the recycle raises the feed and the excess grows past the floor (A2). A saved exercise at 90 % on 8 valves relayed
+on the engine; the migration rule of §CXXI.5 avoids that case. Handoff B-145.
+
+**No protection at a low 324F003 level.** At E1's 2.8 bar g floor the header valves pass melt at
+sqrt(2.8 / 3.5) = 89 % of their design share, so AC4's header cannot shut the drain when the feed fails. On the
+plant AC4 stops 335P001A and B when LY-324501 falls below L2 (MOTCON IC2, PC35.1 sheets 41 and 42; the L2 value
+is a DCS database entry, in neither archive). Not built (no L2): on a lost feed (B-62) and a feed-pump trip (B-63)
+stage 2 drains to its heel and loses its seal, and 12 valves at 100 % or HV-335602 open do the same. Handoff B-146.
+
+**PIC-335201's deadzone.** With the tuning table's DZ 2 % (0.08 bar on 4 bar) in place of decision 93's 0, the
+header parks anywhere inside +-0.08 bar of E1: at 9 valves 3.72 against 3.80; at 11 valves 2.88 against 2.80, with
+LIC-324501 at 42 to 44 % for the whole hour (DZ 0: 43 to 56 %, recovering); at 12 valves the same drain to the
+heel by 1 800 s.
+
+## CXXI.5 Saved exercises on the computed header (decision 226)
+
+`data/retired_state.py` gains `RETIRED_BOUNDARY` (`PIC-335201.barg`), `ADDED_OPERATOR` and `ADDED_ATTRIBUTES`. On
+load each added entry and attribute is filled from a fresh plant at the same path; the retired boundary
+pressure goes to `engine.plant.evaporation.adopt_boundary_header`:
+
+    m      = the save's drain on V1's selector over PFD 402
+    N      = argmin |P(N) - 3.5| over the N in 1 to 12 with P(N) <= E1(100 %) = 3.8   (12 if none)
+    X      = E1^-1(P(N));   LV-324501A keeps the save's stroke
+
+| Exercise | N | P bar g |
+|---|---|---|
+| load090_steam | 9 | 3.044 |
+| load095_steam | 9 | 3.482 |
+| load100_conversion | 10 | 3.714 |
+| load100_steam | 10 | 3.535 |
+| load105_conversion | 11 | 3.331 |
+| load105_steam | 11 | 3.249 |
+
+The first rule (nearest 3.5 without the ceiling) chose 8 valves at 90 % (above 3.8); LV-324501B then relayed.
+Each exercise loads and runs 600 s with no refusal.
+
+## CXXI.6 Lost feed and feed-pump trip on AC4's header (B-62, B-63)
+
+Unit-alone tests, `tests/units/evaporation/test_second_evaporator.py`, both selectors asserted:
+
+* **Lost feed (B-62), AC4.** At 60 s: t 151.6476 C, m_kg 593.40, w 0.98141. Seal air first at tick 1 767, the
+  drain at 0 at tick 1 875; ticks 1 870 to 1 901 (32) close on the bisected energy balance (B-108). End: drain 0,
+  holdup 1.0 kg, `header.capped`, t 175.358 C, w 0.98628, LIC-324501 0 %, seal air > 0.
+* **Feed-pump trip (B-63), AC4.** Every tick converges, t >= 140 C; seal air first at tick 3 616, the drain at 0
+  at tick 3 725. End: holdup 1.0 kg, capped, w 0.98413, t 162.1832 C, seal air 1 882 kg/h.
+* V1's selector keeps its pins (`ac4=False`).
+
+## CXXI.7 Tests the header moved
+
+Stage 2's drain on AC4's header is PFD 402 exactly, where V1's selector drained 3 kg/h less. Every test that pinned
+a value downstream of the drain moved; each was re-pinned with its old value kept in its comment, and HEAD 89428cc
+passes the old pins, so the move is the header's:
+
+| Test | Was | Now |
+|---|---|---|
+| `tests/units/evaporation/test_vacuum_train.py`, PV-329212 on the chord | 0.151903 bar a, 143.874 C | 0.151887 bar a, 143.873 C |
+| `test_vacuum_condenser_decided_equivalence.py`, 323P003 stopped | 1 289.930 kg/h; 135.566 kg/h, 32.099 C; 29.056 C | 1 277.205; 136.416, 32.020; 29.080 |
+| `test_vacuum_train_decided_equivalence.py`, stage 2's vapour at 26, 300, 600 ticks | 109.6, 1 092.1, 1 236.0 kg/h | 109.6, 1 092.0, 1 234.5 |
+| `test_synthesis_loop_decided_equivalence.py`, the azeotrope run | 74.62 t/h condensed; 147.5653 bar a; 155 bar a at tick 1 905, 155.6793 bar a at 2 000 | 89.06; 147.5872; tick 1 922, 155.8075 |
+
+The synthesis run's move is a transient's timing, not a level: at 100 s the port's 322E002 condensation falls from
+100 to 15 t/h in two seconds and rings tick to tick; the header's 3 kg/h moves the ringing by a few ticks, and the
+pins sit on it. V1's side (198.82 to 198.76 t/h, 141.6930 to 141.6936 bar a) moves by the shared inputs' drift.
+The tag count (`test_series`, 224 tags), the control valves (47, HV-335602 equal percentage) and the operator
+commands (PIC-335201's exception) were extended for the new objects. The pump pairs moved no value; one fixture
+followed them: `test_scheduler_equivalence.py`'s liquor train builds its own operator mapping and gains
+`"323P003": True`, the seed's run state, without which 323D002's step raised `KeyError` (commit 000bdaa; the full
+suite on 463d7e6 failed it and A-40 only, 8 155 passed).
+
+## CXXI.8 The pump pairs given a run state (decision 227)
+
+`RUN_STATE_PAIRS` is 322P002 (V1's) and the eight pairs below, each committed on its own. Each pair's flag is
+`plant.operator[pair]`, set by `aux_pump_toggle` to "A on or B on"; the unit multiplies the flow its machines
+deliver by it (exactly 1.0 at the seed, so the seed is bit-identical on every leaf). Its two icons bind
+`PUMPS.<tag>` and open the START / STOP faceplate; a save made before the pair loads with A running and B on
+standby (`ADDED_OPERATOR`). The engine test (`tests/engine/test_command.py`, every pair) stops A, B on standby,
+reads the flow at 0 on the next tick, starts B and reads it above 0 after 600 ticks.
+
+Measured on the engine from the design seed, A stopped at 10 s with B on standby, against the seed run, read at
+60 s and 600 s of the run. The swap arm (B started, then A stopped, at 10 s) changes no numeric leaf on any pair:
+
+| Pair | Flow stopped | Both stopped |
+|---|---|---|
+| 335P002 | UF85, FFIC-335406's 617 kg/h | the dosing stops; product 76.56 to 75.94 t/h |
+| 329P003 | 323E003's tempered water: its duty and condensation | the 323E003 node 3.2 to 5.76 bar a at 60 s, PV-323202 at 96 %, CARBAMATE_DEPOSITION |
+| 328P007 | 740 through LV-328505 | LT-328505 50 to 66.6 % at 60 s, LIC-328505 100 %; 741 (FIC-328406) left as built |
+| 328P006 | 743 through LV-328503 | 328C002 50 to 64.8 %; the hydrolyser's feed 0 |
+| 328P002 | 775 (FIC-328404) and 776 (LV-328501) | 328D001 50.5 to 54.3 % at 60 s |
+| 323P008 | 718A / B | 323D011 54.2 % at 60 s, 99.2 % at 600 s, CARBAMATE_DEPOSITION |
+| 323P003 | 324 through FV-324401 | FIC-324401's PV 0, output 100 %; 324E001's feed 0; LI-323507 10 to 11.4 % at 60 s, 26.6 % at 600 s; UF85 interlocked by 600 s |
+| 335P001 | the melt to LV-324501A, the header and LV-324501B (A7) | PT-335201 0 bar g, LV-324501A 100 %, FT-335401 0, product 0, UF85 interlocked; LIC-324501 to 100 %, E1 at 3.8 bar g, LV-324501B 100 %; 324F003 54.7 to 69.9 % at 60 s, 88.1 % at 120 s, 100 % at 159 s |
+
+323P008's existing trip on LT-323503's L2 (data gap 8) is kept: a stopped pair draws nothing, as the trip does,
+and the trip's own state is left as it is. No other stop is built: AC4 stops 328P002, 328P006, 328P007 and 335P001
+on LT-328501, LT-328503, LT-328505 and LY-324501 below L2 (§CXIX.2), and neither archive gives an L2 value (the
+searches of `References\` and the vendor archive, session 111; data gap 8). Whether 741 is drawn upstream or
+downstream of 328P007 is not read on P&ID; 741 stays as built when the pair stops (handoff A-41).
+
+# Part CXXII — Session 112: two laws for 322R001's reduced-load loop measured in scratch (B-118, B-125) (2026-11-14)
+
+Session 112 measures, in scratch only, two laws session 109 drew for B-118: **S**, 322E002's split closed on its
+duty with the outlet on the melt's bubble line, and **B**, 322R001's off-gas re-flash driven by the top's
+subcooling. Nothing under `ureasim/`, `tests/` or `tools/` changed. The rig is session 108's on a byte copy of
+commit 18a7656 with the working copy's thermo stores (keys match); the runs, configurations, scorer and notes are
+archived in `D:\Work\reports\B118_s112`. Each arm was registered with its control and both expected readings
+before launch (`registry112.md`).
+
+**D1 (the prompt's acceptance).** An arm *stands* when decisions 180 and 196 pass and the uncapped rise
+`b_rxn_K`, the hold window's mean, lies in 13.05 +/- 1.0 K. Session 108's two verdicts (the split and the rise,
+`score108`, `cap108`) are reported beside it.
+
+## CXXII.1 The laws (`proto112.py`)
+
+**B.** With T_top the capped top node the reactor was last called with and p_loop the loop's pressure:
+
+    P_bub(T_top) = P_offgas,des exp[-(dH_vap / R)(1 / T_top - 1 / T_des)]      (reactor_boil's bubble line inverted)
+    p_eff        = min(max(SYN_P_DES (p_loop + dP_boil,des) / P_bub(T_top), SYN_P_DES), 180 bar a)
+    split ratio  = hp_k_ratio(out_total, T_ovf,des, p_eff, T_ovf,des, SYN_P_DES)
+
+The 180 bar a bound is the K-ratio service's stated pressure limit (`thermo.vle.VALID_PRESSURE_BARA`); above it
+the service refuses and every ratio falls back to 1.0.
+
+**S.** In place of the NTU quench and the flash at the quenched temperature, as departures from the first call:
+
+    T_bub : bubble_p_322e002(T_bub, N/C, H/C) = p_loop
+    T_prod = T_prod0 + (T_bub - T_bub0)
+    Q / Q0 = (UA / UA0) (T_prod - T_shell) / (T_prod0 - T_shell0)
+    1 - phi_k = clip((1 - phi_k0)(Q / Q0) / (n / n0), 0, 1)        n the gas CO2 fed
+
+on UA as built (`_lu`) or bundle A's P1, UA on demand^0.77 (`_lp`). S0 holds the bubble law's composition
+factors at the first call.
+
+## CXXII.2 The nulls (100 % seed, against N100H36)
+
+Registered as not identities. B with and without the floor: T within 0.024 K but purge_t_out 0.3 K (on the
+sampler's 0.1 K resolution), P within 0.020 bar; the floor binds on 2 530 of 36 001 calls, the bound never.
+S on P1 equals S on UA as built at 100 % (P1's demand factor is 1.0 there): e_tadb 0.42 K, b_rxn_K 0.20 K,
+p_bub_scrub 0.065 bar at 3 600 s; S0 0.37 K, 0.14 K and 0.029 bar.
+
+## CXXII.3 The arms at 92.3 % and 69.3 %
+
+Rise is the hold window's mean b_rxn_K; "180" names the failing holds.
+
+| Arm | Laws | Control (its rise) | D1 | Rise K | 180 | Notes |
+|---|---|---|---|---|---|---|
+| ZB923_l | Z + B | Z923_l (6.97, 180 fails) | **stands** | 13.15 | pass | boiling +382 kg/h, cap binds, cap carry 0.69 K; dP -1.03 bar |
+| B923_l | B | X923_l (-13.90) | no | 17.91 | fail | TT-322005 15.2 K under its bubble; LT-322504 61-97 % |
+| S923_lp | S, P1 | X923_l | no | -14.22 | fail | TT-322005 14.3 K under its bubble |
+| S923_lu | S, as built | C923_lu (-13.06, 22.1 at 3 170 s) | no | -13.23 | fail | 22.1 latched at 4 870 s |
+| SV923_lp | S + V | V923_l (2.97) | no | -8.95 | fail | |
+| SB923_lp | S + B, P1 | S923_lp, B923_l | no | 10.52 | fail | TT005 179.7-182.4 under 180.6-184.6 |
+| SB923_lu | S + B, as built | S923_lu, B923_l | no | 12.31 (in band) | fail | TT005 180.2-181.7, its floor missed by 0.4 K; no latch |
+| ZB693_l | Z + B | Z693_l (-16.54, latched) | no | 13.84 (in band) | fail | AT 3.07-3.09 against 2.984 +/- 0.10; no latch; boiling +1 597 kg/h |
+| B693_l | B | X693_l (-0.03) | no | -0.72 | fail | |
+| S693_lp | S, P1 | X693_l | no | 45.03 | fail | boiling +10 972 kg/h, cap carry 30.0 K |
+| S693_lu | S, as built | C693_lu (-16.89, 22.1 at 4 340 s) | no | -16.35 | fail | 22.1 at 7 350 s |
+| SB693_lp | S + B, P1 | S693_lp, B693_l | no | 39.32 | **pass** | boiling +9 367 kg/h, cap carry 25.5 K |
+| SB693_lu | S + B, as built | S693_lu, B693_l | no | 8.45 | fail | |
+
+Session 108's verdicts: no arm in this table "stands" on score108 but ZB923_l.
+
+**Reading.** S alone moves neither the rise nor the latch at either load, on either UA form. B is the term that
+lifts the rise: on Z at 92.3 % it brings it into the band and D1 stands; on Z at 69.3 % it removes the latch and
+puts the rise in band, the conversion window (AT) missed; on X it overshoots at 92.3 % and does almost nothing at
+69.3 %. S with B on UA as built takes the 22.1 latch away at 92.3 % and leaves the top 1 K under its bubble line
+with TT-322005 0.4 K under its floor. On P1 at 69.3 % S drives the top far above its band (boiling 9-11 t/h).
+
+## CXXII.4 B on the Phase 7 cold start (4 000 s)
+
+| Arm | p_max bar a | SV-32064 | Trip 21.2 |
+|---|---|---|---|
+| CS_0 (control, as built) | 158.108 at 3 425.8 s | one lift at 3 426.6 s, 1 608 kg | 3 525.5 s |
+| CS_B | 158.183 at 3 657.1 s | one lift at 3 657.4 s, 1 682 kg | 3 758.3 s |
+
+CS_0 reproduces session 105's cold start (158.1 bar a at 3 425.8 s, the lift at 3 426.6 s): the rig is proven.
+B adds no relief lift and the same peak, 231 s later. On the cold, subcooled top B sits on its 180 bar a bound on
+39 999 of 40 000 calls (raw p_eff 211.7 bar a at T_top 146.1 C): on a cold start the law is clamped, not acting.
+
+## CXXII.5 What was not run
+
+Track 0 (the desk checks: S on `carbamate_condenser` alone at Book2's five bands; B's first call over subcooling
+and pressure; item 7 redone on two bandings), step L2's +-0.1 bar steps (decision 190) and Track 4 (the missing
+pressure as a clamp) were not run: session 111's build took the session.
+
+## CXXII.6 Track 3: 322E001's lean rise left on
+
+The arms nearest D1 rerun with 322E001's lean rise as built (proto108's "lean" null removed), each against its
+twin above. Registered before launch (`registry112.md`, wave 3).
+
+| Arm | Twin | D1 | Rise K | 180 / 196 | TT-322005 hold C | AT | TT-322004 departure (plant) | s108 "stands" |
+|---|---|---|---|---|---|---|---|---|
+| ZB923_lr | ZB923_l | **stands** | 13.14 | pass / pass | 182.40-182.50 | 3.017-3.037 | +10.20 K (-1.40) | yes |
+| SB923_lur | SB923_lu | **stands** | 13.24 | pass / pass | 181.40-182.30 | 3.017-3.033 | +10.02 K (-1.40) | yes |
+| ZB693_lr | ZB693_l | **stands** | 13.61 | pass / pass | 179.80-179.90 | 3.026-3.040 | +23.71 K (-5.70) | no |
+
+With the lean rise on, the S + B arm on UA as built clears TT-322005's floor (its twin missed it by 0.4 K): its top
+holds 0.40 K under the melt's bubble line, the cap carries nothing and the top does not boil (-30 kg/h on the
+seed). Every other sign but TT-322004's matches the plant's. On Z + B at 92.3 % the top moves by 0.01 K. On Z + B at
+69.3 % the conversion window comes back inside 2.984 +/- 0.10 and D1 stands, but the licensor's TT-322005 floor
+(180 C) and PT band (136-143 bar g) fail, the top boils 1 825 kg/h on the seed with 3.74 K carried by the cap, and
+AY-322701 goes against the plant's sign. On all three, 322E001's bottoms (TT-322004) rise 10 to 24 K where the plant
+falls 1.4 to 5.7 K: the lean rise as built is the wrong sign on Book2 at both loads.

@@ -5038,3 +5038,25 @@ subcooling (B), the duty-closed condenser (S, B-125 (c)) was never run, "stands"
 plant does not measure, and (desk) Book2's pressure falls about 6 bar at 69.3 % beyond its thermowells'. Sessions 111
 (the console build) and 112 (B-118: S and B) claimed ahead. Part CXIX; report and prompts in `D:\Work\reports`
 (`Sessions 108 and 110 review s109.md`); scratch `D:\Work\reports\Session_109_review`.
+
+### Session 111 — the melt header computed on AC4 PC35.2; the eight pump pairs given a run state (2026-11-14)
+
+Built, one commit a track or pump pair, no push. Track H (B-137, closed): `units/finishing/melt_header.py` solves
+the header from the twelve header valves (GRANULATION HEADERS on 324-1b), LV-324501A on 335P001's curve,
+LV-324501B and HV-335602, PIC-335201 read inside the solve; LIC-324501's X sets LV-324501B and PIC-335201's set
+point 2.8 + min(X / 50, 1); at the seed X is 35.0 and no other leaf moves; saves migrate (decisions 224 to 226). Four
+downstream tests were re-pinned on the header's 3 kg/h. Track P (A-41): 335P002, 329P003, 328P007, 328P006,
+328P002, 323P008, 323P003 and 335P001 hold a run state; both machines stopped stop the pair's flow and a swap moves
+nothing (decision 227). Not built: four pairs' L2 stops (no L2 in either archive; data gap 8), trips 35.1 and
+35.4. Raised B-145 and B-146. Suite on 463d7e6: 8 155 passed, 2 failed (A-40; the liquor-train scheduler test's
+fixture lacked 323P003's run state, fixed in 000bdaa). Part CXXI; scratch `D:\Work\reports\Session_111_console`.
+
+### Session 112 — the laws S and B for 322R001's reduced-load loop measured in scratch (2026-11-14)
+
+Scratch only, run beside session 111; nothing under `ureasim/`, `tests/` or `tools/` changed; no decision. On
+session 108's rig (commit 18a7656, its proofs and nulls passed), arms at 92.3 and 69.3 % and two cold starts. D1
+(decisions 180 and 196, the rise in 13.05 +/- 1.0 K) stands on Z + B at 92.3 % with 322E001's lean rise off and on
+(13.15, 13.14 K), on S + B on UA as built with the lean rise on (13.24 K), and on Z + B at 69.3 % with it on (13.61 K;
+the top boils 1.8 t/h, off the licensor's windows). S alone moves neither the rise nor the latch; B lifts the rise;
+on the cold start B sits on its 180 bar a bound and adds no lift. Not run: Track 0's desk checks, step L2's
++-0.1 bar steps, Track 4's clamp. B-118 and B-125 rewritten. Part CXXII; runs `D:\Work\reports\B118_s112`.

@@ -114,3 +114,4 @@ one line, with its decision number.
 - a Neldisc's trim on the vendor's published table for its sheet's valve series (the S-Disc table for a balanced valve, the L-series Cv rows for a conventional one) through its sheet's printed points, every printed point and the rated capacity kept (decisions 170, 178)
 - a trip no plant logic draws kept as the simulator's own protection, named so wherever the console names it, its logic and set points V1's (decision 174; superseded by decision 189, 2026-11-12: a trip no plant document draws is removed)
 - no approximation of the physics bought for a pacing target (decision 88)
+- a pump pair the console opens holds a run state, true while either machine runs, and its unit multiplies the flow the pair delivers by it, exactly 1.0 at the seed; a stop on a process limit built only when that limit is sourced (decision 227)

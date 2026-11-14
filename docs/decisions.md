@@ -1068,3 +1068,34 @@ decision on an item.
      its `References` (Urea Simulation Docs holds them), is copied to `D:\Work\Urea Simulation V1`: `backend\main.py`
      920 232 bytes of 2026-09-18, byte-identical. `tests/equivalence/v1_loader.py`, the Phase 7 drivers, the CO2
      compressor test, `tools/convert_overlays.py` and `tools/analyse_step_sim.py` read it there. No relation changes.
+224. **The 335 melt header is computed on AC4 PC35.2** (2026-11-14, the process engineer's instruction I-3 and
+     the session 111 prompt's D1-D3; handoff B-137). PIC-335201's 3.5 bar g boundary constant and V1's exclusive
+     route selector are retired on the plant. `units/finishing/melt_header.py` solves the header from the twelve
+     header valves (the operator's GRANULATION HEADERS panel on 324-1b), LV-324501A on 335P001's curve, LV-324501B
+     and HV-335602, in ratio form, every factor 1.0 at the seed. LIC-324501's output X sets LV-324501B (2 (X - 50)
+     on 50-100 %) and PIC-335201's cascade set point E1 = 2.8 + min(X / 50, 1) bar g (UD-MR-G00-FF-0004 pp. 249-252);
+     PIC-335201 (reverse acting, Kc 16.25 %/bar on K 0.65, Ti 40 s, DZ 0 under decision 93) strokes LV-324501A and
+     is read inside the header solve, committed once at the root. LIC-324501 runs the tuning table's K 0.85 and
+     Ti 200 s. The seed: X 35.0 %, LV-324501A 75.35 %, 3.5 bar g, every other leaf as before. V1's selector stays
+     as the harness's side (`SecondEvaporator(ac4_header=False)`); the decided-equivalence tests assert both.
+     Trips 35.1 and 35.4 and 335P001's L2 stop on LY-324501 are not built (no L2 value in either archive; D4).
+     As-Built §CXXI.1-4.
+225. **HV-335602 drains the melt header to 335D004, a boundary outflow** (2026-11-14, session 111 prompt D5).
+     HIC-335602, a hand station on 324-1b, strokes it (3 s open, 25 s close); its flow (Flowserve Pos. 150, Kvs 25,
+     equal percentage 50:1) leaves the plant on its own packet leaf, `drain_335D004_th`, counted in the selector's
+     mass closure and added neither to the product nor to 323D002. As-Built §CXXI.2.
+226. **A save made before the header was computed loads on it** (2026-11-14). `data/retired_state.py` gains
+     `RETIRED_BOUNDARY` (PIC-335201.barg), `ADDED_OPERATOR` and `ADDED_ATTRIBUTES`: on load each added entry and
+     attribute is filled from a fresh plant at the same path, and the retired boundary pressure goes to
+     `engine.plant.evaporation.adopt_boundary_header`. The save's load is its drain on V1's selector over PFD 402;
+     the header valves online are the number whose header passing that drain stands nearest 3.5 bar g without
+     rising above E1's 3.8 bar g ceiling; LV-324501A keeps the save's stroke and LIC-324501's X becomes the one whose
+     E1 is that header. The six shipped exercises load on 9, 9, 10, 10, 11 and 11 valves. As-Built §CXXI.5.
+227. **Each pump pair the console opens holds a run state** (2026-11-14, the process engineer's instruction I-4; handoff
+     A-41). `data/operator_commands.RUN_STATE_PAIRS` lists the pairs whose flow follows their run state: 322P002, as
+     V1 holds it, and the pairs session 111 builds. Each machine is seeded as V1 seeds its own pairs (A running, B
+     standby, AUTO); the engine holds the pair's flag, True while either machine runs, and the pair's unit multiplies
+     the flow its machines deliver by it, exactly 1.0 at the seed. Each icon binds `PUMPS.<tag>` and opens the
+     START / STOP faceplate. A save made before a pair existed is filled from a fresh plant (decision 226's
+     mechanism). No interlock stop is built on a limit no archive gives (the L2 levels of LT-328501, LT-328503,
+     LT-328505 and LY-324501). As-Built §CXXI.8.

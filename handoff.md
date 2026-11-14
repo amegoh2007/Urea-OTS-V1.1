@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-14, session 109.
+**Last updated:** 2026-11-14, sessions 111 and 112.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -54,16 +54,16 @@ a test change only; (b) reopen decision 186. Next step: the process engineer's c
 `units.synthesis.hp_split` or `units.synthesis.reactor_calibration`; six more are reached only by V1 equivalence
 suites (§CX.6). To do: a behaviour test of each, the thermo ones on the stores' own fixed points.
 
-### A-41 — Eight pump pairs hold no run state; their icons open no faceplate
+### A-41 — Four pump pairs' low-level stops are not built; 741's take-off is not read
 
-*Raised 2026-11-13, session 106; rewritten session 109 (As-Built §CXX.3, §CXX.5, §CXIX.1-2).* Instructed: every
-pump icon opens START / STOP, simulating the pump's field start and stop. Built (decision 222): the five pairs
-with a run state. Open: 323P003, 323P008, 328P002, 328P006, 328P007, 329P003, 335P001 and 335P002. Established:
-each pair's service and the flow its STOP must stop (§CXX.5); AC4's MOTCON sheets on the images (§CXIX.2): no
-process interlock on 323P003 and 329P003, a low level (L2) on five, the trips on 335P002; only LT-323503's L2 is
-in hand, the others not searched beyond AC4. Acceptance: both machines stopped, the pair's flow is zero on the
-engine; the seed unmoved; the icon opens the faceplate. Next step: session 111
-(`D:\Work\reports\Session 111 plan prompt s109.md`), one pair at a time; a stop only on a sourced limit.
+*Raised 2026-11-13, session 106; rewritten session 111 (As-Built §CXXI.8, §CXIX.2; decision 227).* Built: the
+eight pairs hold a run state, their icons open START / STOP, both machines stopped stop the pair's flow, the seed
+is unmoved and a swap moves nothing; 323P008 keeps its stop on LT-323503's L2. Open: AC4 stops 328P002, 328P006,
+328P007 and 335P001 when LT-328501, LT-328503, LT-328505 and LY-324501 fall below L2; no L2 value is in either
+archive, so no stop is built (data gap 8; for 335P001, B-146). With 328P007 stopped, 328C004's 741 (FIC-328406)
+is still drawn as built: whether it leaves upstream of the pumps is not read on the P&ID. Acceptance: each stop on
+its L2 once read (checklist rows 17 to 20), restarting as the faceplate shows; 741 on 328P007's run state or not, as
+the P&ID draws it. Next step: the DCS readback; the 328 P&ID for 741.
 
 ---
 
@@ -72,7 +72,7 @@ engine; the seed unmoved; the icon opens the faceplate. Next step: session 111
 ### B-118 — Below 100 % load the engine holds no steady state on the plant's reactor window
 
 *Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to XCVIII, C, CIII to CVII,
-CX to CXV and CXVII to CXIX; decisions 177, 180, 181, 188 and 190.*
+CX to CXV, CXVII to CXIX and CXXII; decisions 177, 180, 181, 188 and 190.*
 
 **Problem.** The plant runs for hours at reduced load. The committed engine, ramped from its design
 seed, does not, on every operating policy tried:
@@ -117,37 +117,38 @@ Decision 190 adds the procedure's criteria (a)-(d) and (f); decision 196 fails a
   plant's 2.115 is 2.047-2.053 here (§XCIII.3). HV-322605's anchor is 60.0 % at 100 %, so Book2's
   36.1 % is 43.27 % here (§CIV.1). FT-329403 is stream 901, 60.85 t/h at the design (§XCVIII.2).
   LT-329501 cannot reach Book2's 7 %: 322F001's suction is proportional to the level (§XCVI.2).
-* The procedure (§CXV.14): L1, L6, L3 (bundle A) and L2's raise (for TT-322005) are needed; L12's need is
-  shown by the engine; L3 is not fulfilled (B-136); L6 acts in the procedure's sense and L2's one-sided
-  response is B-125's edge (§CXVII.4, correcting §CXV.4); (e) is met on no engine; the L2 board loop as approved
-  fails (§CXV.7); the seed carries the 2 700-3 000 s mode.
+* The procedure (§CXV.14): L1, L6, L3 (bundle A) and L2's raise are needed, L12's shown by the engine; L3 is not
+  fulfilled (B-136); L2's one-sided response is B-125's edge (§CXVII.4, correcting §CXV.4); (e) is met on no engine;
+  the L2 board loop as approved fails (§CXV.7); the seed carries the 2 700-3 000 s mode.
 * The holdup bundle (scratch). Its cold branch at 92.3 % follows 322E001's `g_hc` (§CXV.6a). Its holds at 74.4
   and 69.3 % rest on 322E001's feed-deficit rise (off: TT-322004 follows the plant, all five holds lost,
   §CXVII.6), and the 69.3 % one boils on the bubble point, off the plant on TT-322004, PT-329201, AT-322701 and
   the steam (§CXVII.2). The loss needs neither 322E002's live law, the conversion's residence time, its slip nor
   its movement (§CXVII.9). 322R001 sits at 60 % of its equilibrium by V1's `X_INF`; the licensor gives 95 % (§CXVII.8).
-* 322R001's loop path by path, rise off (scratch, §CXVIII.6-11). Alone, 322E002's edge (PV) or V1's re-flash of the
-  off-gas at the live pressure (ZP) loses 92.3 and 69.3 %; the conversion and its slip amplify (1.0 K per K). With
-  the three pinned the top stands on its bubble point at 92.3 %, as the seed's, and boils at 69.3 %: 0.53 K a bar of
-  the engine's shallow pressure fall (§CXVIII.8). The 95 % re-anchor halves the 92.3 % loss; its seed drifts.
-* Session 109 on those runs (§CXIX.6): 322E002's flash target swings 0.16-0.27 inside 1 K and 1.3 bar. Desk, to be
-  redone by session 112 (§CXIX.7): Book2's pressure falls about 6 bar at 69.3 % beyond its thermowells' fall.
+* 322R001's loop path by path, rise off (§CXVIII.6-11): alone, 322E002's edge (PV) or V1's re-flash at the live
+  pressure (ZP) loses 92.3 and 69.3 %, the conversion and its slip amplifying 1.0 K per K; the three pinned, the top
+  stands on its bubble point at 92.3 % and boils at 69.3 % (§CXVIII.8). The 95 % re-anchor halves the 92.3 % loss.
+* Session 109 on those runs (§CXIX.6): 322E002's flash target swings 0.16-0.27 inside 1 K and 1.3 bar. Desk, not
+  redone (session 112's Track 0 not run, §CXXII.5): Book2's pressure falls about 6 bar at 69.3 % beyond its thermowells'.
+* Session 112 (Part CXXII); D1: decisions 180 and 196, the rise in 13.05 +/- 1.0 K. B, the re-flash on the top's
+  subcooling, lifts the rise: with 322E002 pinned (Z) it stands D1 at 92.3 % (13.15 K); Z + B at 69.3 % with the
+  lean rise on stands D1 (13.61 K) but boils 1.8 t/h off the licensor's windows. S + B on UA as built stands D1 at
+  92.3 % with the lean rise on (13.24 K), misses TT-322005's floor by 0.4 K without it, gives 8.45 K at 69.3 % (rise
+  off). S alone moves neither the rise nor the latch. On the cold start B sits on its bound, no lift added.
 
 **Bundle A (decision 181), scratch only; `ureasim/` is as built.** P1, 322E002's UA on the battery-limit
 CO2 demand ratio to the power 0.77 (§CVII.1); P4, the wall loss on a stagnant reactor only; the 322F001 lift
-p_disch,eff = p_disch - 2.41 (1 - r^2) (decision 180); `unit_322e001.SLIP_GAIN` 4.0.
+p_disch,eff = p_disch - 2.41 (1 - r^2) (decision 180); `unit_322e001.SLIP_GAIN` 4.0. **Holds** (§CXII.10,
+§CXIV.6): bundle A passes 92.3 % and latches or leaves the band below it; with B-126 (b)'s holdup the low holds are
+trip-free and 92.3 and 90.5 % latch on the cold branch; 111 % is out of band on both.
 
-**The holds (§CXII.10, §CXIV.6).** Bundle A passes 92.3 % and latches or leaves the band below it; with B-126
-(b)'s holdup the low holds are trip-free and 92.3 and 90.5 % latch on the cold branch; 111 % is out of band on both.
+**Next step.** In scratch: S + B with the lean rise on at 69.3 % and at the other three holds, step L2's +-0.1 bar
+steps and the missing pressure as a clamp (not run, §CXXII.5). Then the process engineer's choice: §CXVIII.12's (a)
+to (d), or S + B as a build candidate on a restated seed criterion. B-126, B-135 and B-136 held.
 
-**Next step.** Session 112 (`D:\Work\reports\Session 112 plan prompt s109.md`), scratch: S (B-125 (c)); B, the
-re-flash on the top's subcooling, clamp (b)'s live form (§CXIX.8); both; "stands" scored on the column's rise
-(13.05 +/- 1.0 K), not the boil-off. Then the process engineer's choice, §CXVIII.12's (a) to (d). B-126, B-135, B-136 held.
-
-**B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode: gain 0 removes it
-at 92.3 % on the S2 prototype and at 111 % (§XCVIII.3), and alone runs the reactor 12.4 K colder at
-92.3 % (§CIII.7). On the holdup bundle gain 0 neither holds 92.3 % nor removes the 111 % mode (§CXIV.7), and
-with the feed-deficit rise off it brings the loss forward at 92.3 and 69.3 % (§CXVII.6). The gain stays 4.0.
+**B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode: gain 0 removes it at 92.3 %
+on S2 and at 111 % (§XCVIII.3), runs the reactor 12.4 K colder at 92.3 % (§CIII.7), holds nothing on the holdup
+bundle (§CXIV.7) and, rise off, brings the loss forward (§CXVII.6). The gain stays 4.0.
 
 ### B-125 — 322E002's saturation law has no margin at the design and contradicts Book2
 
@@ -155,41 +156,32 @@ with the feed-deficit rise off it brings the loss forward at 92.3 and 69.3 % (§
 of all condensation per bar its deficit stands above zero, and the deficit is zero at the design. As
 built it gives 0.857 at Book2's 92.3 % band and 0.798 at 69.3 %, where the plant condenses fully (the melt
 N/C taken as AY-322701 + 0.2, an inference). The outlet temperature is an NTU quench of a 350 K spike.
-Established: the deficit is +6.4 to +11.2 bar at Book2's five bands (§CX.8); on the 74.4 % ramp the K_N line
-is the whole deficit through the N/C hump (§CXI.2), and makes the fraction's dip, not the hump (§CXII.7).
-Session 101 (§CXII.2-3, §CXII.7): E1eu, Extended UNIQUAC's shape on both sides (ridge at 4.5, `BUB_KN`
-retired), needs a margin of 4.38 bar, set by the 69.3 % band. It holds the fraction at 1 on the seed and
-through the 74.4 % hump; the hump stays, and the melt N/C falls through 3.0 before the fraction leaves 1: the
-law does not initiate B-118's collapse. Its seed is not bit-identical: 644 physical leaves pass 1e-5 and 19
-console strings flip a last digit, the largest departures last-digit flips; the unit at the design feeds is
-identical on the engine's anchor and not on its default (P_bub +0.146 bar). Alone, E1eu leaves the as-built cold
-branch as it is (§CXII.7); on B-126's holdup it changes no hold scored (§CXIV.3, §CXIV.6). Step L2's one-sided
-response is this edge (§CXVII.4). Session 108 (§CXVIII.11), rise off: on bundle A's P1 the edge alone loses
-322R001 at 92.3 and 69.3 %; its UA on its own feed sooner; its split on Book2's departures boils 1.4 t/h at
-92.3 %. Session 109 (§CXIX.6, §CXIX.8): the split is ill-conditioned at every load. Options: (a) keep as built;
-(b) E1eu, on a seed criterion the process engineer restates; (c) S, the split from the duty with the outlet on
-the melt's bubble line, defined and not measured. Next step: session 112 measures (c).
+Established: the deficit is +6.4 to +11.2 bar at Book2's five bands (§CX.8); on the 74.4 % ramp the K_N line is
+the whole deficit through the N/C hump and makes the fraction's dip, not the hump (§CXI.2, §CXII.7). E1eu, Extended
+UNIQUAC's shape on both sides, needs a 4.38 bar margin set by the 69.3 % band; it holds the fraction at 1 on the seed
+and through the hump, does not initiate B-118's collapse, is not bit-identical on the seed (§CXII.2-3), and changes
+no hold scored alone or on B-126's holdup (§CXII.7, §CXIV.3, §CXIV.6). Step L2's one-sided response is this edge
+(§CXVII.4). Rise off (§CXVIII.11): on P1 the edge alone loses 322R001 at 92.3 and 69.3 %, its UA on its own feed
+sooner, its split on Book2's departures boils 1.4 t/h at 92.3 %; the split is ill-conditioned at every load
+(§CXIX.6, §CXIX.8). S, the split from the duty with the outlet on the melt's bubble line (§CXXII.3, §CXXII.6): alone
+it moves neither the rise nor the latch at 92.3 or 69.3 %, on UA as built or P1 (on P1 at 69.3 % the top boils 9-11
+t/h); with B-118's B on UA as built and 322E001's lean rise on it stands at 92.3 % (13.24 K). Options: (a) keep as
+built; (b) E1eu, on a seed criterion the process engineer restates; (c) S with B (B-118). Next step: B-118's.
 
 ### B-126 — 322R001's 136 t of liquor has no composition
 
-*Raised 2026-11-11, session 97 (§CVIII.5).* `reactor_inventory.py:328-329` sends on the tick's reaction
-product scaled to the hydraulic outflow. Measured 305 s after a 20 % CO2 cut: the overflow carries
-2 933 kmol/h more N and 576 kmol/h more C than the reaction step produced. On the 74.4 % descent (N3,
-§CXII.9, §CXIII.2) the inventory sends on 8.40 t more than its reaction sent it, at the product's
-composition, and creates 213 kmol of N and 71 of C booked at the overflow's. The loop's 153 t of liquor
-(322R001 135.9 t, 322E002 9.5, 322E001 3.9, 322E003 3.8) holds no species (§CXIII.3).
-Measured in scratch (Part CXIV): (b), the holdup's species carried in twelve compartments on its eleven trays,
-the overflow at the last one's composition, the hydraulics as built (decisions 141 and 146's class), on bundle
-A. Its balance closes to 6e-14 kmol a tick. The 74.4 % hump falls from 3.649 to 3.197 and the latch goes at
-74.4, 69.3 and 68.9 %; the seed's N-rich liquor washes out for about 4 h at 69.3 % (AT-322701 levels 0.53 under
-the target); 92.3 and 90.5 % then fall onto the cold branch. Its seed against the plain seed: 849 leaves differ,
-742 above 1e-5, 24 console strings by a last digit (bundle A alone 752, 417, 11). The loop's other holdups
-(H5) close the loop's atoms to 7e-6 of the N in. Its cold branch at 92.3 % (§CXV.6, §CXV.6a): 322R001's feed
-reaches H2O / CO2 0.52, 322E001's `g_hc` falls to 0.82, the gas CO2 to 322R001 peaks at 832 kmol/h and falls by
-two thirds, and TT-322005 follows; PIC-329204 at its seed or a halved ramp move the latch by 6 min. Its low holds
-rest on 322E001's feed-deficit rise and the 69.3 % one boils (§CXVII.2, §CXVII.6): not a build candidate as
-measured. Options: (a) keep as built; (b) the bundle with the change that holds 322R001 (B-118), a seed criterion
-restated first; (c) C2's second half (the holdup re-seeded at the ramp's end); (d) the loop's other holdups.
+*Raised 2026-11-11, session 97 (§CVIII.5).* `reactor_inventory.py:328-329` sends on the tick's reaction product
+scaled to the hydraulic outflow: 305 s after a 20 % CO2 cut the overflow carries 2 933 kmol/h more N and 576 more C
+than the reaction produced, and on the 74.4 % descent it creates 213 kmol of N and 71 of C (§CXII.9, §CXIII.2).
+The loop's 153 t of liquor (322R001 135.9 t, 322E002 9.5, 322E001 3.9, 322E003 3.8) holds no species (§CXIII.3).
+Measured in scratch (Part CXIV): (b), the holdup's species in twelve compartments on its eleven trays, the overflow
+at the last one's composition, on bundle A, closes to 6e-14 kmol a tick; the 74.4 % hump falls from 3.649 to
+3.197, the latch goes at 74.4, 69.3 and 68.9 %, the seed's N-rich liquor washes out for about 4 h at 69.3 %, and
+92.3 and 90.5 % fall onto the cold branch, which follows 322E001's `g_hc` (§CXV.6, §CXV.6a); 849 seed leaves
+differ. Its low holds rest on 322E001's feed-deficit rise and the 69.3 % one boils (§CXVII.2, §CXVII.6): not a
+build candidate as measured. Options: (a) keep as built; (b) the bundle with the change that holds 322R001
+(B-118), a seed criterion restated first; (c) C2's second half (the holdup re-seeded at the ramp's end); (d) the
+loop's other holdups (H5: the atoms to 7e-6 of the N in).
 
 ### B-127 — The loop's design boundary does not close, and the reactor's tear follows the CO2 load
 
@@ -257,18 +249,25 @@ load, and all five holds are lost. Acceptance: the plant's TT-322004, the hydrol
 below, 323D001 at its set point, the 100 % pin to the bit. Options: (a) keep as built, L3 reported as not
 fulfilled; (b) the rise off with the change that holds 322R001 (B-118), never alone. Next step: B-118's.
 
-### B-137 — The melt header's pressure is a boundary constant; the header valves are not modelled
+### B-145 — LV-324501B relays at its seat on a small excess
 
-*Raised 2026-11-13, session 106; rewritten session 109 (As-Built §CXVI.4-5, §CXX.4, §CXIX.3-4).* PIC-335201 is
-V1's 3.5 bar g constant; the melt goes whole to LV-324501A, or to B above 3.8 bar g. Instructed (I-3; 2026-11-14):
-a GRANULATION faceplate steps the twelve header valves; the header runs at 3.2 to 3.8 bar g with the headers
-following the load and 323D002's small compartment level constant; above 3.8 bar g LV-324501B returns the excess
-to 323D002. Established: the rule is AC4 PC35.2 as configured, X setting LV-324501B (X 50-100) and PIC-335201's
-set point 2.8 + min(X / 50, 1) (§CXX.4, §CXIX.3); N valves hold the band at loads of N / 10 x 95.6-104.2 %;
-PIC-335201 read inside the header solve settles, a tick late it rings, V1's selector relays (§CXX.4); HV-335602
-drains to 335D004, outside the plant (§CXIX.4). Acceptance: ten valves reproduce the seed but LIC-324501.op
-(75.3 -> 35.0); nine ride the 3.8 bar g ceiling, LV-324501B returning the excess; the unit alone holds 3.5 bar g
-at 70 to 120 % on 7 to 12 valves. Open after the build: trips 35.1 and 35.4, 335P001's impeller. Next step: session 111.
+*Raised 2026-11-14, session 111 (As-Built §CXXI.4; decisions 150 and 224).* Decision 150's 2 % trim floor on
+LV-324501B is 6.6 % of PFD 402; one header valve fewer than the load asks leaves 6.2 % at a fixed feed, and
+unit-alone the valve relays at its seat (1 218 flips in 1 000 s). On the engine at 9 valves and 100 % the recycle
+raises the feed past the floor; a save at 90 % on 8 valves relayed (decision 226 now loads it on 9). Asked with it:
+PIC-335201 runs decision 93's deadzone 0, not the tuning table's 2 %, which parks the header within 0.08 bar of E1.
+Acceptance: no relay on any header and load the console reaches. Options: (a) keep as built; (b) LV-324501B's
+floor read from its sizing sheet (decision 150's class reviewed). Next step: the process engineer's.
+
+### B-146 — 324F003 has no low-level protection; trips 35.1 and 35.4 are not built
+
+*Raised 2026-11-14, session 111 (As-Built §CXXI.4, §CXXI.8; decision 224).* At E1's 2.8 bar g floor the header
+valves still pass 89 % of their design share: AC4's header cannot shut stage 2's drain when its feed fails. AC4
+stops 335P001A and B on LY-324501 below L2 (§CXIX.2); trips 35.1 and 35.4 clamp LV-324501A and B, open HV-335602 and
+stop 335P002 (§CXVI.4); none is built (no L2; the trips' inputs not read). On a lost feed (B-62), a feed-pump trip
+(B-63), 12 valves at 100 % or HV-335602 open, stage 2 drains to its heel and loses its seal; 335P001 stopped fills
+324F003 in 150 s. Acceptance: the stop and the trips on their documented inputs, the seed unmoved. Options: (a) keep
+as built; (b) build once the L2 (checklist row 20) and PC35's trip inputs are read. Next step: the readback.
 
 ---
 
@@ -285,7 +284,7 @@ The ledger was accepted by the process engineer on 2026-10-16 (decision 128); th
 ledger's. Each row keeps its stand-in as built. Every row's full search record is in
 `docs/history/handoff-record-to-session-95.md`: grep the tag there before the archive is searched
 again. Rows 2, 4, 5, 8, 9 and 10 close on one plant DCS readback session
-(`D:\Work\reports\DCS readback checklist.md`); rows 1 and 3 on Körting's curves. The checklist's row 14, TV-323013B's flow and differential, is
+(`D:\Work\reports\DCS readback checklist.md`); rows 1 and 3 on Körting's curves, row 11 on KSB's sheet. The checklist's row 14, TV-323013B's flow and differential, is
 decision 178's cross-check and no ledger row.*
 
 | # | Datum | Needed by | As built | Found so far | Route to close |
@@ -295,6 +294,7 @@ decision 178's cross-check and no ledger row.*
 | 3 | Körting's performance curves of 324F002, 324F004 and 324F005 | `ejector_map`, B-57's interpolation on the synthesized maps (§XLIX.4, §L.1) | synthesized maps, anchored on the PFD's design loads; in-situ factors 0.919, 0.336, 0.497 | one duty point an ejector; no curve in the archive (§XLVIII.2). The plant's motive break-off, the datum a curve must meet: HIC-329605 between 55 and 64 % (HIC-329606 38-40 %) at PT-329207 4.20-4.24 bar g, 5 November 2026 13:11-13:16, 75 % load; the engine's vacuum still holds there (§CV.5) | Körting, orders 2/115/4/09674 and 2/232/4/00503 (the same draft); checklist row 13: 324E002's and 324E005's cold-end and cooling-water temperatures for 5 November 13:00-13:30 |
 | 4 | LT-324501's taps | LI-324501 between its taps (decision 33's class) | V1's holdup ratio (§L.4) | one 80 mm instrument on the barometric leg at EL +8495 (isometric UD-RL-100-MB-0180, item 22); no second connection drawn; the span cannot be weighed from the trends (§CV.7) | checklist row 11: LRV, URV and the reference connection; a walk-down |
 | 5 | AC4 PC21's limits and elements: FY-322403's L2; PT-321211 / 221's L2; ST-321952 / 953's H2; the T elements' mode; the SR flip-flops' dominance; TRIP_84_8_FLAG1's L2 | trips 21.2, 21.8 and 21.10 (§LXV.6) | FY-322403's L2 V1's 5 %; PDY's L2 0.1 bar; the T elements on-delays; reset dominant; PT-321211 / 221, ST-321952 / 953 and TRIP_84_8 taken healthy | the limits are database entries; the scan does not resolve the timer symbol (UD-MR-G00-FF-0004 pages 5, 7, 20); TRIP_84_8 is the instrument air, two of PT-384207A / B / C below L2 (§LXXIII.2) | checklist rows 3 to 8, one readback session |
-| 8 | LT-323503's L2 hysteresis | 323P008's restart (B-96) | trip below 5 %, restart at 7 %: the 2 % stand-in of 2026-10-15 (§LXVIII.2) | the faceplate confirms L2 5.0 %, H1 80.0 %, L1 20.0 %, delay 0 s; no hysteresis shown | checklist row 2; else the stand-in signed off |
+| 8 | LT-323503's L2 hysteresis; the L2 limits of LT-328501, LT-328503, LT-328505 and LY-324501 | 323P008's restart (B-96); the stops of 328P002, 328P006, 328P007 and 335P001 (A-41, B-146) | trip below 5 %, restart at 7 %: the 2 % stand-in of 2026-10-15 (§LXVIII.2); the four other stops not built | the faceplate confirms L2 5.0 %, H1 80.0 %, L1 20.0 %, delay 0 s; no hysteresis shown. The four L2 values are DCS database entries (AC4 MOTCON IC2, §CXIX.2); `References\` and the vendor archive searched in session 111: none | checklist rows 2 and 17 to 20; else the stand-in signed off |
 | 9 | FIC-335405's row in the DCS tuning table | the loop on the plant's tuning (decisions 76, 77) | V1's 100 per t/h and 15 s | not in `References/Master_PID_Tuning_Constants.md`; not photographed; the trends log FT-335405 alone, its ratio to FT-335401 0.0046-0.0050 (§CV.7) | checklist row 9: the faceplate's tuning page, then decision 10's span conversion |
 | 10 | LT-329505's tap elevations | LI-329505 between its taps (decision 33's class) | V1's holdup ratio; LV-329505 on Flowserve's trim (§LXVIII.5) | upper tap 324E001 / N5 at EL +15129; lower tap on the DN700 condensate pot at EL +10651 (isometric UD-RL-100-MB-0312): 4 478 mm apart. The loop summary prints 3 000 mm. The conflict is logged, not resolved (§CIII.5) | checklist row 10: the transmitter's LRV and URV decide which span its 0-100 % covers |
+| 11 | 335P001A / B's impeller and head curve | `units/finishing/melt_header.py`: LV-324501A's inlet moves with the curve's droop | H = 71 - 5 (Q / 80)^2 m, read off the middle of three curves (`data/unit_335.py`) | KSB CPK 80-250, data sheet UD-AU-335-EC-0039: shut-off about 71 m, duty about 80 m3/h at 65 m; the impeller legend is unreadable on the scan (§CXIX.4) | a legible copy of the sheet, or the pump's nameplate |
