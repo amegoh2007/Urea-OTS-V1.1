@@ -40,8 +40,9 @@ RETIRED_ATTRIBUTES = MappingProxyType({
 RETIRED_BOUNDARY = ("PIC-335201.barg",)
 
 #: Operator entries a save made before they existed lacks, seeded from the present model.
-#: source = decision 224 (the granulator's header valves and HIC-335602, 2026-11-14).
-ADDED_OPERATOR = ("GRANULATION-HEADERS", "HIC-335602")
+#: source = decision 224 (the granulator's header valves and HIC-335602, 2026-11-14) and
+#: decision 227 (each pump pair given a run state: its flag and its two machines).
+ADDED_OPERATOR = ("GRANULATION-HEADERS", "HIC-335602", "335P002", "335P002A", "335P002B")
 
 #: Attributes a save made before they existed lacks, by the class path a snapshot names, filled
 #: from the present model's object at the same path. source = decision 224 (2026-11-14).

@@ -181,8 +181,8 @@ PUMP_TRIPS = MappingProxyType({"A": ("21_2", "21_8"),
 PUMP_COMMANDS = MappingProxyType({
     "321P002A": "pump_toggle", "321P002B": "pump_toggle",
     "329P006A": "pump_toggle", "329P006B": "pump_toggle",
-    **{tag: "aux_pump_toggle" for tag in ("322P002A", "322P002B", "323P001A", "323P001B",
-                                          "328P003A", "328P003B")},
+    **{tag: "aux_pump_toggle" for tag in ("322P002A", "322P002B", "323P001A", "323P001B", "328P003A",
+                                          "328P003B", "335P002A", "335P002B")},
 })
 
 #: PIC-329207's three legs: the packet key, the command, the caption.

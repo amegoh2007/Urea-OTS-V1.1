@@ -109,7 +109,8 @@ def _324e003(plant, a, dt):
 
 
 def _uf85(plant, a, dt):
-    return uf.uf85_split_step(*plant.loops[DOSING], a["route"], False, dt)
+    # 335P002A and B both stopped stop the dosing (decision 227).
+    return uf.uf85_split_step(*plant.loops[DOSING], a["route"], not a["p002_running"], dt)
 
 
 def _train(plant, a, dt):
@@ -144,7 +145,7 @@ def steps() -> dict:
             "headers_online": Operator("GRANULATION-HEADERS"),
             "hic_335602_pct": Operator("HIC-335602")}, _324e003),
         DOSING: Step(DOSING, "UF85 dosing, FFIC-335406 and FIC-335405", "335", 30, {
-            "route": Result(e003, "route")}, _uf85),
+            "route": Result(e003, "route"), "p002_running": Operator("335P002")}, _uf85),
         TRAIN: Step(TRAIN, "vacuum train", "324", 31, {
             "m_790_kgh": Result("323F010", "pull_kgh"),
             "sub_703": Result("323F010", "blowthrough_share"),

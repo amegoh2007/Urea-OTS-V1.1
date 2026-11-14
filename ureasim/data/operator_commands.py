@@ -15,7 +15,7 @@ from __future__ import annotations
 from types import MappingProxyType
 
 __all__ = [
-    "FACEPLATE_MODES", "AUX_PUMP_SEEDS", "TRIP_21_HAND_SWITCHES", "RATIO_SP_MIN",
+    "FACEPLATE_MODES", "AUX_PUMP_SEEDS", "RUN_STATE_PAIRS", "TRIP_21_HAND_SWITCHES", "RATIO_SP_MIN",
     "RATIO_SP_MAX",
     "STEAM_SP_MAX_BARA", "CPL_MAX_FACTOR", "FIC_329409_SP_MAX_FACTOR",
     "TIC_329005_SP_MIN_C", "EXT_OVERRIDE_TAG",
@@ -89,7 +89,18 @@ AUX_PUMP_SEEDS = MappingProxyType({
     "322P002A": (True, "AUTO"), "322P002B": (False, "AUTO"),
     "328P001A": (True, "AUTO"), "328P001B": (False, "AUTO"),
     "328P003A": (True, "AUTO"), "328P003B": (False, "AUTO"),
+    # Decided 2026-11-14 (decision 227, handoff A-41): the pairs session 111 gives a run state,
+    # seeded as V1 seeds its own pairs. Source: the process engineer's instruction I-4.
+    "335P002A": (True, "AUTO"), "335P002B": (False, "AUTO"),
 })
+
+#: The pairs whose flow follows their run state: the engine holds the pair's flag, True while
+#: either machine runs, and the pair's unit reads it (decision 227; 322P002 as V1 holds it).
+#: Source: V1 ``State.aux_pumps`` for 322P002; the process engineer's instruction I-4 for the rest.
+RUN_STATE_PAIRS = (
+    "322P002",
+    "335P002",
+)
 
 #: AC4 PC21.5.1's hand switches on TRIP_21_2_FLAG1 (UD-MR-G00-FF-0004 page 20), maintained,
 #: released at the seed: HS-321634, HS-323604 and HS-322606 bypass the HP ammonia pumps', 323P001's

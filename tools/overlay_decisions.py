@@ -53,6 +53,8 @@ DECIDED_EDITS = (
         ("screen-323-2", "323P001B", "PUMPS.323P001B"),
         ("screen-328-2", "328P003A", "PUMPS.328P003A"),
         ("screen-328-2", "328P003B", "PUMPS.328P003B"),
+        ("screen-324-1b", "335P002A", "PUMPS.335P002A"),
+        ("screen-324-1b", "335P002B", "PUMPS.335P002B"),
     )),
     # Handoff B-137, decided 2026-11-14 (decision 224, the process engineer's instruction I-3):
     # the 335 melt header is computed on AC4 PC35.2. PIC-335201 becomes its loop's faceplate, its

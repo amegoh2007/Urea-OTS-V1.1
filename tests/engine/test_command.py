@@ -15,6 +15,7 @@ import re
 import pytest
 
 from tests.equivalence.v1_loader import V1_BACKEND, v1_available
+from ureasim.data.operator_commands import RUN_STATE_PAIRS
 from ureasim.engine.command import PLANT_COMMANDS, SIMULATOR_COMMANDS, apply_command
 from ureasim.engine.plant import build_plant
 from ureasim.engine.scheduler import Scheduler
@@ -227,12 +228,17 @@ def test_hic_335602_sets_its_hand_station(plant):
     assert plant.operator["HIC-335602"] == 100.0
 
 
-def test_322p002_runs_while_either_of_its_pair_does(plant):
-    _ok(plant, type="aux_pump_toggle", id="322P002B", on=True)
-    _ok(plant, type="aux_pump_toggle", id="322P002A", on=False)
-    assert plant.operator["322P002"] is True
-    _ok(plant, type="aux_pump_toggle", id="322P002B", mode="MAN", on=False)
-    assert plant.operator["322P002"] is False and plant.operator["322P002B"]["mode"] == "MAN"
+@pytest.mark.parametrize("pair", RUN_STATE_PAIRS)
+def test_a_pump_pair_runs_while_either_of_its_machines_does(plant, pair):
+    """322P002 as V1 holds it, and each pair decision 227 gives a run state."""
+    assert plant.operator[pair] is True
+    _ok(plant, type="aux_pump_toggle", id=pair + "B", on=True)
+    _ok(plant, type="aux_pump_toggle", id=pair + "A", on=False)
+    assert plant.operator[pair] is True
+    _ok(plant, type="aux_pump_toggle", id=pair + "B", mode="MAN", on=False)
+    assert plant.operator[pair] is False and plant.operator[pair + "B"]["mode"] == "MAN"
+    _ok(plant, type="aux_pump_toggle", id=pair + "A", on=True)
+    assert plant.operator[pair] is True
 
 
 def test_a_faceplate_enters_auto_bumpless_and_takes_what_its_mode_allows(plant):
@@ -321,6 +327,29 @@ def test_the_speed_controllers_and_the_ratio(plant):
 def test_simulator_and_unknown_commands_are_not_the_plants(plant):
     _refused(plant, "simulator's control", type="reset_sim")
     _refused(plant, "unknown command", type="warp_drive")
+
+
+#: Each pair decision 227 gives a run state, and the flow its two machines stopped must stop: the
+#: unit's result and its field.
+PAIR_FLOWS = {
+    "335P002": ("335", "delivered_kgh"),
+}
+
+
+@pytest.mark.parametrize("pair", PAIR_FLOWS)
+def test_a_pump_pair_stopped_stops_its_flow_and_restarted_runs_again(pair):
+    """Both machines stopped between ticks: the pair's flow is zero on the next tick; either one
+    started again, it runs."""
+    unit, field = PAIR_FLOWS[pair]
+    sch, plant = build_plant()
+    s = Scheduler(sch, plant)
+    assert getattr(s.tick().results[unit], field) > 0.0
+    _ok(plant, type="aux_pump_toggle", id=pair + "A", on=False)
+    assert getattr(s.tick().results[unit], field) == 0.0
+    _ok(plant, type="aux_pump_toggle", id=pair + "B", on=True)
+    for _ in range(600):
+        r = s.tick().results[unit]
+    assert getattr(r, field) > 0.0
 
 
 def test_a_command_reaches_the_plant_on_the_next_tick():

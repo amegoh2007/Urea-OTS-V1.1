@@ -16,6 +16,12 @@ from ureasim.data import operator_commands as oc
 pytestmark = pytest.mark.skipif(not v1_available(), reason="V1 source tree not present")
 
 
+def _v1_pumps() -> dict:
+    """The roster less the pairs decision 227 adds, which V1 does not have (its 322P002 kept)."""
+    added = set(oc.RUN_STATE_PAIRS) - {"322P002"}
+    return {tag: seed for tag, seed in oc.AUX_PUMP_SEEDS.items() if tag[:-1] not in added}
+
+
 def test_the_faceplate_whitelist_is_v1s():
     """Every faceplate and every mode V1 offers it, V1's underscore keys written as DCS tags —
     but FIC-328406, both ways: V1 offers MAN alone, the port MAN, AUTO and CAS, because decision
@@ -27,7 +33,7 @@ def test_the_faceplate_whitelist_is_v1s():
     assert oc.FACEPLATE_MODES["FIC-328406"] == ("MAN", "AUTO", "CAS")
     assert dict(oc.FACEPLATE_MODES) == dict(v1, **{"FIC-328406": ("MAN", "AUTO", "CAS"),
                                                    "PIC-335201": ("MAN", "AUTO", "CAS")})
-    assert tuple(oc.AUX_PUMP_SEEDS) == ns["AUX_PUMPS"]
+    assert tuple(_v1_pumps()) == ns["AUX_PUMPS"]
 
 
 def test_the_pump_roster_is_seeded_as_v1s():
@@ -36,4 +42,4 @@ def test_the_pump_roster_is_seeded_as_v1s():
     block = block[:block.index("}}") + 2]
     seeds = {m[0]: (m[1] == "True", m[2])
              for m in re.findall(r'"(\w+)": \{"on": (True|False),\s*"mode": "(\w+)"\}', block)}
-    assert seeds == dict(oc.AUX_PUMP_SEEDS)
+    assert seeds == _v1_pumps()

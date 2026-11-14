@@ -44,6 +44,7 @@ from ureasim.data.operator_commands import (
     FIC_329409_SP_MAX_FACTOR,
     RATIO_SP_MAX,
     RATIO_SP_MIN,
+    RUN_STATE_PAIRS,
     TRIP_21_HAND_SWITCHES,
     TIC_329005_SP_MIN_C,
 )
@@ -312,8 +313,8 @@ def _keyswitch_set(plant: PlantState, cmd: Mapping, _r) -> str:
 
 
 def _aux_pump_toggle(plant: PlantState, cmd: Mapping, _r) -> str:
-    """A running / standby auxiliary pump: its mode and its run. 322P002 runs while either of
-    its pair does."""
+    """A running / standby auxiliary pump: its mode and its run. A pair whose flow follows its
+    run state (322P002 and decision 227's) runs while either of its machines does."""
     pid = str(cmd.get("id", ""))
     if pid not in AUX_PUMP_SEEDS:
         raise _Refused(f"no auxiliary pump {pid!r}")
@@ -324,8 +325,9 @@ def _aux_pump_toggle(plant: PlantState, cmd: Mapping, _r) -> str:
             raise _Refused(f"no mode {mode!r} for {pid}")
         pump["mode"] = mode
     pump["on"] = bool(cmd["on"]) if "on" in cmd else not pump["on"]
-    if pid.startswith("322P002"):
-        plant.operator["322P002"] = plant.operator["322P002A"]["on"] or plant.operator["322P002B"]["on"]
+    pair = pid[:-1]
+    if pair in RUN_STATE_PAIRS:
+        plant.operator[pair] = plant.operator[pair + "A"]["on"] or plant.operator[pair + "B"]["on"]
     return f"{pid} {'running' if pump['on'] else 'stopped'}, {pump['mode']}"
 
 
