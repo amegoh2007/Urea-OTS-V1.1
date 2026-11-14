@@ -1048,3 +1048,23 @@ decision on an item.
 196. **A relief-valve lift fails a hold** (2026-11-12, D6, worded as the process engineer's R2 of the closing review).
      Under decision 180's test a hold in which SV32251, SV32252 or SV32064 lifts fails, whatever the other criteria
      read. SV32064, the CO2 line's relief, is the one that lifts first on the engine (As-Built §CXV.12, handoff B-135).
+220. **322-1's CO2 FEED panel is restored** (2026-11-13, the process engineer's instruction I-1 of session 110, with
+     defaults D1-D3). V1's own hand station (`frontend/co2_compressor.js`) returns to page 322-1 as a step panel
+     captioned CO2 FEED, at V1's centre (104, 378.5), 196 x 53. DOWN and UP each send `co2_step`, which steps
+     320K002's demand by 2 % of the 54.618 t/h design on V1's own arithmetic: the per cent to 0.1 and the demand to
+     1 kg/h, each rounded half up, clamped to 0-120 %. The panel shows `CO2_FEED.demand_pct`, a leaf the port adds
+     (PORT_LEAVES). The instructor keeps `co2_set`, and trip 21.2's flag refuses both. The machine stays a boundary
+     (decision 73). CLAUDE.md §0 and §4a rule 2 and decided-class line 55 name the exception (As-Built §CXX.2).
+221. **Page 328-2 takes its revised slide** (2026-11-13, instruction I-2, default D4). FT-322402's label leads right
+     to the ammonia-water line; the old tick is gone. `tools/restore_slide_regions.py` copies only the revised
+     regions of the slide's render into the background, clipped at every overlay's geometry (As-Built §CXX.1).
+222. **Every pump icon with a run state opens START/STOP** (2026-11-13, instruction I-4, first part, default D8).
+     The faceplate sends the command its tag takes (`data.faceplates.PUMP_COMMANDS`): `pump_toggle` for 321P002A/B
+     and 329P006A/B, `aux_pump_toggle` (V1's handler, which V1's front end never sent) for 322P002A/B, 323P001A/B
+     and 328P003A/B. The packet's new PUMPS block publishes 323P001A/B's and 328P003A/B's run state. The eight
+     pairs with no run state are surveyed for the process engineer before any is built (As-Built §CXX.3).
+223. **V1's tree is read from its copy on D:** (2026-11-13, the process engineer's instruction of session 110,
+     "copy all required files from E: so it will not be required anymore"). Decision 165's tree, everything but
+     its `References` (Urea Simulation Docs holds them), is copied to `D:\Work\Urea Simulation V1`: `backend\main.py`
+     920 232 bytes of 2026-09-18, byte-identical. `tests/equivalence/v1_loader.py`, the Phase 7 drivers, the CO2
+     compressor test, `tools/convert_overlays.py` and `tools/analyse_step_sim.py` read it there. No relation changes.

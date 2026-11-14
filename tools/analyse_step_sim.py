@@ -53,7 +53,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-DEFAULT_SOURCE = Path(r"E:\Simulator\Urea Simulation\backend\main.py")
+DEFAULT_SOURCE = Path(r"D:\Work\Urea Simulation V1\backend\main.py")
 DEFAULT_OUT = Path(__file__).resolve().parents[1] / "docs" / "step_sim_dataflow.md"
 
 #: Banner comments the author used to mark a new unit or stage. Four or more rule

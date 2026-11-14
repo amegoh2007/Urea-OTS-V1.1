@@ -1,8 +1,9 @@
 # project.md — Urea Plant OTS, Version 1.1
 
 **Working directory:** `D:\Work\Urea Simulator V1.1`
-**Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165)
-**Last updated:** 2026-11-13, session 105
+**Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
+read from its copy `D:\Work\Urea Simulation V1` (decision 223)
+**Last updated:** 2026-11-13, session 110
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -19,8 +20,8 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A three (A-33, A-38 and A-40), Section B eight (B-118 with B-120 folded
-  in, B-125 to B-128, B-133, B-135 and B-136), Section C none, 8 open data gaps. Every data gap waits on a vendor curve or on one
+* **Open.** `handoff.md`: Section A four (A-33, A-38, A-40 and A-41), Section B nine (B-118 with B-120 folded
+  in, B-125 to B-128, B-133 and B-135 to B-137), Section C none, 8 open data gaps. Every data gap waits on a vendor curve or on one
   plant DCS readback session (`D:\Work\reports\DCS readback checklist.md`).
 * **Session 99** executed the resolution plan (`D:\Work\reports\Open gaps resolution plan and Opus 5.5
   prompt s98.md`) on the process engineer's decision table (As-Built Part CX). Wave 1 closed A-31, A-32,
@@ -44,19 +45,37 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   engine the CO2 line's SV32064 lifts before the loop's reliefs (B-135). The holdup bundle's cold branch at
   92.3 % follows 322E001's `g_hc` and is not L3's or the ramp rate's doing (B-126). Runs:
   `D:\Work\reports\B118_s105`. Suite on HEAD: 8 082 passed, 1 failed (A-40), none skipped.
+* **Session 106** (As-Built Part CXVI) researched four console instructions of 2026-11-13 and built
+  nothing: the CO2 feed control of 322-1, page 328-2's revised slide, START and STOP on every pump icon
+  (A-41), the granulator's header valves and the melt header (B-137). The plan for the build, session 110
+  (claimed below), is `D:\Work\reports\Session 110 plan prompt s106.md`.
+* **Session 110** (As-Built Part CXX) built the console instructions up to their checkpoint: 328-2's revised
+  slide (decision 221), 322-1's CO2 FEED panel stepping 320K002's demand (decision 220) and START / STOP on
+  the five pump pairs with a run state (decision 222). The melt header (B-137) was measured in scratch and the
+  eight pairs with no run state (A-41) surveyed; both wait on the process engineer's checkpoint answer.
+  The tests and tools now read V1 from its copy on D:, drive E: no longer needed (decision 223).
+  Scratch: `D:\Work\reports\Session_110_console`.
 
 ## Next free numbers
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 106 | `docs/history/session-log.md` |
+| Session | 107 | `docs/history/session-log.md` |
 | Decision | 197 | `docs/decisions.md` |
-| As-Built Part | CXVI | the As-Built reference, appended at its end |
-| Handoff Section A | A-41 | `handoff.md` |
-| Handoff Sections B and C | B-137 | `handoff.md` |
+| As-Built Part | CXVII | the As-Built reference, appended at its end |
+| Handoff Section A | A-42 | `handoff.md` |
+| Handoff Sections B and C | B-138 | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers
 here before it writes anything else.
+
+**Claimed ahead** (2026-11-13, session 106), so that the gap-closing sessions of the running series and
+the console changes never meet on a number. A session of the running series skips what this row holds;
+the console session uses only this row, cuts it to the numbers it used and marks them taken.
+
+| Claimed for | Session | Decisions | As-Built Part | Handoff |
+|---|---|---|---|---|
+| the console changes of A-41 and B-137 (`D:\Work\reports\Session 110 plan prompt s106.md`) | 110, taken | 220 to 239; 220 to 223 taken | CXX, taken | A-45 to A-49, B-145 to B-149; none taken |
 
 ---
 

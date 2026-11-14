@@ -8,7 +8,8 @@ any file. They override habit, convenience and any "quicker way" that conflicts 
 ## 0. What this workspace is
 
 `Urea Simulator V1.1` is a **ground-up rewrite** of the Urea Plant Operator Training Simulator
-(OTS) that lives in `E:\Simulator\Urea Simulation`. The old project grew organically ("vibe coded"):
+(OTS) that lives in `E:\Simulator\Urea Simulation` (read from its copy `D:\Work\Urea Simulation V1`,
+decision 223). The old project grew organically ("vibe coded"):
 a 12,500-line `main.py` with a 4,100-line `step_sim()` function, five near-duplicate `main_*.py`
 backups, ~40 `debug_*.py` scratch files, and a browser HMI in hand-written HTML/JS.
 
@@ -232,7 +233,8 @@ Resolution order for any datum:
    - `References\Gaps Closure\` — closure memos for previously-open modelling gaps.
 2. `skill: soft-copy-search` — the Helwan Fertilizers Company vendor-document archive. Use it
    when the datum is equipment-specific and not in `References\`.
-3. The V1 source, `E:\Simulator\Urea Simulation\backend\` — acceptable **only** for values that V1
+3. The V1 source, `D:\Work\Urea Simulation V1\backend\` (E:'s tree, copied; decision 223) —
+   acceptable **only** for values that V1
    itself back-solved or anchored. When you take one, copy its provenance comment with it.
 
 If none of the three yields the datum: **stop, do not guess, log it in `handoff.md` §Open Data

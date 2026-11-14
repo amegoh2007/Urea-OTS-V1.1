@@ -4975,3 +4975,29 @@ SV32064 lifts before the loop's reliefs (B-135); the holdup bundle's cold branch
 L3's or the ramp rate's doing. The first reduced-load pass ran on a broken restore and was discarded; the repaired
 rig reproduces its source to the bit. Decisions 190 to 196. Reviewed mid-session,
 `D:\Work\reports\Session 105 interim review and closing prompt.md`. Suite on HEAD: 8 082 passed, 1 failed (A-40), none skipped.
+
+### Session 106 — four console instructions researched; the plan prompt for session 110 (2026-11-13)
+
+On the process engineer's four instructions: the CO2 feed control of 322-1, page 328-2's revised slide, the
+granulator's header valves and the melt header, START and STOP on every pump icon. Research only; no file under
+`ureasim/`, `tests/` or `tools/` changed and no decision was taken. Measured (As-Built Part CXVI): 328-2 differs
+from its slide in two regions; V1's CO2 panel as read; 26 pump icons, five pairs with a run state; the melt
+header's documents (UD-MR-324-FF-0002's structure, the loop sheets, Flowserve) and the trend windows, a header
+valve at 3.30 m3/h per sqrt(bar g) `[I]`, ten valves at the engine's design point. "LV-335501A/B" in the
+instruction is LV-324501A/B (the process engineer's correction). Raised A-41 and B-137. Plan:
+`D:\Work\reports\Session 110 plan prompt s106.md`; scratch: `D:\Work\reports\Session_106_research`. The build is claimed ahead in
+`project.md` (session 110, decisions 220 to 239, Part CXX, A-45 to A-49, B-145 to B-149), so it meets the
+gap-closing sessions, 107 on, on no number.
+
+### Session 110 — the console instructions built to their checkpoint; the melt header measured in scratch (2026-11-13)
+
+On session 106's plan, its defaults approved: page 328-2 takes its revised slide (decision 221); 322-1's CO2
+FEED panel, V1's hand station, steps 320K002's demand by 2 % of design on V1's arithmetic, `co2_step`
+(decision 220; CLAUDE.md §0 and §4a amended); every pump with a run state opens START / STOP, a PUMPS block
+publishing 323P001's and 328P003's (decision 222). Measured: STOP on 322P002 empties FT-322402, on 323P001
+latches trip 21.2 the same tick, on 328P003 changes nothing. In scratch, the melt header (B-137): AC4 PC35.2
+sets LV-324501B and PIC-335201's set point 2.8 + min(X / 50, 1) from LIC-324501 (FF-0002's 0.8 is the
+functional diagram's); PIC-335201 read one tick late rings (loop gain 1.80), read inside the header solve it
+settles; V1's selector relays. The eight pairs with no run state surveyed (A-41). Stopped at the checkpoint for
+the process engineer's decisions. V1 read from its copy on D: (decision 223). Suite: 8 100 passed, 1 failed
+(A-40), none skipped. Part CXX; scratch `D:\Work\reports\Session_110_console`.

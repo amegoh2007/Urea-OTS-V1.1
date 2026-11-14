@@ -31,7 +31,7 @@ Usage
     python tools/convert_overlays.py [--source <overlays.js>] [--out <screen_layout.py>]
 
 Defaults:
-    source  E:\\Simulator\\Urea Simulation\\frontend\\overlays.js
+    source  D:\\Work\\Urea Simulation V1\\frontend\\overlays.js
     out     ureasim/data/screen_layout.py
 """
 
@@ -42,7 +42,7 @@ import re
 import sys
 from pathlib import Path
 
-DEFAULT_SOURCE = Path(r"E:\Simulator\Urea Simulation\frontend\overlays.js")
+DEFAULT_SOURCE = Path(r"D:\Work\Urea Simulation V1\frontend\overlays.js")
 DEFAULT_OUT = Path(__file__).resolve().parents[1] / "ureasim" / "data" / "screen_layout.py"
 
 #: Element types V1 defines. A record carrying anything else is a parse failure, not a

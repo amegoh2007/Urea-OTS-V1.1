@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-13, session 105.
+**Last updated:** 2026-11-13, session 110.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -53,6 +53,17 @@ a test change only; (b) reopen decision 186. Next step: the process engineer's c
 `thermo.speciation`, `thermo.splits`, `thermo.srk`, `thermo.standard_state`, `thermo.vle_grid`,
 `units.synthesis.hp_split` or `units.synthesis.reactor_calibration`; six more are reached only by V1 equivalence
 suites (§CX.6). To do: a behaviour test of each, the thermo ones on the stores' own fixed points.
+
+### A-41 — Eight pump pairs hold no run state; their icons open no faceplate
+
+*Raised 2026-11-13, session 106; rewritten session 110 (As-Built §CXX.3, §CXX.5).* Session 110 built the CO2 FEED
+panel (decision 220), 328-2's revised slide (221) and START / STOP on the five pairs with a run state (222).
+Open: 323P003, 323P008, 328P002, 328P006, 328P007, 329P003, 335P001 and 335P002 hold no run state. Established
+(§CXX.5): each pair's service, its AC4 MOTCON pages and the interlock that stops it (read on OCR, to be checked on
+the images), and the flow its STOP must stop. Acceptance: a pair's STOP stops its flow on the engine, its icon
+opens the faceplate, its interlock as decided. Options: (1) a run state only; (2) a run state and AC4's interlock
+stop. Next step: the process engineer's answer to session 110's checkpoint, then one pair at a time in §CXX.5's
+order.
 
 ---
 
@@ -243,6 +254,20 @@ set point with its controllers off their bounds, and the 100 % pin to the bit. O
 reported as not fulfilled; (b) measure in scratch the bottoms term anchored on the plant's TT-322004 at 92.3 and
 69.3 %, and its effect on the hydrolysis, the recirculation section and the holds, before any build; (c) take it with
 B-126's holdup bundle, measured on that bundle only. Next step: the process engineer's choice.
+
+### B-137 — The melt header's pressure is a boundary constant; the header valves are not modelled
+
+*Raised 2026-11-13, session 106; rewritten session 110 (As-Built §CXVI.4-5, §CXX.4).* PIC-335201 is V1's 3.5 bar g
+constant; the melt goes whole to LV-324501A, or to B above 3.8 bar g. Instructed (I-3): a GRANULATION faceplate on
+324-1b steps the twelve header valves, the header answering to them, LV-324501A/B and HV-335602. Established
+(§CXX.4): AC4 PC35.2 as configured, LIC-324501's X setting LV-324501B (X 50-100) and PIC-335201's set point
+2.8 + min(X / 50, 1). In scratch: V1's selector on a computed header relays; PIC-335201 read one tick late rings
+(loop gain 1.80); read inside the header solve it settles, the seed unchanged but LIC-324501.op (75.3 -> 35.0)
+and six residuals at 1e-13. At 100 % load nine to eleven valves hold; twelve drain 324F003. Open: the
+structure, how PIC-335201 reads the header, who trips 35.1 and 35.4, the seed criterion. Data the build needs:
+335P001's curve, PIDCON's SPEED1-4 (UD-MR-G00-DZ-0045, scans), HV-335602's destination, the header's design
+pressure (3.5 bar g; loop sheets 2.6 bar g, 3.7 bar a).
+Next step: the checkpoint answer, then D2 (`D:\Work\reports\Session_110_console\d2_items.md`).
 
 ---
 

@@ -23720,3 +23720,256 @@ A-40), left failing and logged by the process engineer's R1. `test_commands_reac
 §CXV.2's run, `test_every_command_v1_handles_is_answered` and B-106's
 `test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence`, pass on HEAD. The closing review set 01:00 as the latest start; the suite started at 01:23, the session
 having been held by a usage limit from about 22:30, and no arm ran beside it.
+
+# Part CXVI — Session 106: four console instructions researched; the melt header's data (2026-11-13)
+
+Research and a plan for session 110 on the process engineer's four instructions of 2026-11-13 (handoff A-41,
+B-137). Nothing under `ureasim/`, `tests/` or `tools/` changed. Plan: `D:\Work\reports\Session 110 plan prompt s106.md`. Scratch: `D:\Work\reports\Session_106_research`.
+`[I]` marks an inference.
+
+## CXVI.1 Page 328-2 against its revised slide
+
+The slides were rendered at 2x and downsampled to 1366 x 720 (`tools/export_one.ps1`, which leaves a running
+PowerPoint alone) and compared with the committed backgrounds outside every overlay element's rectangle padded by
+6 px, in 8 px tiles (`tools/diff_bg.py`). 328-2 differs in two regions: x 208-224, y 320-328, a new horizontal
+leader ('Straight Connector 191') from FT-322402's label to the ammonia-water line at x 221.8; and x 160-168,
+y 336-352, the old vertical tick to the line from 322E003, removed. The element stays at (166, 323), bound to
+`ABSORB_328.D003.flow755_m3h`. 324-1b shows no difference; 322-2 (saved the same minute) differs in 57 regions
+already and cannot be judged.
+
+## CXVI.2 V1's CO2 feed panel
+
+`frontend/co2_compressor.js`, outside `overlays.js`: caption "Compressor Speed", left 6, top 352, width 196,
+about 53 high; DOWN and UP, STEP 2.0 % of 54.618 t/h, MIN 0, MAX 120; sends `co2_set` in t/h; reads
+`CO2_FEED.raw_th`; keeps its percentage and a 1.5 s click-suppression in the browser. Slide 322-1's marker is
+shape 227, centre (96.7, 421.5), 63 x 54; V1 stands 43 px above it.
+
+## CXVI.3 The pump icons
+
+26 icons, 13 pairs, 7 pages. Run state and faceplate: 321P002A/B, 329P006A/B. Run state through
+`aux_pump_toggle`, no faceplate: 322P002A/B (moves the process), 323P001A/B (status, trip 21.2's input),
+328P003A/B (status). No operator run state: 323P008A/B (AC4's stop on LT-323503 L2), 323P003A/B, 329P003A/B,
+328P002A/B, 328P006A/B, 328P007A/B, 335P001A/B (urea feed pumps, archive TOC), 335P002A/B (UF metering).
+
+## CXVI.4 The melt header: documents
+
+* P&ID 130 (UD-VT-335-FB-0004): "12x2 HEADERS", twelve DN25 three-way header valves; main header 80-US12-335114;
+  HV-335602 at its end, fail open, I 35.4; PIC-335201 to LV-324501A; LV-324501B fail open, I 35.1.
+* Operating Manual III pages 1-92 to 1-94, 4-40 to 4-45: 24 injection headers, 432 spray heads; start-up order of
+  the header valves 2; 1, 4, 6, 7, 8, 10; then 3, 5, 9, 11; PIC-335201 on automatic at 3.5 bar abs.
+* UD-MR-324-FF-0002 page 2 (read on the image): PIC-335201 (REVACT = 1) drives LV-324501A, CLAMP on
+  (TRIP 35.1 OR TRIP 35.4) AND NOT HS-335201A. LIC-324501 (REVACT = 0) measures (L - P x 1000) / 885 x 100, L
+  LT-324501 (-800 to 900 mbar), P PT-324202; its output X opens LV-324501B from X = 50 to 100 and sets
+  PIC-335201's E1REF as 0.8 + min(X / 50, 1); CLAMP on TRIP 35.1 AND NOT HS-335201B, CLAMPREF 100. E1REF's
+  scaling is not established.
+* UD-MR-335-EC-0001 rev 01 (images): P 335201 (PDF page 159) gauge, 0 to 4 bar g, normal 3.6 bar a = 2.6 bar g,
+  AH, AL. F 335401 (page 31) vortex, 0 to 100 m3/h, 8.0 / 70.5 / 82.0 m3/h, 140 C, 1 221.0 kg/m3, 2.219 mPa s.
+  H 335602 (pages 79, 80) 24 m3/h, 5.1 to 1.1 bar a, 1 221 kg/m3, "Fast Open 3 sec., Slow Close 25 sec.".
+* Flowserve UD-MR-G00-DZ-0048-001 page 9 and -003 page 150: HV-335602 Pos. 150, DN 50, seat 32, Kvs 25, equal
+  percentage 50:1, Kv 10.314 at 77 % on SG 0.751.
+* The DCS trend legend (photo 20261107_215637): PIC-335201 "335R001 GRANULATOR", BAR G, range 0 to 6.
+
+## CXVI.5 The melt header: the trend windows and the coefficient
+
+Group D of Trends 511.2026 (5 November 2026, 15 min means; `transcribed.py`), HIC-335602 % / LV-324501A % /
+LV-324501B % / PIC-335201 bar g / FT-335401 m3/h: 13:13 100 / 0.0 / 67.8 / 0.25 / 1.5; 13:21 90 / 26.5 / 56.8 /
+1.43 / 19.3; 13:28 42 / 67.7 / 31.7 / 2.73 / 44.2; 13:36 0 / 77.3 / 5.2 / 3.23 / 59.4; 13:43 0 / 80.2 / 9.5 /
+3.41 / 66.4; 13:51 0 / 81.6 / 9.5 / 3.38 / 70.4; 14:06 0 / 81.9 / 0.6 / 3.38 / 72.7; 14:13 0 / 82.3 / 0.6 /
+3.43 / 73.5; 14:21 0 / 81.8 / 0.0 / 3.37 / 72.8; ruler 14:36 0 / 82.1 / 0.0 / 3.43 / 73.2; live 7 November 0 /
+78-79 / 0 / 3.58-3.72 / 63-64. These are the DCS legend's Mean Value column (the live row its Current
+Value), read from the photographs, not traced curves. The traced curves' QA passes: FT-335401 0 of 9, HIC-335602 0 of 2, LV-324501A 5 of 8, LV-324501B
+1 of 7, PIC-335201 6 of 9.
+
+`[I]` Q = N k sqrt(P), P in bar g: k = 3.30 m3/h per sqrt(bar g) gives N = 10.0, 10.9, 11.6, 12.0, 12.0, 12.0,
+12.0 and 10.1 over the windows from 13:36. The engine's design point (62.193 m3/h, 3.5 bar g) gives 3.3244 with
+ten valves, 3.694 with nine, 3.022 with eleven. One valve takes 6.2 m3/h (7.6 t/h) at 3.5 bar g. At a held melt
+flow P2 = P1 (N1 / N2)^2: ten to eleven 2.89 bar g, ten to nine 4.32 bar g. With LV-324501A fixed and 3.2 bar
+across it (Flowserve's normal case): 3.18 and 3.85 bar g, the melt +4.9 % and -5.6 %. HV-335602 full open on
+Kvs 25 and 1 221 kg/m3 passes 42 m3/h at 3.5 bar g, 6.8 valves' worth; with ten valves at the design flow the
+header falls to about 1.2 bar g. About 0.13 bar per 1 % of LV-324501A's stroke at the design. The loop sheet's
+70.5 m3/h at 2.6 bar g needs 13.2 valves on this k. The fast drops of PIC-335201 from 13:24:58 to 13:30:02
+(0.21 to 0.39 bar, ratio 0.89 to 0.94) are indicative only.
+
+## CXVI.6 What was not read
+
+The AC4 application software for LIC-324501, PIC-335201 and trips 35.1 / 35.4; 335P001's curve
+(UD-AU-335-EC-0039, UD-AU-335-DZ-0026); the pumps' motor-control sheets; UD-MR-335-FF-0002 beyond HIC-335602's
+page. That 335P001 delivers the melt to
+LV-324501A is `[I]`: the archive's contents list names it the urea feed pump, and P&ID 130 was not read for it.
+The suite was not run: nothing it tests changed.
+
+## CXVI.7 The build's numbers are claimed ahead
+
+Session 107, a review of the gap-closing work on B-118, ran on the same checkout while this Part was written
+and took the running numbers. The console changes' build is therefore claimed ahead in `project.md`: Session
+110, decisions 220 to 239, As-Built Part CXX, handoff A-45 to A-49 and B-145 to B-149. The running series skips
+the claim; the build uses nothing else.
+
+# Part CXX — Session 110: the console instructions built; the melt header measured in scratch (2026-11-13)
+
+Session 110 builds the process engineer's console instructions of 2026-11-13 (handoff A-41, B-137): I-1 to I-4,
+researched in Part CXVI. Decisions 220 to 222 hold what is built.
+
+## CXX.1 Page 328-2 (I-2, decision 221)
+
+The revised slide's render replaces the background only in the regions it redraws:
+`tools/restore_slide_regions.py` copies a named shape's extent, or, for a removed shape, the pixels the background
+draws and the slide does not. Each region is clipped at every overlay element's widget geometry and refused when
+the clip would cut it below half. Measured: after the copy, the background and the render differ in 0 regions
+outside the overlay holes. The leader's gap to the overlay box is the slide's own.
+
+## CXX.2 The CO2 FEED panel (I-1, decision 220)
+
+V1's step, in the engine (`engine.command._co2_step`), with D = 54.618 t/h (`unit_321.CO2_DES_KGH`):
+
+    pct  = clamp(round_1(demand / D x 100), 0, 120)
+    pct' = clamp(round_1(pct + 2 dir), 0, 120)                 dir = +1 or -1
+    demand' = round_3(D x pct' / 100)                          [t/h]
+
+round_n rounds a half upward (Decimal ROUND_HALF_UP), as V1's `Math.round` and `toFixed` do. The step snaps the
+held demand; V1 snapped the 2-decimal `raw_th` it published. On the 0.1 % grid the two are identical: the test
+sweeps all 1 201 grid points both ways and matches V1's browser arithmetic at every step. UP then DOWN returns
+54.618 t/h to the bit. The packet's `CO2_FEED.demand_pct` is round_1(demand / D x 100). A step that would restore
+the feed while trip 21.2's flag holds XV-322902 shut is refused, as `co2_set` is.
+
+## CXX.3 The pump faceplates (I-4, first part, decision 222)
+
+Measured on the engine as built: 600 s from the design seed, the commands at 10 s, read every 10 ticks and on
+the last 20 consecutive ticks.
+
+| Arm | Result at 600 s against the control |
+|---|---|
+| control | FT-322402 31.32 m3/h, FIC-328402 31.4, PT-329201 140.7 bar a, CO2 54.62 t/h, load 100 %, stream 308 36.83 t/h |
+| 322P002A/B both stopped | FT-322402 0.0 by 60 s; nothing else moves |
+| 323P001A/B both stopped | trip 21.2 latched on the same tick (T15 is an on-delay on the healthy signal, 15 s, already timed out); CO2 and load to 0; PT-329201 141.1 at 60 s, 141.7 at 600 s; stream 308 36.81 at 60 s, 28.26 at 300 s, 12.97 at 600 s, following the trip, not the pump |
+| 328P003A/B both stopped | no change (a status only) |
+| each pair swapped | no change |
+
+The trip schedule lists 21.2's delay as 15 min; the engine's TRIP_21_2_P001_TD_S is 15.0 s (an observation, not
+changed). Stream 308 does not read 323P001's run state.
+
+## CXX.4 The melt header in scratch (I-3, Track D1; nothing under `ureasim/` changed)
+
+**Documents.** UD-MR-G00-FF-0004 (AC4, 02-Mar-2008), PC35.2 (PDF pages 249 to 252): LIC-324501's output X
+feeds two FUNG-1V characterisers. PC35.2.2 .3 (XTAB 0, 50, 100, 100; YTAB 0, 100, 100, 100), then .9 (divide by
+100) and .10 (add 2.8) give PIC-335201's EXTREF1, E1 = 2.8 + min(X / 50, 1) bar g, 2.8 to 3.8 bar g, its top
+PIC_335201_RELIEF_BARG (page 251). PC35.2.2 .6 (YTAB 0, 0, 100, 100) gives LV-324501B = 2 (X - 50) on X 50 to
+100. PIC-335201 is a PIDCON65 (page 252): REVACT 1, MV PT-335201, OUTP LV-324501A, CLAMP when the AND of
+TRIP_35_4_FLAG1 and TRIP_35_1_FLAG1 drops and HS-335201A is not set (.7, .8), CLAMPREF 0, SPEED1-4 = 10 (what
+SPEED means is not read: ABB's AC 400 PC-element manuals, UD-MR-G00-DZ-0045-015 to -018, are scans with no
+text layer, and References holds none). UD-MR-324-FF-0002 (01-Jul-2006) draws the same
+structure with 0.8 in place of 2.8. The application software is the as-configured value, and the plant's
+steady windows agree with it: 3.37 to 3.72 bar g with LV-324501B near shut (§CXVI.5) lie inside 2.8 to 3.8 bar g
+and outside 0.8 to 1.8, read in bar g as the DCS legend reads PIC-335201. CXVI.4's "0.8 + min(X / 50, 1)" is the
+functional diagram's. Tuning (`References/Master_PID_Tuning_Constants.md`): PIC-335201 K 0.65, Ti 40 s, DZ 2 %;
+LIC-324501 K 0.85, Ti 200 s. PT-335201 0 to 4 bar g (UD-MR-335-EC-0001, P 335201, D07), so on decision 10
+Kc = 0.65 x 100 / 4 = 16.25 % per bar.
+
+**Model** (`scratchpad/d1/header_arms.py` on a byte copy of the tree at f7f09cd whose drain law is a hook; the
+as-built law its default). Every relation in ratio form, each factor 1.0 at the seed:
+
+    Q_noz = Q_des (N / 10) sqrt(P / P_des)                      P in bar g, Q_des 62.19 m3/h (PFD 402)
+    Q_A   = Q_des cv(h_A) / cv(h_A,des) sqrt((P_up - P - 1.01325) / 3.2)        LV-324501A, vendor trim
+    Q_hv  = 25 cv(h_hv) sqrt((P + 1.01325 - 1.1) / 1.221)       HV-335602, Pos. 150; 3 s open, 25 s close
+    P_up  = 7.713 + rho g (H(Q_A + Q_B) - H(Q_des)) / 1e5,  H = 71 - 5 Q^2 / 80^2 m (335P001, read on the scan)
+    Q_A = Q_noz + Q_hv solved for P by bisection in the tick; LV-324501B on the engine's own law.
+
+The 3.2 bar is the loop summary's LV-324501A differential (6.9 -> 3.7 bar a); with the engine's 3.5 bar g
+header it puts LV-324501A's inlet at 7.713 bar a. UF85 rides its ratio station, so the 402 ratio is 609's.
+
+**The ring, in isolation** (`ring_isolation.py`: the engine's ProcessLoop against the header alone, LV-324501A's
+inlet held at the loop summary's 6.9 bar a, no pump curve). At the
+seed the header moves 0.111 bar per 1 % of LV-324501A's stroke, and the PI's proportional loop gain is
+a = 16.25 x 0.111 = 1.80. Read one tick late, the stroke's step obeys du_n = -a du_(n-1): a period-two ring
+growing 1.8 times a tick, at the stroke limits in 1.7 s from a 0.1 bar set-point step, in 0.7 s from one valve
+shut. Evaluated inside the header solve, the same loop settles with no overshoot (one valve shut: 3.606 bar g
+next tick, 3.580 by 50 s, the deadzone's edge).
+
+**The plant's windows on the model** (not fitted): with N from §CXVI.5's coefficient, 14:13 (12 valves, 3.43 bar
+g) gives 73.9 m3/h (plant 73.5) at LV-324501A 80.1 % (plant 82.3 %); 14:21 73.2 (72.8) at 79.6 % (81.8 %); the
+7 November live row (10 valves, 3.65 bar g) 63.5 (63.5) at 76.6 % (78.5 %). LV-324501A's stroke runs about 2
+points under the plant's. At 13:28 the plant held LV-324501A at 67.7 % and LV-324501B at 31.7 % together, which
+V1's exclusive selector cannot do; its PIC-335201 of 2.73 bar g lies below E1's floor, so that window is a
+start-up or manual state and says nothing more.
+
+**Measured on the engine** (`header_arms.py`, 600 s from the design seed, the event at 10 s; n12, n11 and n9 of
+(b_imp) also to 1800 s, with PIC-335201's 2 % deadzone and without it, since no other loop of the port carries the
+tuning table's DZ). Candidates: built, the engine as built; a, V1's exclusive selector on the computed header read
+one tick late; b_tear, AC4's structure with PIC-335201 on a one-tick read; b_imp, the same evaluated inside the
+header solve. Arms: n11, n9, n12, n0, the header valves online from 10 to 11, 9, 12, 0; hv, HV-335602 opened at
+10 s and closed at 300 s; lva_man, PIC-335201 in MAN and LV-324501A +5 %; lic_man60, LIC-324501 in MAN at 60 %;
+trip351 and trip354, the trips' valve actions with 335P001 held running. The step column is the largest tick-to-tick
+change over the last 2 s (flow in m3/h, built's in t/h; LV-324501A in %): a non-zero step is a ring or a relay.
+
+| Candidate / arm | t end s | level % min-max | X end | LV-A end % | LV-B end % | P bar g min-max | last 2 s, largest tick-to-tick step: flow / LV-A |
+|---|---|---|---|---|---|---|---|
+| built/seed | 600 | 54.7-54.7 | 75.3 | 75.3 | 0.0 | 3.5 (boundary) | 0.0 / 0.0 |
+| built/lic_man60 | 600 | 54.7-100.0 | 60.0 | 60.0 | 0.0 | 3.5 (boundary) | 0.0 / 0.0 |
+| a/seed | 600 | 54.7-54.7 | 75.3 | 75.3 | 0.0 | 3.50-3.50 | 0.0 / 0.0 |
+| a/n11 | 600 | 53.2-54.7 | 72.6 | 72.6 | 0.0 | 2.82-3.17 | 0.0 / 0.0 |
+| a/n9 | 600 | 54.1-54.7 | 74.8 | 74.8 | 0.0 | 0.00-3.87 | 58.3 / 74.8 |
+| a/n0 | 600 | 54.7-63.5 | 90.3 | 90.3 | 0.0 | 0.00-7.06 | 0.0 / 90.3 |
+| a/hv | 600 | 49.8-58.1 | 74.4 | 74.4 | 0.0 | 1.17-3.45 | 0.0 / 0.0 |
+| a/lic_man60 | 600 | 54.7-100.0 | 60.0 | 60.0 | 0.0 | 1.71-1.71 | 0.0 / 0.0 |
+| b_tear/seed | 600 | 54.7-54.7 | 35.0 | 75.3 | 0.0 | 3.50-3.50 | 0.0 / 0.0 |
+| b_tear/n11 | 600 | 54.7-72.8 | 74.1 | 11.8 | 48.2 | 0.03-5.69 | 77.9 / 88.2 |
+| b_tear/n9 | 600 | 54.7-77.7 | 77.4 | 100.0 | 54.8 | 0.03-6.01 | 63.8 / 90.2 |
+| b_tear/hv | 600 | 48.4-74.3 | 56.6 | 6.2 | 13.2 | 0.03-5.80 | 73.9 / 93.8 |
+| b_imp/seed | 600 | 54.7-54.7 | 35.0 | 75.3 | 0.0 | 3.50-3.50 | 0.0 / 0.0 |
+| b_imp/n11 | 600 | 42.6-54.7 | 7.0 | 74.2 | 0.0 | 3.02-3.41 | 0.0 / 0.0 |
+| b_imp/n9 | 600 | 54.7-64.0 | 57.6 | 74.5 | 15.2 | 3.59-3.72 | 0.0 / 0.0 |
+| b_imp/n0 | 600 | 54.7-93.0 | 86.8 | 0.0 | 73.6 | 6.25-7.06 | 0.0 / 0.0 |
+| b_imp/hv | 600 | 5.1-54.7 | 0.0 | 70.4 | 0.0 | 2.88-3.48 | 0.0 / 0.0 |
+| b_imp/lva_man | 600 | 39.9-54.7 | 3.8 | 80.3 | 0.0 | 4.10-4.10 | 0.0 / 0.0 |
+| b_imp/lic_man60 | 600 | 24.9-54.7 | 60.0 | 77.6 | 20.0 | 3.48-3.72 | 0.0 / 0.0 |
+| b_imp/trip351 | 600 | 0.0-54.7 | 100.0 | 0.0 | 100.0 | 0.00-0.00 | 0.0 / 0.0 |
+| b_imp/trip354 | 600 | 54.7-93.0 | 86.8 | 0.0 | 73.6 | 0.00-0.00 | 0.0 / 0.0 |
+| b_imp/n12 | 1800 | 0.0-54.7 | 0.0 | 75.5 | 0.0 | 2.88-3.38 | 0.0 / 0.0 |
+| b_imp/n11 | 1800 | 42.2-54.7 | 0.0 | 73.0 | 0.0 | 2.88-3.41 | 0.0 / 0.0 |
+| b_imp/n9 | 1800 | 53.2-64.0 | 55.5 | 74.5 | 11.0 | 3.59-3.73 | 0.0 / 0.0 |
+| b_imp/n12 (DZ 0) | 1800 | 4.1-54.7 | 0.0 | 74.8 | 0.0 | 2.80-3.41 | 0.0 / 0.0 |
+| b_imp/n11 (DZ 0) | 1800 | 42.4-54.7 | 0.0 | 72.4 | 0.0 | 2.80-3.45 | 0.0 / 0.0 |
+| b_imp/n9 (DZ 0) | 1800 | 53.0-63.9 | 53.6 | 75.0 | 7.3 | 3.55-3.80 | 0.0 / 0.0 |
+
+* **(a), V1's selector**, relays on its computed header: with nine valves (3.87 bar g at the held stroke) and with
+  none, the route flips every tick for the whole run, LV-324501A between its stroke and 0, 323D002 filling from 10 to
+  14 % and 22.8 %. It holds with eleven valves and through HV-335602 (header down to 1.17 bar g).
+* **(b) on a one-tick read** rings at the stroke limits after any disturbance (n11, n9, hv), the header between
+  0.03 and 6 bar g.
+* **(b) read inside the solve** never rings. At the seed it is steady; against the engine as built after 60 s, 7 of
+  731 packet leaves differ: LIC-324501.op (75.3 -> 35.0, by structure) and six steam-system mass residuals in their
+  tenth significant figure, so the seed is not reproduced to the bit. Nine valves settle with LV-324501B recycling
+  7-11 % at the set point's ceiling, 3.8 bar g. With eleven, X saturates at 0 and the set point at its 2.8 floor;
+  the deadzone parks the header at 2.88 bar g and the level at 42.9 %, 12 points under its set point (without
+  it the level creeps back, 47.5 % at 1800 s). With twelve there is no steady state at 100 % load: the header's
+  floor passes more than the feed and 324F003 drains to 0 % (4.1 % without the deadzone) by 1800 s. With none, or
+  on trip 35.4, LV-324501A shuts and 324F003 fills to 93.0 % before X passes 50 and LV-324501B takes the melt.
+  HV-335602 opened at the seed's ten valves drains 324F003 to 5.1 %. Trip 35.1 with the pumps held running sends
+  252 t/h through LV-324501B and empties 324F003; on the plant 335P001 is stopped then, which needs its run state.
+* At 100 % load the model's window is nine to eleven valves; the plant ran twelve only near 73 m3/h (§CXVI.5).
+
+**Prototype limits.** LV-324501A's inlet is the loop summary's differential on the engine's 3.5 bar g header
+(7.71 bar a), the pump's droop read off a scanned curve. HV-335602's flow goes forward with the header's; its
+destination is not read. Under (b) the packet's `melt_fwd_th` and `recyc_th` and UF85's dosing see the whole
+drain as forward (UF85's re-route); 323D002 does receive LV-324501B's flow, through stage 2's route. No lag was
+added to either valve: Flowserve gives LV-324501A's trip closure (under 3 s), not its positioner's speed.
+
+## CXX.5 The eight pairs with no run state (I-4, Track E1; nothing built)
+
+The interlock column is read on session 105's Windows OCR of UD-MR-G00-FF-0004 (AC4) and is to be checked on
+the images before any is built. 329P003A/B are P&ID 109's circulation pumps of 323E003's tempered water.
+
+| Pair | Service | AC4 MOTCON (PDF page) | Interlock stop (OCR) | V1 | Port: what carries the flow | STOP must |
+|---|---|---|---|---|---|---|
+| 323P003A/B | 323D002 to 324E001 (first evaporator feed) | 69, 70 | IC2 from a TRIP flag, source not legible | no run state; LIC-323507 -> FIC-324401 | `unit_323d002`, `first_evaporator` (FIC-324401's valve) | stop 324E001's feed; 323D002 fills |
+| 323P008A/B | 323D011 condensate to 328D001 (718A) | 71, 72 | LT-323503 < L2 | no run state; LV-323503 | `reflux_drum` / desorption plant (718A) | stop 718A; the engine already holds 323P008's low-level trip and restart (data gap 8) |
+| 328P002A/B | 328D001's lean carbamate 774, through FV-328404 (775) to 328C002 and 776 | 103, 104 | LT-328501 < L2 | no run state | `reflux_drum` (`unit_328d001`) | stop 774 |
+| 328P006A/B | 328C002 bottoms through LV-328503 to 328E021 and the hydrolyser | 107, 108 | LT-328503 < L2 | no run state; LV-328503 | `unit_328c002` / desorption train | stop LV-328503's flow |
+| 328P007A/B | 740 after 328E007 through LV-328505 | 109, 110 | LT-328505 < L2 | no run state; LV-328505 | `unit_328c004` / `unit_328e007` | stop 740 |
+| 329P003A/B | the tempered-water circulation through 329E002 to 323E003, the LP carbamate condenser (P&ID 109, "CIR. PUMP"; 329P006's counterpart on 322E003) | 135 (A) | IC2, source not legible | absent | 323E003's tempered water (PV-323202A/B at 329E002); no pump modelled | stop 323E003's tempered-water circulation, as `pump_toggle` does for 329P006 on 322E003 |
+| 335P001A/B | 324F003 melt through LV-324501A/B (KSB CPK 80-250, 82 m3/h) | 230, 231 | LY-324501 < L2 (low level) | absent; LIC-324501's selector | `second_evaporator` drain, `melt_route` | stop the drain; trip 35.1 (with D2) |
+| 335P002A/B | UF85 dosing | 232, 233 | TRIP_35_1 / TRIP_35_4 flags, HS-335620 | FIC-335405 / FFIC-335406 | `units/finishing/uf85_dosing` | stop the UF85 |
+
+Proposed order, one pair at a time (D8): 335P002, 329P003 (on 329P006's pattern), 328P007, 328P006, 328P002, 323P008, 323P003; 335P001 with D2.
+Each build: a run state in the operator store, the PUMPS block, the icon bound,
+the flow law multiplied by the running flag, the MOTCON interlock stop only if the process engineer decides it.
