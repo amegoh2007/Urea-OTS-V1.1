@@ -5001,3 +5001,40 @@ functional diagram's); PIC-335201 read one tick late rings (loop gain 1.80), rea
 settles; V1's selector relays. The eight pairs with no run state surveyed (A-41). Stopped at the checkpoint for
 the process engineer's decisions. V1 read from its copy on D: (decision 223). Suite: 8 100 passed, 1 failed
 (A-40), none skipped. Part CXX; scratch `D:\Work\reports\Session_110_console`.
+
+### Session 108 — 322R001's reduced-load loop taken apart by path clamps; nothing built (2026-11-14)
+
+On session 107's plan (B-118), scratch only, the rig proved by continuation (0 columns differing). Desk: V1's
+`X_INF` is a back-solve and its slip gain a tuning; re-anchored on the licensor's 95 % approach the column's loop
+gain falls from 1.0 to 0.01 K/K, but its design profile misses the plant's thermowells by 2-3 K and its seed
+drifts. Path clamps, the stripper's feed-deficit rise off: 322E002's saturation edge or V1's re-flash of the
+off-gas at the live pressure each loses 92.3 % alone; with the three paths pinned the top stands on its bubble
+point, as the seed's does, 0.53 K a bar of the engine's pressure fall (the law's docstring says 0.75). At 69.3 %
+nothing stands. 322E002's UA on its own feed loses the top sooner; its split on Book2's departures boils it 1.4
+t/h. The scorer's bubble-cap gate was withdrawn: the seed sits on its bubble point. The plant's thermowells by
+load, 320K002's 70 % case and P&ID 102 read. No decision taken. Part CXVIII; scratch `D:\Work\reports\B118_s108`.
+
+### Session 107 — session 105's close-out reviewed; the reactor's loop isolated by clamps (2026-11-13; entry filed by session 109)
+
+A review on session 105's files and its own scratch arms on the holdup engine; nothing built, no decision. With
+V1's feed-deficit rise off, 322E001 follows the plant's TT-322004 (-1.5 K at 92.4 %, -5.5 K at 69.6 %) and all
+five holds of decision 180 are lost. The loss needs neither 322E002's live law (`e002_clamp`), the conversion's
+residence time (`x_clamp`), its slip (`og_clamp`) nor its movement (`x_pin`); the one standing hold boils on its
+bubble point. 322E002's flash at the plant's departures gives 0.215 at 92.2 % and 0.310 at 69.5 %. 322R001's
+design conversion is 60 % of its equilibrium by V1's `X_INF`; the licensor gives 95 %. Corrections: step L6 acts
+in the procedure's sense; step L2's one-sided response is B-125's edge. Plan: `D:\Work\reports\B-118 plan prompt
+s107.md`. Part CXVII (filed in session 109, wave 6's table completed); scratch `D:\Work\reports\B118_s107`.
+
+### Session 109 — sessions 108 and 110 reviewed on their files; the plans for sessions 111 and 112 (2026-11-14)
+
+A review; nothing built, no arm run, no decision. The process engineer's notes of 2026-11-14 answer session 110's
+checkpoint: the melt header runs at 3.2 to 3.8 bar g with the headers following the load, LV-324501B returns the
+excess above 3.8 bar g, and the pump faceplates simulate the field start and stop. That rule is AC4 PC35.2 as
+configured; N valves hold the band at loads of N / 10 x 95.6 to 104.2 %. AC4's MOTCON sheets read on the images:
+323P003 and 329P003 have no process interlock (§CXX.5's OCR corrected). HV-335602 drains to 335D004 (P&ID 130,
+136); 322P002's own sheet shows no control valve (B-133). Session 108's run files carry its figures; beside
+them, 322E002's flash target swings 0.16 to 0.27 inside 1 K, the clamp that stands is a law on the top's
+subcooling (B), the duty-closed condenser (S, B-125 (c)) was never run, "stands" was scored on a boil-off the
+plant does not measure, and (desk) Book2's pressure falls about 6 bar at 69.3 % beyond its thermowells'. Sessions 111
+(the console build) and 112 (B-118: S and B) claimed ahead. Part CXIX; report and prompts in `D:\Work\reports`
+(`Sessions 108 and 110 review s109.md`); scratch `D:\Work\reports\Session_109_review`.
