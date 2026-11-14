@@ -105,7 +105,8 @@ def test_the_liquor_train_through_the_scheduler_is_v1s_chain(v1):
                     p_324e002=d.P_324E002_DES_BARA, rec_kgh=stage4.NO_RECYCLE[0],
                     rec_t=stage4.NO_RECYCLE[1], rec_w=stage4.NO_RECYCLE[2])
     plant = PlantState(units={u: units[u] for u in TRAIN}, loops={u: loops[u] for u in TRAIN},
-                       operator={"HIC-323605": d.HIC_323605_DES_PCT_V1, "HV-323D002-TIE": False},
+                       operator={"HIC-323605": d.HIC_323605_DES_PCT_V1, "HV-323D002-TIE": False,
+                                 "323P003": True},
                        boundary=boundary)
     sch = Scheduler(_train_schedule(), plant)
     s = stage4._v1_state(v1)
