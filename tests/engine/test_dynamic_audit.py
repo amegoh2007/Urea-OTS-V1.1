@@ -421,7 +421,7 @@ def snapshot_text(session: EngineSession) -> dict:
 
 #: The instructor's and the operator's levers the fuzz draws on: the tube leak, both HP ammonia
 #: pumps' faults, the CO2 boundary cut and restored, a restart, the tempered water,
-#: the melt header over LV-324501B's relief, HV-322605 and 21.2's trip switch.
+#: a header valve off and on and HV-335602 opened (decision 224), HV-322605 and 21.2's trip switch.
 FUZZ_MENU = (
     {"type": "trigger_fault", "id": "322E002", "value": 8.0},
     {"type": "clear_fault", "id": "322E002"},
@@ -432,8 +432,9 @@ FUZZ_MENU = (
     {"type": "co2_set", "value": 67.0},
     {"type": "pump_toggle", "id": "A", "on": True},
     {"type": "pump_toggle", "id": "329P006A", "on": False},
-    {"type": "pic335201_set", "op": 4.0},
-    {"type": "pic335201_set", "op": 2.0},
+    {"type": "granulation_headers", "dir": -1},
+    {"type": "granulation_headers", "dir": 1},
+    {"type": "hic335602_set", "op": 50.0},
     {"type": "hic605_set", "op": 30.0},
     {"type": "keyswitch_set", "id": "HS-321603", "on": True},
     {"type": "keyswitch_set", "id": "HS-321603", "on": False},

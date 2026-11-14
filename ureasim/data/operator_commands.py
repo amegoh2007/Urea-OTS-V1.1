@@ -17,7 +17,7 @@ from types import MappingProxyType
 __all__ = [
     "FACEPLATE_MODES", "AUX_PUMP_SEEDS", "TRIP_21_HAND_SWITCHES", "RATIO_SP_MIN",
     "RATIO_SP_MAX",
-    "STEAM_SP_MAX_BARA", "PIC_335201_OP_MAX_BARG", "CPL_MAX_FACTOR", "FIC_329409_SP_MAX_FACTOR",
+    "STEAM_SP_MAX_BARA", "CPL_MAX_FACTOR", "FIC_329409_SP_MAX_FACTOR",
     "TIC_329005_SP_MIN_C", "EXT_OVERRIDE_TAG",
 ]
 
@@ -75,6 +75,7 @@ FACEPLATE_MODES = MappingProxyType({
     "PIC-329212": ("MAN", "AUTO", "CAS"),
     "PIC-324203": ("MAN", "AUTO"),
     "LIC-324501": ("MAN", "AUTO"),
+    "PIC-335201": ("MAN", "AUTO", "CAS"),
     "FFIC-335406": ("MAN", "AUTO"),
     "FIC-335405": ("MAN", "AUTO", "CAS"),
 })
@@ -103,9 +104,6 @@ RATIO_SP_MIN, RATIO_SP_MAX = 2.0, 5.0
 
 #: The steam headers' set points' ceiling [bar a]. Source: V1 ``pic329204_set`` and its siblings.
 STEAM_SP_MAX_BARA = 25.0
-
-#: The 335 melt header's entry ceiling [bar g]. Source: V1 ``pic335201_set``.
-PIC_335201_OP_MAX_BARG = 15.0
 
 #: FT-322404's condensate entry ceiling as a multiple of its design [-]. Source: V1 ``cpl_set``.
 CPL_MAX_FACTOR = 2.0

@@ -236,7 +236,8 @@ def test_snapshot_absence_never_raises(stages):
 def test_the_decided_additions_are_on_their_screens():
     """Decision 98 (2026-10-10): trip 21.2's five keyswitches and AI-329701, each on the screen of
     the equipment it serves, through the converter's `DECIDED_ADDITIONS`; decision 220
-    (2026-11-13): 322-1's CO2 FEED panel, the only step panel, at V1's own place."""
+    (2026-11-13): 322-1's CO2 FEED panel at V1's own place; decision 224 (2026-11-14): 324-1b's
+    GRANULATION HEADERS panel, above the GRANULATION label."""
     where = {el["tag"]: sid for sid, elements in OVERLAYS.items() for el in elements
              if el["k"] in ("ovrhs321634", "ovrhs321603", "ovrhs321604", "ovrhs322606",
                             "ovrhs323604", "ai329701", "co2step")}
@@ -246,7 +247,8 @@ def test_the_decided_additions_are_on_their_screens():
                      "320K002": "screen-322-1"}
     steps = [(sid, el["k"], el["x"], el["y"]) for sid, elements in OVERLAYS.items()
              for el in elements if el["t"] == "step"]
-    assert steps == [("screen-322-1", "co2step", 104, 378.5)]
+    assert steps == [("screen-322-1", "co2step", 104, 378.5),
+                     ("screen-324-1b", "granstep", 1213, 378.5)]
 
 
 def test_no_element_is_a_valve_icon():

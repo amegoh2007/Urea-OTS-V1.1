@@ -95,3 +95,24 @@ def test_the_typed_field_is_kept_and_the_answer_is_shown(bridge, packet):
     bridge.command_result.emit(len(bridge.sent), False, "LIC-323501 offers MAN, AUTO, not X")
     assert face.message.text() == "REFUSED: LIC-323501 offers MAN, AUTO, not X"
     face.close()
+
+
+def test_pic_335201_is_gauge_on_its_own_transmitter(bridge):
+    """Decision 224: PIC-335201's loop runs in bar g, PT-335201's 0-4 bar g, so its faceplate shows
+    and sends bar g as it is (decision 183 converts only a loop the engine holds in bar a); in CAS
+    on LIC-324501's E1 at the seed, and MAN, AUTO and CAS are each taken by the engine."""
+    from ureasim.data.screen_layout import OVERLAYS
+    element = next(e for e in OVERLAYS["screen-324-1b"] if e["k"] == "pic335201")
+    face = _open(bridge, element)
+    assert face.mode_chip.text() == "CAS" and "LIC-324501" in face.note.text()
+    assert face.pv_field.text() == "3.5 BAR G"
+    face.mode_buttons["AUTO"].click()
+    face.sp_field.setText("3.6")
+    face.set_button.click()
+    cmd = bridge.sent[-1]
+    assert (cmd["id"], cmd["mode"], cmd["sp"]) == ("PIC-335201", "AUTO", 3.6)
+    plant = build_plant()[1]
+    assert apply_command(plant, cmd).ok and plant.loops["324E003"][0].header.sp == 3.6
+    for mode in ("MAN", "CAS"):
+        assert apply_command(plant, {"type": cmd["type"], "id": "PIC-335201", "mode": mode}).ok
+    face.close()

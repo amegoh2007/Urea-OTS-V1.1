@@ -5,13 +5,13 @@ What this models
 Stage 1's melt, PFD 401 (94.3 % urea, 130 C), drops down 324F001's barometric leg into the
 tubes of 324E003, heated by 9-bar steam on the shell, and boils under the deep vacuum of the
 324F003 separator. The vapour, PFD 709, goes to the 324E005 condenser, whose vent 324F004 pulls;
-the melt, PFD 402 (97.7 % urea, 140 C), drains down a barometric leg to 335P001, and LV-324501A
-sends it on to granulation — or, when the 335 melt header backs up past its relief setting,
-LV-324501B returns it to 323D002.
+the melt, PFD 402 (97.7 % urea, 140 C), drains down a barometric leg to 335P001A / B, which send
+it through LV-324501A up the 335 melt header to the granulation's header valves and through
+LV-324501B back to 323D002 (`units.finishing.melt_header`, AC4 PC35.2 as configured).
 
     TIC-324002 (melt T)  ->  PIC-329212 (324E003 chest P)  ->  PV-329212 (9-bar steam)
     PIC-324203 (PT-324203, the vacuum at 324E005)  ->  PV-324203 (false air into 324E005)
-    LIC-324501 (LT-324501)  ->  LV-324501A (forward) or LV-324501B (recycle, PIC-335201 > 3.8 bar g)
+    LIC-324501 (LT-324501)  ->  PIC-335201's set point (-> LV-324501A) and LV-324501B
 
 The separator is stage 1's: a well-mixed melt holdup with mass, energy and species balances, and
 a vapour space whose pressure is a molar balance between the condenser's vent and the pull:
@@ -63,6 +63,10 @@ Where this stage departs from V1 — each a decided divergence, run both ways in
   * **The fixed point on the energy balance** (handoff B-108, decided 2026-10-22): where V1's
     sweeps never settle — the 1 kg heel under a broken vacuum — the temperature is bracketed and
     solved on the stage's energy balance (`stage_fixed_point`), where V1 leaves the last sweep.
+  * **The melt header** (handoff B-137, decided 2026-11-14, decision 224): LIC-324501's output sets
+    PIC-335201's set point and LV-324501B's stroke, PIC-335201 holds the computed header on
+    LV-324501A, and both valves may pass melt — where V1 routes the whole drain to one valve on a
+    boundary header (`melt_route.selector_drain`, the harness's side).
 
 PV-329212 runs on its vendor trim (decision 23's class, decided 2026-10-14): Metso's DN 80
 balanced Neldisc, Cv 150, its printed capacities and Valmet's S-Disc shape between them as its curve
@@ -118,16 +122,11 @@ from ureasim.data.unit_324 import (
     LIC_324501_OP_DES_PCT,
     LIC_324501_TI_S,
     LV_324501A_OP_DES_PCT,
-    LV_324501B_FULL_KGH,
-    LV_324501_CHAR,
-    LV_324501_SPAN_KGH,
     MELT_A_UREA_WATER_K,
-    P2_DES_KGH,
     PIC_324203_KC,
     PIC_324203_TI_S,
     PIC_329212_KC,
     PIC_329212_TI_S,
-    PIC_335201_RELIEF_BARG,
     PT_LOOP_MAXIT,
     PT_LOOP_TOL,
     PV_324203_OP_DES_PCT,
@@ -137,6 +136,7 @@ from ureasim.data.unit_324 import (
     W_S401,
 )
 from ureasim.data.unit_329 import P_MP_BARA
+from ureasim.data.unit_335 import HEADER_VALVES_DES, LIC_324501_X_DES_PCT
 from ureasim.thermo import iapws
 from ureasim.thermo.domains import NONVOLATILE
 from ureasim.thermo.empirical import urea_soln_cp
@@ -147,13 +147,14 @@ from ureasim.units.evaporation.condenser_node import inlet_kmolh
 from ureasim.units.evaporation.ejector_map import suction_capacity_kgh
 from ureasim.units.evaporation.holdup_boil import holdup_boil
 from ureasim.units.evaporation.leg_seal import seal_air_kgh
-from ureasim.units.evaporation.melt_route import MeltRoute, melt_route
+from ureasim.units.evaporation.melt_route import MeltRoute, melt_route, melt_split, selector_drain
 from ureasim.units.evaporation.stage_fixed_point import bisected_fixed_point
 from ureasim.units.evaporation.vacuum_condenser import (
     condensate_back_pressure,
     design_specs,
     vent_kgh_at,
 )
+from ureasim.units.finishing.melt_header import MeltHeader, MeltHeaderResult, pic_335201
 from ureasim.units.steam_chest import ChestValve, steam_chest_pressure
 
 #: Key the lagged 9-bar header the chest sees is stored under (V1 ``"324E003_P_9_thermal"``).
@@ -210,25 +211,30 @@ def pic_324203() -> ProcessLoop:
         op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=1.0)
 
 
-def lic_324501(vendor: bool = True) -> ProcessLoop:
-    """LIC-324501, the melt level: direct acting, its output the stroke [%] the route selector
-    hands to LV-324501A or LV-324501B; seeded at LV-324501A's design stroke on its vendor trim
-    (decision 150), or V1's 75 % with ``vendor`` False."""
+def lic_324501(vendor: bool = True, ac4: bool = True) -> ProcessLoop:
+    """LIC-324501, the melt level: direct acting. On AC4 PC35.2 its output X sets PIC-335201's set
+    point and LV-324501B's stroke, seeded where the set point is the design header, 35 % (decision
+    224); with ``ac4`` False it is the stroke the route selector hands to one valve, seeded at
+    LV-324501A's design stroke on its vendor trim (decision 150), or V1's 75 % with ``vendor``
+    False."""
+    seed = (LIC_324501_OP_DES_PCT if not vendor
+            else LIC_324501_X_DES_PCT if ac4 else LV_324501A_OP_DES_PCT)
     return ProcessLoop(
         tag="LIC-324501", Kc=LIC_324501_KC, Ti=LIC_324501_TI_S, Td=-1.0, act=-1.0,
-        op=LV_324501A_OP_DES_PCT if vendor else LIC_324501_OP_DES_PCT, sp=F003_LEVEL_SP_PCT,
+        op=seed, sp=F003_LEVEL_SP_PCT,
         pv=F003_LEVEL_SP_PCT, pv1=F003_LEVEL_SP_PCT, pv2=F003_LEVEL_SP_PCT,
         op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=100.0)
 
 
 @dataclass
 class SecondEvaporatorLoops:
-    """Stage 2's four controllers."""
+    """Stage 2's four controllers and the melt header's PIC-335201."""
 
     tic: ProcessLoop = field(default_factory=tic_324002)
     pic: ProcessLoop = field(default_factory=pic_329212)
     vacuum: ProcessLoop = field(default_factory=pic_324203)
     level: ProcessLoop = field(default_factory=lic_324501)
+    header: ProcessLoop = field(default_factory=pic_335201)
 
 
 # ======================================================================================
@@ -320,7 +326,7 @@ class SecondEvaporatorResult:
     #: The melt made [kg/h] and its live urea strength [-] — the final product's.
     melt_kgh: float
     w_melt: float
-    #: LI-324501 [%], LIC-324501's stroke [%], the route and the two valves' strokes [%].
+    #: LI-324501 [%], LIC-324501's output [%], LV-324501B passing melt, the two valves' strokes [%].
     level_pct: float
     level_op_pct: float
     recycle_selected: bool
@@ -343,6 +349,8 @@ class SecondEvaporatorResult:
     air_in_kgh: float = 0.0
     #: The fixed point solved on the energy balance where the sweeps never settled (B-108).
     bisected: bool = False
+    #: The melt header on AC4's side (decision 224); None on V1's selector.
+    header: MeltHeaderResult | None = None
 
 
 @dataclass
@@ -372,10 +380,16 @@ class SecondEvaporator:
     #: LV-324501A / B on Flowserve's sheets (decided 2026-10-22, decision 150); False is V1's
     #: linear span law, which the equivalence harness runs.
     vendor_drain: bool = True
+    #: The melt header on AC4 PC35.2 (decided 2026-11-14, decision 224); False is V1's selector on
+    #: a boundary header, which the equivalence harnesses keep. The header's state.
+    ac4_header: bool = True
+    header: MeltHeader = field(default_factory=MeltHeader)
 
     def step(self, loops: SecondEvaporatorLoops, feed_kgh: float, feed_t_c: float,
              feed_w: dict, p_mp_bara: float, p_motive_bara: float, p_discharge_bara: float,
-             t_vent_324e005_c: float, p_335201_barg: float, dt: float) -> SecondEvaporatorResult:
+             t_vent_324e005_c: float, p_335201_barg: float, dt: float, *,
+             headers_online: int = HEADER_VALVES_DES, hic_335602_pct: float = 0.0,
+             pump_running: bool = True) -> SecondEvaporatorResult:
         """Advance stage 2 by one tick.
 
         Arguments
@@ -395,8 +409,10 @@ class SecondEvaporator:
             324E005's cold end from the last full condenser solve — a tear, lagged on the
             tubes' water (`VacuumTrain.cold_end_c`, handoff B-65).
         p_335201_barg
-            The 335 melt header [bar g], a battery-limit input: above PIC-335201's relief setting
-            LIC-324501's demand goes to LV-324501B.
+            The 335 melt header [bar g] V1's selector reads, a battery-limit input: above
+            PIC-335201's relief setting LIC-324501's demand goes to LV-324501B (V1's side only).
+        headers_online, hic_335602_pct, pump_running
+            AC4's side: the header valves online, HIC-335602 [%], 335P001A or B running.
 
         The order is V1's: the cascade acts on the state at the top of the tick and the chest is
         solved; the false air is the vacuum stroke the tick before, and PIC-324203 then steps on
@@ -425,9 +441,11 @@ class SecondEvaporator:
 
         # ----- the vacuum: the false air on last tick's stroke, then PIC-324203 ----------
         fa = false_air_kgh(loops.vacuum.op)
-        # The lost seal's air (B-107) on the level and LIC-324501's stroke of the tick before,
-        # against the vacuum it enters; it reaches 324E005 with the false air.
-        air = (seal_air_kgh(self.m_kg / F003_M_FULL_KG * 100.0, loops.level.op, self.p_bara,
+        # The lost seal's air (B-107) on the level and LV-324501A's stroke of the tick before
+        # (PIC-335201's output on AC4's side, LIC-324501's on V1's), against the vacuum it enters;
+        # it reaches 324E005 with the false air.
+        stroke = loops.header.op if self.ac4_header else loops.level.op
+        air = (seal_air_kgh(self.m_kg / F003_M_FULL_KG * 100.0, stroke, self.p_bara,
                             vendor=self.vendor_drain)
                if self.seal_air else 0.0)
         air_in = fa + air
@@ -517,25 +535,24 @@ class SecondEvaporator:
         w_melt = clamp(urea_in / max(melt, FLOW_FLOOR_KGH), 0.0, 1.0)
         m_709 = E005_INLET_DES_KGH + (m_vap + m_boil - V2_DES_KGH) + (air_in - F003_FA_DES_KGH)
 
-        # ----- LIC-324501 and the LV-324501A / B selector ----------------------------------
+        # ----- LIC-324501 and the drain: the melt header (AC4), or V1's selector --------------
         level = clamp(m_pre / F003_M_FULL_KG * 100.0, 0.0, 100.0)
         level_op = loops.level.step(level, dt)
-        routed_op = clamp(level_op, 0.0, 100.0)
-        recycle = p_335201_barg > PIC_335201_RELIEF_BARG
-        lv_a, lv_b = (0.0, routed_op) if recycle else (routed_op, 0.0)
-        if not self.vendor_drain:
-            m_402 = routed_op / 100.0 * LV_324501_SPAN_KGH
-        elif recycle:   # LV-324501B, shut at design, on its full stroke
-            m_402 = LV_324501B_FULL_KGH * cv_fraction(routed_op / 100.0, LV_324501_CHAR)
-        else:           # LV-324501A, anchored on the design drain at its design stroke
-            m_402 = P2_DES_KGH * (cv_fraction(routed_op / 100.0, LV_324501_CHAR)
-                                  / cv_fraction(LV_324501A_OP_DES_PCT / 100.0, LV_324501_CHAR))
         # The drain takes only the melt above the 1 kg floor (decision 11's class).
         m_402_avail = (max(m_pre - F003_M_FLOOR_KG, 0.0) / max(dt, DT_FLOOR_S) * 3600.0
                        + feed_kgh - m_vap - m_boil)
-        if m_402 > m_402_avail:
-            m_402 = m_402_avail
-        route = melt_route(m_402, w_pre, self.t_c, recycle)
+        header = None
+        if self.ac4_header:
+            header = self.header.step(loops.header, level_op, headers_online, hic_335602_pct,
+                                      pump_running, m_402_avail, dt)
+            m_402 = header.forward_kgh + header.recycle_kgh
+            recycle, lv_a, lv_b = header.recycle_kgh > 0.0, header.lv_a_pct, header.lv_b_pct
+            route = melt_split(header.forward_kgh, header.recycle_kgh, w_pre, self.t_c,
+                               hv_share=header.hv_share)
+        else:
+            m_402, recycle, lv_a, lv_b = selector_drain(level_op, p_335201_barg,
+                                                        self.vendor_drain, m_402_avail)
+            route = melt_route(m_402, w_pre, self.t_c, recycle)
         self.m_kg = max(m_pre + (feed_kgh - m_vap - m_boil - m_402) / 3600.0 * dt,
                         F003_M_FLOOR_KG)
 
@@ -555,7 +572,7 @@ class SecondEvaporator:
             melt_kgh=melt, w_melt=w_melt, level_pct=level, level_op_pct=level_op,
             recycle_selected=recycle, lv_a_pct=lv_a, lv_b_pct=lv_b, m_402_kgh=m_402, route=route,
             y_vap=y_vap, xi_kmolh=xi, m_kg=self.m_kg, t_c=self.t_c, p_bara=self.p_bara,
-            w=self.w, seal_air_kgh=air, air_in_kgh=air_in, bisected=bisected,
+            w=self.w, seal_air_kgh=air, air_in_kgh=air_in, bisected=bisected, header=header,
         )
 
 

@@ -40,11 +40,12 @@ def test_the_registry_follows_v1s_trend_map():
 
 
 def test_the_registry_over_the_ten_screens():
-    """221 trendable tags: every bound indicator, valve opening, push button, block valve and
-    pump, AI-329701 among them (decision 98), and the six auxiliary pumps bound to their run
-    state (decision 222); 25 pressures trend gauge, 15 tags are digital."""
+    """224 trendable tags: every bound indicator, valve opening, push button, block valve and
+    pump, AI-329701 among them (decision 98), the six auxiliary pumps bound to their run
+    state (decision 222), and the melt header's FT-335401, HIC-335602 and HV-335602 (decisions
+    224 and 225); 25 pressures trend gauge, 15 tags are digital."""
     s = se.trend_sources(OVERLAYS)
-    assert len(s) == 221 and s["AI-329701"].path == "ANALYSERS.AI_329701"
+    assert len(s) == 224 and s["AI-329701"].path == "ANALYSERS.AI_329701"
     assert sum(v.gauge for v in s.values()) == 25 and sum(v.digital for v in s.values()) == 15
     assert s["323P001A"].path == "PUMPS.323P001A.on" and s["323P001A"].digital
     assert s["PIC-323203"].path == "LPCC_3232.E011.PIC_323203.pv" and s["PIC-323203"].gauge

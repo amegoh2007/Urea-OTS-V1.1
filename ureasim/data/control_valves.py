@@ -352,6 +352,15 @@ LV_324501B = VendorValve(
         SizingCase(4.8, 2.0, 140.0, 82.0, 751.0, 42.150, 76.0)),
     1, _flowserve(149))
 
+#: HV-335602, the urea melt main header's end drain to 335D004 (P&ID 130, UD-VT-335-FB-0004: fail
+#: open, air to close, "FAST OPEN / SLOW CLOSE"): DN 50 0310 globe, seat 32, Kvs 25, equal percentage
+#: 50:1; its one case, urea solution at 140 C on the sheet's SG 0.751 (not the melt's 1221 kg/m3),
+#: 24 m3/h across 5.1 -> 1.1 bar a at Kv 10.314 and an estimated 77 % (read from the scanned sheet).
+HV_335602 = VendorValve(
+    "HV-335602", 25.0, "equal_pct", "liquid", (
+        SizingCase(5.1, 1.1, 140.0, 24.0, 751.0, 10.314, 77.0),),
+    0, _flowserve(150))
+
 # ======================================================================================
 # CCI's Drag valve
 # ======================================================================================
@@ -375,7 +384,7 @@ VENDOR_VALVES = {v.tag: v for v in (
     LV_328501, PV_322203, PV_324202, PV_324203, HV_329605, HV_329606, LV_329502, LV_329503,
     LV_329504, PV_329205A, PV_329205B, PV_329203, PV_329212, FV_329401, PV_329202, PV_329204,
     PV_329207A, PV_329207B, PV_329208, LV_329505, FV_329409, HV_323605, PV_323203, PV_323202A,
-    PV_323202B, TV_328002, HV_329601, PV_329207C, LV_324501A, LV_324501B)}
+    PV_323202B, TV_328002, HV_329601, PV_329207C, LV_324501A, LV_324501B, HV_335602)}
 
 __all__ = [
     "NORMAL_MOLAR_VOLUME_M3_KMOL", "MW_CO2", "SizingCase", "VendorValve", "design_stroke_pct",
@@ -387,5 +396,5 @@ __all__ = [
     "PV_329205B", "PV_329203", "PV_329212", "FV_329401", "PV_329202", "PV_329204", "PV_329207A",
     "PV_329207B", "PV_329208", "LV_329505", "FV_329409", "HV_323605", "PV_323203", "PV_323202A",
     "PV_323202B", "TV_328002", "HV_329601", "PV_329207C", "LV_324501A", "LV_324501B",
-    "VENDOR_VALVES",
+    "HV_335602", "VENDOR_VALVES",
 ]

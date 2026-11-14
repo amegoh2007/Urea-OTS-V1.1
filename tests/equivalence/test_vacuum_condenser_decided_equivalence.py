@@ -97,9 +97,12 @@ def test_324e007_without_its_co2_decided_divergence(v1):
 
 
 def test_the_trip_through_the_train_decided_divergence(v1):
-    """323P003 stops; two minutes later the stages send the train 106 (105 before decision 178) and 1290 (1288 before decision 178) kg/h of vapour at
-    0.306 and 0.084 bar a. On the same inputs V1's executed train has 324E007's cold end at 32.1 (32.0 before decision 178) C,
-    near the water's 30, and 136 (137 before decision 178) kg/h to atmosphere where the PFD has 31; the port's keeps 324E007
+    """323P003 stops; two minutes later the stages send the train 106 (105 before decision 178) and 1277 (1290 before
+    decision 224's melt header, 1288 before decision 178) kg/h of vapour at
+    0.306 and 0.084 bar a. On the same inputs V1's executed train has 324E007's cold end at 32.0 (32.1 before
+    decision 224, 32.0 before decision 178) C,
+    near the water's 30, and 136.4 (135.6 before decision 224, 137 before decision 178) kg/h to atmosphere where
+    the PFD has 31; the port's keeps 324E007
     condensing at 54.0 C and sends 29.1 kg/h (the chests on their vendor trims, decided
     2026-10-14, and LV-324501A on its, decision 150; 1296 kg/h, 135.9 and 32.1 C on V1's linear
     valves; 1294 kg/h, 135.0 and 32.15 C, the port's 29.05 kg/h, on the Neldisc chord before decision
@@ -109,15 +112,15 @@ def test_the_trip_through_the_train_decided_divergence(v1):
     args = (MEVAP_DES_KGH, r1.m_vap_kgh + r1.m_boil_kgh, r2.m_vap_kgh + r2.m_boil_kgh,
             r1.false_air_kgh, r2.false_air_kgh)
     assert (args[1], args[2]) == (pytest.approx(105.722, abs=1e-3),
-                                  pytest.approx(1289.930, abs=1e-3))
+                                  pytest.approx(1277.205, abs=1e-3))
     theirs = v1["vacuum_train_324"](*args, *mot, cw_factors={}, p_e002_bara=r1.p_bara,
                                     p_e005_bara=r2.p_bara, sub_703=None)
     mine = vt.vacuum_train(*args, vt.MotiveSteam(*mot), p_324e002_bara=r1.p_bara,
                            p_324e005_bara=r2.p_bara)
     assert (theirs["streams_kgh"]["722"], theirs["nodes"]["324E007"]["t_vent_c"]) == (
-        pytest.approx(135.566, abs=1e-3), pytest.approx(32.099, abs=1e-3))
+        pytest.approx(136.416, abs=1e-3), pytest.approx(32.020, abs=1e-3))
     assert (mine.streams_kgh["722"], mine.nodes["324E007"].t_vent_c) == (
-        pytest.approx(29.056, abs=1e-3), pytest.approx(54.009, abs=1e-3))
+        pytest.approx(29.080, abs=1e-3), pytest.approx(54.009, abs=1e-3))
 
 
 @pytest.mark.parametrize("k", ("NH3", "CO2"))

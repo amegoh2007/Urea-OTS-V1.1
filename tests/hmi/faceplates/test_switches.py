@@ -1,20 +1,17 @@
 """The switch faceplates — `ureasim.hmi.faceplates.switches`.
 
 Pinned: a block valve's state and its one button, which sends V1's toggle; XV-322915 read-only;
-HS-322915's TURN and RELEASE, each explicit, beside the valve and I 22.1's limit; LV-324501's two
-routes; trip 21.2's keyswitches (decision 98) beside the key's position and 21.2's flag. Every
-command is one the engine takes, but XV-322915's, which none sends.
+HS-322915's TURN and RELEASE, each explicit, beside the valve and I 22.1's limit; trip 21.2's
+keyswitches (decision 98) beside the key's position and 21.2's flag. Every command is one the
+engine takes, but XV-322915's, which none sends. V1's LV-324501 route switch is retired (decision
+224): the engine refuses its command.
 """
 
 from __future__ import annotations
 
 from ureasim.engine.command import apply_command
 from ureasim.engine.plant import build_plant
-from ureasim.hmi.faceplates.switches import (
-    BlockValveFaceplate,
-    KeyswitchFaceplate,
-    RouteFaceplate,
-)
+from ureasim.hmi.faceplates.switches import BlockValveFaceplate, KeyswitchFaceplate
 
 
 def test_a_block_valve_and_its_toggle(bridge):
@@ -38,24 +35,27 @@ def test_xv_322915_has_no_operator_command(bridge):
     face.close()
 
 
-def test_the_keyswitch_and_the_route(bridge):
+def test_the_keyswitch(bridge):
     key = KeyswitchFaceplate(bridge, {"t": "ovrd", "tag": "HS-322915", "cmd": "HS-322915",
                                       "xv": "ABSORB_328.C001.XV_322915", "latch": "22_1"})
     key.show()
     assert (key.valve_field.text(), key.limit_field.text()) == ("CLOSED", "NORMAL")
     key.turn(True)
     key.turn(False)
-    route = RouteFaceplate(bridge, {"t": "ind", "tag": "LV-324501B", "route": "B"})
-    route.show()
-    assert route.fields["A"].text() == "75.3"      # LV-324501A at its 75.35 % (decision 150)
-    route.route("B")
     assert bridge.sent == [{"type": "keyswitch_set", "id": "HS-322915", "on": True},
-                           {"type": "keyswitch_set", "id": "HS-322915", "on": False},
-                           {"type": "lv324501_route_set", "route": "B"}]
+                           {"type": "keyswitch_set", "id": "HS-322915", "on": False}]
     plant = build_plant()[1]
     assert all(apply_command(plant, c).ok for c in bridge.sent)
     key.close()
-    route.close()
+
+
+def test_v1s_route_switch_is_retired():
+    """AC4 PC35.2 opens LV-324501A and B from LIC-324501 and PIC-335201 (decision 224): the engine
+    has no route to switch, and V1's route and header commands are refused."""
+    plant = build_plant()[1]
+    for cmd in ({"type": "lv324501_route_set", "route": "B"},
+                {"type": "pic335201_set", "op": 4.0}):
+        assert not apply_command(plant, cmd).ok
 
 
 def test_a_trip_21_2_keyswitch(bridge):

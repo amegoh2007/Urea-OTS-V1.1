@@ -380,9 +380,12 @@ def _design(v1, **over):
 
 
 def port_step(unit, loops, x):
-    """The port's tick on a scenario's inputs: 324F004's motive pressure from HIC-329606."""
+    """The port's tick on a scenario's inputs: 324F004's motive pressure from HIC-329606, and the
+    granulator's header valves online where the scenario names them (AC4's header, decision 224;
+    V1 has none)."""
     return unit.step(loops, x["m"], x["t1"], x["w1"], x["p9"], motive_bara(x["hic"]), x["pd"],
-                     x["tv"], x["p335"], DT)
+                     x["tv"], x["p335"], DT,
+                     **({"headers_online": x["headers"]} if "headers" in x else {}))
 
 
 def _run(v1, script, n_ticks, decided=ALL, check=True, setup=None):
@@ -391,7 +394,8 @@ def _run(v1, script, n_ticks, decided=ALL, check=True, setup=None):
     # V1's linear chest valve and drain: PV-329212's and LV-324501's vendor trims are proved in
     # their decided tests.
     unit = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False, seal_air=False,
-                               bisect_fixed_point=False, vendor_drain=False)
+                               bisect_fixed_point=False, vendor_drain=False,
+                               ac4_header=False)
     loops = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST),
                                      level=se.lic_324501(vendor=False))
     if setup:
@@ -472,7 +476,8 @@ def test_set_point_steps_are_v1s(v1):
     # V1's linear chest valve and drain: PV-329212's and LV-324501's vendor trims are proved in
     # their decided tests.
     unit = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False, seal_air=False,
-                               bisect_fixed_point=False, vendor_drain=False)
+                               bisect_fixed_point=False, vendor_drain=False,
+                               ac4_header=False)
     loops = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST),
                                      level=se.lic_324501(vendor=False))
     for k in range(3000):

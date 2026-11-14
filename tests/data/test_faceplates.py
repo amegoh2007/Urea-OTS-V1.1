@@ -5,7 +5,7 @@ sent ``value`` to three of them, which the engine (as V1's own handler) does not
 faceplate's command is an engine command, and every inline faceplate takes ``r323_ctrl_set``; every
 cascade the notes name is a CAS the faceplate offers; FIC-328406 can be put in CAS (B-50); every
 malfunction is one the engine injects; the speed controllers and the MASTER SP legs name engine
-commands.
+commands; every step panel's command and field, both directions, is one the engine takes.
 """
 
 from __future__ import annotations
@@ -62,6 +62,15 @@ def test_fic_328406_can_be_put_under_lic_328505(plant):
     r = apply_command(plant, {"type": "r323_ctrl_set", "id": "FIC-328406", "mode": "CAS"})
     assert r.ok, r.reason
     assert plant.loops["328C004"][0].fic_328406.loop.mode == "CAS"
+
+
+@pytest.mark.parametrize("command", sorted(fp.STEP_PANELS))
+def test_every_step_panel_is_taken_by_the_engine(plant, command):
+    panel = fp.STEP_PANELS[command]
+    assert panel.command == command and command in PLANT_COMMANDS
+    for direction in (-1, 1):
+        r = apply_command(plant, {"type": panel.command, panel.field: direction})
+        assert r.ok, (command, r.reason)
 
 
 @pytest.mark.parametrize("m", fp.MALFUNCTIONS, ids=lambda m: m.equipment)

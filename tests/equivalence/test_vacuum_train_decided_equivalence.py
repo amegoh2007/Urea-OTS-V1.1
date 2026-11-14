@@ -56,7 +56,8 @@ def _v1_tear_trip(v1, n: int, cut_at: int) -> list:
     l1 = fe.FirstEvaporatorLoops(pic=fe.pic_329203(fe.V1_CHEST),
                                  trap=fe.lic_329505(fe.V1_TRAP_OP_DES_PCT))
     u2 = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False, seal_air=False,
-                             bisect_fixed_point=False, vendor_drain=False)
+                             bisect_fixed_point=False, vendor_drain=False,
+                             ac4_header=False)
     l2 = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST), level=se.lic_324501(vendor=False))
     tv2 = design_specs()["324E002"].t_v_solved_des
     tv5 = design_specs()["324E005"].t_v_solved_des
@@ -105,7 +106,8 @@ def test_the_cold_ends_lagged_on_their_water_decided_divergence(v1):
     assert _pulses([tr.p_324e006_bara for _, _, tr in mine], 1e-5) == 0
     assert _pulses([tr.streams_kgh["709"] for _, _, tr in mine], 50.0) == 0
     assert _pulses([r1.m_boil_kgh for r1, _, _ in mine], 50.0) == 0
-    assert [round(b2[k], 1) for k in (26, 300, 600)] == [109.6, 1092.1, 1236.0]
+    # 1092.1 and 1236.0 before decision 224's melt header drained stage 2 through PIC-335201.
+    assert [round(b2[k], 1) for k in (26, 300, 600)] == [109.6, 1092.0, 1234.5]
     assert max(tr.streams_kgh["722"] for _, _, tr in mine[:700]) == pytest.approx(31.000,
                                                                                   abs=1e-3)
     assert min(r2.t_c for _, r2, _ in mine) >= 140.0

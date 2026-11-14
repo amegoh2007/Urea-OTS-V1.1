@@ -19,12 +19,14 @@ pytestmark = pytest.mark.skipif(not v1_available(), reason="V1 source tree not p
 def test_the_faceplate_whitelist_is_v1s():
     """Every faceplate and every mode V1 offers it, V1's underscore keys written as DCS tags —
     but FIC-328406, both ways: V1 offers MAN alone, the port MAN, AUTO and CAS, because decision
-    B-50 made it LIC-328505's cascade slave (2026-10-03, As-Built §LIX.5)."""
+    B-50 made it LIC-328505's cascade slave (2026-10-03, As-Built §LIX.5); and PIC-335201, which
+    V1 holds as a boundary constant and the port computes as AC4 PC35.2's loop (decision 224)."""
     ns = lift(["R323_CTRL_MODES", "AUX_PUMPS"])
     v1 = {k.replace("_", "-", 1): v for k, v in ns["R323_CTRL_MODES"].items()}
-    assert v1["FIC-328406"] == ("MAN",)
+    assert v1["FIC-328406"] == ("MAN",) and "PIC-335201" not in v1
     assert oc.FACEPLATE_MODES["FIC-328406"] == ("MAN", "AUTO", "CAS")
-    assert dict(oc.FACEPLATE_MODES) == dict(v1, **{"FIC-328406": ("MAN", "AUTO", "CAS")})
+    assert dict(oc.FACEPLATE_MODES) == dict(v1, **{"FIC-328406": ("MAN", "AUTO", "CAS"),
+                                                   "PIC-335201": ("MAN", "AUTO", "CAS")})
     assert tuple(oc.AUX_PUMP_SEEDS) == ns["AUX_PUMPS"]
 
 

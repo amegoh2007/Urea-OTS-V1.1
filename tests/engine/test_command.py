@@ -42,7 +42,9 @@ def _refused(plant, match, **cmd):
 def test_every_command_v1_handles_is_answered():
     """The types V1's handler branches on, read from its source, are all the plant's or the
     simulator's here, except V1's reset of its trip 22.2, which went with the trip (decision 189,
-    a decided divergence: V1 handles it, the rewrite refuses it as unknown)."""
+    a decided divergence: V1 handles it, the rewrite refuses it as unknown), and V1's 335 header
+    entry and LV-324501 route switch, which went with the boundary header (decision 224: the header
+    is computed, its valves and HIC-335602 the operator's)."""
     src = (V1_BACKEND / "main.py").read_text(encoding="utf-8")
     body = src[src.index("def handle_cmd(cmd: dict):"):src.index("# ----- FastAPI app -----")]
     types = set()
@@ -51,7 +53,8 @@ def test_every_command_v1_handles_is_answered():
         if branch:
             types |= set(re.findall(r'"([a-z0-9_]+)"', branch.group(1).split(" or ")[0]))
     types.discard("set")                        # the generic form, a fault only
-    assert types - set(PLANT_COMMANDS) - SIMULATOR_COMMANDS == {"trip_reset"}
+    assert types - set(PLANT_COMMANDS) - SIMULATOR_COMMANDS == {"trip_reset", "pic335201_set",
+                                                                "lv324501_route_set"}
 
 
 def test_hand_valves_clamp_as_v1(plant):
@@ -197,6 +200,31 @@ def test_the_co2_feed_panel_cannot_restore_the_feed_past_trip_21_2(plant):
     plant.units["SYN-TRIPS"].i_21_2.latched = False
     for bad in (0, 2, True, "1", None):
         _refused(plant, r"co2_step needs 'dir' = \+1 or -1", type="co2_step", dir=bad)
+
+
+def test_the_granulation_panel_moves_one_header_valve_a_press(plant):
+    """Decision 224: ten of twelve valves online at the seed; INCREASE brings one online up to
+    twelve, DECREASE takes one off down to none, each press answered with the count; a direction
+    other than +1 or -1 is refused."""
+    assert plant.operator["GRANULATION-HEADERS"] == 10
+    r = _ok(plant, type="granulation_headers", dir=1)
+    assert plant.operator["GRANULATION-HEADERS"] == 11 and r.text == "11 of 12 header valves online"
+    for _ in range(3):
+        _ok(plant, type="granulation_headers", dir=1)
+    assert plant.operator["GRANULATION-HEADERS"] == 12
+    for _ in range(14):
+        _ok(plant, type="granulation_headers", dir=-1)
+    assert plant.operator["GRANULATION-HEADERS"] == 0
+    for bad in (0, 2, True, "1", None):
+        _refused(plant, r"granulation_headers needs 'dir' = \+1 or -1", type="granulation_headers",
+                 dir=bad)
+
+
+def test_hic_335602_sets_its_hand_station(plant):
+    _ok(plant, type="hic335602_set", op=40.0)
+    assert plant.operator["HIC-335602"] == 40.0
+    _ok(plant, type="hic335602_set", op=140.0)
+    assert plant.operator["HIC-335602"] == 100.0
 
 
 def test_322p002_runs_while_either_of_its_pair_does(plant):

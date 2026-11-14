@@ -44,6 +44,7 @@ for the instructor.
 
 from __future__ import annotations
 
+import copy
 import enum
 import importlib
 import json
@@ -53,7 +54,12 @@ from collections import deque
 from types import MappingProxyType
 from typing import Any
 
-from ureasim.data.retired_state import RETIRED_ATTRIBUTES
+from ureasim.data.retired_state import (
+    ADDED_ATTRIBUTES,
+    ADDED_OPERATOR,
+    RETIRED_ATTRIBUTES,
+    RETIRED_BOUNDARY,
+)
 from ureasim.engine.state import PlantState
 
 __all__ = ["FORMAT", "VERSION", "SnapshotError", "encode_state", "decode_state",
@@ -264,6 +270,47 @@ def _shape(obj: Any, path: str, out: dict, seen: set) -> None:
             _shape(v, f"{path}.{k}", out, seen)
 
 
+def _fill_added(obj: Any, ref: Any, seen: set) -> None:
+    """Give every object of ``obj`` the added attributes it lacks, from ``ref`` at the same path."""
+    if id(obj) in seen:
+        return
+    if isinstance(obj, (dict, MappingProxyType)) and isinstance(ref, (dict, MappingProxyType)):
+        seen.add(id(obj))
+        for k, v in obj.items():
+            if k in ref:
+                _fill_added(v, ref[k], seen)
+    elif isinstance(obj, (list, tuple)) and isinstance(ref, (list, tuple)):
+        for v, r in zip(obj, ref):
+            _fill_added(v, r, seen)
+    elif (type(obj).__module__.startswith(_TRUSTED) and not isinstance(obj, enum.Enum)
+          and type(obj) is type(ref)):
+        seen.add(id(obj))
+        for name in ADDED_ATTRIBUTES.get(_class_path(type(obj)), ()):
+            if name not in _attributes(obj) and name in _attributes(ref):
+                object.__setattr__(obj, name, copy.deepcopy(getattr(ref, name)))
+        theirs = _attributes(ref)
+        for k, v in _attributes(obj).items():
+            if k in theirs:
+                _fill_added(v, theirs[k], seen)
+
+
+def adopt_added_state(plant: PlantState, reference: PlantState) -> None:
+    """Bring a save made before a piece of state was added onto the present model (decision 226).
+
+    Each added operator entry is seeded and each added attribute filled from ``reference``, a
+    plant the present model builds, at the same path; a retired boundary value is dropped and
+    handed to the engine's adopter. A save holding all of it is left as it is.
+    """
+    retired = {k: plant.boundary.pop(k) for k in RETIRED_BOUNDARY if k in plant.boundary}
+    for key in ADDED_OPERATOR:
+        if key not in plant.operator and key in reference.operator:
+            plant.operator[key] = copy.deepcopy(reference.operator[key])
+    _fill_added(plant, reference, set())
+    if "PIC-335201.barg" in retired:
+        from ureasim.engine.plant.evaporation import adopt_boundary_header
+        adopt_boundary_header(plant, retired["PIC-335201.barg"])
+
+
 def check_compatible(plant: PlantState, reference: PlantState) -> None:
     """Refuse ``plant`` unless every unit, controller and attribute of ``reference`` — a plant
     the present model builds — is there in the same shape; name the first difference."""
@@ -305,6 +352,7 @@ def loads(text: str, reference: PlantState | None = None) -> PlantState:
         raise SnapshotError(f"snapshot version {doc.get('version')}, this engine reads {VERSION}")
     plant = decode_state(doc["state"])
     if reference is not None:
+        adopt_added_state(plant, reference)
         check_compatible(plant, reference)
     return plant
 

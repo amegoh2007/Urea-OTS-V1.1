@@ -25,7 +25,7 @@ import pathlib
 import re
 
 from ureasim.data import unit_320, unit_322_loop, unit_322e001, unit_322e002
-from ureasim.data import unit_324, unit_328c002, unit_328c004
+from ureasim.data import unit_324, unit_328c002, unit_328c004, unit_335
 from ureasim.data.design_point import R323_FEED_DES_KGH
 from ureasim.data.unit_321 import CO2_DES_KGH
 from ureasim.engine.plant import build_plant
@@ -57,6 +57,12 @@ DIFFERENTIALS = {
                                 stripper_sump.LV_322501_P_DOWN_BARA),
     "LV_324501_DP_DES_BAR": (unit_324, unit_324.LV_324501_P_UP_BARA,
                              unit_324.LV_324501_P_DOWN_BARA),
+    # The 335 melt header (decisions 224 and 225): LV-324501A's design differential on 335P001's
+    # curve, and HV-335602's on its one sizing case.
+    "LV_324501A_DP_DES_BAR": (unit_335, unit_324.LV_324501_P_UP_BARA,
+                              unit_324.LV_324501_P_DOWN_BARA),
+    "HV_335602_DP_CASE_BAR": (unit_335, unit_335.HV_335602.normal_case.p1_bara,
+                              unit_335.HV_335602.normal_case.p2_bara),
 }
 
 #: The names that carry ``DP`` and are no anchored law's design differential, and why.

@@ -1,4 +1,4 @@
-"""The switch faceplates: a block valve and its hand switch, HS-322915's keyswitch, LV-324501's route.
+"""The switch faceplates: a block valve and its hand switch, and HS-322915's keyswitch.
 
 What they show and send
 -----------------------
@@ -12,11 +12,12 @@ What they show and send
   start-up bypasses, HS-321603 and HS-321604, its trip switches — beside the key's position, which
   the packet's ``HAND_SWITCHES`` carries, and 21.2's flag. TURN and RELEASE, each an explicit
   ``keyswitch_set``; both are offered and either is idempotent.
-* **LV-324501's route** (V1's retired switch, kept as V1 kept it): ROUTE A and ROUTE B, each a
-  ``lv324501_route_set``.
 
-Source: V1 ``frontend/app.js`` 600-625 and ``overlays.js`` ``activate`` (723-778),
-``lv324501_route.js``; the overlay's decided edits (`tools/convert_overlays.py`, B-59).
+V1's LV-324501 route switch is retired: AC4 PC35.2 opens both valves from LIC-324501 and PIC-335201
+(decided 2026-11-14, decision 224), so LV-324501A and B open their strokes' indicators.
+
+Source: V1 ``frontend/app.js`` 600-625 and ``overlays.js`` ``activate`` (723-778); the overlay's
+decided edits (`tools/convert_overlays.py`, B-59).
 """
 
 from __future__ import annotations
@@ -29,11 +30,7 @@ from PyQt6.QtWidgets import QLineEdit, QWidget
 from ureasim.hmi.faceplates.base import Faceplate
 from ureasim.hmi.state_access import get_path
 
-__all__ = ["BlockValveFaceplate", "KeyswitchFaceplate", "RouteFaceplate"]
-
-#: LV-324501's two routes and their captions. Source: V1 ``lv324501_route.js``.
-ROUTES = (("A", "A - FORWARD: mixed Stream 609 (402G + UF85) to Unit 335"),
-          ("B", "B - RECYCLE: raw Stream 402G to 323D002; UF85 OFF"))
+__all__ = ["BlockValveFaceplate", "KeyswitchFaceplate"]
 
 
 def _readonly(face: Faceplate, label: str, text: str = "") -> QLineEdit:
@@ -96,24 +93,3 @@ class KeyswitchFaceplate(Faceplate):
 
     def turn(self, on: bool) -> None:
         self.send({"type": "keyswitch_set", "id": self.switch, "on": on})
-
-
-class RouteFaceplate(Faceplate):
-    """LV-324501's route switch."""
-
-    def __init__(self, bridge: QObject, element: Mapping[str, Any],
-                 parent: QWidget | None = None) -> None:
-        super().__init__(bridge, "LV-324501 ROUTE", parent)
-        self.fields = {}
-        for route, caption in ROUTES:
-            self.fields[route] = _readonly(self, f"LV-324501{route} (%)")
-            self.add_button(f"ROUTE {route}", lambda r=route: self.route(r))
-        self.note.setText("\n".join(caption for _, caption in ROUTES))
-
-    def refresh(self, state: Mapping[str, Any]) -> None:
-        for route, field in self.fields.items():
-            v = get_path(state, f"EVAP_324.E003.LV_324501{route}")
-            field.setText("--" if v is None else f"{float(v):.1f}")
-
-    def route(self, route: str) -> None:
-        self.send({"type": "lv324501_route_set", "route": route})

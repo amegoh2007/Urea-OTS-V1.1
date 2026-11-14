@@ -84,8 +84,12 @@ DIAGNOSTIC_BLOCKS = ("RECYCLE_TEAR_RESIDUAL", "sm_diagnostics", "CONSEQUENCE_TRA
 PORT_BLOCKS = ("BOUNDARY_SINKS", "ANALYSERS", "HAND_SWITCHES", "PUMPS")
 
 #: The port's leaves inside a block V1 does publish: the CO2 demand in per cent of design, which
-#: V1's 322-1 panel computed in the browser and the port's publishes (decision 220, 2026-11-13).
-PORT_LEAVES = ("CO2_FEED.demand_pct",)
+#: V1's 322-1 panel computed in the browser and the port's publishes (decision 220, 2026-11-13);
+#: and the computed melt header's FT-335401, the header valves online, HIC-335602, HV-335602 and
+#: its drain to 335D004 (decisions 224 and 225, 2026-11-14).
+PORT_LEAVES = ("CO2_FEED.demand_pct", "EVAP_324.E003.FT_335401", "EVAP_324.E003.HEADERS_ONLINE",
+               "EVAP_324.E003.HIC_335602", "EVAP_324.E003.HV_335602",
+               "EVAP_324.E003.drain_335D004_th")
 
 
 def build_packet(plant: PlantState, results: Mapping[str, Any], tears_read: Any, *,

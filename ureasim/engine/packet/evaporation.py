@@ -9,7 +9,9 @@ sensor, the stage's anchored equilibrium at its live temperature and vacuum
 LV-324501's selector, its closure and the UF85 fields are unit 335's dosing step's (decided
 2026-10-16, decision 123: the dosing runs live on route A, where V1's call forces its interlock), so
 the product is PFD 609, the raw melt with its UF85, and FFIC-335406's and FIC-335405's faceplates
-carry their loops.
+carry their loops. The melt header is computed (decided 2026-11-14, decision 224): PIC-335201 is a
+faceplate, FT-335401 LV-324501A's raw melt, the header valves online and HV-335602 with its drain to
+335D004 published beside it, and the selector's closure counts that drain.
 
 Source: V1 ``backend/main.py`` 10894-11028; ``route_lv324501`` (2440-2519).
 """
@@ -22,9 +24,11 @@ from ureasim.data.unit_324 import (
     F001_P_DES_BARA,
     F003_P_DES_BARA,
     MELT_A_UREA_WATER_K,
+    LV_324501_RHO_KGM3,
     PIC_335201_RELIEF_BARG,
     VACUUM_CONDENSERS,
 )
+from ureasim.data.faceplates import GRANULATION_HEADERS_TAG
 from ureasim.data.unit_335 import PFD_697_RHO_KGM3, PFD_697_T_C, W_697
 from ureasim.engine.packet._common import Tick, faceplate, th
 from ureasim.thermo.empirical import urea_soln_cp
@@ -46,25 +50,30 @@ def route_residuals(m_402_kgh: float, route) -> tuple[float, dict, float]:
     ---------------
     The audit V1 publishes beside the selector: the raw melt and the UF85 in against the forward
     and recycle streams out, the forward stream at the selector's mean heat capacity. Each
-    residual is the selector's rounding and nothing else.
+    residual is the selector's rounding and nothing else. HV-335602's drain to 335D004 leaves at
+    the forward stream's fractions and temperature, and the forward stream's heat capacity is
+    LV-324501A's melt with its UF85 (decision 224: LV-324501B's recycle may flow beside it); on
+    V1's selector both are V1's, the drain zero and the forward melt the whole drain.
 
     Source: V1 ``route_lv324501`` (2483-2496).
     """
     m_base = max(m_402_kgh, 0.0)
     m_uf = route.uf85_kgh
     base_w = route.recycle_w
-    species = {k: (m_base * base_w[k] + m_uf * W_697[k] - route.forward_kgh * route.forward_w[k]
+    m_out = route.forward_kgh + route.drain_kgh
+    species = {k: (m_base * base_w[k] + m_uf * W_697[k] - m_out * route.forward_w[k]
                    - route.recycle_kgh * base_w[k]) for k in base_w}
     t_c = route.recycle_t_c
     cp = urea_soln_cp(base_w["Urea"], t_c)
     cp_uf = urea_soln_cp(W_697["Urea"], PFD_697_T_C)
-    m_selector = m_base + m_uf
-    heat_capacity_flow = m_base * cp + m_uf * cp_uf
+    m_forward = route.base_kgh
+    m_selector = m_forward + m_uf
+    heat_capacity_flow = m_forward * cp + m_uf * cp_uf
     selector_cp = heat_capacity_flow / m_selector if m_selector > 1.0e-15 else cp
     energy_in = (m_base * cp * t_c + m_uf * cp_uf * PFD_697_T_C) / 3600.0
-    energy_out = (route.forward_kgh * selector_cp * route.forward_t_c
+    energy_out = (m_out * selector_cp * route.forward_t_c
                   + route.recycle_kgh * cp * route.recycle_t_c) / 3600.0
-    return (m_base + m_uf - route.forward_kgh - route.recycle_kgh, species,
+    return (m_base + m_uf - route.forward_kgh - route.recycle_kgh - route.drain_kgh, species,
             energy_in - energy_out)
 
 
@@ -90,8 +99,10 @@ def _node(tag: str, node) -> dict:
 
 
 def evap(t: Tick) -> dict:
-    """324E001 / 324F001, 324E003 / 324F003 with LV-324501, and the vacuum train."""
+    """324E001 / 324F001, 324E003 / 324F003 with LV-324501 and the melt header, and the vacuum
+    train."""
     e1, e3, vac, mot = t.r("324E001"), t.r("324E003"), t.r("324E002-E007"), t.r("HV-329605/6")
+    header = e3.header
     uf85 = t.r("335")
     route = uf85.route
     recycle = route.route == "B"
@@ -135,10 +146,11 @@ def evap(t: Tick) -> dict:
             "recyc_th": th(route.recycle_kgh),
             "route": route.route,
             "selector_stream": "402G" if recycle else "609",
-            "selector_feed_th": round((route.forward_kgh + route.recycle_kgh) / 1000.0, 3),
+            "selector_feed_th": round((route.forward_kgh + route.recycle_kgh
+                                       + route.drain_kgh) / 1000.0, 3),
             "selector_feed_T_C": round(sel_t, 3),
             "selector_feed_comp": {k: round(v, 8) for k, v in sel_w.items()},
-            "UF85_interlocked": recycle,
+            "UF85_interlocked": bool(uf85.interlocked),
             "UF85_measured_ratio": round(uf85.measured_ratio, 8),
             "UF85_ratio_command": round(uf85.ratio_command, 8),
             "UF85_flow_setpoint_th": round(uf85.flow_setpoint_th, 6),
@@ -147,7 +159,12 @@ def evap(t: Tick) -> dict:
             "route_energy_residual_kw": round(energy_res, 9),
             "LV_324501A": round(e3.lv_a_pct, 1),
             "LV_324501B": round(e3.lv_b_pct, 1),
-            "PIC_335201": round(t.plant.boundary["PIC-335201.barg"], 2),
+            "PIC_335201": faceplate(t.loop("PIC-335201"), 2, 1),
+            "FT_335401": round(route.base_kgh / LV_324501_RHO_KGM3, 2),
+            "HEADERS_ONLINE": int(t.operator[GRANULATION_HEADERS_TAG]),
+            "HIC_335602": round(t.operator["HIC-335602"], 1),
+            "HV_335602": None if header is None else round(header.hv_pct, 1),
+            "drain_335D004_th": th(route.drain_kgh),
             "LVB_relief_barg": PIC_335201_RELIEF_BARG,
             "recycle_selected": bool(e3.recycle_selected),
             "urea_pct": round(e3.w_melt * 100.0, 1),

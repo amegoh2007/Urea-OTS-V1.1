@@ -5,7 +5,9 @@ what the saved plant would have run. Pinned here on the assembled plant mid-tran
 the JSON text and through a file, with the letdown's cache cleared so no hidden memory carries
 the answer; then the refusals: a foreign class, a damaged document, a different model, a
 reference to an object the save does not hold. A save made before a piece of the model was removed
-still loads, its retired state dropped (`data.retired_state`), and so does every shipped exercise.
+still loads, its retired state dropped (`data.retired_state`), and so does every shipped exercise; a
+save made before the melt header was computed loads, its added state filled from the present model
+and its boundary header handed to the computed one (decision 226).
 """
 
 from __future__ import annotations
@@ -141,6 +143,51 @@ def test_a_save_holding_trip_22_2_loads_without_it():
     back = snapshot.loads(json.dumps(doc), build_plant()[1])
     syn = back.units["SYN-TRIPS"]
     assert not hasattr(syn, "i_22_2") and set(syn.latched) == {"21_2", "21_8", "21_10"}
+
+
+#: The class paths a snapshot names for stage 2 and its loops.
+SECOND_EVAPORATOR = "ureasim.units.evaporation.second_evaporator:SecondEvaporator"
+SECOND_EVAPORATOR_LOOPS = "ureasim.units.evaporation.second_evaporator:SecondEvaporatorLoops"
+
+
+def _before_the_header(plant, stroke=75.0, p_barg=3.6):
+    """``plant``'s save as the model before decision 224 wrote it: no header valves, HIC-335602,
+    header state or PIC-335201; the header a boundary value; LIC-324501's output LV-324501's
+    stroke."""
+    doc = json.loads(snapshot.dumps(plant))
+    state = doc["state"]
+    operator = state["a"]["operator"]["$d"]
+    for key in ("GRANULATION-HEADERS", "HIC-335602"):
+        del operator[key]
+    state["a"]["boundary"]["$d"]["PIC-335201.barg"] = p_barg
+    objects = _objects(state, {})
+    (unit,) = objects[SECOND_EVAPORATOR]
+    for key in ("ac4_header", "header"):
+        del unit["a"][key]
+    (loops,) = objects[SECOND_EVAPORATOR_LOOPS]
+    del loops["a"]["header"]
+    loops["a"]["level"]["a"]["op"] = stroke
+    return json.dumps(doc)
+
+
+def test_a_save_made_before_the_melt_header_loads_on_the_computed_one():
+    """Decision 226: LV-324501A keeps the save's 75 % stroke as PIC-335201's output; the save's load,
+    its drain on V1's selector, 98.65 % of PFD 402, brings ten valves online, whose header passing it
+    stands at 3.406 bar g, PIC-335201's history on it; LIC-324501's output is the 30.31 % whose E1 is
+    that header; HIC-335602 takes its seed and the boundary header is gone; the plant then runs."""
+    _, plant = build_plant()
+    back = snapshot.loads(_before_the_header(plant), build_plant()[1])
+    loops, unit = back.loops["324E003"][0], back.units["324E003"]
+    p = pytest.approx(3.4063, abs=1e-4)
+    assert loops.header.op == 75.0 and loops.level.op == pytest.approx(30.3138, abs=1e-4)
+    assert (loops.header.pv, loops.header.pv1, loops.header.pv2, unit.header.p_barg) == (p, p, p, p)
+    assert loops.header.sp == p and unit.ac4_header is True and loops.header.mode == "CAS"
+    assert (back.operator["GRANULATION-HEADERS"], back.operator["HIC-335602"]) == (10, 0.0)
+    assert "PIC-335201.barg" not in back.boundary
+    sch, _ = build_plant()
+    s = Scheduler(sch, back)
+    for _ in range(10):
+        s.tick()
 
 
 def test_a_reference_to_an_object_the_save_does_not_hold_is_refused():

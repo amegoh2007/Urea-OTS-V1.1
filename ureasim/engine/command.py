@@ -42,7 +42,6 @@ from ureasim.data.operator_commands import (
     EXT_OVERRIDE_TAG,
     FACEPLATE_MODES,
     FIC_329409_SP_MAX_FACTOR,
-    PIC_335201_OP_MAX_BARG,
     RATIO_SP_MAX,
     RATIO_SP_MIN,
     TRIP_21_HAND_SWITCHES,
@@ -54,12 +53,14 @@ from ureasim.data.faceplates import (
     CO2_DEMAND_STEP_FRAC,
     CO2_DEMAND_TH_DECIMALS,
     CO2_STEP_FIELD,
+    GRANULATION_HEADERS_TAG,
+    GRANULATION_STEP_FIELD,
 )
 from ureasim.data.unit_321 import CO2_DES_KGH, PUMP_RATED_RPM
 from ureasim.data.unit_322c001 import C001_CPL_DES_KGH
 from ureasim.data.unit_322e002 import LEAK_DEFAULT_TH
 from ureasim.data.unit_322e003 import CCW_KGH_DES, CCW_T_OUT_DES_C
-from ureasim.data.unit_324 import PIC_335201_DES_BARG, PIC_335201_RELIEF_BARG
+from ureasim.data.unit_335 import HEADER_VALVES_MAX
 from ureasim.engine.command_payload import _Refused, _clamp, _needs, _num, _trip, _trip_name, _want
 from ureasim.engine.command_steam import (
     _leg_set,
@@ -333,23 +334,22 @@ def _ext_override(plant: PlantState, cmd: Mapping, _r) -> str:
     return f"321P002 EXT. OVERRIDE {'on' if plant.operator[EXT_OVERRIDE_TAG] else 'off'}"
 
 
-def _pic335201_set(plant: PlantState, cmd: Mapping, _r) -> str:
-    plant.boundary["PIC-335201.barg"] = _num(cmd, "op", 0.0, PIC_335201_OP_MAX_BARG)
-    return f"PIC-335201 {plant.boundary['PIC-335201.barg']:g} bar g"
+def _granulation_headers(plant: PlantState, cmd: Mapping, _r) -> str:
+    """One press of 324-1b's GRANULATION HEADERS panel: one header valve online, or one off.
 
-
-def _lv324501_route_set(plant: PlantState, cmd: Mapping, _r) -> str:
-    """V1's retired route switch: B puts the 335 header over LV-324501B's relief, A restores it."""
-    if "route" in cmd:
-        route = str(cmd["route"]).strip().upper()
-        if route not in ("A", "B"):
-            raise _Refused("LV-324501's route is A or B")
-        relief = route == "B"
-    else:
-        relief = bool(cmd.get("recycle", False))
-    plant.boundary["PIC-335201.barg"] = (PIC_335201_RELIEF_BARG + 0.5 if relief
-                                         else PIC_335201_DES_BARG)
-    return f"LV-324501 route {'B' if relief else 'A'}"
+    Process utility
+    ---------------
+    The granulator's twelve header valves (P&ID 130, "12x2 HEADERS"), each feeding two injection
+    headers: the operator brings them online with the plant's load to hold the melt header at 3.2
+    to 3.8 bar g and 323D002's small compartment level constant (I-3, 2026-11-14; decision 224).
+    One press moves one valve, from none to all twelve.
+    """
+    direction = cmd.get(GRANULATION_STEP_FIELD)
+    if direction not in (-1, 1) or isinstance(direction, bool):
+        raise _Refused(f"granulation_headers needs {GRANULATION_STEP_FIELD!r} = +1 or -1")
+    n = int(_clamp(plant.operator[GRANULATION_HEADERS_TAG] + direction, 0, HEADER_VALVES_MAX))
+    plant.operator[GRANULATION_HEADERS_TAG] = n
+    return f"{n} of {HEADER_VALVES_MAX} header valves online"
 
 
 # ======================================================================================
@@ -478,8 +478,8 @@ PLANT_COMMANDS: dict = {
     "fic_set": _fic_set,
     "tic_set": _tic_set,
     "r323_ctrl_set": _r323_ctrl_set,
-    "pic335201_set": _pic335201_set,
-    "lv324501_route_set": _lv324501_route_set,
+    "granulation_headers": _granulation_headers,
+    "hic335602_set": _operator("HIC-335602", "op", 0.0, 100.0),
     "steam_supply_set": _steam_valve(("pic_329204", "op_pct"), "PV-329204"),
     "steam_letdown_set": _steam_valve(("pic_329205", "op_b_pct"), "PV-329205B"),
     "steam_hpvent_set": _steam_valve(("hv_329601", "hic_pct"), "HV-329601"),

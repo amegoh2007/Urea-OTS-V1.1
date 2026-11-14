@@ -54,6 +54,40 @@ DECIDED_EDITS = (
         ("screen-328-2", "328P003A", "PUMPS.328P003A"),
         ("screen-328-2", "328P003B", "PUMPS.328P003B"),
     )),
+    # Handoff B-137, decided 2026-11-14 (decision 224, the process engineer's instruction I-3):
+    # the 335 melt header is computed on AC4 PC35.2. PIC-335201 becomes its loop's faceplate, its
+    # set point LIC-324501's E1; FT-335401 reads LV-324501A's raw melt, HIC-335602 and HV-335602
+    # the drain to 335D004; LV-324501A and B both show their own strokes, V1's route switch
+    # retired, and LT-324501's note follows.
+    ("screen-324-1b", "pic335201", {
+        "bind": "EVAP_324.E003.PIC_335201.pv", "mode": "EVAP_324.E003.PIC_335201.mode",
+        "cas": True,
+        "note": ("PIC-335201, the 335 melt header (PT-335201, 0-4 bar g): CAS follows LIC-324501's "
+                 "E1 = 2.8 + X/50 bar g, 3.2 to 3.8 bar g; reverse acting on LV-324501A"),
+    }),
+    ("screen-324-1b", "ft335401", {
+        "bind": "EVAP_324.E003.FT_335401", "u": "M3/H", "dec": 1,
+        "note": ("FT-335401, LV-324501A's raw melt up the header (402G, ahead of the header "
+                 "valves and HV-335602): FFIC-335406's ratio base"),
+    }),
+    ("screen-324-1b", "hic335602", {"bind": "EVAP_324.E003.HIC_335602", "u": "%", "dec": 1,
+                                    "face": "hic"}),
+    ("screen-324-1b", "hv335602", {"bind": "EVAP_324.E003.HV_335602", "u": "%", "dec": 1,
+                                   "face": "hic"}),
+    ("screen-324-1b", "lv324501a", {
+        "route": None,
+        "note": ("LV-324501A, the forward melt: PIC-335201's output, mixed Stream 609 (402G + "
+                 "UF85) up the 335 melt header"),
+    }),
+    ("screen-324-1b", "lv324501b", {
+        "route": None,
+        "note": ("LV-324501B, the recycle: LIC-324501's output above 50 %, raw Stream 402G back to "
+                 "323D002 beside the forward melt; no UF85"),
+    }),
+    ("screen-324-1b", "lt324501", {
+        "note": ("324F003 product level; LIC-324501's output sets PIC-335201's set point (E1) and, "
+                 "above 50 %, opens LV-324501B (AC4 PC35.2)"),
+    }),
 )
 
 #: The process engineer's decisions that put on a screen a console element V1's screens lack:
@@ -106,6 +140,15 @@ DECIDED_ADDITIONS = (
                       "u": "%", "dec": 1, "cmd": "co2_step",
                       "note": ("CO2 demand on 320K002 in % of the 54.618 t/h design feed; DOWN and "
                                "UP step it by 2 %, from 0 to 120 %")}),
+    # Decided 2026-11-14 (decision 224, the process engineer's instruction I-3): the granulator's
+    # twelve header valves, brought online with the load, in the free space above the GRANULATION
+    # label beside the header they draw on.
+    ("screen-324-1b", {"k": "granstep", "t": "step", "x": 1213, "y": 378.5, "w": 264, "h": 53,
+                       "tag": "GRANULATION", "cap": "GRANULATION HEADERS",
+                       "bind": "EVAP_324.E003.HEADERS_ONLINE", "u": "", "dec": 0,
+                       "cmd": "granulation_headers",
+                       "note": ("the granulator's header valves online, 0 to 12, each feeding two "
+                                "injection headers; DECREASE and INCREASE move one valve")}),
 )
 
 #: Element types the process engineer decided to render as another type, every element of the

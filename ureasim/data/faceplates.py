@@ -33,13 +33,15 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 from ureasim.data.operator_commands import FACEPLATE_MODES
+from ureasim.data.unit_335 import HEADER_VALVES_MAX
 
 __all__ = [
     "HandValve", "HAND_VALVES", "LOOP_COMMANDS", "CAS_MASTERS", "CAS_UNWIRED",
     "SpeedController", "SPEED_CONTROLLERS", "PUMP_TRIPS", "PUMP_COMMANDS", "MASTER_SP_LEGS",
     "Malfunction", "MALFUNCTIONS", "CO2_DEMAND_MAX_FRAC", "CO2_DEMAND_STEP_FRAC",
     "CO2_STEP_COMMAND", "CO2_STEP_FIELD", "CO2_DEMAND_PCT_DECIMALS", "CO2_DEMAND_TH_DECIMALS",
-    "loop_command",
+    "GRANULATION_HEADERS_TAG", "GRANULATION_STEP_COMMAND", "GRANULATION_STEP_FIELD", "StepPanel",
+    "STEP_PANELS", "loop_command",
 ]
 
 
@@ -77,6 +79,9 @@ _HAND = {
                   "↑ opening ⇒ ↑ 324F004/F005 vacuum (↓ 324F003 pressure)"),
     "323605": _hv("hic323605_set", "op", "323605",
                   "↓ opening ⇒ ↑ 323F010 pressure (↓ vacuum)"),
+    "335602": _hv("hic335602_set", "op", "335602",
+                  "↑ opening ⇒ the melt header drains to 335D004 (↓ PIC-335201); opens in 3 s, "
+                  "closes in 25 s"),
 }
 
 #: Each hand station by its HIC and its HV tag (V1 routes either), and FT-322404's condensate
@@ -124,6 +129,7 @@ CAS_MASTERS = MappingProxyType({
     "FIC-328404": "TIC-328008",
     "FIC-328406": "LIC-328505",
     "FIC-335405": "FFIC-335406",
+    "PIC-335201": "LIC-324501",
 })
 
 #: Loops seeded in CAS whose master the model does not wire: CAS holds the seeded set point.
@@ -235,3 +241,42 @@ CO2_STEP_COMMAND, CO2_STEP_FIELD = "co2_step", "dir"
 #: (``toFixed(3)`` on t/h), each rounding a half upward. Source: V1 ``frontend/co2_compressor.js``
 #: (``step``, ``render``).
 CO2_DEMAND_PCT_DECIMALS, CO2_DEMAND_TH_DECIMALS = 1, 3
+
+
+# ======================================================================================
+# The step panels: a readout between two buttons, each press one step in the engine
+# ======================================================================================
+
+#: The granulator's header valves online, the operator entry 324-1b's GRANULATION HEADERS panel
+#: steps (decision 224, the process engineer's instruction I-3 of 2026-11-14), the command a press
+#: sends and its payload field, the step's direction (+1 or -1).
+GRANULATION_HEADERS_TAG = "GRANULATION-HEADERS"
+GRANULATION_STEP_COMMAND, GRANULATION_STEP_FIELD = "granulation_headers", "dir"
+
+
+@dataclass(frozen=True)
+class StepPanel:
+    """A step panel: the command a press sends and its field, the readout's published limits, the
+    two buttons' captions and width [px], and the panel's hint."""
+
+    command: str
+    field: str
+    lo: float
+    hi: float
+    labels: tuple
+    button_px: int
+    hint: str
+
+
+#: Each step panel by the command its element names: 322-1's CO2 FEED panel (decision 220), V1's
+#: own captions and button width, and 324-1b's GRANULATION HEADERS panel (decision 224), its
+#: buttons wide enough for INCREASE.
+STEP_PANELS = MappingProxyType({
+    CO2_STEP_COMMAND: StepPanel(
+        CO2_STEP_COMMAND, CO2_STEP_FIELD, 0.0, CO2_DEMAND_MAX_FRAC * 100.0, ("DOWN", "UP"), 48,
+        f"DOWN and UP step it by {CO2_DEMAND_STEP_FRAC * 100:g} % of its design"),
+    GRANULATION_STEP_COMMAND: StepPanel(
+        GRANULATION_STEP_COMMAND, GRANULATION_STEP_FIELD, 0.0, float(HEADER_VALVES_MAX),
+        ("DECREASE", "INCREASE"), 84,
+        "DECREASE takes one header valve off, INCREASE brings one online"),
+})

@@ -2,14 +2,16 @@
 
 Pinned: PY-324201 / AY-324701 are V1's soft sensor (at the design temperature and vacuum they read
 the live strength), LV-324501's selector publishes V1's route, selector stream and closure with
-unit 335's UF85 dosed live on route A (decided 2026-10-16, decision 123) and interlocked off on route
-B, when PIC-335201 passes its relief setting, and the vacuum train carries each condenser's balance
-with its datasheet geometry.
+unit 335's UF85 dosed live on route A (decided 2026-10-16, decision 123); the computed melt header
+(decision 224) publishes PIC-335201's faceplate, FT-335401, the header valves online and HV-335602,
+and with LIC-324501 above 50 % LV-324501B recycles beside the forward melt, which keeps its UF85,
+the closure counting both and HV-335602's drain; and the vacuum train carries each condenser's
+balance with its datasheet geometry.
 """
 
 from __future__ import annotations
 
-from ureasim.data.unit_324 import VACUUM_CONDENSERS
+from ureasim.data.unit_324 import LV_324501A_OP_DES_PCT, P2_DES_KGH, VACUUM_CONDENSERS
 from tests.engine.packet.conftest import run
 
 
@@ -39,19 +41,48 @@ def test_the_selector_forwards_609_with_its_uf85(design):
     assert e3["FIC_335405"] == {"pv": 0.617, "sp": 0.617, "op": 44.5, "mode": "CAS"}
 
 
-def test_the_melt_header_over_its_relief_setting_recycles():
-    """PIC-335201 at 4.0 bar g, above LV-324501B's 3.8: the melt returns to 323D002 raw, the
-    metering pumps stopped and FT-335405 at zero, FFIC-335406's ratio standing and its output at
-    OUT L with no melt forward."""
-    def back_up(plant):
-        plant.boundary["PIC-335201.barg"] = 4.0
-    e3 = run(5, back_up).packet["EVAP_324"]["E003"]
-    assert (e3["route"], e3["selector_stream"], e3["UF85_interlocked"]) == ("B", "402G", True)
-    assert e3["recycle_selected"] is True and e3["melt_fwd_th"] == 0.0 and e3["recyc_th"] > 0.0
-    assert (e3["uf85_kgh"], e3["UF85_measured_ratio"], e3["UF85_flow_setpoint_th"]) == (0.0, 0.0,
-                                                                                      0.0)
-    assert e3["FFIC_335406"] == {"pv": 0.0, "sp": 0.0081, "op": 0.0, "mode": "AUTO"}
-    assert e3["FIC_335405"] == {"pv": 0.0, "sp": 0.617, "op": 0.0, "mode": "CAS"}
+def test_the_melt_header_at_design(design):
+    """Decision 224: PIC-335201 in CAS on LIC-324501's E1 at the header's 3.5 bar g, LV-324501A at
+    its design stroke and LV-324501B shut; FT-335401 the design drain at LV-324501's density; ten
+    of twelve header valves online, HIC-335602 and HV-335602 shut, nothing drained to 335D004."""
+    e3 = design.packet["EVAP_324"]["E003"]
+    assert e3["PIC_335201"] == {"pv": 3.5, "sp": 3.5, "op": round(LV_324501A_OP_DES_PCT, 1),
+                                "mode": "CAS"}
+    assert (e3["LV_324501A"], e3["LV_324501B"]) == (round(LV_324501A_OP_DES_PCT, 1), 0.0)
+    assert e3["FT_335401"] == round(P2_DES_KGH / 1221.0, 2)
+    assert (e3["HEADERS_ONLINE"], e3["HIC_335602"], e3["HV_335602"]) == (10, 0.0, 0.0)
+    assert e3["drain_335D004_th"] == 0.0 and e3["recycle_selected"] is False
+
+
+def test_the_melt_header_above_e1s_ceiling_recycles_beside_the_forward_melt():
+    """LIC-324501 in MAN at 80 %: E1 stands at its 3.8 bar g ceiling and LV-324501B opens to 60 %,
+    returning raw melt to 323D002 while the forward melt keeps its UF85 (AC4 PC35.2, decision
+    224); the selector closes on both, the residuals at the rounding."""
+    def man(plant):
+        level = plant.loops["324E003"][0].level
+        level.mode, level.op = "MAN", 80.0
+    e3 = run(5, man).packet["EVAP_324"]["E003"]
+    assert (e3["route"], e3["UF85_interlocked"], e3["recycle_selected"]) == ("AB", False, True)
+    assert e3["PIC_335201"]["sp"] == 3.8 and e3["LV_324501B"] == 60.0
+    assert e3["melt_fwd_th"] > 0.0 and e3["recyc_th"] > 0.0 and e3["uf85_kgh"] > 0.0
+    assert abs(e3["route_mass_residual_kgh"]) < 1e-6 and abs(e3["route_energy_residual_kw"]) < 1e-6
+    assert max(abs(v) for v in e3["route_species_residual_kgh"].values()) < 1e-6
+    assert abs(e3["selector_feed_th"] - e3["melt_fwd_th"] - e3["recyc_th"]) < 0.0025
+
+
+def test_hv_335602_drains_the_header_to_335d004_on_its_own_leaf():
+    """Decision 225: HIC-335602 at 100 % opens HV-335602 in 3 s; five seconds on the header has
+    fallen, its drain to 335D004 is published on its own leaf, outside the product, and the selector
+    still closes, the drain counted."""
+    def open_hv(plant):
+        plant.operator["HIC-335602"] = 100.0
+    e3 = run(50, open_hv).packet["EVAP_324"]["E003"]
+    assert (e3["HIC_335602"], e3["HV_335602"]) == (100.0, 100.0)
+    assert e3["drain_335D004_th"] > 0.0 and e3["PIC_335201"]["pv"] < 3.5
+    assert abs(e3["route_mass_residual_kgh"]) < 1e-6 and abs(e3["route_energy_residual_kw"]) < 1e-6
+    assert max(abs(v) for v in e3["route_species_residual_kgh"].values()) < 1e-6
+    assert abs(e3["selector_feed_th"] - e3["melt_fwd_th"] - e3["recyc_th"]
+               - e3["drain_335D004_th"]) < 0.0035
 
 
 def test_the_vacuum_train_carries_the_datasheets(design):

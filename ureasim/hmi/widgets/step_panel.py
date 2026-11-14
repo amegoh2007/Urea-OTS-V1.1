@@ -1,4 +1,4 @@
-"""The step panel: a caption, a published readout, and DOWN and UP buttons that each ask the engine for one step.
+"""The step panel: a caption, a published readout, and two buttons that each ask the engine for one step.
 
 What it is
 ----------
@@ -10,7 +10,9 @@ step (``co2_step``), and the panel shows only what the packet publishes. A burst
 of commands, each stepping from the engine's own value, so no press is lost to a stale readout.
 
 The buttons grey at the published limits, as V1's did, so an operator cannot press past them; the
-engine clamps a step that arrives anyway. The colours are V1's panel's.
+engine clamps a step that arrives anyway. The colours are V1's panel's. 324-1b's GRANULATION HEADERS
+panel (decision 224, I-3 of 2026-11-14) is the same panel on the header valves online, DECREASE and
+INCREASE; each panel's command, limits and captions are data (`data.faceplates.STEP_PANELS`).
 
 Interaction
 -----------
@@ -29,22 +31,24 @@ from PyQt6.QtCore import QPoint, QRect, Qt
 from PyQt6.QtGui import QColor, QFont, QPainter
 from PyQt6.QtWidgets import QWidget
 
-from ureasim.data.faceplates import CO2_DEMAND_MAX_FRAC, CO2_DEMAND_STEP_FRAC, CO2_STEP_FIELD
+from ureasim.data.faceplates import STEP_PANELS
 from ureasim.hmi import theme
 from ureasim.hmi.state_access import get_path
 from ureasim.hmi.widgets.base import OverlayWidget
 
 __all__ = ["StepPanelWidget"]
 
-#: The panel's inner layout [px], V1's: padding, caption height, button width and gap.
-_PAD_X, _PAD_TOP, _CAPTION_H, _BUTTON_W, _GAP, _PAD_BOTTOM = 8, 5, 13, 48, 6, 6
+#: The panel's inner layout [px], V1's: padding, caption height, gap (the button width is the
+#: panel's own, `data.faceplates.StepPanel.button_px`).
+_PAD_X, _PAD_TOP, _CAPTION_H, _GAP, _PAD_BOTTOM = 8, 5, 13, 6, 6
 
 
 class StepPanelWidget(OverlayWidget):
-    """A caption over a readout between DOWN and UP; each button asks the engine for one step."""
+    """A caption over a readout between two buttons; each asks the engine for one step."""
 
     def __init__(self, element: Mapping[str, Any], parent: QWidget | None = None):
         super().__init__(element, parent)
+        self.panel = STEP_PANELS[str(element["cmd"])]
         self.resize_to(int(element.get("w") or 196), int(element.get("h") or 53))
         self._value: float | None = None
         self._caption_font = QFont()
@@ -59,8 +63,7 @@ class StepPanelWidget(OverlayWidget):
         self._unit_font = QFont(self._value_font)
         self._unit_font.setPixelSize(10)
         self._unit_font.setBold(False)
-        self.setToolTip(f"{element.get('tag', '')} — {element.get('cap', '')}: DOWN and UP step it "
-                        f"by {CO2_DEMAND_STEP_FRAC * 100:g} % of its design")
+        self.setToolTip(f"{element.get('tag', '')} — {element.get('cap', '')}: {self.panel.hint}")
 
     # ----------------------------------------------------------------------------------
     # Geometry
@@ -71,14 +74,14 @@ class StepPanelWidget(OverlayWidget):
         return QRect(_PAD_X, top, self.width() - 2 * _PAD_X, self.height() - top - _PAD_BOTTOM)
 
     def button_rect(self, direction: int) -> QRect:
-        """DOWN (-1) on the left of the row, UP (+1) on its right."""
-        row = self._row()
-        x = row.left() if direction < 0 else row.right() - _BUTTON_W + 1
-        return QRect(x, row.top(), _BUTTON_W, row.height())
+        """The step down (-1) on the left of the row, the step up (+1) on its right."""
+        row, width = self._row(), self.panel.button_px
+        x = row.left() if direction < 0 else row.right() - width + 1
+        return QRect(x, row.top(), width, row.height())
 
     def _readout_rect(self) -> QRect:
-        row = self._row()
-        return row.adjusted(_BUTTON_W + _GAP, 0, -(_BUTTON_W + _GAP), 0)
+        row, width = self._row(), self.panel.button_px
+        return row.adjusted(width + _GAP, 0, -(width + _GAP), 0)
 
     # ----------------------------------------------------------------------------------
     # State: the packet's, nothing kept
@@ -94,12 +97,12 @@ class StepPanelWidget(OverlayWidget):
         if self._value is None:
             return True
         if direction > 0:
-            return self._value < CO2_DEMAND_MAX_FRAC * 100.0 - 1e-6
-        return self._value > 1e-6
+            return self._value < self.panel.hi - 1e-6
+        return self._value > self.panel.lo + 1e-6
 
     def command(self, direction: int) -> dict:
         """The engine command one press sends: the element's command and the step's direction."""
-        return {"type": str(self.element["cmd"]), CO2_STEP_FIELD: direction}
+        return {"type": self.panel.command, self.panel.field: direction}
 
     def _direction_at(self, pos: QPoint) -> int | None:
         for direction in (-1, +1):
@@ -143,7 +146,8 @@ class StepPanelWidget(OverlayWidget):
 
         p.setFont(self._button_font)
         metrics = p.fontMetrics()
-        for direction, label, glyph in ((-1, "DOWN", "▼"), (+1, "UP", "▲")):
+        for direction, label, glyph in ((-1, self.panel.labels[0], "▼"),
+                                        (+1, self.panel.labels[1], "▲")):
             box = self.button_rect(direction)
             live = self.enabled(direction)
             p.setOpacity(1.0 if live else theme.STEP_BUTTON_DEAD_OPACITY)

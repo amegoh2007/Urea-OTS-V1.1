@@ -8,7 +8,6 @@ element                                faceplate
 a pump the engine models (bind + id)   `PumpFaceplate` (START / STOP); an unbound pump is inert
 a block valve, a hand switch           `BlockValveFaceplate` (V1 toggled a valve on its symbol)
 HS-322915, the override keyswitch      `KeyswitchFaceplate`
-LV-324501A / B (a ``route``)           `RouteFaceplate`
 ``face: 'hic' / 'hic2'``               `HandValveFaceplate`
 ``face: 'pic'``                        `ControllerFaceplate` on PIC-322203's fields
 ``fp: SIC_321950 / SIC_321951``        `SpeedFaceplate`
@@ -41,7 +40,7 @@ from ureasim.hmi.faceplates.indicator import IndicatorFaceplate
 from ureasim.hmi.faceplates.master_setpoint import MasterSetpointFaceplate
 from ureasim.hmi.faceplates.pump import PumpFaceplate
 from ureasim.hmi.faceplates.speed import SpeedFaceplate
-from ureasim.hmi.faceplates.switches import BlockValveFaceplate, KeyswitchFaceplate, RouteFaceplate
+from ureasim.hmi.faceplates.switches import BlockValveFaceplate, KeyswitchFaceplate
 from ureasim.hmi.widgets.stream_hotspot import StreamInspector, published_stream
 
 __all__ = ["faceplate_for", "faceplate_key", "Faceplate", "CTRL_RE"]
@@ -81,8 +80,6 @@ def faceplate_for(element: Mapping[str, Any], bridge: QObject,
         return StreamInspector(bridge, element, parent)
     if t == "nav":
         return None
-    if element.get("route"):
-        return RouteFaceplate(bridge, element, parent)
     face = element.get("face")
     if face in ("hic", "hic2") and hand_valve_of(element) is not None:
         return HandValveFaceplate(bridge, element, parent)

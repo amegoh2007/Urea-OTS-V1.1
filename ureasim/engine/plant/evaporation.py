@@ -4,8 +4,9 @@
 What this is
 ------------
 The schedule's entries for V1's ``step_sim`` sections 26 to 31. UF85 (section 30) doses on stage 2's
-drain of this tick and joins it at LV-324501's selector (decided 2026-10-16, decision 123: V1 calls
-its cascade with the recycle permissive forced).
+drain of this tick, on LV-324501A's forward melt (decided 2026-10-16, decision 123: V1 calls its
+cascade with the recycle permissive forced). Stage 2 drains to the computed melt header, its header
+valves and HIC-335602 the operator's (decision 224).
 HV-329605 and HV-329606 pass the LP header's steam to the ejectors' nozzles at the header the
 network left this tick (handoff B-73). Stage 1 takes 323D002's discharge of this tick down its own
 line and the pre-evaporator's overhead through HV-323605; stage 2 takes stage 1's melt of this
@@ -18,11 +19,17 @@ evaporation`) and their equivalence tests.
 
 from __future__ import annotations
 
+from ureasim.core.numeric import clamp
+from ureasim.data.faceplates import GRANULATION_HEADERS_TAG
+from ureasim.data.unit_324 import P2_DES_KGH
+from ureasim.data.unit_335 import HEADER_P_DES_BARG, HEADER_VALVES_DES, HEADER_VALVES_MAX
 from ureasim.engine.schedule import Boundary, DeclaredTear, Operator, Result, State, Step
 from ureasim.units.evaporation import ejector_map as em
 from ureasim.units.evaporation import first_evaporator as fe
 from ureasim.units.evaporation import second_evaporator as se
 from ureasim.units.evaporation import vacuum_train as vt
+from ureasim.units.evaporation.melt_route import selector_drain
+from ureasim.units.finishing import melt_header as mh
 from ureasim.units.finishing import uf85_dosing as uf
 
 __all__ = ["MOTIVE", "TRAIN", "DOSING", "units", "steps", "tears"]
@@ -42,6 +49,44 @@ def units() -> tuple[dict, dict]:
              DOSING: (uf.ffic_335406(), uf.fic_335405())})
 
 
+def adopt_boundary_header(plant, p_335201_barg: float) -> None:
+    """Hand a save's battery-limit melt header over to the computed one (decision 226).
+
+    Process utility
+    ---------------
+    An exercise saved before the header was computed (decision 224) held PIC-335201 as a boundary
+    value and LIC-324501's output as LV-324501's stroke. On restore the save's load is its drain on
+    V1's selector over the design drain, and the header valves online are the number whose header,
+    passing that drain, stands nearest the design's 3.5 bar g without rising above E1's 3.8 bar g
+    ceiling (I-3: the valves proportional to the load, to hold 3.2 to 3.8 bar g; ten at design). A
+    header above the ceiling would leave LIC-324501 at full E1 and the excess on LV-324501B. The
+    header starts at that pressure, with PIC-335201's history on it and LV-324501A at the save's
+    stroke, and LIC-324501's output becomes the X whose E1 is that header. A save draining nothing
+    keeps the seeded valves and its header; a drain no number of valves can hold under the ceiling
+    takes all twelve.
+
+    Equation: P(N) = P_des (N_des L / N)^2, N = argmin |P(N) - P_des| over the N in 1 to 12 with
+    P(N) <= E1(100 %).
+    """
+    loops, unit = plant.loops["324E003"][0], plant.units["324E003"]
+    p = max(float(p_335201_barg), 0.0)
+    stroke = clamp(loops.level.op, 0.0, 100.0)
+    drain, _recycle, lv_a, _lv_b = selector_drain(stroke, p, unit.vendor_drain, float("inf"))
+    load = drain / P2_DES_KGH
+    if load > 0.0:
+        def header(k: int) -> float:
+            return HEADER_P_DES_BARG * (load * HEADER_VALVES_DES / k) ** 2
+        held = [k for k in range(1, HEADER_VALVES_MAX + 1) if header(k) <= mh.e1_setpoint_barg(100.0)]
+        n = min(held, key=lambda k: abs(header(k) - HEADER_P_DES_BARG)) if held else HEADER_VALVES_MAX
+        plant.operator[GRANULATION_HEADERS_TAG] = n
+        p = header(n)
+    loops.level.op = mh.x_for_setpoint(p)
+    loops.header.op = lv_a
+    loops.header.pv = loops.header.pv1 = loops.header.pv2 = p
+    loops.header.sp = mh.e1_setpoint_barg(loops.level.op)
+    unit.header.p_barg = p
+
+
 def _motive(plant, a, dt):
     return vt.motive_steam(a["hic_329605_pct"], a["hic_329606_pct"], a["p_lp_bara"])
 
@@ -54,16 +99,17 @@ def _324e001(plant, a, dt):
 
 
 def _324e003(plant, a, dt):
-    return plant.units["324E003"].step(
+    unit = plant.units["324E003"]
+    return unit.step(
         *plant.loops["324E003"], a["feed_kgh"], a["feed_t_c"], dict(a["feed_w"]), a["p_mp_bara"],
         em.nozzle_pressure_bara("324F004", a["m_927_kgh"]), a["p_discharge_bara"],
-        a["t_vent_324e005_c"], a["p_335201_barg"], dt)
+        a["t_vent_324e005_c"], unit.header.p_barg, dt,
+        headers_online=int(clamp(a["headers_online"], 0, HEADER_VALVES_MAX)),
+        hic_335602_pct=a["hic_335602_pct"])
 
 
 def _uf85(plant, a, dt):
-    route = a["route"]
-    return uf.uf85_step(*plant.loops[DOSING], a["m_402_kgh"], route.recycle_w,
-                        route.recycle_t_c, a["recycle"], dt)
+    return uf.uf85_split_step(*plant.loops[DOSING], a["route"], False, dt)
 
 
 def _train(plant, a, dt):
@@ -95,10 +141,10 @@ def steps() -> dict:
             "m_927_kgh": Result(MOTIVE, "m_927_kgh"),
             "p_discharge_bara": State(TRAIN, "p_324e006_bara"),
             "t_vent_324e005_c": State(TRAIN, "lag_state.324E005"),
-            "p_335201_barg": Boundary("PIC-335201.barg")}, _324e003),
+            "headers_online": Operator("GRANULATION-HEADERS"),
+            "hic_335602_pct": Operator("HIC-335602")}, _324e003),
         DOSING: Step(DOSING, "UF85 dosing, FFIC-335406 and FIC-335405", "335", 30, {
-            "m_402_kgh": Result(e003, "m_402_kgh"), "route": Result(e003, "route"),
-            "recycle": Result(e003, "recycle_selected")}, _uf85),
+            "route": Result(e003, "route")}, _uf85),
         TRAIN: Step(TRAIN, "vacuum train", "324", 31, {
             "m_790_kgh": Result("323F010", "pull_kgh"),
             "sub_703": Result("323F010", "blowthrough_share"),

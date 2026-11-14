@@ -8,7 +8,8 @@ map, handoff B-61; the held melt boiling, B-62; the melt on the PFD's refit and 
 all on 2026-10-01; the feed at the strength its leg drains, B-63, on 2026-10-02); five are classes
 decided on other units and applied under §5 rule 7 (decisions 20, 10 and 21, 23, 33 and 11). B-67's and B-71's switch (the condensers'
 vent on its additive departures where B-71 puts them, decided 2026-10-02) stays on throughout; it is run both ways
-in `test_vacuum_condenser_decided_equivalence.py`.
+in `test_vacuum_condenser_decided_equivalence.py`. The melt header on AC4 PC35.2 (decision 224, B-137,
+2026-11-14) is run against V1's selector on LV-324501's vendor trims.
 """
 
 from __future__ import annotations
@@ -27,19 +28,22 @@ v1 = h.v1
 
 
 def _both(v1, script, n, off, sp=None, setup=None, vendor_trim=False, seal_air=False,
-          bisect=False, vendor_drain=False):
+          bisect=False, vendor_drain=False, ac4=False):
     """V1's transcription without the departure `off`, and the port, side by side; returns the
     tick each side's state was first not ``==`` the other's, and per tick (V1, port) records. The
     port runs V1's linear chest valve unless ``vendor_trim`` (PV-329212's own test), V1's sealed
     leg unless ``seal_air`` (B-107's own test), V1's last sweep unless ``bisect`` (B-108's) and
-    V1's span law on LV-324501 unless ``vendor_drain`` (decision 150's)."""
+    V1's span law on LV-324501 unless ``vendor_drain`` (decision 150's), and V1's selector unless
+    ``ac4`` (AC4's computed header, decision 224's)."""
     dec = h.ALL - {off}
     s = h._v1_state(v1, dec)
     chest = h.se.PV_329212_CHEST if vendor_trim else h.se.V1_CHEST
     unit, loops = (h.se.SecondEvaporator(chest=chest, backward_species=False, seal_air=seal_air,
-                                         bisect_fixed_point=bisect, vendor_drain=vendor_drain),
+                                         bisect_fixed_point=bisect, vendor_drain=vendor_drain,
+                                         ac4_header=ac4),
                    h.se.SecondEvaporatorLoops(pic=h.se.pic_329212(chest),
-                                              level=h.se.lic_324501(vendor=vendor_drain)))
+                                              level=h.se.lic_324501(vendor=vendor_drain,
+                                                                  ac4=ac4)))
     if setup:
         setup(s, loops)
     parted, hist = None, []
@@ -67,7 +71,9 @@ def _both(v1, script, n, off, sp=None, setup=None, vendor_trim=False, seal_air=F
                      "leg": (a["out"][7], b.m_402_kgh), "made": made,
                      "boil": (a["melt"][3], b.m_boil_kgh),
                      "urea": (s.w_e003["Urea"], unit.w["Urea"]),
-                     "air": b.seal_air_kgh, "level": b.level_pct})
+                     "air": b.seal_air_kgh, "level": b.level_pct,
+                     "lv": ((a["out"][5], a["out"][6]), (b.lv_a_pct, b.lv_b_pct)),
+                     "recycle": (a["out"][7] if a["out"][4] else 0.0, b.route.recycle_kgh)})
     return parted, hist
 
 
@@ -215,6 +221,41 @@ def test_lv_324501_on_flowserves_sheets_decided_divergence(v1):
     assert hist[3000]["M"] == (pytest.approx(3189.09, abs=0.01), pytest.approx(3570.75, abs=0.01))
 
 
+def test_the_melt_header_on_ac4_decided_divergence(v1):
+    """Decision 224, decided 2026-11-14 (handoff B-137): LIC-324501's output sets PIC-335201's set
+    point, E1 = 2.8 + X / 50 bar g, PIC-335201 strokes LV-324501A on the computed header and, above
+    X = 50, LV-324501B opens beside it, where V1's selector strokes one valve on LIC-324501's demand.
+    Both on LV-324501's vendor trims (decision 150): the design drain on the first tick on both, and
+    with stage 1's feed cut a fifth from 0.5 s they part on tick 6; five minutes on V1's drain passes
+    60.7 t/h on LV-324501A at 60.0 % and holds 3189 kg, AC4's 71.7 t/h at 72.3 % and 2657 kg, the
+    header following E1 down, neither recycling."""
+    parted, hist = _both(v1, h._step(v1, 5, m=0.8 * d.P1_DES_KGH), 3001, None, vendor_drain=True,
+                         ac4=True)
+    assert hist[0]["leg"] == (d.P2_DES_KGH, d.P2_DES_KGH) and parted == 6
+    assert hist[3000]["leg"] == (pytest.approx(60742.6, abs=0.1), pytest.approx(71673.1, abs=0.1))
+    assert hist[3000]["M"] == (pytest.approx(3189.09, abs=0.01), pytest.approx(2656.69, abs=0.01))
+    assert hist[3000]["lv"] == ((pytest.approx(59.992, abs=1e-3), 0.0),
+                                (pytest.approx(72.287, abs=1e-3), 0.0))
+    assert all(r["recycle"] == (0.0, 0.0) for r in hist)
+
+
+def test_one_header_valve_fewer_on_ac4_decided_divergence(v1):
+    """Decision 224: at the design feed with one of the granulator's ten header valves taken off,
+    V1 has no header valve to take and its selector holds the design drain forward on LV-324501A
+    alone; on AC4 the header rises, LIC-324501 lifts E1 to its 3.8 bar g ceiling and LV-324501B
+    opens beside LV-324501A. They part on tick 5; fifteen minutes on V1 still drains the design's
+    75.9 t/h, all forward, while AC4's LV-324501B stands at 15.5 % returning 9.2 t/h of the 80.5 t/h
+    drain as the level, lifted 96 kg, comes back down (LV-324501B's widest 16.9 %)."""
+    parted, hist = _both(v1, h._step(v1, 5, headers=9), 9001, None, vendor_drain=True, ac4=True)
+    assert parted == 5 and all(r["recycle"][0] == 0.0 and r["lv"][0][1] == 0.0 for r in hist)
+    assert hist[9000]["leg"] == (d.P2_DES_KGH, pytest.approx(80458.6, abs=0.1))
+    assert hist[9000]["M"] == (pytest.approx(d.F003_M_DES_KG, rel=1e-12),
+                               pytest.approx(3893.12, abs=0.01))
+    assert hist[9000]["lv"][1] == (pytest.approx(75.163, abs=1e-3), pytest.approx(15.545, abs=1e-3))
+    assert hist[9000]["recycle"][1] == pytest.approx(9241.4, abs=0.1)
+    assert max(r["lv"][1][1] for r in hist) == pytest.approx(16.932, abs=1e-3)
+
+
 def test_pv_329212_on_its_vendor_trim_decided_divergence(v1):
     """Decision 23's class, decided 2026-10-14: PV-329212 on Metso's DN 80 balanced Neldisc, its
     printed capacities as its curve (and, since decision 170, 2026-11-06, Valmet's S-Disc shape between
@@ -269,7 +310,8 @@ def test_the_fixed_point_on_the_energy_balance_at_the_heel_decided_divergence():
     sides = []
     for bisect in (False, True):
         unit = h.se.SecondEvaporator(chest=h.se.V1_CHEST, backward_species=False, seal_air=True,
-                                     bisect_fixed_point=bisect, vendor_drain=False)
+                                     bisect_fixed_point=bisect, vendor_drain=False,
+                                     ac4_header=False)
         loops = h.se.SecondEvaporatorLoops(pic=h.se.pic_329212(h.se.V1_CHEST),
                                            level=h.se.lic_324501(vendor=False))
         loops.level.mode, loops.level.op = "MAN", 100.0

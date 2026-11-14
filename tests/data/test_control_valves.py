@@ -32,11 +32,12 @@ def test_the_catalogue():
     and two motive valves added in session 33, unit 329's four in session 37). Every normal case
     prints its stroke but LV-329503's, LV-329504's and LV-329505's, whose capacities are printed on
     the maximum case only."""
-    assert len(cvd.VENDOR_VALVES) == 46      # 42 + Flowserve's Pos. 65, 76, 148, 149 (session 69)
+    assert len(cvd.VENDOR_VALVES) == 47      # 42 + Flowserve's Pos. 65, 76, 148, 149 (session 69)
+    #                                          and Pos. 150, HV-335602 (session 111, decision 225)
     assert (len(MODIFIED), len(LINEAR)) == (24, 3)
     assert sum(len(v.cases) for v in MODIFIED) == 67
     assert {t for t, v in cvd.VENDOR_VALVES.items() if v.characteristic == "equal_pct"} == {
-        "PV-322203", "HV-329601", "LV-324501A", "LV-324501B"}
+        "PV-322203", "HV-329601", "LV-324501A", "LV-324501B", "HV-335602"}
     assert set(fv.FISHER_VALVES) == {"LV-328503", "LV-328504", "HV-329602", "PV-323202"}
     unprinted = {v.tag for v in MODIFIED + LINEAR if v.normal_case.stroke_pct is None}
     assert unprinted == {"LV-329503", "LV-329504", "LV-329505"}

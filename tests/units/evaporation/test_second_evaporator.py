@@ -4,7 +4,8 @@ Equivalence with V1 is proven tick by tick in
 `tests/equivalence/test_second_evaporator_equivalence.py` and each departure both ways in
 `test_second_evaporator_decided_equivalence.py`. This file pins what the stage DOES: the design
 seed held on 324F004's design-anchored map (handoff B-61), PV-324203's vendor trim, a lost header,
-a lost feed boiling the held melt (B-62), LV-324501B taking the melt when the 335 header backs up,
+a lost feed boiling the held melt (B-62), on V1's selector LV-324501B taking the melt when the 335
+header backs up and on AC4's header (decision 224) LV-324501B returning melt beside LV-324501A,
 stage 1 and stage 2 run together — and a feed-pump trip, stage 2 taking the leg's strength (B-63).
 """
 
@@ -16,6 +17,7 @@ from ureasim.data import unit_324 as d
 from ureasim.data.design_point import R324_FEED_DES
 from ureasim.data.unit_323 import MEVAP_DES_KGH, W_S317
 from ureasim.data.unit_329 import P_LP_BARA, P_MP_BARA
+from ureasim.data.unit_335 import LIC_324501_X_DES_PCT
 from ureasim.units.evaporation import ejector_map as em
 from ureasim.units.evaporation import first_evaporator as fe
 from ureasim.units.evaporation import second_evaporator as se
@@ -29,8 +31,9 @@ P_MOTIVE = em.nozzle_pressure_bara("324F004", d.EJECTOR_DESIGN_LOADS["324F004"].
 P_E006 = d.E006_P_DES_BARA
 
 
-def _run(n, feed=d.P1_DES_KGH, p_mp=P_MP_BARA, p335=d.PIC_335201_DES_BARG):
-    unit, loops = se.SecondEvaporator(), se.SecondEvaporatorLoops()
+def _run(n, feed=d.P1_DES_KGH, p_mp=P_MP_BARA, p335=d.PIC_335201_DES_BARG, ac4=True):
+    unit = se.SecondEvaporator(ac4_header=ac4)
+    loops = se.SecondEvaporatorLoops(level=se.lic_324501(ac4=ac4))
     r = None
     for _ in range(n):
         r = unit.step(loops, feed, d.E001_T_DES_C, d.W_S401, p_mp, P_MOTIVE, P_E006, TV5, p335,
@@ -41,12 +44,16 @@ def _run(n, feed=d.P1_DES_KGH, p_mp=P_MP_BARA, p335=d.PIC_335201_DES_BARG):
 def test_the_design_seed_holds():
     """An hour at design on 324F004's design-anchored map: the melt at 140 C, PT-324203 at
     0.131 bar a to 1e-14 (324E005's condenser falsi reaches the last bits), PV-324203 at its 92.03 %, LV-324501A at its 75.35 % (decision 150), PFD 709's 2738 kg/h
-    boiled, PFD 402 at 97.71 %, 3741 kg/h of 9-bar steam; the fixed point in one iteration."""
+    boiled, PFD 402 at 97.71 %, 3741 kg/h of 9-bar steam; the fixed point in one iteration. On
+    AC4's header (decision 224) LIC-324501 holds its 35 % output, E1 on the 3.5 bar g header, and
+    PIC-335201 holds LV-324501A at that stroke, LV-324501B shut, each to the bit."""
     unit, loops, r = _run(36000)
     assert r.t_c == 140.0
     assert r.p_bara == pytest.approx(0.131, abs=1e-14)
     assert loops.vacuum.op == pytest.approx(d.PV_324203_OP_DES_PCT, abs=1e-9)
-    assert loops.level.op == d.LV_324501A_OP_DES_PCT and unit.m_kg == pytest.approx(d.F003_M_DES_KG, rel=1e-12)
+    assert loops.level.op == LIC_324501_X_DES_PCT and loops.header.op == d.LV_324501A_OP_DES_PCT
+    assert (r.header.p_barg, r.lv_a_pct, r.lv_b_pct) == (3.5, d.LV_324501A_OP_DES_PCT, 0.0)
+    assert unit.m_kg == pytest.approx(d.F003_M_DES_KG, rel=1e-12)
     assert r.m_vap_kgh == pytest.approx(d.V2_DES_KGH, rel=1e-12) and r.m_boil_kgh == 0.0
     assert r.w_melt == pytest.approx(0.9771, abs=1e-12)
     assert r.steam_kgh == pytest.approx(3741.02, abs=0.01)
@@ -80,8 +87,10 @@ def test_a_lost_feed_boils_the_held_melt_b62():
     falls and holds 1285 kg (LV-324501A's equal percentage, decision 150); the chest fills toward
     the 9-bar header (PV-329212 on its vendor trim), and at 170.2 C the melt's equilibrium at the
     vacuum is 98.57 % and it boils no more. (616 kg/h, 151.4 C and 170.6 C with PV-329212 on the
-    chord, before decision 170, 2026-11-06 put Valmet's S-Disc table between its printed points.)"""
-    unit, loops = se.SecondEvaporator(), se.SecondEvaporatorLoops()
+    chord, before decision 170, 2026-11-06 put Valmet's S-Disc table between its printed points.)
+    On V1's selector, the harness's side of decision 224; AC4's header is pinned below."""
+    unit = se.SecondEvaporator(ac4_header=False)
+    loops = se.SecondEvaporatorLoops(level=se.lic_324501(ac4=False))
     for k in range(6000):
         feed = 0.0 if k >= 5 else d.P1_DES_KGH
         r = unit.step(loops, feed, d.E001_T_DES_C, d.W_S401, P_MP_BARA, P_MOTIVE, P_E006, TV5,
@@ -97,12 +106,42 @@ def test_a_lost_feed_boils_the_held_melt_b62():
     assert unit.w["Urea"] == pytest.approx(0.98565, abs=1e-5)
 
 
+def test_a_lost_feed_on_ac4s_header_drains_stage_2_to_its_heel_b62():
+    """B-62 on AC4's header (decision 224). The held melt boils as on V1's selector, 593 kg/h after
+    a minute at 151.65 C and 98.14 %, but the drain does not stop: LIC-324501 winds X to 0 and E1 to
+    its 2.8 bar g floor, where ten header valves still pass 89 % of PFD 402, and PIC-335201 opens
+    LV-324501A to hold it. The leg uncovers at 176.7 s and draws air, the heel limits the drain
+    at 187.4 s and the melt holds its 1 kg heel at 175.36 C and 98.63 %; over the 32 ticks the
+    holdup empties the sweeps do not settle and the energy balance solves the fixed point (B-108).
+    AC4 stops 335P001A / B on LY-324501 below its L2, a database value neither archive prints;
+    the stop is not built (As-Built Part CXXI, handoff B-146)."""
+    unit, loops = se.SecondEvaporator(), se.SecondEvaporatorLoops()
+    stalled, air, zero = [], None, None
+    for k in range(6000):
+        feed = 0.0 if k >= 5 else d.P1_DES_KGH
+        r = unit.step(loops, feed, d.E001_T_DES_C, d.W_S401, P_MP_BARA, P_MOTIVE, P_E006, TV5,
+                      d.PIC_335201_DES_BARG, 0.1)
+        if k == 600:
+            assert (r.t_c, r.m_boil_kgh, unit.w["Urea"]) == (
+                pytest.approx(151.6476, abs=1e-4), pytest.approx(593.40, abs=0.01),
+                pytest.approx(0.98141, abs=1e-5))
+        stalled += [] if r.converged else [k] if r.bisected else [-k]
+        air = k if air is None and r.seal_air_kgh > 0.0 else air
+        zero = k if zero is None and k > 5 and r.m_402_kgh == 0.0 else zero
+    assert (air, zero) == (1767, 1875) and stalled == list(range(1870, 1902))
+    assert r.m_402_kgh == 0.0 and unit.m_kg == 1.0 and r.header.capped
+    assert (r.t_c, unit.w["Urea"]) == (pytest.approx(175.358, abs=1e-3),
+                                       pytest.approx(0.98628, abs=1e-5))
+    assert loops.level.op == 0.0 and r.seal_air_kgh > 0.0
+
+
 def test_the_335_header_backing_up_sends_the_melt_to_323d002():
-    """PIC-335201 above its 3.8 bar g relief setting: LIC-324501's stroke goes to LV-324501B and
-    the whole drain, the raw melt at 140 C, returns to 323D002; nothing goes forward. On its sheet
-    (decision 150) LV-324501B passes 95.7 t/h at the stroke, its 5.1 bar to 323D002 against A's
-    3.2; V1's span law passed the design drain on either valve."""
-    _, _, r = _run(10, p335=4.0)
+    """V1's selector (the harness's side of decision 224): PIC-335201 above its 3.8 bar g relief
+    setting, LIC-324501's stroke goes to LV-324501B and the whole drain, the raw melt at 140 C,
+    returns to 323D002; nothing goes forward. On its sheet (decision 150) LV-324501B passes 95.7 t/h
+    at the stroke, its 5.1 bar to 323D002 against A's 3.2; V1's span law passed the design drain on
+    either valve."""
+    _, _, r = _run(10, p335=4.0, ac4=False)
     assert r.recycle_selected and (r.lv_a_pct, r.lv_b_pct) == (0.0, pytest.approx(75.286,
                                                                                   abs=1e-3))
     assert (r.route.route, r.route.forward_kgh) == ("B", 0.0)
@@ -111,9 +150,44 @@ def test_the_335_header_backing_up_sends_the_melt_to_323d002():
     assert sum(r.route.recycle_w.values()) == pytest.approx(1.0, abs=1e-12)
 
 
-def _chain(n, cut_at=None):
+def test_ac4s_header_returns_the_excess_beside_the_forward_melt():
+    """Decision 224: with one header valve fewer than the load asks for, the level rises, LIC-324501
+    lifts E1 to its 3.8 bar g ceiling and opens LV-324501B, so LV-324501A and LV-324501B both pass
+    melt and the drain still matches the feed; nothing is drained to 335D004 with HV-335602 shut."""
+    unit = se.SecondEvaporator()
+    loops = se.SecondEvaporatorLoops()
+    for _ in range(15000):
+        r = unit.step(loops, d.P1_DES_KGH, d.E001_T_DES_C, d.W_S401, P_MP_BARA, P_MOTIVE, P_E006,
+                      TV5, 0.0, 0.1, headers_online=9)
+    assert r.header.e1_barg == pytest.approx(3.8, abs=1e-9) and r.lv_b_pct > 0.0
+    assert r.header.p_barg == pytest.approx(3.8, abs=0.01) and r.route.route == "AB"
+    assert r.route.forward_kgh > 0.0 and r.route.recycle_kgh > 0.0 and r.route.drain_kgh == 0.0
+    # LV-324501B relays at its seat on this excess (As-Built Part CXXI): the tick's drain swings
+    # about the feed, so the last tick is within 5e-3 of it, not on it.
+    assert r.m_402_kgh == pytest.approx(d.P2_DES_KGH, rel=5e-3)
+
+
+def test_the_seal_air_leg_uncovers_on_pic_335201s_stroke():
+    """On AC4's header the lost seal's air rides LV-324501A's stroke of the tick before,
+    PIC-335201's output, not LIC-324501's X (decision 224): with the level at 2 % and LIC-324501
+    forced to 0 % the leg still draws air through LV-324501A at its design stroke, where on V1's
+    selector LIC-324501's 0 % stroke would shut it."""
+    from ureasim.units.evaporation.leg_seal import seal_air_kgh
+    unit = se.SecondEvaporator()
+    loops = se.SecondEvaporatorLoops()
+    loops.level.mode, loops.level.op = "MAN", 0.0
+    unit.m_kg = 0.02 * d.F003_M_FULL_KG
+    level, stroke, p = unit.m_kg / d.F003_M_FULL_KG * 100.0, loops.header.op, unit.p_bara
+    r = unit.step(loops, d.P1_DES_KGH, d.E001_T_DES_C, d.W_S401, P_MP_BARA, P_MOTIVE, P_E006, TV5,
+                  0.0, 0.1)
+    assert stroke == d.LV_324501A_OP_DES_PCT
+    assert r.seal_air_kgh == seal_air_kgh(level, stroke, p) > 0.0 == seal_air_kgh(level, 0.0, p)
+
+
+def _chain(n, cut_at=None, ac4=True):
     u1, l1 = fe.FirstEvaporator(), fe.FirstEvaporatorLoops()
-    u2, l2 = se.SecondEvaporator(), se.SecondEvaporatorLoops()
+    u2 = se.SecondEvaporator(ac4_header=ac4)
+    l2 = se.SecondEvaporatorLoops(level=se.lic_324501(ac4=ac4))
     out = []
     for k in range(n):
         m = 0.0 if cut_at is not None and k >= cut_at else R324_FEED_DES
@@ -145,8 +219,9 @@ def test_a_feed_pump_trip_sends_stage_2_the_melt_its_leg_drains_b63():
     (its equal percentage passing little at low stroke, decision 150), and the melt holds 1496 kg
     at 98.40 % urea and 161.41 (161.40 before decision 178) C (161.75 on the chord), the chest isolated at its saturation. The melt never
     falls below its 140 C design, where V1 — the strength stage 1 made, 0 — boiled the whole leg
-    as water to -83 C in a minute."""
-    run = _chain(12005, cut_at=5)
+    as water to -83 C in a minute. On V1's selector, the harness's side of decision 224; AC4's
+    header is pinned below."""
+    run = _chain(12005, cut_at=5, ac4=False)
     r1, r2 = run[300]
     assert r1.w_melt == 0.0 and r1.w["Urea"] == pytest.approx(0.96043, abs=1e-5)
     assert r1.m_401_kgh == pytest.approx(71538.71, abs=0.01)
@@ -162,3 +237,25 @@ def test_a_feed_pump_trip_sends_stage_2_the_melt_its_leg_drains_b63():
     assert (r2.m_kg, r2.w["Urea"], r2.t_c) == (pytest.approx(1496.39, abs=0.01),
                                                pytest.approx(0.98396, abs=1e-5),
                                                pytest.approx(161.4070, abs=1e-4))
+
+
+def test_a_feed_pump_trip_on_ac4s_header_drains_stage_2_to_its_heel_b63():
+    """B-63 on AC4's header (decision 224). Stage 2 finishes the leg's melt as on V1's selector,
+    1273 kg/h of the feed's water and 655 of its own boil off at 30 s, the melt at 141.88 C, and
+    never falls below 140 C; but PIC-335201 holds the header on E1's 2.8 bar g floor as the level
+    falls, so the drain runs on after the leg runs dry: the seal uncovers at 361.6 s, the heel
+    limits the drain at 372.4 s and the melt holds its 1 kg heel at 98.41 % and 162.18 C, the leg
+    drawing 1.9 t/h of air. AC4's stop of 335P001A / B on LY-324501's L2 is not built (B-146)."""
+    run = _chain(12005, cut_at=5)
+    _r1, r2 = run[300]
+    assert (r2.m_vap_kgh, r2.m_boil_kgh, r2.t_c) == (pytest.approx(1272.98, abs=0.01),
+                                                     pytest.approx(654.51, abs=0.01),
+                                                     pytest.approx(141.8825, abs=1e-4))
+    assert all(r.converged and r.t_c >= 140.0 for _, r in run)
+    assert next(k for k in range(12005) if run[k][1].seal_air_kgh > 0.0) == 3616
+    assert next(k for k in range(400, 12005) if run[k][1].m_402_kgh == 0.0) == 3725
+    r1, r2 = run[12004]
+    assert r1.m_401_kgh == 0.0 and r2.m_402_kgh == 0.0 and r2.m_kg == 1.0 and r2.header.capped
+    assert (r2.w["Urea"], r2.t_c) == (pytest.approx(0.98413, abs=1e-5),
+                                      pytest.approx(162.1832, abs=1e-4))
+    assert r2.seal_air_kgh == pytest.approx(1882.0, abs=1.0)

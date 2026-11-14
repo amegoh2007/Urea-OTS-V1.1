@@ -31,13 +31,15 @@ def test_every_element_opens_v1s_faceplate(bridge):
     # open the stream inspector. Decision 98 adds trip 21.2's five keyswitches and AI-329701's
     # indicator; decision 220 adds 322-1's CO2 FEED panel, whose body opens the demand's indicator;
     # decision 222 gives six auxiliary pump icons, 322P002A / B, 323P001A / B and 328P003A / B,
-    # the START / STOP faceplate.
+    # the START / STOP faceplate. Decision 224 binds four of unit 335's instruments: FT-335401's
+    # indicator, HIC-335602's and HV-335602's hand station (HIC-335602 opened a controller unbound),
+    # retires LV-324501's route switch, LV-324501A and B opening their indicators, and adds 324-1b's
+    # GRANULATION HEADERS panel, whose body opens the count's indicator.
     assert opened == {
-        None: 67 + 16 + 11, "StreamInspector": 2 + 12,
-        "IndicatorFaceplate": 139 + 1 + 1, "ControllerFaceplate": 82,
-        "HandValveFaceplate": 22, "BlockValveFaceplate": 10, "PumpFaceplate": 4 + 6,
+        None: 67 + 16 + 9, "StreamInspector": 2 + 12,
+        "IndicatorFaceplate": 139 + 1 + 1 + 1 + 2 + 1, "ControllerFaceplate": 81,
+        "HandValveFaceplate": 22 + 2, "BlockValveFaceplate": 10, "PumpFaceplate": 4 + 6,
         "SpeedFaceplate": 8, "MasterSetpointFaceplate": 5, "KeyswitchFaceplate": 1 + 5,
-        "RouteFaceplate": 2,
     }
 
 
