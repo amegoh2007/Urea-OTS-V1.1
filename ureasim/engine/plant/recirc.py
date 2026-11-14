@@ -84,7 +84,8 @@ def _323f010(plant, a, dt):
 def _323d002(plant, a, dt):
     return plant.units["323D002"].step(
         *plant.loops["323D002"], a["drain_kgh"], a["drain_t_c"], a["drain_w"], a["recycle_kgh"],
-        a["recycle_t_c"], dict(a["recycle_w"]), a["tie_open"], dt)
+        a["recycle_t_c"], dict(a["recycle_w"]), a["tie_open"], dt,
+        pump_running=bool(a["p003_running"]))
 
 
 def _323e003(plant, a, dt):
@@ -145,7 +146,8 @@ def steps() -> dict:
             "drain_w": Result(f010, "drain_w"),
             "recycle_kgh": Tear("m_recycle_324_kgh"), "recycle_t_c": Tear("t_recycle_324_c"),
             "recycle_w": Tear("w_recycle_324"),
-            "tie_open": Operator("HV-323D002-TIE")}, _323d002),
+            "tie_open": Operator("HV-323D002-TIE"), "p003_running": Operator("323P003")},
+            _323d002),
         "323E003": Step("323E003", "LP carbamate condenser and 323D001", "323", 23, {
             "m_305_kgh": Result(c003, "m_305_kgh"),
             "m_flash_gas_kgh": Result(c003, "m_flash_gas_kgh"),

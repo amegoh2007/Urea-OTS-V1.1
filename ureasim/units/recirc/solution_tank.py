@@ -288,7 +288,7 @@ class SolutionTank:
     def step(self, lic: ProcessLoop, fic: ProcessLoop,
              drain_kgh: float, drain_t_c: float, drain_w: dict,
              recycle_kgh: float, recycle_t_c: float, recycle_w: dict,
-             tie_open: bool, dt: float) -> SolutionTankResult:
+             tie_open: bool, dt: float, *, pump_running: bool = True) -> SolutionTankResult:
         """Advance stage 4 by one tick.
 
         Arguments
@@ -302,6 +302,9 @@ class SolutionTank:
             one-tick tear.
         tie_open
             HV-323D002-TIE, the Compartment I / II field spool.
+        pump_running
+            Either of 323P003A / B running (decision 227). False: FV-324401 passes nothing and
+            FT-324401 reads no flow.
 
         The order is V1's: the level the controllers act on and the density both spans use
         are taken on the state at the top of the tick; the holdups advance; the temperature
@@ -335,7 +338,8 @@ class SolutionTank:
         fic_pv = first_order_lag(self.lag_state, FT_324401_LAG_KEY, prior_flow,
                                  FT_324401_TAU_S, dt)
         fic_op = fic.step(fic_pv, dt, cas_sp=lic_op)
-        m_324 = max(fv_324401_th(fic_op), 0.0) * 1000.0
+        # 323P003A and B both stopped deliver nothing (decision 227).
+        m_324 = max(fv_324401_th(fic_op), 0.0) * 1000.0 * (1.0 if pump_running else 0.0)
         # 323P003 can deliver only the liquid above the heel plus what arrives on the tick
         # (decided divergence, handoff B-26). The heel keeps the 1 kg Compartment I floor out
         # of the pump's reach — with the tie open, as Compartment I's share of the pool — so
@@ -347,7 +351,7 @@ class SolutionTank:
         suction_lost = m_324 > m_324_avail
         if suction_lost:
             m_324 = m_324_avail
-        self.suction_cap_th = m_324 / 1000.0 if suction_lost else None
+        self.suction_cap_th = m_324 / 1000.0 if suction_lost or not pump_running else None
 
         # ----- the holdups -------------------------------------------------------------
         spill = 0.0
