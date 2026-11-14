@@ -98,6 +98,7 @@ AUX_PUMP_SEEDS = MappingProxyType({
     "328P002A": (True, "AUTO"), "328P002B": (False, "AUTO"),
     "323P008A": (True, "AUTO"), "323P008B": (False, "AUTO"),
     "323P003A": (True, "AUTO"), "323P003B": (False, "AUTO"),
+    "335P001A": (True, "AUTO"), "335P001B": (False, "AUTO"),
 })
 
 #: The pairs whose flow follows their run state: the engine holds the pair's flag, True while
@@ -112,6 +113,7 @@ RUN_STATE_PAIRS = (
     "328P002",
     "323P008",
     "323P003",
+    "335P001",
 )
 
 #: AC4 PC21.5.1's hand switches on TRIP_21_2_FLAG1 (UD-MR-G00-FF-0004 page 20), maintained,

@@ -105,7 +105,7 @@ def _324e003(plant, a, dt):
         em.nozzle_pressure_bara("324F004", a["m_927_kgh"]), a["p_discharge_bara"],
         a["t_vent_324e005_c"], unit.header.p_barg, dt,
         headers_online=int(clamp(a["headers_online"], 0, HEADER_VALVES_MAX)),
-        hic_335602_pct=a["hic_335602_pct"])
+        hic_335602_pct=a["hic_335602_pct"], pump_running=bool(a["p001_running"]))
 
 
 def _uf85(plant, a, dt):
@@ -143,7 +143,8 @@ def steps() -> dict:
             "p_discharge_bara": State(TRAIN, "p_324e006_bara"),
             "t_vent_324e005_c": State(TRAIN, "lag_state.324E005"),
             "headers_online": Operator("GRANULATION-HEADERS"),
-            "hic_335602_pct": Operator("HIC-335602")}, _324e003),
+            "hic_335602_pct": Operator("HIC-335602"), "p001_running": Operator("335P001")},
+            _324e003),
         DOSING: Step(DOSING, "UF85 dosing, FFIC-335406 and FIC-335405", "335", 30, {
             "route": Result(e003, "route"), "p002_running": Operator("335P002")}, _uf85),
         TRAIN: Step(TRAIN, "vacuum train", "324", 31, {
