@@ -213,3 +213,26 @@ def test_the_liquor_carries_the_ammonia_water_into_308():
         r = u.step(*loops, M305, FLASH, POOL, 0.0, 0.0, e3.E003_M718B_DES_KGH,
                    e3.E003_M776_DES_KGH, e.E011_P_BARA, 1.0, m_734_kgh=7015.0)
     assert r.w_308 == e3.W_308
+
+
+# ======================================================================================
+# Decision 227: 329P003A / B, the tempered water's circulation
+# ======================================================================================
+
+def test_329p003_stopped_takes_the_shells_duty_and_its_condensation_away():
+    """Both circulation pumps stopped at 10 s: the shell takes no duty and condenses nothing from
+    that tick, so the node rises on the gas that arrives; until then, the pumps running, the
+    condenser is the one that never saw the flag, to the bit."""
+    u, v = lp.LpCarbamateCondenser(), lp.LpCarbamateCondenser()
+    loops_u = lp.pic_323202(), lp.lic_323502(), lp.sic_323901(), lp.tic_323013()
+    loops_v = lp.pic_323202(), lp.lic_323502(), lp.sic_323901(), lp.tic_323013()
+    args = (M305, FLASH, POOL, 0.0, 0.0, e3.E003_M718B_DES_KGH, e3.E003_M776_DES_KGH,
+            e.E011_P_BARA, 1.0)
+    for k in range(1, 61):
+        r = u.step(*loops_u, *args, tw_pump_running=k <= 10)
+        s = v.step(*loops_v, *args)
+        if k <= 10:
+            assert r == s
+    assert (r.q_kw, r.capacity_kgh) == (0.0, 0.0)
+    # With no duty the return is the supply.
+    assert r.p_bara > s.p_bara and r.tw_return_c == u.lag_state[lp.TW_SUPPLY_LAG_KEY]

@@ -30,7 +30,7 @@ from ureasim.engine.plant.boundary import BOUNDARY_SINKS
 __all__ = ["flags", "trips", "trip_latched", "boundary_sinks", "hand_switches", "pumps"]
 
 #: The auxiliary pumps a screen draws whose run state V1 kept and did not publish (decision 222).
-_PUMPS = ("323P001A", "323P001B", "328P003A", "328P003B", "335P002A", "335P002B")
+_PUMPS = ("323P001A", "323P001B", "328P003A", "328P003B", "335P002A", "335P002B", "329P003A", "329P003B")
 
 
 def flags(t: Tick) -> dict:

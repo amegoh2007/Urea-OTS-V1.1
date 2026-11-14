@@ -95,7 +95,7 @@ def _323e003(plant, a, dt):
         *plant.loops["323E003"], a["m_305_kgh"] * f, a["m_flash_gas_kgh"] * f,
         a["m_heater_gas_kgh"] * f, a["blow_322501_kgh"] * f, a["blow_323501_kgh"],
         a["m_718b_kgh"], a["m_776_kgh"], a["p_e011_bara"], dt, m_734_kgh=a["m_734_kgh"],
-        t_c003_c=a["t_c003_c"], t_e011_c=a["t_e011_c"], t_d001_c=a["t_d001_c"],
+        tw_pump_running=bool(a["tw_running"]), t_c003_c=a["t_c003_c"], t_e011_c=a["t_e011_c"], t_d001_c=a["t_d001_c"],
         t_c001_c=a["t_c001_c"])
 
 
@@ -155,7 +155,7 @@ def steps() -> dict:
             "m_718b_kgh": Tear("m_718b_kgh"),
             "m_776_kgh": Result("328D001", "m_776_kgh"),
             "m_734_kgh": Result("328D003", "m_734_kgh"),
-            "p_e011_bara": State("323E011", "p_bara"),
+            "p_e011_bara": State("323E011", "p_bara"), "tw_running": Operator("329P003"),
             "t_c003_c": Result(c003, "t_c"), "t_e011_c": State("323E011", "t_c"),
             "t_d001_c": Result("328D001", "t_c"),
             "t_c001_c": Result("322C001", "t_c")}, _323e003),

@@ -436,7 +436,8 @@ class LpCarbamateCondenser:
              m_305_kgh: float, m_flash_gas_kgh: float, m_heater_gas_kgh: float,
              blow_322501_kgh: float, blow_323501_kgh: float,
              m_718b_kgh: float, m_776_kgh: float, p_e011_bara: float,
-             dt: float, m_734_kgh: float | None = None, *, t_c003_c: float = C003_T_SP_C,
+             dt: float, m_734_kgh: float | None = None, *, tw_pump_running: bool = True,
+             t_c003_c: float = C003_T_SP_C,
              t_e011_c: float = E011_T_C, t_d001_c: float = D001_T_C,
              t_c001_c: float = C001_T_C) -> LpCarbamateCondenserResult:
         """Advance 323E003 / 323D001 / 323P001 by one tick.
@@ -459,6 +460,9 @@ class LpCarbamateCondenser:
             from PFD 734's 1534 kg/h (B-94); None by default, V1's, which takes no 734.
         p_e011_bara
             The 323E011 node at the start of the tick (`FlashCondenser.p_bara`).
+        tw_pump_running
+            Either of 329P003A / B running, the tempered water's circulation pumps (decision 227).
+            False: the shell takes no duty and condenses nothing.
         t_c003_c, t_e011_c, t_d001_c, t_c001_c
             The producers' live temperatures (decided 2026-10-16, handoff B-31): 323C003's for
             305, 323E011's of the tick before for 718B, 328D001's for 776 and 322C001's for 797.
@@ -497,7 +501,10 @@ class LpCarbamateCondenser:
         tic_op = tic.step(tw_sup, dt)
         # The duty on the live water mean, with last tick's return — which breaks the loop
         # between the duty and the return it sets.
-        q = E003_UA_KW * (t_pre - 0.5 * (tw_sup + self.tw_return_c))
+        # 329P003A / B circulate the water: with both stopped the shell takes no duty and condenses
+        # nothing, as 329P006's run state does on 322E003's (decision 227, handoff A-41).
+        pump_frac = 1.0 if tw_pump_running else 0.0
+        q = E003_UA_KW * (t_pre - 0.5 * (tw_sup + self.tw_return_c)) * pump_frac
         self.tw_return_c = tw_sup + (TW_RET_T_C - TW_SUP_T_C) * (q / E003_Q_DES_KW)
 
         # ----- the energy balance: the inlets' sensible heat, the latent heat of what is not
@@ -525,7 +532,7 @@ class LpCarbamateCondenser:
         env_in = (m_flash_gas_kgh + m_heater_gas_kgh + E003_M797_DES_KGH + blow_322501_kgh
                   - blow_323501_kgh)
         t_dew = dew_point_c(self.p_bara)
-        capacity = condensation_capacity_kgh(t_dew, 0.5 * (tw_sup + self.tw_return_c))
+        capacity = condensation_capacity_kgh(t_dew, 0.5 * (tw_sup + self.tw_return_c)) * pump_frac
         # The whole capacity, not V1's min(capacity, env_in): a condenser with surplus cooling
         # draws the node down on its dew point (decided 2026-09-27, handoff B-34).
         env_cond = capacity
@@ -535,7 +542,7 @@ class LpCarbamateCondenser:
         # ----- TT-323006 and the tank ------------------------------------------------------
         # SEMI-IMPLICIT in the inlets and in the water, whose duty is a temperature-driven wall.
         k_cap = ((m_305_kgh + m_718b_kgh + m_776_kgh + E003_M797_DES_KGH + d734) / 3600.0
-                 * CP_LP_CARBAMATE + E003_UA_KW)
+                 * CP_LP_CARBAMATE + E003_UA_KW * pump_frac)
         self.t_c = t_pre + p_net * dt / max(self.m_kg * CP_LP_CARBAMATE + k_cap * dt,
                                             HEAT_CAPACITY_FLOOR_KJK)
         # 323P001 can take the liquid above the 1 kg heel and what arrives on the tick, net of

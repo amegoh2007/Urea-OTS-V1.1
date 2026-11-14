@@ -103,7 +103,7 @@ def test_the_key_paths_are_v1s(design):
 
 
 def test_every_binding_the_consoles_carry_resolves(design):
-    """All 288 of the screens' bound paths read a value, unit 335's four UF85 faceplate fields
+    """All 290 of the screens' bound paths read a value, unit 335's four UF85 faceplate fields
     since session 55 (decision 123). Six are decision 98's: the five trip 21.2 keyswitches'
     ``HAND_SWITCHES`` and AI-329701; one is decision 220's, the CO2 FEED panel's demand; six are
     decision 222's, the auxiliary pump icons' run state; five more are decision 224's, the computed
@@ -112,7 +112,7 @@ def test_every_binding_the_consoles_carry_resolves(design):
     paths = {e[f] for els in screen_layout.OVERLAYS.values() for e in els for f in PATH_FIELDS
              if isinstance(e.get(f), str) and e[f]}
     unresolved = {p for p in paths if get_path(design.packet, p) is None}
-    assert len(paths) == 288 and unresolved == set()
+    assert len(paths) == 290 and unresolved == set()
 
 
 def test_the_packet_is_json_with_its_clocks_and_health(design):
