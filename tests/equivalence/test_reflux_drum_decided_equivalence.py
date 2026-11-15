@@ -185,6 +185,21 @@ def test_328p002_at_the_heel_decided_divergence(v1):
         r.b.in_kgh - r.b.gen_kgh, rel=1e-9)
 
 
+def test_328p002s_low_level_stop_decided_divergence(v1):
+    """Decision 217. LV-328501 wide open, as at the heel: both sides alike until LT-328501 first
+    reads below its 5 % stand-in L2, at 303.5 s; there AC4 stops 328P002A and B on the port, 775
+    and 776 nothing, where V1's pair runs on to the heel at 548 s and its floor makes 3.60 t. The
+    port runs again at 7 % and never reaches the heel, its books closed."""
+    def before(s, drum, loops):
+        _manual("LIC_328501", "lic_328501", 100.0)(s, drum, loops)
+        drum.l2_stop = True
+    r = _both(v1, lambda k: _design(), 2400, 0.5, before, ALL - {"heel"})
+    assert r.parted == 607 and "lost" not in r.first
+    assert r.a["776"] == pytest.approx(28162.75, abs=0.01)
+    assert r.made_v1 == pytest.approx(3600.42, abs=0.01) and abs(r.made) < 1e-6
+    assert not r.b.suction_lost and r.drum.m_kg > 1.0
+
+
 def test_a_full_drum_overflows_decided_divergence(v1):
     """Decision 11. LV-328501 shut: the drum is full at 1301.5 s. V1 goes on filling past its 5.5
     m3, 7.6 t at 2000 s — 127 % of what it holds; the port's holds 6022.5 kg and lets the 8275.5

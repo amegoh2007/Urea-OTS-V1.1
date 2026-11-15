@@ -259,6 +259,21 @@ def test_one_header_valve_fewer_on_ac4_decided_divergence(v1):
     assert max(r["lv"][1][1] for r in hist) == pytest.approx(17.006, abs=1e-3)
 
 
+def test_335p001s_low_level_stop_on_ac4_decided_divergence(v1):
+    """Decision 217 on AC4's header (decision 224). Stage 1's leg stops at 0.5 s. V1's selector
+    throttles LV-324501 on LIC-324501's demand as the level falls and has no stop: five minutes on
+    it still drains 352 kg/h and holds 775 kg. On AC4 the header draws what the granulator takes
+    until LY-324501 first reads below its 5 % stand-in L2, at 169.3 s, 69.5 t/h going forward the
+    tick before; there 335P001A and B stop, and the separator holds 345.6 kg, its seal covered."""
+    parted, hist = _both(v1, h._step(v1, 5, m=0.0), 3000, "heel", vendor_drain=True, ac4=True)
+    stop = next(k for k, r in enumerate(hist) if r["level"] < 5.0)
+    assert parted == 6 and stop == 1693
+    assert hist[stop - 1]["leg"][1] == pytest.approx(69498.8, abs=0.1)
+    assert all(r["leg"][1] == 0.0 and r["air"] == 0.0 for r in hist[stop:])
+    assert hist[2999]["M"] == (pytest.approx(774.60, abs=0.01), pytest.approx(345.553, abs=1e-3))
+    assert hist[2999]["leg"][0] == pytest.approx(351.63, abs=0.01)
+
+
 def test_pv_329212_on_its_vendor_trim_decided_divergence(v1):
     """Decision 23's class, decided 2026-10-14: PV-329212 on Metso's DN 80 balanced Neldisc, its
     printed capacities as its curve (and, since decision 170, 2026-11-06, Valmet's S-Disc shape between

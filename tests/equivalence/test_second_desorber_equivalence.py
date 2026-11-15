@@ -438,7 +438,7 @@ def test_the_state_and_the_controllers_are_seeded_as_v1_seeds_them(v1):
     """Every seed V1's, but the decided: FIC-329401's and FIC-328406's gains on span, FIC-328406's
     set point to FT-328406's 60 m3/h (B-50), and FFIC-329401 a ratio station (B-49) on V1's ratio,
     output and limits."""
-    s, col, loops = _v1_state(v1), sd.SecondDesorber(fv_329401=sd.V1_FV_329401), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
+    s, col, loops = _v1_state(v1), sd.SecondDesorber(fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
     assert (s.a328_c004_M, s.a328_c004_T, s.a328_c004_T_prev, s.a328_c004_P, s.w_328c004,
             s.y_328_750) == (col.m_kg, col.t_c, col.t_prev_c, col.p_bara, col.w, col.y_750)
     v1c, st = s.FFIC_329401, loops.ffic_329401
@@ -488,7 +488,7 @@ def _run(v1, script, ticks: int, dt: float = DT, before=None, decided=ALL):
     """Drive the column alone through `script(k)`, comparing everything every tick."""
     if not {"735", "station", "recycle", "valve", "gains"} <= decided:
         raise ValueError("the port's seeds are the decided ones; run V1's in the divergences")
-    s, col, loops = _v1_state(v1, decided), sd.SecondDesorber(fv_329401=sd.V1_FV_329401), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
+    s, col, loops = _v1_state(v1, decided), sd.SecondDesorber(fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
     if before:
         before(s, col, loops)
     b = None
@@ -604,9 +604,9 @@ def test_the_desorber_takes_749_on_the_same_tick(v1):
     748 a tick late, the hydrolyser 328C004's pressure a tick late. A feed cut and then an MP
     steam step move every hand-off."""
     s = _v1_state(v1)
-    col2, lic2 = fd.FirstDesorber(), fd.lic_328503()
+    col2, lic2 = fd.FirstDesorber(l2_stop=False), fd.lic_328503()
     col3, loops3 = hy.Hydrolyser(), hy.HydrolyserLoops()
-    col4, loops4 = sd.SecondDesorber(fv_329401=sd.V1_FV_329401), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
+    col4, loops4 = sd.SecondDesorber(fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
     m748, y748 = t.C002_M748_DES_KGH, dict(t.DES_C003.y)
     m750, y750 = t.C002_M750_DES_KGH, dict(t.DES_C004.y)
     seen = set()
@@ -642,7 +642,7 @@ def _both(v1, script, ticks, dt, before, v1_decided):
     """V1 with `v1_decided` against the port: the tick they part, the tick each of the port's
     flags first rises, each side's liquid books on what boils, and both sides at the end."""
     s = _v1_state(v1, v1_decided)
-    col, loops = sd.SecondDesorber(fv_329401=sd.V1_FV_329401), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
+    col, loops = sd.SecondDesorber(fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
     if before:
         before(s, col, loops)
     out = SimpleNamespace(parted=None, first={}, made_v1=0.0, made=0.0, s=s, col=col, a=None,

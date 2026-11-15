@@ -27,11 +27,14 @@ def _loop(loops, name):
     return loop.loop if isinstance(loop, rd.FlowLoop) else loop
 
 
-def _run(ticks, dt=DT, man=None, over=None, t0=10):
+def _run(ticks, dt=DT, man=None, over=None, t0=10, stop=True, **kw):
     """Drive the drum from its design seed; `man` holds loops at an output, `over` replaces
-    boundaries from tick t0. Returns the drum, every result, and the liquid the books did not
+    boundaries from tick t0; `stop` False runs without 328P002's low-level stop (decision 217) and
+    `kw` goes to the step. Returns the drum, every result, and the liquid the books did not
     see — the liquid loses what stays vapour (decision 24)."""
     drum, loops = rd.RefluxDrum(), rd.RefluxDrumLoops()
+    if not stop:
+        drum.l2_stop = False
     for name, op in (man or {}).items():
         _loop(loops, name).set_mode("MAN")
         _loop(loops, name).op = op
@@ -43,7 +46,8 @@ def _run(ticks, dt=DT, man=None, over=None, t0=10):
             x.update(over)
         pre = drum.m_kg
         r = drum.step(loops, x["m737"], t.C002_T_BOT_C, t.C002_P_TOP_BARA, c2.C002_M_DES_KG,
-                      t.C002_IN_DES_KGH, x["mover"], x["m718a"], x["m793"], 56.0, x["pe011"], dt)
+                      t.C002_IN_DES_KGH, x["mover"], x["m718a"], x["m793"], 56.0, x["pe011"], dt,
+                      **kw)
         made += drum.m_kg - pre - (r.in_kgh - r.gen_kgh - r.m_775_kgh - r.m_776_kgh
                                    - r.m_overflow_kgh) * dt / 3600.0
         out.append(r)
@@ -127,8 +131,9 @@ def test_328c002s_overflow_arrives():
 
 def test_328p002_at_the_heel_passes_what_arrives():
     """Decision 11. LV-328501 wide open: the drum reaches its heel at 548 s, and from then on
-    775 and 776 share what arrives less what stays vapour — flagged, making no liquid."""
-    drum, out, made = _run(2400, man={"lic_328501": 100.0})
+    775 and 776 share what arrives less what stays vapour — flagged, making no liquid. Run with
+    328P002's low-level stop off (decision 217), which holds the drum above its heel."""
+    drum, out, made = _run(2400, man={"lic_328501": 100.0}, stop=False)
     first = next(k for k, r in enumerate(out) if r.suction_lost)
     assert first * DT == 548.0
     r = out[-1]
@@ -163,3 +168,28 @@ def test_sv32353_holds_a_shut_vent():
     assert max(r.p_bara for r in out) == pytest.approx(6.0325, abs=1e-4)
     assert min(r.p_bara for r in out[151:]) == d.SV32353_RESEAT_BARA == 5.51
     assert all(r.m_786_kgh == 0.0 for r in out) and abs(made) < 1e-6
+
+
+def test_328p002s_run_flag_true_is_the_default_call_and_false_draws_nothing():
+    """Decision 227 (handoff A-38): the flag True is the call without it, to the bit; False draws
+    neither 775 nor 776, the drum's books close, and the flag does not set the low-level stop."""
+    assert _run(20)[1] == _run(20, pump_running=True)[1]
+    drum, out, made = _run(20, pump_running=False)
+    assert all(r.m_775_kgh == 0.0 == r.m_776_kgh for r in out)
+    assert abs(made) < 1e-9 and drum.p002_stopped is False
+
+
+def test_328p002_stops_below_lt_328501s_l2_and_runs_again_past_its_hysteresis():
+    """Decision 217: AC4 stops 328P002A / B on LT-328501 below L2 (the stand-in 5 %, 2 %
+    hysteresis). LV-328501 wide open: LI-328501 passes below 5 % at 303.5 s and the pair stops, 775
+    and 776 zero; the drum refills on 737 and 718A and the pair runs again at 331.0 s on 7.04 %,
+    cycling about every 41 s. The drum never reaches its heel, and its books close."""
+    drum, out, made = _run(2400, man={"lic_328501": 100.0})
+    stopped = [r.m_776_kgh == 0.0 for r in out]
+    first = stopped.index(True)
+    back = stopped.index(False, first)
+    assert (first * DT, back * DT) == (303.5, 331.0)
+    assert out[first].lic_pv_pct < 5.0 <= out[first - 1].lic_pv_pct
+    assert out[back].lic_pv_pct >= 7.0 > out[back - 1].lic_pv_pct
+    assert all(r.m_775_kgh == 0.0 for r in out[first:back])
+    assert not any(r.suction_lost for r in out) and abs(made) < 1e-9

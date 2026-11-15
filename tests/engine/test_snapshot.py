@@ -280,6 +280,22 @@ def test_a_save_made_while_lv_324501a_travels_keeps_its_position_and_replays():
     assert runs[0] == runs[1]
 
 
+def test_a_restored_exercise_stops_on_the_limit_the_model_holds_now(monkeypatch):
+    """Decision 217: the four AC4 low-level stops read their L2 from `data.low_level_stops` on every
+    tick, so a save carries each stop's switch, not its stand-in. Restored after the limit changes
+    (here LT-328501's raised to 99 %, above the drum's design level), 328P002 stops on the new
+    limit on the first tick; the others, at their stand-in, run on."""
+    from ureasim.units.desorption import reflux_drum
+    sch, plant = build_plant()
+    text = snapshot.dumps(plant)
+    monkeypatch.setattr(reflux_drum, "L2_PCT", {"LT-328501": 99.0})
+    back = snapshot.loads(text, build_plant()[1])
+    Scheduler(sch, back).tick()
+    assert back.units["328D001"].p002_stopped
+    assert not (back.units["328C002"].p006_stopped or back.units["328C004"].p007_stopped
+                or back.units["324E003"].p001_stopped)
+
+
 def test_a_reference_to_an_object_the_save_does_not_hold_is_refused():
     _, plant = build_plant()
     doc = json.loads(snapshot.dumps(plant))

@@ -88,6 +88,9 @@ Classes decided on other units, applied here under §5 rule 7:
   * **328P002 cannot drain an empty drum, and a full drum overflows** (decision 11): 775 and 776
     share what the drum can give, FT-328404 reads the 775 delivered, and above the full cylinder
     the excess leaves as a published stream.
+  * **AC4 stops 328P002A / B on LT-328501 below L2** (decision 217; MOTCON IC2, As-Built §CXIX.2):
+    775 and 776 are zero from L2 until the level clears it by the hysteresis
+    (`control.interlocks.low_level_stop`; the limits the stand-in of `data.low_level_stops`).
   * **The four valves on their vendor trims** (decision 23): LV-328501 linear, Kvs 16, from 29.4 %
     (V1 50 %); FV-328404 modified equal percentage, Kvs 10, from 56.7 % (V1 linear from 30.2 %);
     PV-328202 modified equal percentage, Kvs 25, from 60.4 %, xT 0.7743 (V1 linear from 50 %);
@@ -123,6 +126,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
+from ureasim.control.interlocks import low_level_stop
 from ureasim.control.process_loop import FlowLoop, ProcessLoop
 from ureasim.control.valve import cv_fraction, valve_gas_anchored
 from ureasim.core.node import vapour_volume_m3, vessel_dpdt
@@ -135,6 +139,7 @@ from ureasim.data.desorption_train import (
     D001_P_BARA,
     D001_T_C,
 )
+from ureasim.data.low_level_stops import L2_HYST_PCT, L2_PCT
 from ureasim.data.unit_328c002 import C002_DT_TOP_K
 from ureasim.data.unit_328d001 import (
     C002_DT_TOP_NO_REFLUX_K,
@@ -417,6 +422,11 @@ class RefluxDrum:
     sv_32353: GasReliefValve = field(default_factory=sv_32353)
     #: TV-328002's trim (decided 2026-10-17); None is V1's linear law from 50 %.
     tv_328002: tuple | None = TV_328002_TRIM
+    #: AC4's stop of 328P002A / B below LT-328501's L2, and True while it holds them stopped
+    #: (decision 217). The limit is read from `data.low_level_stops` on every tick, so a save
+    #: carries this switch and never the stand-in; False, V1's, is no stop.
+    l2_stop: bool = True
+    p002_stopped: bool = False
 
     def step(self, loops: RefluxDrumLoops, m_737_kgh: float, t_c002_c: float,
              p_c002_bara: float, m_c002_kg: float, in_c002_kgh: float, m_c002_over_kgh: float,
@@ -479,13 +489,17 @@ class RefluxDrum:
                / max(p_c002_bara, C002_P_FLOOR_BARA))
         reflux_sp = loops.tic_328008.step(h2o, dt)
         # FT-328404 reads the 775 delivered when the heel held it back (decision 11).
-        # 328P002A and B both stopped deliver nothing: FT-328404 reads no 775 (decision 227).
-        run = 1.0 if pump_running else 0.0
+        # 328P002A and B both stopped deliver nothing: FT-328404 reads no 775 (decision 227), nor
+        # while AC4 holds them stopped on LT-328501's L2 (decision 217).
+        level = lt_328501_pct(self.m_kg)
+        l2 = L2_PCT["LT-328501"] if self.l2_stop else None
+        self.p002_stopped = low_level_stop(self.p002_stopped, level, l2, L2_HYST_PCT)
+        delivering = pump_running and not self.p002_stopped
+        run = 1.0 if delivering else 0.0
         m_775 = loops.fic_328404.step(dt, cas_sp=reflux_sp,
-                                      flow_cap=self.cap_775_kgh if pump_running else 0.0) * run
+                                      flow_cap=self.cap_775_kgh if delivering else 0.0) * run
 
         # ----- LIC-328501 -> LV-328501, a pure gain on its linear trim (decision 23) -----------
-        level = lt_328501_pct(self.m_kg)
         lic_op = loops.lic_328501.step(level, dt)
         m_776 = D001_M776_DES_KGH * (lic_op / LV501_OP_DES_PCT) * run
 

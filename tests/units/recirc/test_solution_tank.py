@@ -222,3 +222,23 @@ def test_the_pooled_heel_is_made_up_once():
     assert created == pytest.approx(3.75, abs=1e-12)
     assert tank.m_i_kg == pytest.approx(d.D002_M_I_FLOOR_KG, abs=1e-12)
     assert r.suction_lost and r.m_324_kgh == 0.0
+
+
+def test_323p003s_run_flag_true_is_the_default_call_and_false_delivers_nothing():
+    """Decision 227 (handoff A-38): the flag True is the call without it, to the bit; False sends no
+    PFD 324 through FV-324401, the cascade's suction cap reads zero, and the tank's books close."""
+    def run(**kw):
+        tank, lic, fic = st.SolutionTank(), st.lic_323507(), st.fic_324401()
+        out, created = [], 0.0
+        for _ in range(20):
+            m_before = tank.m_i_kg + tank.m_ii_kg
+            r = tank.step(lic, fic, R323_M317_DES, d.F010_T_SP_C, W317, *NO_RECYCLE, False, 1.0,
+                          **kw)
+            created += ((r.m_i_kg + r.m_ii_kg - m_before)
+                        - (r.feed_kgh + r.recycle_kgh - r.m_324_kgh - r.overflow_kgh) / 3600.0)
+            out.append(r)
+        return tank, out, created
+    assert run()[1] == run(pump_running=True)[1]
+    tank, out, created = run(pump_running=False)
+    assert all(r.m_324_kgh == 0.0 for r in out) and tank.suction_cap_th == 0.0
+    assert abs(created) < 1e-6

@@ -51,11 +51,15 @@ ADDED_OPERATOR = ("GRANULATION-HEADERS", "HIC-335602", "335P002", "335P002A", "3
                   "322P002-DELIVERY")
 
 #: Attributes a save made before they existed lacks, by the class path a snapshot names, filled
-#: from the present model's object at the same path. source = decision 224 (2026-11-14) and
+#: from the present model's object at the same path. source = decision 224 (2026-11-14),
 #: decision 236 (LV-324501A's positioner, 2026-11-15; the engine then opens the valve at the stroke
-#: that passes the save's drain, decision 238).
+#: that passes the save's drain, decision 238) and decision 217 (the four low-level stops, 2026-11-15).
 ADDED_ATTRIBUTES = MappingProxyType({
     "ureasim.units.evaporation.second_evaporator:SecondEvaporatorLoops": ("header",),
-    "ureasim.units.evaporation.second_evaporator:SecondEvaporator": ("ac4_header", "header"),
+    "ureasim.units.evaporation.second_evaporator:SecondEvaporator": ("ac4_header", "header",
+                                                                     "l2_stop", "p001_stopped"),
     "ureasim.units.finishing.melt_header:MeltHeader": ("lv_a_position_pct",),
+    "ureasim.units.desorption.reflux_drum:RefluxDrum": ("l2_stop", "p002_stopped"),
+    "ureasim.units.desorption.first_desorber:FirstDesorber": ("l2_stop", "p006_stopped"),
+    "ureasim.units.desorption.second_desorber:SecondDesorber": ("l2_stop", "p007_stopped"),
 })

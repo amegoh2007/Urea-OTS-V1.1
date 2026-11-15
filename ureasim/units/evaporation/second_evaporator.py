@@ -66,7 +66,9 @@ Where this stage departs from V1 — each a decided divergence, run both ways in
   * **The melt header** (handoff B-137, decided 2026-11-14, decision 224): LIC-324501's output sets
     PIC-335201's set point and LV-324501B's stroke, PIC-335201 holds the computed header on
     LV-324501A, and both valves may pass melt — where V1 routes the whole drain to one valve on a
-    boundary header (`melt_route.selector_drain`, the harness's side).
+    boundary header (`melt_route.selector_drain`, the harness's side). AC4 stops 335P001A / B on
+    LY-324501 below L2 (decision 217; MOTCON IC2, As-Built §CXIX.2): the header has no pumps from
+    L2 until the level clears it by the hysteresis (the limits the stand-in of `data.low_level_stops`).
 
 PV-329212 runs on its vendor trim (decision 23's class, decided 2026-10-14): Metso's DN 80
 balanced Neldisc, Cv 150, its printed capacities and Valmet's S-Disc shape between them as its curve
@@ -85,6 +87,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
+from ureasim.control.interlocks import low_level_stop
 from ureasim.control.process_loop import ProcessLoop
 from ureasim.control.valve import cv_fraction
 from ureasim.core.node import backward_euler_pressure, vapour_volume_m3, vessel_dpdt
@@ -92,6 +95,7 @@ from ureasim.core.numeric import clamp
 from ureasim.core.signal import first_order_lag
 from ureasim.core.units_of_measure import ABSOLUTE_ZERO_C
 from ureasim.data.control_valves import PV_329212
+from ureasim.data.low_level_stops import L2_HYST_PCT, L2_PCT
 from ureasim.data.unit_324 import (
     E001_W_UREA_DES,
     E003_LAMBDA_KJKG,
@@ -384,6 +388,11 @@ class SecondEvaporator:
     #: a boundary header, which the equivalence harnesses keep. The header's state.
     ac4_header: bool = True
     header: MeltHeader = field(default_factory=MeltHeader)
+    #: AC4's stop of 335P001A / B below LY-324501's L2, and True while it holds them stopped
+    #: (decision 217). The limit is read from `data.low_level_stops` on every tick, so a save
+    #: carries this switch and never the stand-in; False, V1's, is no stop.
+    l2_stop: bool = True
+    p001_stopped: bool = False
 
     def step(self, loops: SecondEvaporatorLoops, feed_kgh: float, feed_t_c: float,
              feed_w: dict, p_mp_bara: float, p_motive_bara: float, p_discharge_bara: float,
@@ -412,7 +421,8 @@ class SecondEvaporator:
             The 335 melt header [bar g] V1's selector reads, a battery-limit input: above
             PIC-335201's relief setting LIC-324501's demand goes to LV-324501B (V1's side only).
         headers_online, hic_335602_pct, pump_running
-            AC4's side: the header valves online, HIC-335602 [%], 335P001A or B running.
+            AC4's side: the header valves online, HIC-335602 [%], 335P001A or B running; the
+            pair delivers nothing while AC4 holds it stopped on LY-324501's L2 (decision 217).
 
         The order is V1's: the cascade acts on the state at the top of the tick and the chest is
         solved; the false air is the vacuum stroke the tick before, and PIC-324203 then steps on
@@ -543,8 +553,10 @@ class SecondEvaporator:
                        + feed_kgh - m_vap - m_boil)
         header = None
         if self.ac4_header:
+            l2 = L2_PCT["LY-324501"] if self.l2_stop else None
+            self.p001_stopped = low_level_stop(self.p001_stopped, level, l2, L2_HYST_PCT)
             header = self.header.step(loops.header, level_op, headers_online, hic_335602_pct,
-                                      pump_running, m_402_avail, dt)
+                                      pump_running and not self.p001_stopped, m_402_avail, dt)
             m_402 = header.forward_kgh + header.recycle_kgh
             recycle, lv_a, lv_b = header.recycle_kgh > 0.0, header.lv_a_pct, header.lv_b_pct
             route = melt_split(header.forward_kgh, header.recycle_kgh, w_pre, self.t_c,

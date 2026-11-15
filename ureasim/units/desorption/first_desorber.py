@@ -98,6 +98,9 @@ Applied as decision 11's standing rule:
     and the loss of suction is flagged. The boil-up is not capped: a column that boils more
     than everything that arrives still reaches the floor, as the flash condenser's vent does
     (handoff B-30).
+  * **AC4 stops 328P006A / B on LT-328503 below L2** (decision 217; MOTCON IC2, As-Built §CXIX.2):
+    743 is zero from L2 until the level clears it by the hysteresis
+    (`control.interlocks.low_level_stop`; the limits the stand-in of `data.low_level_stops`).
   * **A full column overflows.** V1's holdup has no ceiling: with LV-328503 held at 20 % the
     shell is full after 1886 s and V1 goes on filling past it (on V1's choke, B-43, halving 750
     put 19.5 t into the 12.8 m3 shell in an hour, LI-328503 reading 613 %). Here the liquid
@@ -146,6 +149,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from ureasim.control.interlocks import low_level_stop
 from ureasim.control.process_loop import ProcessLoop
 from ureasim.control.valve import valve_gas_anchored, valve_liquid_anchored
 from ureasim.core.node import vapour_volume_m3, vessel_dpdt
@@ -169,6 +173,7 @@ from ureasim.data.desorption_train import (
     W_S743,
     W_S775,
 )
+from ureasim.data.low_level_stops import L2_HYST_PCT, L2_PCT
 from ureasim.data.unit_328c002 import (
     C002_AREA_M2,
     C002_DP_COL_BAR,
@@ -298,6 +303,11 @@ class FirstDesorber:
     #: The reflux and the two overheads at their producers' live temperatures, as departures from
     #: the producers' designs (decided 2026-10-16, handoff B-31); False is V1's design values.
     live_inlets: bool = True
+    #: AC4's stop of 328P006A / B below LT-328503's L2, and True while it holds them stopped
+    #: (decision 217). The limit is read from `data.low_level_stops` on every tick, so a save
+    #: carries this switch and never the stand-in; False, V1's, is no stop.
+    l2_stop: bool = True
+    p006_stopped: bool = False
 
     def step(self, lic: ProcessLoop, m_738_kgh: float, t_738_c: float,
              m_748_kgh: float, y_748: dict, m_750_kgh: float, y_750: dict, m_775_kgh: float,
@@ -347,8 +357,11 @@ class FirstDesorber:
             LV503_OP_DES_PCT / 100.0, LV503_P1_DES_BARA, C003_P_BARA, C002_RHO_KGM3,
             characteristic=LV503_CHARACTERISTIC, fl=LV503_FL,
             pv_bara=liquor_pv_bara(self.w, t_pre), pv_des_bara=LV503_PV_DES_BARA)
-        # 328P006A and B both stopped: LV-328503 has no pump head and passes nothing (decision 227).
-        m_743 *= 1.0 if pump_running else 0.0
+        # 328P006A and B both stopped: LV-328503 has no pump head and passes nothing (decision 227),
+        # nor while AC4 holds them stopped on LT-328503's L2 (decision 217).
+        l2 = L2_PCT["LT-328503"] if self.l2_stop else None
+        self.p006_stopped = low_level_stop(self.p006_stopped, level, l2, L2_HYST_PCT)
+        m_743 *= 1.0 if pump_running and not self.p006_stopped else 0.0
 
         # ----- the duty and the boil-up: energy-limited, anchored on the design duty. A
         # negative duty condenses vapour (decided divergence, handoff B-42; V1 clamps at 0) -----

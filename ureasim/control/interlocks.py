@@ -372,7 +372,30 @@ class InterlockSet:
         }
 
 
+def low_level_stop(stopped: bool, level_pct: float, l2_pct: float | None, hyst_pct: float) -> bool:
+    """Whether AC4 holds a pump pair stopped on its suction vessel's low level.
+
+    Process utility
+    ---------------
+    A motor control's process interlock IC2 stops both machines of a pair while the level they draw
+    from stands below its L2, so the pumps never run their vessel dry; once the level has recovered
+    past the limit by its hysteresis they deliver again. As decision 39 builds an interlock, no
+    latch or reset the logic does not draw; as 323P008's stop on LT-323503 is built (B-93, B-96).
+    A failed measurement (NaN) compares False and stops nothing, as that stop's comparison does. No
+    limit (None) is V1's, which has no such stop.
+
+    Equation
+    --------
+        stopped' = level < L2 + hyst   if stopped
+                   level < L2          otherwise
+    """
+    if l2_pct is None:
+        return False
+    return level_pct < (l2_pct + hyst_pct if stopped else l2_pct)
+
+
 __all__ = [
+    "low_level_stop",
     "Interlock",
     "HystereticInterlock",
     "DcsTripFlag",

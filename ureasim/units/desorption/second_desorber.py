@@ -111,6 +111,9 @@ Classes decided on other units, applied here under §5 rule 7:
     reads the 741 delivered.
   * **LV-328505 on its vendor trim** (decision 23): Valtek's modified equal percentage, Kvs 63,
     from 90.07 %, FL 0.9471, where V1 runs it linear from 50 %.
+  * **AC4 stops 328P007A / B on LT-328505 below L2** (decision 217; MOTCON IC2, As-Built §CXIX.2):
+    LV-328505 passes nothing from L2 until the level clears it by the hysteresis, as with both
+    machines stopped (decisions 215, 227; the limits the stand-in of `data.low_level_stops`).
   * **FIC-329401 on the table's gain per cent of FT-329401's 0-12 000 kg/h** (decision 10):
     0.0025 %/(kg/h), where V1 applies the table's 0.30 per kg/h.
 
@@ -145,6 +148,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from ureasim.control.interlocks import low_level_stop
 from ureasim.control.process_loop import FlowLoop, ProcessLoop
 from ureasim.control.ratio import RatioStation
 from ureasim.control.valve import (
@@ -167,6 +171,7 @@ from ureasim.data.desorption_train import (
     W_S739,
     W_STEAM,
 )
+from ureasim.data.low_level_stops import L2_HYST_PCT, L2_PCT
 from ureasim.data.unit_328c004 import (
     C004_AREA_M2,
     C004_DP_COL_BAR,
@@ -392,6 +397,11 @@ class SecondDesorber:
     #: FV-329401's trim (decision 108's class, decided 2026-10-15); ``V1_FV_329401`` is V1's. Its
     #: xT enters the pressure term; FIC-329401's FlowLoop carries its curve and design stroke.
     fv_329401: ChestValve = FV_329401_TRIM
+    #: AC4's stop of 328P007A / B below LT-328505's L2, and True while it holds them stopped
+    #: (decision 217). The limit is read from `data.low_level_stops` on every tick, so a save
+    #: carries this switch and never the stand-in; False, V1's, is no stop.
+    l2_stop: bool = True
+    p007_stopped: bool = False
 
     def step(self, loops: SecondDesorberLoops, m_749_kgh: float, t_749_c: float, w_749: dict,
              m_735_kgh: float, p_c002_bara: float, t_740_c: float,
@@ -413,8 +423,9 @@ class SecondDesorber:
         p_lp_bara
             The LP header's pressure FV-329401 draws from (B-73); its default the header's design.
         pump_running
-            Either of 328P007A / B running, which deliver 740 through LV-328505 (decision 227).
-            False: LV-328505 passes nothing.
+            Either of 328P007A / B running, which deliver 740 through LV-328505 (decision 227,
+            kept as built by decision 215). False: LV-328505 passes nothing, as it does while AC4
+            holds the pair stopped on LT-328505's L2 (decision 217).
 
         The order is V1's: the ratio and the steam; the level loop, the recycle (V1 steps
         FIC-328406 in 328D003's stage) and the letdown; the duty, the boil-up and the overhead;
@@ -445,6 +456,8 @@ class SecondDesorber:
         # ----- LIC-328505 -> LV-328505 on its vendor trim (decision 23), or -> FIC-328406 ------
         level = self.m_kg / C004_M_DES_KG * C004_LEVEL_DES_PCT
         lic_op = loops.lic_328505.step(level, dt)
+        l2 = L2_PCT["LT-328505"] if self.l2_stop else None
+        self.p007_stopped = low_level_stop(self.p007_stopped, level, l2, L2_HYST_PCT)
         # While FIC-328406 is external its set point is LIC-328505's output on FT-328406's span,
         # and a switch shuts LV-328505 (B-50, UD-MR-328-FF-0002 page 2). FT-328406 reads the
         # 741 delivered when the heel held it back (decision 11).
@@ -461,7 +474,8 @@ class SecondDesorber:
             C004_M739_DES_KGH, lv_op / 100.0, p1, LV505_P2_BARA, C004_RHO_KGM3,
             LV505_OP_DES_PCT / 100.0, LV505_P1_DES_BARA, LV505_P2_BARA, C004_RHO_KGM3,
             characteristic=LV505_CHAR, fl=LV505_FL, pv_bara=pv_740,
-            pv_des_bara=LV505_PV_DES_BARA) * (1.0 if pump_running else 0.0)
+            pv_des_bara=LV505_PV_DES_BARA) * (1.0 if pump_running and not self.p007_stopped
+                                              else 0.0)
         # The draws take only the liquid above the heel plus what arrives, net of what boils
         # (decisions 11, 24): the recycle first — in cascade the only draw — then the letdown.
         # Inert at every normal state.

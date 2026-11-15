@@ -29,11 +29,14 @@ def _loop(loops, name):
     return loop.loop if isinstance(loop, sd.FlowLoop) else loop
 
 
-def _run(ticks, dt=DT, man=None, over=None, t0=10, cas=()):
+def _run(ticks, dt=DT, man=None, over=None, t0=10, cas=(), stop=True, **kw):
     """Drive the column from its design seed; `man` holds loops at an output, `cas` puts loops in
-    cascade, `over` replaces boundaries from tick t0. Returns the column, every result, and the
+    cascade, `over` replaces boundaries from tick t0; `stop` False runs without 328P007's low-level
+    stop (decision 217) and `kw` goes to the step. Returns the column, every result, and the
     liquid the books did not see — the liquid loses what boils (decision 24)."""
     col, loops = sd.SecondDesorber(), sd.SecondDesorberLoops()
+    if not stop:
+        col.l2_stop = False
     for name, op in (man or {}).items():
         _loop(loops, name).set_mode("MAN")
         _loop(loops, name).op = op
@@ -47,7 +50,7 @@ def _run(ticks, dt=DT, man=None, over=None, t0=10, cas=()):
             x.update(over)
         pre = col.m_kg
         r = col.step(loops, x["m749"], x["t749"], dict(x["w749"]), x["m735"], x["pc002"],
-                     x["t740"], dt)
+                     x["t740"], dt, **kw)
         made += col.m_kg - pre - (r.in_kgh - r.gen_kgh - r.m_739_kgh
                                   - r.m_overflow_kgh) * dt / 3600.0
         out.append(r)
@@ -133,8 +136,9 @@ def test_a_cold_feed_with_the_steam_lost_condenses_the_column():
 
 def test_lv_328505_at_the_heel_passes_what_arrives():
     """Decision 11. LV-328505 held wide open: the column reaches its heel at 461 s, and from then
-    on 739 is what arrives less what boils — 33 724 kg/h — flagged, making no liquid."""
-    col, out, made = _run(2400, man={"lic_328505": 100.0})
+    on 739 is what arrives less what boils — 33 724 kg/h — flagged, making no liquid. Run with
+    328P007's low-level stop off (decision 217), which holds the column above its heel."""
+    col, out, made = _run(2400, man={"lic_328505": 100.0}, stop=False)
     first = next(k for k, r in enumerate(out) if r.drain_lost)
     assert first * DT == pytest.approx(461.0, abs=1e-9)
     assert all(r.drain_lost for r in out[first:])
@@ -203,3 +207,30 @@ def test_fv_329401_on_its_vendor_trim_holds_the_stripping_steam_on_a_sagging_hea
     assert v1[1] == (pytest.approx(5690.4, abs=0.1), 100.0) and v1[2] == pytest.approx(17.75, abs=0.01)
     assert port[1] == (pytest.approx(6462.2, abs=0.1), pytest.approx(47.459, abs=1e-3))
     assert port[2] == pytest.approx(6.99, abs=0.01)
+
+
+def test_328p007s_run_flag_true_is_the_default_call_and_false_shuts_lv_328505():
+    """Decision 227, kept as built by decision 215 (handoff A-38): the flag True is the call without
+    it, to the bit; False passes nothing through LV-328505 while FIC-328406's 741 is untouched, the
+    column's books close, and the flag does not set the low-level stop."""
+    base = _run(20)[1]
+    assert base == _run(20, pump_running=True)[1]
+    col, out, made = _run(20, pump_running=False)
+    assert all(r.m_export_kgh == 0.0 and r.m_739_kgh == r.m_741_kgh == b.m_741_kgh
+               for r, b in zip(out, base))
+    assert abs(made) < 1e-9 and col.p007_stopped is False
+
+
+def test_328p007_stops_below_lt_328505s_l2_and_runs_again_past_its_hysteresis():
+    """Decision 217: AC4 stops 328P007A / B on LT-328505 below L2 (the stand-in 5 %, 2 %
+    hysteresis), which shuts LV-328505's letdown as built (decision 215). LV-328505 wide open:
+    LI-328505 passes below 5 % at 414.0 s and the letdown stops; the column refills and it runs
+    again at 420.5 s past 7 %. The column never reaches its heel, and its books close."""
+    col, out, made = _run(2400, man={"lic_328505": 100.0})
+    stopped = [r.m_export_kgh == 0.0 for r in out]
+    first = stopped.index(True)
+    back = stopped.index(False, first)
+    assert (first * DT, back * DT) == (414.0, 420.5)
+    assert out[first].lic_pv_pct < 5.0 <= out[first - 1].lic_pv_pct
+    assert out[back].lic_pv_pct >= 7.0 > out[back - 1].lic_pv_pct
+    assert not any(r.drain_lost for r in out) and abs(made) < 1e-9

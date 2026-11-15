@@ -452,3 +452,25 @@ def test_on_the_envelopes_volume_alone_a_full_envelope_rings(monkeypatch):
     assert all(lo < 0.65 and hi > 1.70 for lo, hi in bands)
     bands, _ = _full_envelope(60.0)
     assert all(hi - lo < 1e-9 for lo, hi in bands)
+
+
+def test_323p008s_run_flag_true_is_the_default_call_and_false_draws_nothing():
+    """Decision 227 (handoff A-38): the flag True is the call without it, to the bit; False draws
+    neither 718A nor 718B, the tank's books close, and the flag does not set the low-level trip."""
+    def run(**kw):
+        cond = fc.FlashCondenser()
+        pic, lic, fic = fc.pic_323203(), fc.lic_323503(), fc.fic_323418()
+        out, created = [], 0.0
+        for _ in range(20):
+            m_before = cond.m_kg
+            r = cond.step(pic, lic, fic, M701, 0.0, 0.0, e.E011_M786_DES_KGH, e.E011_M321_DES_KGH,
+                          e.E011_M402_DES_KGH, 0.1, **kw)
+            created += ((cond.m_kg - m_before)
+                        - (r.in_kgh - r.m_702_kgh - r.m_relief_kgh - r.m_718a_kgh - r.m_718b_kgh)
+                        / 3600.0 * 0.1)
+            out.append(r)
+        return out, created
+    assert run()[0] == run(pump_running=True)[0]
+    out, created = run(pump_running=False)
+    assert all(r.m_718a_kgh == 0.0 == r.m_718b_kgh and not r.p008_tripped for r in out)
+    assert abs(created) < 1e-9

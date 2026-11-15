@@ -434,3 +434,16 @@ def test_on_finite_pvs_the_two_sides_are_the_same(monkeypatch):
     monkeypatch.setattr(HystereticInterlock, "nan_is_live", False)
     v1 = HystereticInterlock("22_1", trip_above=57.0, clear_below=55.0)
     assert [(v1.update_from_pv(pv), v1.live) for pv in pvs] == got
+
+
+def test_a_low_level_stop_sets_below_l2_and_clears_past_its_hysteresis():
+    """AC4's motor-control interlock IC2 on a suction level (decision 217): a running pair stops
+    below L2, a stopped one stays stopped through the band and delivers again at L2 + hysteresis.
+    A failed measurement stops nothing, as 323P008's comparison does."""
+    stop = interlocks.low_level_stop
+    assert stop(False, 5.0, 5.0, 2.0) is False
+    assert stop(False, 4.99, 5.0, 2.0) is True
+    assert stop(True, 6.99, 5.0, 2.0) is True
+    assert stop(True, 7.0, 5.0, 2.0) is False
+    assert stop(False, float("nan"), 5.0, 2.0) is False
+    assert stop(True, float("nan"), 5.0, 2.0) is False

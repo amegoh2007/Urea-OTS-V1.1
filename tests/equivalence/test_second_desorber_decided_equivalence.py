@@ -98,6 +98,21 @@ def test_lv_328505_at_the_heel_decided_divergence(v1):
     assert r.b.drain_lost and r.b.m_739_kgh == pytest.approx(t.C004_M739_DES_KGH, abs=0.01)
 
 
+def test_328p007s_low_level_stop_decided_divergence(v1):
+    """Decision 217. LV-328505 wide open, as at the heel: both sides alike until LT-328505 first
+    reads below its 5 % stand-in L2, at 414.0 s; there AC4 stops 328P007A and B on the port and
+    LV-328505 passes nothing (decision 215), where V1's letdown passes 44.5 t/h on to the heel at
+    461 s and its floor makes 2.2 t. The port runs again at 7 % and never reaches the heel."""
+    def before(s, col, loops):
+        _manual("LIC_328505", "lic_328505", 100.0)(s, col, loops)
+        col.l2_stop = True
+    r = _both(v1, lambda k: _design(), 2400, 0.5, before, ALL - {"heel"})
+    assert r.parted == 828 and "lost" not in r.first
+    assert r.made_v1 == pytest.approx(2204.85, abs=0.01) and abs(r.made) < 1e-6
+    assert r.a["739"] == pytest.approx(44466.4, abs=0.1)
+    assert not r.b.drain_lost and r.col.m_kg > 1.0
+
+
 def test_a_full_desorber_overflows_decided_divergence(v1):
     """Decision 11. LV-328505 shut: the column fills at 33.7 t/h and is full at 1422.5 s. V1 goes
     on filling past its 15.99 m3 shell, 20.2 t in it at 2000 s — 137 % of what it holds; the
@@ -137,7 +152,7 @@ def test_the_backward_pressure_step_decided_divergence(v1):
     every tick, 62 ringing windows in 2000 s — and swings 2.09 to 4.76 bar a once the shell is
     full; the port takes the backward step from 1333.2 s, where dt . df/dP passes -1, and holds
     3.6997 to 3.6998 bar a without a ringing window."""
-    s, col, loops = _v1_state(v1, ALL - {"B-51"}), sd.SecondDesorber(fv_329401=sd.V1_FV_329401), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
+    s, col, loops = _v1_state(v1, ALL - {"B-51"}), sd.SecondDesorber(fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
     _manual("LIC_328505", "lic_328505", 0.0)(s, col, loops)
     parted, first_backward, p_v1, p_port = None, None, [], []
     for k in range(20000):
@@ -236,7 +251,7 @@ def test_the_liquid_pays_what_boils_decided_divergence(v1, name, script, before,
     side keeps its explicit pressure step: the backward step's 750 at the settled pressure
     presupposes this decision's books (B-51)."""
     dt = 0.5
-    s, col, loops = _v1_state(v1), sd.SecondDesorber(fv_329401=sd.V1_FV_329401), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
+    s, col, loops = _v1_state(v1), sd.SecondDesorber(fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
     if before:
         before(s, col, loops)
     made_v1 = made = held_back = 0.0

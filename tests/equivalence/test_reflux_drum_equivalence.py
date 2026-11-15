@@ -191,8 +191,9 @@ def _v1_state(v1, decided=ALL):
 
 def _drum_and_loops():
     """The port's drum and its loops, TV-328002 on V1's linear law from 50 % (its Neldisc, decided
-    2026-10-17, has its own both-ways test in `test_reflux_drum_decided_equivalence.py`)."""
-    return (rd.RefluxDrum(tv_328002=None),
+    2026-10-17, has its own both-ways test in `test_reflux_drum_decided_equivalence.py`) and V1's
+    line for 328P002's low-level stop, none (decision 217, its own test there too)."""
+    return (rd.RefluxDrum(tv_328002=None, l2_stop=False),
             rd.RefluxDrumLoops(tic_328002=rd.tic_328002(d.E004_TV_OP_DES_PCT)))
 
 
@@ -566,7 +567,7 @@ def test_the_drum_takes_737_on_the_same_tick(v1):
     this tick's 737 and the column's state after its step; the column takes 775 and the drum's
     pressure a tick late. A feed cut and then a reflux set-point step move every hand-off."""
     s = _v1_state(v1)
-    col2, lic2 = fd.FirstDesorber(), fd.lic_328503()
+    col2, lic2 = fd.FirstDesorber(l2_stop=False), fd.lic_328503()
     drum, loops = _drum_and_loops()
     seen = set()
     for k in range(3000):
