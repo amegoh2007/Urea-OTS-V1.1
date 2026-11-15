@@ -9,7 +9,8 @@ flags. Each flag is a live AND of its inputs (`DcsTripFlag`): no latch and no re
 sheets draw none (decision 39's class). What holds the header down after a trip is the equipment:
 LV-324501A, shut by its solenoid, opens LVSL-324501A's contact, which is itself an input of 35.4,
 so the flag stays lost until the operator overrides the valve with HS-335201A and PIC-335201
-opens it.
+opens it. 35.4 lost also withholds 335P002's permit; ten minutes on, the UF85 pumps' timer holds
+35.4 lost as well, and HS-335620 must first let them run.
 
 Source
 ------

@@ -108,3 +108,28 @@ def test_no_flag_latches():
     t = _trips()
     t.step(replace(RUNNING, p001_running=False), DT)
     assert t.step(RUNNING, DT) == HEALTHY_35 and _flags(t) == (False, False)
+
+
+def test_past_ten_minutes_the_uf85_interlock_holds_35_4_and_hs_335620_must_release_it_first():
+    """35.4 lost withholds 335P002's permit, so the UF85 pumps' run feedback is lost and, ten
+    minutes on, PC35.5.2's timer holds 35.4 lost too: HS-335201A alone no longer heals it. HS-335620
+    lets the pumps run, the timer restarts, and HS-335201A then clears LVSL-324501A."""
+    t = _trips()
+
+    def tick(**kw):
+        # The pumps' feedback as the engine reads it: their command on, held by 35.3 the tick before.
+        return t.step(replace(RUNNING, p002_running=t.actions.p002_permit, **kw), DT)
+
+    tick(p001_running=False)
+    for _ in range(int(round(TRIP_35_4_P002_TD_S / DT))):
+        tick(lvsl_324501a=True)
+    assert t.t_p002.elapsed_s == TRIP_35_4_P002_TD_S
+    for _ in range(10):
+        a = tick(hs_335201a=True)
+    assert _flags(t) == (False, True) and not a.p002_permit and a.hv_335602_open
+    tick(lvsl_324501a=True, hs_335620=True)
+    tick(lvsl_324501a=True, hs_335620=True)
+    assert t.t_p002.elapsed_s == 0.0 and t.actions.p002_permit
+    tick(hs_335201a=True, hs_335620=True)
+    assert _flags(t) == (False, False)
+    assert tick() == HEALTHY_35
