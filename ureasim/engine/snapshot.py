@@ -49,6 +49,7 @@ import enum
 import importlib
 import json
 import math
+import os
 import time
 from collections import deque
 from types import MappingProxyType
@@ -366,9 +367,17 @@ def loads(text: str, reference: PlantState | None = None) -> PlantState:
 
 
 def save(plant: PlantState, path: str, note: str = "") -> None:
-    """Write the plant's snapshot to ``path``."""
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(dumps(plant, note))
+    """Write the plant's snapshot to ``path``. The document is encoded first and written beside
+    the file, then moved over it, so a save that fails leaves the exercise that was there."""
+    text, tmp = dumps(plant, note), f"{path}.tmp"
+    try:
+        with open(tmp, "w", encoding="utf-8") as f:
+            f.write(text)
+        os.replace(tmp, path)
+    except OSError:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        raise
 
 
 def load(path: str, reference: PlantState | None = None) -> PlantState:

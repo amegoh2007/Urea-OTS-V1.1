@@ -79,6 +79,19 @@ def test_a_foreign_object_is_refused_on_save():
         snapshot.dumps(plant)
 
 
+def test_a_save_that_fails_leaves_the_exercise_that_was_there(tmp_path):
+    """The file was opened, and so emptied, before the plant was encoded: a refused save
+    destroyed the exercise it was to replace."""
+    path = tmp_path / "exercise.json"
+    _, plant = build_plant()
+    snapshot.save(plant, str(path))
+    before = path.read_bytes()
+    plant.boundary["bad"] = object()
+    with pytest.raises(snapshot.SnapshotError):
+        snapshot.save(plant, str(path))
+    assert path.read_bytes() == before and [p.name for p in tmp_path.iterdir()] == ["exercise.json"]
+
+
 def test_a_damaged_or_foreign_document_is_refused():
     _, plant = build_plant()
     doc = json.loads(snapshot.dumps(plant))
