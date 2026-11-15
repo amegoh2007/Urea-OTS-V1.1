@@ -750,8 +750,12 @@ def test_a_non_finite_line_pressure_no_longer_latches_the_vent_open(v1):
 
 
 def test_a_bad_sample_costs_one_tick_of_control_action_and_nothing_else():
-    """Frozen for the one tick that consumes the bad sample; afterwards the loop is, to the
-    bit, the loop that never saw it."""
+    """Frozen for the one tick that consumes the bad sample. The first good sample after it reseeds
+    the PV history (decision 186), so that tick the loop acts on its integral alone; afterwards it
+    moves as the loop that never saw the bad sample, offset by exactly the proportional step it did
+    not take, Kc times the PV's move through the outage. Restated on decision 186 (2026-11-15,
+    decision 216, handoff A-40); V1's step on recovery, the class switch off, is asserted in
+    `tests/control/test_process_loop.py`."""
     rising = [150.0 + 0.5 * k for k in range(60)]       # crosses the set point near k = 36
     j = 45
     with_bad = rising[:j] + [float("nan")] + rising[j + 1:]
@@ -759,10 +763,20 @@ def test_a_bad_sample_costs_one_tick_of_control_action_and_nothing_else():
     a_loop, b_loop = vent_pressure_loop(), vent_pressure_loop()
     a = [_v11_pic_tick(a_loop, m) for m in with_bad]
     b = [_v11_pic_tick(b_loop, m) for m in without]
+    #  No derivative, so the history reaches the output through the proportional term alone, and
+    #  neither loop touches a rail in the window, so every increment is applied whole.
+    assert a_loop.Td <= 0.0 and a_loop.act == -1.0
+    assert 0.0 < min(a[j:] + b[j:]) and max(a[j:] + b[j:]) < 100.0
     #  The sample published at the end of tick j is consumed at the top of tick j + 1.
     assert a[:j + 1] == b[:j + 1]
     assert a[j + 1] == a[j] > 0.0           # frozen, and frozen OPEN: the loop was acting
-    assert a[j + 2:] == b[j + 1:]
+    #  The first good sample: the integral alone, to the bit.
+    integral = (DT / a_loop.Ti) * (a_loop.sp - rising[j + 1])
+    assert a[j + 2] == a[j + 1] + a_loop.act * a_loop.Kc * integral
+    #  Then the clean loop's moves, offset by the proportional step not taken: 1.0 % of stroke.
+    offset = a_loop.act * a_loop.Kc * (rising[j + 1] - rising[j - 1])
+    assert offset == pytest.approx(-1.0, abs=1e-12)
+    assert all(x - y == pytest.approx(offset, abs=1e-9) for x, y in zip(a[j + 2:], b[j + 1:]))
 
 
 def test_pic_322203_on_the_standard_atmosphere_decided_divergence(v1):
