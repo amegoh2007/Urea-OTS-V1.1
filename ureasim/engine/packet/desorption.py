@@ -5,7 +5,8 @@ Each block is V1's dictionary, key for key and rounding for rounding, read off t
 and loops (`ureasim.engine.plant.desorption`, `absorption`). Where the port has decided a divergence
 the value is the port's: TI-322015 where the P&ID draws it (decision 37), 328E004's cooling-water
 return on its held duty (decision 28), each level between its transmitter's taps (decision 33),
-FFIC-329401 as Uhde's ratio station (decision 26). V1's unit-328 energy-closure ledger
+FFIC-329401 as Uhde's ratio station (decision 26); 328D003's block adds 322P002's field-set
+delivery, the instructor's field action (decision 212). V1's unit-328 energy-closure ledger
 (``Q328_*_kW``, its AUDIT C4 diagnostic) is not ported and publishes None.
 
 Source: V1 ``backend/main.py`` 10729-10893.
@@ -15,6 +16,7 @@ from __future__ import annotations
 
 from ureasim.data.unit_328d001 import D001_RHO_KGM3, RHO_775_KGM3
 from ureasim.data.console_packet import RHO_755_KGM3
+from ureasim.data.faceplates import P002_DELIVERY_TAG
 from ureasim.data.unit_328d003 import D003_VOL_I_M3, D003_VOL_II_M3, D003_VOL_III_M3, RHO_741_KGM3
 from ureasim.engine.packet._common import Tick, faceplate, th
 from ureasim.engine.packet.recirculation import flow_loop
@@ -159,5 +161,7 @@ def absorb(t: Tick) -> dict:
             "Q328_resid_kW": None,
             "P002A": {"on": t.operator["322P002A"]["on"], "mode": t.operator["322P002A"]["mode"]},
             "P002B": {"on": t.operator["322P002B"]["on"], "mode": t.operator["322P002B"]["mode"]},
+            # 322P002's delivery as the field operator set it, in FI-322402's m3/h (decision 212).
+            "P002_delivery_set_m3h": round(t.operator[P002_DELIVERY_TAG] / RHO_755_KGM3, 2),
         },
     }

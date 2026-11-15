@@ -32,7 +32,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from types import MappingProxyType
 
+from ureasim.data.console_packet import RHO_755_KGM3
 from ureasim.data.operator_commands import FACEPLATE_MODES
+from ureasim.data.unit_328d003 import M744_DES_KGH
 from ureasim.data.unit_335 import HEADER_VALVES_MAX
 
 __all__ = [
@@ -41,7 +43,7 @@ __all__ = [
     "Malfunction", "MALFUNCTIONS", "CO2_DEMAND_MAX_FRAC", "CO2_DEMAND_STEP_FRAC",
     "CO2_STEP_COMMAND", "CO2_STEP_FIELD", "CO2_DEMAND_PCT_DECIMALS", "CO2_DEMAND_TH_DECIMALS",
     "GRANULATION_HEADERS_TAG", "GRANULATION_STEP_COMMAND", "GRANULATION_STEP_FIELD", "StepPanel",
-    "STEP_PANELS", "loop_command",
+    "STEP_PANELS", "loop_command", "P002_DELIVERY_TAG", "P002_DELIVERY_COMMAND", "P002_DELIVERY_MAX_M3H",
 ]
 
 
@@ -244,6 +246,23 @@ CO2_STEP_COMMAND, CO2_STEP_FIELD = "co2_step", "dir"
 #: (``toFixed(3)`` on t/h), each rounding a half upward. Source: V1 ``frontend/co2_compressor.js``
 #: (``step``, ``render``).
 CO2_DEMAND_PCT_DECIMALS, CO2_DEMAND_TH_DECIMALS = 1, 3
+
+
+# ======================================================================================
+# The instructor's field actions
+# ======================================================================================
+
+#: 322P002's delivery to 322C001's lower bed, set by hand in the field and read on FI-322402
+#: (decision 212, handoff B-133): Uhde's Operating Manual Part III, UD-VT-G00-DC-0003, p. 1-58,
+#: "The flow can be adjusted through FI322402", and pp. 4-8, 4-14 and 4-19 (15, 30 and 31.3 m3/h).
+#: P&ID 102 draws no control valve on the delivery, so the move is a field operator's, sent from
+#: the instructor's panel. The operator entry holds the delivery in kg/h, seeded at the PFD's 744;
+#: the command takes it in m3/h on FT-322402's own density (`console_packet.RHO_755_KGM3`), so
+#: the value set is the value FI-322402 reads, from none to the design delivery. The hand valve's
+#: Cv and the line's resistance are on no sheet, so the delivery is set, not a stroke.
+P002_DELIVERY_TAG = "322P002-DELIVERY"
+P002_DELIVERY_COMMAND = "p002_delivery_set"
+P002_DELIVERY_MAX_M3H = M744_DES_KGH / RHO_755_KGM3
 
 
 # ======================================================================================

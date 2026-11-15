@@ -2,8 +2,9 @@
 
 Pinned: each control sends one command — the pacing, FREEZE / RUN, RESET only once confirmed,
 each malfunction armed and cleared, 322E002's tube leak with the rate its box holds (B-90), the CO2
-demand on 320K002 within V1's 0 to 120 % of the design feed, an exercise saved and, once
-confirmed, restored; the pacing and the CO2 demand shown are the packet's; every answer is shown
+demand on 320K002 within V1's 0 to 120 % of the design feed, 322P002's field-set delivery
+within none to the design (decision 212), an exercise saved and, once confirmed, restored; the
+pacing, the CO2 demand and 322P002's delivery shown are the packet's; every answer is shown
 with its reason; and every command is one the engine session takes. The single console (decision
 149) has no roster and no unit assignment.
 """
@@ -12,6 +13,7 @@ from __future__ import annotations
 
 import pytest
 
+from ureasim.data.faceplates import P002_DELIVERY_MAX_M3H
 from ureasim.data.unit_321 import CO2_DES_KGH
 from ureasim.engine.session import EngineSession
 from ureasim.hmi.instructor import InstructorPanel
@@ -46,6 +48,10 @@ def test_the_exercise_controls(bridge, packet, tmp_path):
     assert panel.co2_demand.maximum() == pytest.approx(1.2 * CO2_DES_KGH / 1000.0, abs=5e-4)
     panel.co2_demand.setValue(60.08)
     panel.co2()
+    assert panel.p002_now.text() == "set 31.32, FI-322402 31.32 m3/h"
+    assert panel.p002_delivery.maximum() == pytest.approx(P002_DELIVERY_MAX_M3H, abs=5e-3)
+    panel.p002_delivery.setValue(15.0)
+    panel.p002()
     panel.name_field.setText("shift-a")
     panel.note_field.setText("before the trip")
     panel.save()
@@ -61,6 +67,7 @@ def test_the_exercise_controls(bridge, packet, tmp_path):
         {"type": "trigger_fault", "id": "322E002", "rate": 2.5},
         {"type": "clear_fault", "id": "322E002"},
         {"type": "co2_set", "value": 60.08},
+        {"type": "p002_delivery_set", "value": 15.0},
         {"type": "snapshot_save", "name": "shift-a", "note": "before the trip"},
         {"type": "snapshot_load", "name": "shift-a"}, {"type": "reset_sim"}]
     session = EngineSession(tmp_path)

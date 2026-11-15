@@ -87,6 +87,16 @@ def test_the_speed_controllers_and_the_master_legs_are_engine_commands(plant):
     assert set(fp.PUMP_TRIPS) == {"A", "B"}
 
 
+def test_322p002s_field_action_is_the_engines_and_migrates(plant):
+    """Decision 212: the command the instructor's field action sends is the engine's handler for
+    322P002's delivery, its operator entry is seeded, and a save made before it fills it."""
+    from ureasim.data.retired_state import ADDED_OPERATOR
+
+    assert PLANT_COMMANDS[fp.P002_DELIVERY_COMMAND].__name__ == "_p002_delivery_set"
+    assert apply_command(plant, {"type": fp.P002_DELIVERY_COMMAND, "value": 20.0}).ok
+    assert fp.P002_DELIVERY_TAG in plant.operator and fp.P002_DELIVERY_TAG in ADDED_OPERATOR
+
+
 def test_the_co2_feed_panels_command_is_the_engines_step(plant):
     """Decision 220: the command and field 322-1's CO2 FEED panel sends are the engine's
     ``co2_step``, and the only element that sends it is that panel."""

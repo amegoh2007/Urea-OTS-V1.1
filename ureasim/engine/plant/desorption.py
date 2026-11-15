@@ -24,6 +24,7 @@ desorption`) and their equivalence tests, which carry V1's call sites line for l
 
 from __future__ import annotations
 
+from ureasim.data.faceplates import P002_DELIVERY_TAG
 from ureasim.engine.schedule import DeclaredTear, Operator, Result, State, Step, Tear
 from ureasim.units.desorption import ammonia_water_tank as awt
 from ureasim.units.desorption import atmospheric_absorber as aa
@@ -59,7 +60,7 @@ def _328d003(plant, a, dt):
     return plant.units["328D003"].step(
         *plant.loops["328D003"], a["m_343_kgh"], a["m_719_kgh"], a["m_720_kgh"],
         a["m_721_kgh"], a["m_759_kgh"], a["m_741_kgh"], a["p002_running"], dt,
-        t_c005_c=a["t_c005_c"], t_cold_ends_c=ends)
+        t_c005_c=a["t_c005_c"], t_cold_ends_c=ends, m_744_set_kgh=a["m_744_set_kgh"])
 
 
 def _328e007(plant, a, dt):
@@ -110,6 +111,7 @@ def steps() -> dict:
             "m_721_kgh": Tear("m_721_kgh"), "m_759_kgh": Tear("m_759_kgh"),
             "m_741_kgh": Tear("m_741_kgh"),
             "p002_running": Operator("322P002"),
+            "m_744_set_kgh": Operator(P002_DELIVERY_TAG),
             "t_c005_c": Result("323C005", "t_c"),
             "t_719_c": Tear("t_719_c"), "t_720_c": Tear("t_720_c"),
             "t_721_c": Tear("t_721_c"), "t_759_c": Tear("t_759_c")}, _328d003),

@@ -13,11 +13,14 @@ screens so they stay true to the DCS (`project.md` decision 149):
   condition outside the simulated plant (decision 73), which 322-1's CO2 FEED panel also steps
   (decision 220), offered from none to V1's 120 % of the design feed
   (`ureasim.data.faceplates.CO2_DEMAND_MAX_FRAC`);
+* **Field** — 322P002's delivery to the LP absorber, which the plant's field operator sets by
+  hand and reads on FI-322402 (decision 212): no DCS move exists, so it is the instructor's, from
+  none to the design delivery (`ureasim.data.faceplates.P002_DELIVERY_MAX_M3H`);
 * **Exercises** — save the plant under a name with a note, and restore a saved one after a
   confirmation, from the list the engine's side holds.
 
-Like a faceplate it is a dumb renderer and an emitter: the pacing and the CO2 demand it shows are
-the packet's, the exercises the engine's list, and every button sends one command whose answer —
+Like a faceplate it is a dumb renderer and an emitter: the pacing, the CO2 demand and 322P002's
+delivery it shows are the packet's, the exercises the engine's list, and every button sends one command whose answer —
 the engine's — is shown with its reason.
 
 Source: V1 ``frontend/app.js`` (the reset button, 120-160) and ``frontend/co2_compressor.js`` (the
@@ -44,7 +47,12 @@ from PyQt6.QtWidgets import (
 )
 
 from ureasim.data.engine import SIM_SPEED
-from ureasim.data.faceplates import CO2_DEMAND_MAX_FRAC, MALFUNCTIONS
+from ureasim.data.faceplates import (
+    CO2_DEMAND_MAX_FRAC,
+    MALFUNCTIONS,
+    P002_DELIVERY_COMMAND,
+    P002_DELIVERY_MAX_M3H,
+)
 from ureasim.data.unit_321 import CO2_DES_KGH
 from ureasim.hmi import theme
 from ureasim.hmi.faceplates.base import faceplate_style
@@ -70,6 +78,7 @@ class InstructorPanel(QWidget):
         column.addWidget(self._simulation())
         column.addWidget(self._malfunctions())
         column.addWidget(self._boundary())
+        column.addWidget(self._field())
         column.addWidget(self._exercises())
         self.message = QLabel("", self)
         self.message.setWordWrap(True)
@@ -139,6 +148,21 @@ class InstructorPanel(QWidget):
         row.addStretch(1)
         return box
 
+    def _field(self) -> QGroupBox:
+        box = QGroupBox("Field", self)
+        row = QHBoxLayout(box)
+        row.addWidget(QLabel("322P002 delivery, hand valve (FI-322402)", box))
+        self.p002_delivery = QDoubleSpinBox(box)
+        self.p002_delivery.setRange(0.0, P002_DELIVERY_MAX_M3H)
+        self.p002_delivery.setDecimals(2)
+        self.p002_delivery.setSuffix(" m3/h")
+        self.p002_delivery.setValue(P002_DELIVERY_MAX_M3H)
+        row.addWidget(self.p002_delivery)
+        row.addWidget(self._button("SET", self.p002, box))
+        self.p002_now = QLabel("", box)
+        row.addWidget(self.p002_now)
+        return box
+
     def _exercises(self) -> QGroupBox:
         box = QGroupBox("Exercises", self)
         grid = QGridLayout(box)
@@ -160,7 +184,8 @@ class InstructorPanel(QWidget):
     # ---- rendering ----
 
     def refresh(self, state: Mapping[str, Any]) -> None:
-        """The pacing the plant runs at and the CO2 demand on 320K002, from the packet."""
+        """The pacing the plant runs at, the CO2 demand on 320K002 and 322P002's delivery, from
+        the packet."""
         mode = get_path(state, "sim_mode")
         for m, b in self.pacing_buttons.items():
             b.setProperty("active", m == mode)
@@ -168,6 +193,10 @@ class InstructorPanel(QWidget):
             b.style().polish(b)
         demand = get_path(state, "CO2_FEED.raw_th")
         self.co2_now.setText("--" if demand is None else f"now {demand:.2f} t/h")
+        set_m3h = get_path(state, "ABSORB_328.D003.P002_delivery_set_m3h")
+        read_m3h = get_path(state, "ABSORB_328.D003.flow755_m3h")
+        self.p002_now.setText("--" if set_m3h is None or read_m3h is None
+                              else f"set {set_m3h:.2f}, FI-322402 {read_m3h:.2f} m3/h")
 
     def show_exercises(self, names, reason: str) -> None:
         """The saved exercises."""
@@ -219,6 +248,11 @@ class InstructorPanel(QWidget):
     def co2(self) -> None:
         value = self.co2_demand.value()
         self._send({"type": "co2_set", "value": value}, f"CO2 demand {value:g} t/h")
+
+    def p002(self) -> None:
+        value = self.p002_delivery.value()
+        self._send({"type": P002_DELIVERY_COMMAND, "value": value},
+                   f"322P002 delivery {value:g} m3/h")
 
     def save(self) -> None:
         name = self.name_field.text().strip()

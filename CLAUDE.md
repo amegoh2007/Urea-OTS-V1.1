@@ -269,8 +269,10 @@ none of them is optional:
    controls in the UI.** The operator mimics and faceplates expose only what the plant DCS
    exposes — exactly what V1's operator screens allowed; re-classifying a plant control would
    change what a trainee is being taught, which §5 forbids. The controls that are not plant
-   equipment — malfunctions, pacing, freeze, reset, exercise save and restore, and the
-   battery-limit `co2_set` — live in the Instructor menu's panel. The exceptions are the
+   equipment — malfunctions, pacing, freeze, reset, exercise save and restore, the
+   battery-limit `co2_set`, and a field operator's move the DCS has no handle for (322P002's
+   delivery set by hand at FI-322402, `p002_delivery_set`; 2026-11-15, decision 212) — live in
+   the Instructor menu's panel. The exceptions are the
    start-up intro's LOAD button, an exercise restore before the plant first runs, at the process
    engineer's explicit request of 2026-11-05 (decision 171), and 322-1's CO2 FEED panel, V1's own
    hand station restored, which steps the battery-limit demand by 2 % of design (`co2_step`;

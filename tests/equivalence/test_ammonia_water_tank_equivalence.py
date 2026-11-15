@@ -34,6 +34,12 @@ compartment II's holdup. The transcription carries the switch ``b39`` (default T
 the PFD's while 322P002 runs; ``b39=False`` is V1's structure verbatim. The two are run both ways in
 `test_ammonia_water_tank_fic328402_equivalence.py`.
 
+322P002's field-set delivery (handoff B-133, decided 2026-11-15, decision 212). The plant sets
+744 by hand in the field, read on FI-322402; V1 has no handle and delivers the PFD's 744 whenever
+322P002 runs. The port delivers the instructor's field-set flow, seeded at the PFD's 744, so every
+scenario above runs at the seed and is V1's; the last test sets it below design and asserts both
+sides.
+
 741 (handoff B-50, decided 2026-09-30). The recycle is a draw on 328C004's bottoms, so the port
 steps FIC-328406 with 328C004 and the tank takes 741 as a boundary, a tick late. V1 steps
 FIC-328406 here, on its own, and clamps 741 at last tick's 739: the transcription keeps V1's lines
@@ -763,3 +769,25 @@ def test_the_inlets_at_their_producers_temperatures_decided_divergence(v1):
     assert (s.a328_d003_TI, s.a328_d003_TII) == (44.0, 56.0)
     assert (tank.t_i_c, tank.t_ii_c, tank.t_iii_c) == (
         pytest.approx(48.1415, abs=1e-4), pytest.approx(58.7559, abs=1e-4), s.a328_d003_TIII)
+
+
+def test_322p002s_field_set_delivery_decided_divergence(v1):
+    """Decision 212 (B-133): with 322P002 running V1 delivers the PFD's 744 whatever the field
+    operator would set; the port delivers what is set, here 15 m3/h on FI-322402's density, and
+    compartment I keeps the rest of its condensates. At the seed both deliver the PFD's 744."""
+    s = _v1_state(v1, True)
+    tank, loops = awt.AmmoniaWaterTank(), awt.TankLoops()
+    x = _design()
+    _feed(s, x)
+    a = _v1_stage2(v1, s, x["m343"], DT, True)
+    y = _beside(x, a)
+    set_kgh = 15.0 * 1005.0
+    b = tank.step(loops, y["m343"], y["m719"], y["m720"], y["m721"], y["m759"], y["m741"],
+                  y["p002"], DT, m_744_set_kgh=set_kgh)
+    assert a["744"] == v1["R3232_E003_M744_DES"] == d.M744_DES_KGH
+    assert b.m_744_kgh == set_kgh < a["744"]
+    assert b.in_i_kgh - b.out_i_kgh == pytest.approx(a["744"] - set_kgh)
+    seeded = awt.AmmoniaWaterTank().step(awt.TankLoops(), y["m343"], y["m719"], y["m720"],
+                                          y["m721"], y["m759"], y["m741"], y["p002"], DT,
+                                          m_744_set_kgh=d.M744_DES_KGH)
+    assert seeded.m_744_kgh == a["744"]

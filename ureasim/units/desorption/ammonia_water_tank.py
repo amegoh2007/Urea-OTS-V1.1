@@ -97,8 +97,10 @@ a level-following draw the plant does not have: LT-328507 and LT-328508 are open
 (the owner's mapping in ``References/323D003 Datasheets.md``), so the tank's level is the
 operator's to hold on FIC-328402's set point. In Phase 7's cold start that law doubled 735 when
 compartment I filled (handoff B-87). 744 has no control valve on the plant: P&ID 102 draws
-322P002 A/B through 322E006 to 322C001 with FI-322402 alone, so 322P002 delivers PFD 744 while
-either pump runs, against the heel cap.
+322P002 A/B through 322E006 to 322C001 with FI-322402 alone, and Uhde's Operating Manual III sets
+the flow by hand in the field, read on FI-322402 (pp. 1-58, 4-8, 4-14, 4-19). 322P002 delivers the
+field-set flow while either pump runs, against the heel cap: the instructor's field action, seeded
+at PFD 744, where V1 delivers PFD 744 always (decision 212, a decided divergence).
 
 Two departures on FIC-328402, decided 2026-09-27 (handoff B-38), ride with it onto 735: FT-328402
 reads the flow delivered on the previous tick when 328P003 loses suction, the form the heel caps
@@ -120,7 +122,7 @@ The boundaries this unit reads, and when
     and their condensers' cold ends, likewise (B-31), with 323C005's liquor temperature of this
     tick;
   * 741 from 328C004, last tick's, a tear: 328C004 steps FIC-328406 after this tank (B-50);
-  * whether 322P002 A or B runs.
+  * whether 322P002 A or B runs, and its field-set delivery (decision 212).
 
 It publishes 744 (V1 aliases 755 to it) for 322C001's circuit, 791 for 323E011 and 793 for
 328D001 on the same tick, 735 and compartment II's temperature for 328E007 on the same tick, and
@@ -413,7 +415,8 @@ class AmmoniaWaterTank:
     def step(self, loops: TankLoops, m_343_kgh: float, m_719_kgh: float, m_720_kgh: float,
              m_721_kgh: float, m_759_kgh: float, m_741_kgh: float, p002_running: bool,
              dt: float, *, t_c005_c: float = C005_T_C,
-             t_cold_ends_c: dict | None = None) -> AmmoniaWaterTankResult:
+             t_cold_ends_c: dict | None = None,
+             m_744_set_kgh: float = M744_DES_KGH) -> AmmoniaWaterTankResult:
         """Advance 328D003 by one tick.
 
         Arguments
@@ -432,6 +435,9 @@ class AmmoniaWaterTank:
             323C005's liquor temperature of this tick, 343's producer, and the four vacuum
             condensers' cold ends by tag, last tick's (decided 2026-10-16, handoff B-31). The
             defaults, 323C005's design and None, the PFD's cold ends, are V1's inlets.
+        m_744_set_kgh
+            322P002's delivery as the field operator set it at FI-322402 [kg/h] (decision 212);
+            the default, PFD 744, is V1's.
 
         The order is V1's: the four loops on their transmitters, the draws, each active bay on
         its own streams, then the openings level the three.
@@ -446,8 +452,9 @@ class AmmoniaWaterTank:
         m_793 = loops.fic_328405.step(dt, flow_cap=self.cap_793_kgh)
         m_741 = m_741_kgh
         m_735 = loops.fic_328402.step(dt, flow_cap=self.cap_735_kgh)          # B-39
-        # 744 has no control valve (P&ID 102: FI-322402 only): 322P002's delivery while it runs.
-        m_744 = M744_DES_KGH if p002_running else 0.0
+        # 744 has no control valve (P&ID 102: FI-322402 only): 322P002 delivers what the field
+        # operator set at FI-322402 while it runs (decision 212; V1's PFD 744 at the seed).
+        m_744 = m_744_set_kgh if p002_running else 0.0
 
         m_cond = m_719_kgh + m_720_kgh + m_721_kgh + m_759_kgh
         in_i = m_cond - D003_ROUNDING_I_KGH

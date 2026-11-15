@@ -1142,3 +1142,23 @@ decision on an item.
      CLEAR takes every pen off the plot and the table and keeps the span and the rulers; the cleared view is kept,
      and with no pen the window asks the historian nothing, so an answer still due is dropped. A console view
      action only: no command, no engine change. As-Built §CXXVII.2.
+
+212. **322P002's delivery to 322C001 is set by hand in the field** (2026-11-15, the process engineer's choice on
+     handoff B-133, closed). Uhde's Operating Manual III sets the flow at FI-322402 by hand (pp. 1-58, 4-8, 4-14,
+     4-19) and P&ID 102 draws no control valve, so L10's move is a field operator's. The instructor's panel gains
+     a Field group: `p002_delivery_set` takes the delivery in FI-322402's m3/h on FT-322402's 1005 kg/m3, from
+     none to the design delivery, and the operator entry `322P002-DELIVERY` holds it in kg/h, seeded at the PFD's
+     744 to the bit; 322P002 delivers it while either machine runs, the heel cap unchanged. The hand valve's Cv
+     and the line's resistance are on no sheet, so the delivery is set, not a stroke; a delivery above design
+     waits on 322P002's maximum read from KSB's sheet. A decided divergence: V1 delivers PFD 744 always. Saves
+     made before it fill the entry from the seed (`ADDED_OPERATOR`). As-Built §CXXVIII.7.
+213. **B-145 is closed as built** (2026-11-15, the process engineer's choice). LV-324501B's 2 % floor is the 50:1
+     rangeability its Flowserve sheet prints (Pos. 149), so the floor read from the sheet is the floor built.
+     B-145's acceptance, no relay on any header and load, is accepted as unmet: the relay at the seat on a small
+     excess at a fixed feed stays, and the engine's saves avoid it (decision 226). PIC-335201 keeps decision 93's
+     deadzone 0. As-Built §CXXVIII.3.
+214. **Decision 33's class reaches the seven levels on V1's holdup ratio unit by unit** (2026-11-15, the process
+     engineer's direction on handoff B-156). LT-323501, LT-323502, LT-323503, LT-328503, LT-328504, LT-328505 and
+     LT-329501 each move to read between the nozzles Uhde's data sheet prints, on their vessel's datasheet
+     geometry with the design level reproduced, one unit a session, each measured on both sides before it is
+     built; B-156 stays open as the work list. As-Built §CXXVIII.5.

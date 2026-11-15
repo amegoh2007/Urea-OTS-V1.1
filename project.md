@@ -22,22 +22,22 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A four (A-38, A-40, A-41 and A-50), Section B eleven (B-118 with B-120
-  folded in, B-125 to B-128, B-133, B-135, B-136, B-145, B-146 and B-156), Section C none, 10 open data gaps. Every data gap
+* **Open.** `handoff.md`: Section A four (A-38, A-40, A-41 and A-50), Section B nine (B-118 with B-120
+  folded in, B-125 to B-128, B-135, B-136, B-146 and B-156), Section C none, 10 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`D:\Work\reports\DCS readback checklist.md`).
 * **Session 113 reviewed sessions 111 and 112** on their files (Part CXXIII; report and the plans for sessions 114
   and 115 in `D:\Work\reports`, `Sessions 111 and 112 review s113.md`). The full suite on HEAD 4593bb2: 8 156 passed,
   1 failed (A-40), none skipped. Session 112's 92.3 % S + B arms ring and were scored unsettled; the licensor's
   bubble point follows the system pressure, which the engine's reactor cap does not separate from the inerts'.
   328P007's run state contradicts P&ID 104 (A-41).
-* **Sessions 117 and 118** (Parts CXXVII, CXXVIII; decisions 210, 211). V1.1 runs and tests without V1: the 38 V1
+* **Sessions 117 and 118** (Parts CXXVII, CXXVIII; decisions 210 to 214). V1.1 runs and tests without V1: the 38 V1
   files the suite reads are copied byte for byte into `tests/equivalence/v1_reference` with a SHA-256 manifest (A-33
-  closed), and with the external tree blocked 8 324 of 8 325 tests pass (A-40 fails). The trend window has a CLEAR
-  button; A-38's sixteen modules have unit tests. Session 118 searched the archive for the open gaps and closed none:
-  Uhde's level-transmitter sheets confirm the six modelled tap spans and leave seven levels on V1's holdup ratio
-  (B-156); Operating Manual III sets B-133's flow by hand at FI-322402; LV-324501B's 2 % floor is its sheet's 50:1
-  (B-145); no set-point list, no KSB test and no positioner response time is in the archive. Research:
-  `D:\Work\reports\Session_118_research`.
+  closed). The trend window has a CLEAR button; A-38's sixteen modules have unit tests. Session 118 searched the
+  archive for the open gaps (no set-point list, no KSB test, no positioner response time) and took the process
+  engineer's three choices: 322P002's delivery is set by hand in the field from the instructor's panel, as Operating
+  Manual III sets it at FI-322402 (decision 212, B-133 closed); B-145 is closed as built, LV-324501B's floor being its
+  sheet's 50:1 (decision 213); the seven levels still on V1's holdup ratio move to their sheets' nozzles unit by unit
+  (decision 214, B-156). Research: `D:\Work\reports\Session_118_research`.
 * **Session 116 built A-51's choice** (Part CXXVI; decisions 236, 237): LV-324501A follows PIC-335201 on a 1 s
   positioner lag inside the header solve (a stand-in, data gap 12) and takes its sheet's 6.9 bar a inlet. One header
   valve now steps the header as the plant did on 5 November 2026 (ratio within 0.004, PIC-335201's kick within 0.4 %).
@@ -59,7 +59,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   valves (the GRANULATION HEADERS panel on 324-1b), LV-324501A on 335P001's curve, LV-324501B and HV-335602, with
   PIC-335201 inside the solve and LIC-324501's X setting its set point (decisions 224 to 226; saves migrate), and
   a run state on the eight pump pairs that had none (decision 227), one commit each. Open from it: the four pairs'
-  L2 stops and 328P007's service (A-41), LV-324501B's seat relay (B-145), 324F003's low-level protection (B-146).
+  L2 stops and 328P007's service (A-41) and 324F003's low-level protection (B-146).
   Scratch: `D:\Work\reports\Session_110_console`, `Session_111_console`.
 
 ## Next free numbers
@@ -67,7 +67,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 | Series | Next | Where it is written |
 |---|---|---|
 | Session | 119 | `docs/history/session-log.md` |
-| Decision | 212 | `docs/decisions.md` |
+| Decision | 215 | `docs/decisions.md` |
 | As-Built Part | CXXIX | the As-Built reference, appended at its end |
 | Handoff Section A | A-57 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |

@@ -56,7 +56,11 @@ from ureasim.data.faceplates import (
     CO2_STEP_FIELD,
     GRANULATION_HEADERS_TAG,
     GRANULATION_STEP_FIELD,
+    P002_DELIVERY_COMMAND,
+    P002_DELIVERY_MAX_M3H,
+    P002_DELIVERY_TAG,
 )
+from ureasim.data.console_packet import RHO_755_KGM3
 from ureasim.data.unit_321 import CO2_DES_KGH, PUMP_RATED_RPM
 from ureasim.data.unit_322c001 import C001_CPL_DES_KGH
 from ureasim.data.unit_322e002 import LEAK_DEFAULT_TH
@@ -354,6 +358,22 @@ def _granulation_headers(plant: PlantState, cmd: Mapping, _r) -> str:
     return f"{n} of {HEADER_VALVES_MAX} header valves online"
 
 
+def _p002_delivery_set(plant: PlantState, cmd: Mapping, _r) -> str:
+    """322P002's delivery to 322C001, set by hand in the field: the instructor's field action.
+
+    Process utility
+    ---------------
+    The ammonia water that wets the LP absorber's lower bed. The plant has no controller on it:
+    the field operator throttles 322P002's delivery until FI-322402 reads the flow the procedure
+    asks (Operating Manual III, pp. 1-58, 4-8, 4-14, 4-19; step L10 lowers it; decision 212). The
+    value is taken in FI-322402's m3/h, on its own density, from none to the design delivery, and
+    322P002 delivers it while either machine runs.
+    """
+    m3h = _num(cmd, "value", 0.0, P002_DELIVERY_MAX_M3H)
+    plant.operator[P002_DELIVERY_TAG] = m3h * RHO_755_KGM3
+    return f"322P002 delivery {m3h:g} m3/h on FI-322402 (field)"
+
+
 # ======================================================================================
 # The dictionary loops V1 sets field by field, and the inline faceplates
 # ======================================================================================
@@ -482,6 +502,7 @@ PLANT_COMMANDS: dict = {
     "r323_ctrl_set": _r323_ctrl_set,
     "granulation_headers": _granulation_headers,
     "hic335602_set": _operator("HIC-335602", "op", 0.0, 100.0),
+    P002_DELIVERY_COMMAND: _p002_delivery_set,
     "steam_supply_set": _steam_valve(("pic_329204", "op_pct"), "PV-329204"),
     "steam_letdown_set": _steam_valve(("pic_329205", "op_b_pct"), "PV-329205B"),
     "steam_hpvent_set": _steam_valve(("hv_329601", "hic_pct"), "HV-329601"),

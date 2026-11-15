@@ -14,7 +14,7 @@ as V1's ``State`` seeds them: HIC-323605, HIC-329605, HIC-329606, HV-323D002-TIE
 released, FIC-322404's 954, 322P002 running; the CO2 asked of 320K002 (V1's ``co2_set``, PFD 101's
 54.618 t/h; the instructor sets it and 322-1's CO2 FEED panel steps it, decision 220), HIC-322602 at the ejector's design 74 %, HIC-322605 at 60 %, HIC-322604 at 72 % (decision 99),
 XV-322903 open; ten of the granulator's twelve header valves online and HIC-335602 shut (decision
-224); the auxiliary pumps' roster, each pair's A machine running and B its spare, both
+224); 322P002's field-set delivery at the PFD's 744 (decision 212); the auxiliary pumps' roster, each pair's A machine running and B its spare, both
 in AUTO (``322P002`` is either of its pair running, which the command layer keeps), and 321P002's
 EXT. OVERRIDE released (`data.operator_commands`).
 
@@ -29,6 +29,7 @@ Source: the data modules named beside each value, each carrying its own source.
 
 from __future__ import annotations
 
+from ureasim.data.faceplates import P002_DELIVERY_TAG
 from ureasim.data.operator_commands import (
     AUX_PUMP_SEEDS,
     EXT_OVERRIDE_TAG,
@@ -42,6 +43,7 @@ from ureasim.data.unit_322f001 import OPEN_DES_PCT as HIC_322602_DES_PCT
 from ureasim.data.unit_322r001 import HIC605_DES_PCT
 from ureasim.data.unit_323 import HIC_323605_DES_PCT
 from ureasim.data.unit_323c005 import C005_P_BARA
+from ureasim.data.unit_328d003 import M744_DES_KGH
 from ureasim.data.unit_324_train import HV_329605_OP_DES_PCT, HV_329606_OP_DES_PCT
 from ureasim.data.unit_335 import HEADER_VALVES_DES, HIC_335602_DES_PCT
 from ureasim.units.absorption.feed_cooler import E006_M_CW_DES_KGH
@@ -102,6 +104,7 @@ def operator_seeds() -> dict:
         "XV-322903": True,
         "GRANULATION-HEADERS": HEADER_VALVES_DES,
         "HIC-335602": HIC_335602_DES_PCT,
+        P002_DELIVERY_TAG: M744_DES_KGH,
         **{pump: {"on": on, "mode": mode} for pump, (on, mode) in AUX_PUMP_SEEDS.items()},
         EXT_OVERRIDE_TAG: False,
     }

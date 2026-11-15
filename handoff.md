@@ -193,21 +193,6 @@ point sits on the floor from 900 to 1 680 s while the PV stays at 2.021-2.028; w
 session 95's trim asks for at most 0.0045 below 2.0, the hump moves by 0.002, the collapse by 10 s, the
 latch by -250 s; the floor does not decide B-118 on this trim. Row 116's re-pin is the same basis (B-127); checklist row 15 asks the faceplate's limits and basis.
 
-### B-133 — L10 has no handle: the ammonia water to 322C001 is not controlled
-
-*Raised 2026-11-12, session 105 (As-Built §CXV.3; decision 194).* The procedure's step L10 lowers the ammonia
-water to the LP absorber, watched on FT-322402. FT-322402 reads 322P002's draw to 322C001 (the console's stream
-755, design 31.3 m3/h); 322P002's delivery has no control valve and P&ID 102 draws FI-322402 only (decision 81).
-Neither the console nor the plant's DCS gives the operator a move on it, and Book2 holds it at 30.9 m3/h from 92
-to 111 % load. Acceptance: the process engineer names the plant's handle for the step (a field valve, 322P002's
-recycle, or none) from the plant, its document cited; the console then carries the plant's handle and nothing
-else. Options: (a) keep as built, L10 reported as no move; (b) the plant's handle modelled once its document is
-found. Searched (§CXVIII.5, §CXIX.5): neither P&ID 102 nor the pumps' own sheet (UD-VT-328-FB-0003) draws a control
-or remote valve; each discharge has a check valve and a manual valve. Established (§CXXVIII.4): Operating Manual
-III sets 322P002's flow by hand, "adjusted through FI322402" (p. 1-58), and gives 15, 30 and 31.3 m3/h via
-FI-322402 at start-up (pp. 4-8, 4-14, 4-19); it names no controller or control valve, so the plant's handle is a
-field hand valve on 322P002's delivery, read on FI-322402. Next step: the process engineer's choice of (a) or (b).
-
 ### B-135 — The CO2 line's relief lifts before the loop's
 
 *Raised 2026-11-13, session 105 (As-Built §CXV.12; the process engineer's R3: options, nothing built).* With trip
@@ -235,19 +220,6 @@ load, and all five holds are lost. Acceptance: the plant's TT-322004, the hydrol
 below, 323D001 at its set point, the 100 % pin to the bit. Options: (a) keep as built, L3 reported as not
 fulfilled; (b) the rise off with the change that holds 322R001 (B-118), never alone. Next step: B-118's.
 
-### B-145 — LV-324501B relays at its seat on a small excess
-
-*Raised 2026-11-14, session 111 (As-Built §CXXI.4; decisions 150 and 224).* Decision 150's 2 % trim floor on
-LV-324501B is 6.6 % of PFD 402; one header valve fewer than the load asks leaves 6.2 % at a fixed feed, and
-unit-alone the valve relays at its seat (1 218 flips in 1 000 s). On the engine at 9 valves and 100 % the recycle
-raises the feed past the floor; a save at 90 % on 8 valves relayed (decision 226 now loads it on 9). Asked with it:
-PIC-335201 runs decision 93's deadzone 0, not the tuning table's 2 %, which parks the header within 0.08 bar of E1.
-Acceptance: no relay on any header and load the console reaches. Options: (a) keep as built; (b) LV-324501B's
-floor read from its sizing sheet (decision 150's class reviewed). Established (§CXXVIII.3): (b) gives the floor
-built. Decision 150 runs LV-324501B on its sheet's equal percent and the 50:1 the sheet prints (Pos. 149,
-"50.0-1"); 1/50 is the 2 % floor, and the sheet's smallest case is 8 % stroke at Kv 2.599 of Kvs 100. Next step:
-the process engineer's: (a), which (b) now equals, and PIC-335201's deadzone.
-
 ### B-146 — 324F003 has no low-level protection; trips 35.1 and 35.4 are not built
 
 *Raised 2026-11-14, session 111 (As-Built §CXXI.4, §CXXI.8, §CXXIII.6; decision 224).* At E1's 2.8 bar g floor the
@@ -265,12 +237,12 @@ level transmitter's nozzle distance. Six modelled levels read between their taps
 (`tests/data/test_level_transmitter_sheets.py`). Seven still read V1's holdup ratio: LT-323501 (323C003, 2 000 mm),
 LT-323502 (323D001, 1 910 mm), LT-323503 (323D011, 1 310 mm), LT-328503 (328C002, 1 200 mm), LT-328504 (328C003, 1
 000 mm), LT-328505 (328C004, 1 000 mm) and LT-329501 (322E003's sump, 10 000 mm). Acceptance: each reads between its
-sheet's nozzles on its vessel's datasheet geometry, its design level reproduced, or the process engineer keeps V1's
-ratio for it. Established: the set ranges are 0.99 to 1.08 times the head over the nozzle distance (93 to 101 % at
-the upper nozzle); LT-329504 and LT-329505 are set at 100 mbar per metre, 1.11 times; LT-329502's 92 mbar is 0.742
-times, its range ending 1.113 m above the lower nozzle of the modelled 1.500 m. Decision 33's class reached 323F004
-only after the process engineer chose it with both sides measured (decision 138). Options: (a) the class applied unit
-by unit, each measured on both sides first; (b) V1's ratio kept. Next step: the process engineer's direction.
+sheet's nozzles on its vessel's datasheet geometry, its design level reproduced. Established: the set ranges are 0.99
+to 1.08 times the head over the nozzle distance (93 to 101 % at the upper nozzle); LT-329504 and LT-329505 are set at
+100 mbar per metre, 1.11 times; LT-329502's 92 mbar is 0.742 times, its range ending 1.113 m above the lower nozzle
+of the modelled 1.500 m. Decided (decision 214): decision 33's class reaches the seven unit by unit, one a session,
+each measured on both sides before it is built, as 323F004's was (decision 138). Next step: the first unit, its
+vessel's geometry read from its datasheet and both sides measured.
 
 ---
 

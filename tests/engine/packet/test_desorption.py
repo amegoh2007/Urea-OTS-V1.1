@@ -3,7 +3,8 @@
 Pinned: TT-322015 reads TI-322015 where the P&ID draws it (decision 37), 328D003's PFD rounding
 residuals are V1's sums over the flows the tick read and drew, FFIC-329401 is the port's ratio
 station, FT-328401 reads 776 on its density, the unit-328 energy ledger V1 audited publishes
-None, and XV-322915 follows I 22.1.
+None, XV-322915 follows I 22.1, and 322P002's field-set delivery reads as FI-322402 does
+(decision 212).
 """
 
 from __future__ import annotations
@@ -32,6 +33,7 @@ def test_328d003s_rounding_residuals_and_the_ledger(design):
     assert [d3[k] for k in ("Q328_in_kW", "Q328_out_kW", "Q328_react_kW", "Q328_resid_kW")] == [
         None] * 4
     assert d3["P002A"] == {"on": True, "mode": "AUTO"}
+    assert d3["P002_delivery_set_m3h"] == d3["flow755_m3h"]          # decision 212's field action
 
 
 def test_the_desorbers_at_design(design):

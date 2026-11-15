@@ -85,6 +85,26 @@ def test_322p002_stopped_fills_the_tank():
     assert b.m_744_kgh == d.M744_DES_KGH
 
 
+def test_322p002_delivers_its_field_set_flow():
+    """Decision 212 (B-133): the field operator sets 322P002's delivery by hand at FI-322402.
+    Set to 15 m3/h on FI-322402's density, 744 is that flow from the first tick and compartment I
+    takes the rest of its condensates; stopped, 322P002 delivers nothing whatever is set; at the
+    seed, the PFD's 744, the tank is the design's to the bit."""
+    set_kgh = 15.0 * 1005.0
+    tank, loops = awt.AmmoniaWaterTank(), awt.TankLoops()
+    b = tank.step(loops, M343, *COND, 0.0, True, 0.1, m_744_set_kgh=set_kgh)
+    assert b.m_744_kgh == set_kgh and b.out_i_kgh == set_kgh
+    assert b.in_i_kgh - b.out_i_kgh == pytest.approx(d.M744_DES_KGH - set_kgh)
+    b = tank.step(loops, M343, *COND, 0.0, False, 0.1, m_744_set_kgh=set_kgh)
+    assert b.m_744_kgh == 0.0
+    seeded, plain = awt.AmmoniaWaterTank(), awt.AmmoniaWaterTank()
+    loops_s, loops_p = awt.TankLoops(), awt.TankLoops()
+    for _ in range(50):
+        a = seeded.step(loops_s, M343, *COND, 0.0, True, 0.1, m_744_set_kgh=d.M744_DES_KGH)
+        c = plain.step(loops_p, M343, *COND, 0.0, True, 0.1)
+    assert a == c
+
+
 def test_fic_328402_on_the_tables_gain():
     """Set point 31.4 to 25 m3/h: 0.75 per cent of the 0-70 m3/h span moves 735 monotonically,
     within 1 % of the new set point in 414.7 s on FV-328402's trim."""

@@ -188,8 +188,9 @@ starts the engine and the console on one machine:
 
 All plant controls sit on the ten DCS screens and their faceplates, exactly what V1's operator
 screens exposed. The controls that are not plant equipment — pacing, freeze, reset, malfunction
-injection, the battery-limit CO2 demand (`co2_set`) and exercise save and restore — sit in the
-Instructor menu's panel, so the process screens stay true to the DCS. The separation is the
+injection, the battery-limit CO2 demand (`co2_set`), exercise save and restore, and a field
+operator's move the DCS has no handle for (322P002's delivery set at FI-322402, `p002_delivery_set`,
+decision 212) — sit in the Instructor menu's panel, so the process screens stay true to the DCS. The separation is the
 console's layout: no command is refused for who sent it. The one exception is the start-up intro's
 LOAD button, which restores a saved exercise before the held plant first runs (decision 171), and
 322-1's CO2 FEED panel, V1's own hand station, which steps the same CO2 demand by 2 % of design from
