@@ -23,7 +23,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
 * **Open.** `handoff.md`: Section A four (A-38, A-40, A-41 and A-50), Section B nine (B-118 with B-120
-  folded in, B-125 to B-128, B-135, B-136, B-146 and B-156), Section C none, 10 open data gaps. Every data gap
+  folded in, B-125 to B-128, B-135, B-136, B-146 and B-156), Section C none, 11 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`D:\Work\reports\DCS readback checklist.md`).
 * **Session 113 reviewed sessions 111 and 112** on their files (Part CXXIII; report and the plans for sessions 114
   and 115 in `D:\Work\reports`, `Sessions 111 and 112 review s113.md`). The full suite on HEAD 4593bb2: 8 156 passed,
@@ -37,7 +37,8 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   engineer's three choices: 322P002's delivery is set by hand in the field from the instructor's panel, as Operating
   Manual III sets it at FI-322402 (decision 212, B-133 closed); B-145 is closed as built, LV-324501B's floor being its
   sheet's 50:1 (decision 213); the seven levels still on V1's holdup ratio move to their sheets' nozzles unit by unit
-  (decision 214, B-156). Research: `D:\Work\reports\Session_118_research`.
+  (decision 214, B-156). The suite: 8 336 tests, all but A-40's passing. Research:
+  `D:\Work\reports\Session_118_research`.
 * **Session 116 built A-51's choice** (Part CXXVI; decisions 236, 237): LV-324501A follows PIC-335201 on a 1 s
   positioner lag inside the header solve (a stand-in, data gap 12) and takes its sheet's 6.9 bar a inlet. One header
   valve now steps the header as the plant did on 5 November 2026 (ratio within 0.004, PIC-335201's kick within 0.4 %).

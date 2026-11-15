@@ -25654,7 +25654,8 @@ Asked once after the records above were committed (`ff32857`):
 
   So the value set is the value FI-322402 reads (`flow755_m3h = m_744 / 1005`). The ceiling is the design
   delivery: the manual's 15, 30 and 31.3 m3/h all sit below it, and a delivery above design waits on 322P002's
-  maximum read from KSB's sheet (the References narrative's 6 to 60 m3/h is a generated report, not a source).
+  maximum read from KSB's sheet (data gap 13: the References narrative's 6 to 60 m3/h is unverified against the
+  KSB page).
   The instructor's panel has a Field group (SET, and the packet's set value beside FI-322402's reading); the
   packet adds `ABSORB_328.D003.P002_delivery_set_m3h`; `data.retired_state.ADDED_OPERATOR` fills the entry from
   the seed for a save made before it. `Claude.md` §4a rule 2 lists the field action among the panel's controls.
@@ -25677,27 +25678,32 @@ Asked once after the records above were committed (`ff32857`):
 
 ## CXXVIII.8 The field hand valve on the engine: 15 and 0 m3/h
 
-The design plant, 10 s at the seed, then `p002_delivery_set` and one hour on the 0.1 s step, 322P002A running
-(scratch `b133_arms.py`; the JSON in `D:\Work\reports\Session_118_research\b133`). Both arms finite on every
-packet.
+The design plant, 10 s at the seed and sampled there, then `p002_delivery_set` and the 0.1 s step, 322P002A
+running: an hour sampled each minute (`b133_arms.py`), and 600 s sampled finely with the last ten consecutive
+ticks (`b133_arms2.py`); the scripts and their JSON are in `D:\Work\reports\Session_118_research\b133`. Every
+packet is finite.
 
 | t s | FI-322402 m3/h | 755 C | 322C001 liquor C | LIC-322502 PV / OP % | vent NH3 kg/h | TT-322015 C | LI 328D003 I % |
 |---|---|---|---|---|---|---|---|
-| seed | 31.32 | 40.00 | 43.0 | 50.0 / 53.8 | 1.74 | 53.74 | 50.0 |
-| 15 m3/h, 60 | 15.0 | 36.64 | 42.97 | 34.2 / 31.8 | 1.73 | 53.72 | 50.02 |
-| 15 m3/h, 360 | 15.0 | 36.64 | 42.92 | 50.1 / 31.9 | 1.735 | 53.71 | 50.0 |
+| seed, before the command | 31.32 | 40.00 | 43.00 | 50.0 / 54.5 | 1.794 | 53.71 | 50.0 |
+| 15 m3/h, 30 | 15.0 | 36.64 | 42.99 | 36.6 / 38.7 | 1.713 | 53.85 | 50.02 |
+| 15 m3/h, 60 | 15.0 | 36.64 | 42.97 | 34.2 / 31.8 | 1.727 | 53.72 | 50.02 |
+| 15 m3/h, 600 | 15.0 | 36.64 | 42.92 | 50.0 / 32.0 | 1.734 | 53.71 | 50.0 |
 | 15 m3/h, 3 600 | 15.0 | 36.64 | 42.92 | 50.0 / 32.0 | 1.734 | 53.71 | 50.0 |
-| 0, 60 | 0.0 | 44.0 | 47.08 | 14.9 / 4.7 | 1.32 | 53.70 | 50.04 |
-| 0, 600 | 0.0 | 44.0 | 65.59 | 50.1 / 3.5 | 3.26 | 53.57 | 49.98 |
+| 0, 0.1 | 0.0 | 44.0 | 43.01 | 50.0 / 54.5 | 1.325 | 53.72 | 50.0 |
+| 0, 30 | 0.0 | 44.0 | 44.88 | 22.1 / 21.7 | 1.241 | 53.98 | 50.03 |
+| 0, 600 | 0.0 | 44.0 | 65.59 | 50.1 / 3.5 | 3.256 | 53.57 | 49.98 |
 | 0, 3 600 | 0.0 | 44.02 | 71.22 | 50.0 / 3.4 | 5.85 | 53.52 | 49.86 |
 
-* **15 m3/h, L10's move.** 322E006 cools the halved wash on the same cooling water to 36.6 C, and the cooler wash
-  holds the vent's ammonia where it was (1.734 against 1.742 kg/h). LIC-322502 dips to 34 % in the first minute
-  and recovers by 360 s on an output of 32 % against 53.8 %. 328D003 does not fill: the 16.4 t/h kept in
-  compartment I returns less as 323C005's bottoms to compartment II, so the tank's level stands.
-* **0 m3/h, the bed dry.** The liquor warms from 43 to 71 C in the hour and the vent's ammonia rises from 1.3 to
-  5.8 kg/h; LIC-322502 falls to 15 % and holds 50 % on 3.4 % output. 755 reads 744's 44 C (no flow crosses the
-  plates).
+* **15 m3/h, L10's move.** 322E006 cools the halved wash on the same cooling water to 36.6 C. The vent's ammonia
+  falls from 1.794 to 1.713 kg/h in 30 s and settles at 1.734. LIC-322502 dips to 34 % in the first minute and
+  recovers by 360 s on an output of 32 % against 54.5 %; the last ten ticks at 600 s are identical to the
+  printed figures, and the hour's samples from 600 s on do not move. 328D003 does not fill: the 16.4 t/h kept in
+  compartment I comes back less as 323C005's bottoms to compartment II, so the tank's level stands.
+* **0 m3/h, the bed dry.** The vent's ammonia falls on the first tick, from 1.794 to 1.325 kg/h, reaches 1.24 at
+  30 s, then rises as the liquor warms: 3.26 at 600 s and 5.85 at 3 600 s, the liquor going from 43 to 71 C and
+  still rising at the hour. LIC-322502 falls to 15 % and holds 50 % on 3.4 % output from 540 s. 755 reads 744's
+  44 C, because no flow crosses the plates.
 * **TT-322015 does not move** in either arm (53.5 to 54.0 C). TI-322015 reads the mix in the vent line
   150-GCB6-322254, the gas leaving the upper bed's condensate wash with the LP steam P&ID 102 injects there
   (decision 37), not the liquor, so trip 22.1's 110 C is not approached.
@@ -25707,6 +25713,11 @@ packet.
 Four tests added with the hand valve: the tank delivers the field-set flow and is the design's to the bit at the
 seed (`test_ammonia_water_tank.py`); the command's units and clamps (`test_command.py`); the field action is the
 engine's handler and migrates (`test_faceplates.py`); both sides against V1
-(`test_ammonia_water_tank_equivalence.py`); the packet and the panel tests carry the new key and control. The whole suite in 15 parallel groups:
+(`test_ammonia_water_tank_equivalence.py`); the packet and the panel tests carry the new key and control.
+After the advisor's audit, two more: SET at the Field box's maximum returns the entry to PFD 744 to the bit (the
+box holds four places, which round its top into the engine's clamp; at two it sent 31.32 m3/h, 1.4 kg/h short;
+`test_the_field_boxs_top_sends_the_design_delivery`), and each of the six shipped exercises, saved before the
+entry existed, restores it at PFD 744 (`test_every_shipped_exercise_loads_and_holds_no_retired_state`). With
+them the suite collects 8 336; the files they touch were rerun and pass, the whole suite not again. The whole suite in 15 parallel groups:
 8 335 collected, 8 334 passed, 1 failed, A-40's `test_a_bad_sample_costs_one_tick_of_control_action_and_nothing_else`
 as on HEAD.

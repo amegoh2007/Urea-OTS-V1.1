@@ -1150,7 +1150,7 @@ decision on an item.
      none to the design delivery, and the operator entry `322P002-DELIVERY` holds it in kg/h, seeded at the PFD's
      744 to the bit; 322P002 delivers it while either machine runs, the heel cap unchanged. The hand valve's Cv
      and the line's resistance are on no sheet, so the delivery is set, not a stroke; a delivery above design
-     waits on 322P002's maximum read from KSB's sheet. A decided divergence: V1 delivers PFD 744 always. Saves
+     waits on 322P002's maximum read from KSB's sheet (data gap 13). A decided divergence: V1 delivers PFD 744 always. Saves
      made before it fill the entry from the seed (`ADDED_OPERATOR`). As-Built §CXXVIII.7.
 213. **B-145 is closed as built** (2026-11-15, the process engineer's choice). LV-324501B's 2 % floor is the 50:1
      rangeability its Flowserve sheet prints (Pos. 149), so the floor read from the sheet is the floor built.

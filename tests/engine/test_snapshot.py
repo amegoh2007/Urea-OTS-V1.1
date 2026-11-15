@@ -19,6 +19,8 @@ from pathlib import Path
 import pytest
 
 from ureasim.data import unit_335 as u335
+from ureasim.data.faceplates import P002_DELIVERY_TAG
+from ureasim.data.unit_328d003 import M744_DES_KGH
 from ureasim.engine import snapshot
 from ureasim.engine.historian import flatten
 from ureasim.engine.plant import build_plant
@@ -289,12 +291,15 @@ def test_a_reference_to_an_object_the_save_does_not_hold_is_refused():
 @pytest.mark.parametrize("path", sorted(SCENARIOS.glob("*.json")), ids=lambda p: p.stem)
 def test_every_shipped_exercise_loads_and_holds_no_retired_state(path):
     """The six shipped exercises carry no trip 22.2 record (cut from them on 2026-11-12) and load on
-    the present model."""
+    the present model. Saved before decision 212, each lacks 322P002's field-set delivery and loads it
+    from the seed, the PFD's 744."""
     doc = json.loads(path.read_text(encoding="utf-8"))
     (trips,) = _objects(doc["state"], {})[SYNTHESIS_TRIPS]
     assert "i_22_2" not in trips["a"]
+    assert P002_DELIVERY_TAG not in path.read_text(encoding="utf-8")
     back = snapshot.load(str(path), build_plant()[1])
     assert set(back.units["SYN-TRIPS"].latched) == {"21_2", "21_8", "21_10"}
+    assert back.operator[P002_DELIVERY_TAG] == M744_DES_KGH
 
 
 @pytest.mark.parametrize("path", sorted(SCENARIOS.glob("*.json")), ids=lambda p: p.stem)

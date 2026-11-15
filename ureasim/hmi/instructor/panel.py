@@ -153,8 +153,10 @@ class InstructorPanel(QWidget):
         row = QHBoxLayout(box)
         row.addWidget(QLabel("322P002 delivery, hand valve (FI-322402)", box))
         self.p002_delivery = QDoubleSpinBox(box)
+        # Four places round the box's top up into the engine's clamp, so its maximum sends the
+        # design delivery itself (two would send 31.32 m3/h, 1.4 kg/h short of PFD 744).
+        self.p002_delivery.setDecimals(4)
         self.p002_delivery.setRange(0.0, P002_DELIVERY_MAX_M3H)
-        self.p002_delivery.setDecimals(2)
         self.p002_delivery.setSuffix(" m3/h")
         self.p002_delivery.setValue(P002_DELIVERY_MAX_M3H)
         row.addWidget(self.p002_delivery)

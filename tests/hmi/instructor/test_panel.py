@@ -76,6 +76,24 @@ def test_the_exercise_controls(bridge, packet, tmp_path):
     panel.close()
 
 
+def test_the_field_boxs_top_sends_the_design_delivery(bridge):
+    """Decision 212: SET at the Field box's maximum returns 322P002's delivery to the PFD's 744 to
+    the bit, so the console can always restore the design."""
+    from ureasim.data.faceplates import P002_DELIVERY_TAG
+    from ureasim.data.unit_328d003 import M744_DES_KGH
+    from ureasim.engine.command import apply_command
+    from ureasim.engine.plant import build_plant
+
+    panel, _ = _panel(bridge)
+    panel.p002_delivery.setValue(panel.p002_delivery.maximum())
+    panel.p002()
+    plant = build_plant()[1]
+    plant.operator[P002_DELIVERY_TAG] = 0.0
+    assert apply_command(plant, bridge.sent[-1]).ok
+    assert plant.operator[P002_DELIVERY_TAG] == M744_DES_KGH
+    panel.close()
+
+
 def test_nothing_is_discarded_unconfirmed(bridge):
     panel, asked = _panel(bridge, answer=False)
     panel.reset()
