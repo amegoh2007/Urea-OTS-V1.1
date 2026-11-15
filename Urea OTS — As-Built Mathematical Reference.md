@@ -25377,3 +25377,145 @@ stopped, keeping its 77 %; each shipped exercise's first tick on its adopted hea
 rerun, 2 330 passed (185, 1 313, 400 and 432), and the pumps-stopped test, added after them, passes with its file
 (24 passed); the equivalence groups and the synthesis file, which call no snapshot or adopter (grep), not rerun,
 their 5 849 standing from the run before (A-40 failing). 8 180 tests collected: 8 179 pass, A-40's fails.
+
+# Part CXXVII — Session 117: V1.1 independent of V1, the trend window's CLEAR, A-38's sixteen modules tested (2026-11-15)
+
+The process engineer's instructions of 2026-11-15: copy from V1 every datum V1.1 needs so that it no longer depends on
+V1 (handoff A-33); a CLEAR button on the trend window; and closing gaps. No physics changed. Scratch: the session's
+scratchpad (`audit/`, `research/`).
+
+## CXXVII.1 V1's reference sources in the tree (decision 210)
+
+**The audit.** A pytest plugin installed `sys.addaudithook` and recorded every `open`, `os.listdir`, `os.scandir`,
+`glob.glob` and write event (`os.remove`, `os.rename`, `os.replace`, `os.mkdir`, `shutil.rmtree`, `os.chmod`,
+`os.utime`, `shutil.copyfile`) on a path under `D:\Work\Urea Simulation V1`, one JSON file per worker. The
+suite ran whole in 15 groups (the slow synthesis file alone, the equivalence tests in six, units in three, engine in
+two, phase 7, the rest in two): 8 180 collected, 8 179 passed, A-40 failing, as before. The union of the records is
+the pytest processes' dependency set: 37 files, 1 755 171 bytes.
+
+The hook sees the pytest processes only. `tests/phase7/test_scenario_runner.py` starts the Phase 7 driver in a child
+process, which imports V1's whole `main.py`; `main.py` puts V1's root on `sys.path`, and `core/stripper.py` imports
+`pressure_drop` from there. The blocked run failed that test (`ModuleNotFoundError: No module named 'pressure_drop'`).
+The static import closure of `main.py` (every import statement, function bodies included, resolved against
+`backend/`, V1's root and the importing folder) is 31 modules, all in the copy but `pressure_drop.py` (3 810 bytes,
+importing `math` only). With it copied, the driver run under the hook with the external tree blocked, once for each
+of the five scenarios (1 s for vacuum_break, 60 s for the others), opened nothing outside the copy, and no data file
+but the two caches. The dependency set is 38 files, 1 758 981 bytes.
+
+| Folder | Files |
+|---|---|
+| `backend/` | 20 modules, `.boot_pin_cache.json`, `.vle_nh3co2h2o_grid.json` |
+| `backend/core/` | 11 modules: ejector, flowsheet, hpcc, reactor, scrubber, stream, stripper, thermo, unit, vacuum, valve |
+| `frontend/` | `app.js`, `co2_compressor.js`, `overlays.js`, `trend.js` |
+| root | `pressure_drop.py` (V1's root module, read by `core/stripper.py`) |
+
+The 20 backend modules: c003_pressure_coupling, consequence, controllers, ejector_huang, gap_g6_h0_enthalpy,
+historian, hydraulics, iapws_if97, jet_pump, machines, main, packed_absorber, props_nh3co2h2o, reactor, real_gas,
+steam_system, thermo_extended_uniquac, thermo_service, vacuum_condenser, vle_nh3co2h2o.
+
+**The copy.** `tests/equivalence/v1_reference/` holds the 38 files byte for byte, with `MANIFEST.sha256` (a six-line
+provenance header, then `<sha256>  <path>` a file). 21 of the files are CRLF. V1's boot-pin cache is keyed on a
+SHA-256 of its pinned sources (`_PIN_SRC_FILES`) and its VLE-grid cache on the bytes of `props_nh3co2h2o.py`, and the
+repository runs `core.autocrlf=true`, so a normalised checkout would invalidate both caches and V1 would rebuild them
+for minutes on the first run: `.gitattributes` marks the folder `-text`.
+
+**Repointed.** `tests/equivalence/v1_loader.V1_ROOT` is the folder; `tests/phase7/drivers.V1_BACKEND` is the loader's;
+the CO2 compressor test reads `frontend/co2_compressor.js` through `V1_ROOT`, its existence guard removed;
+`tools/analyse_step_sim.py` and `tools/convert_overlays.py` default to the copy's `main.py` and `overlays.js`.
+
+**The guard** (`tests/equivalence/test_v1_reference.py`, 4 tests): every manifest row is present with its hash and
+`v1_available()` is true; the folder holds the manifest's files and no test, debug, backup or `_orig` name; every
+module in `main.py`'s import closure (imports a `try` guards excepted) is a manifest file or an installed package, a
+check that names `pressure_drop` when that file is moved out; no
+string constant other than a docstring under `ureasim/`, `tests/` or `tools/` (the copy excepted) names the external
+tree. A missing or changed file fails the suite; nothing in it skips for want of V1.
+
+**The proof.** The same 15 groups rerun with the hook raising `PermissionError` on any access to the external tree:
+§CXXVII.6.
+
+## CXXVII.2 The trend window's CLEAR (decision 211)
+
+`hmi/trend/window.TrendWindow.clear_pens`: every slot set empty, the marked pens and the value axis's pen cleared,
+then the window's single change path (`_changed`), which saves the view and asks the historian for the visible
+window. With no pen it asks nothing, and an answer still due for the old pens finds no pen to take it. The span and
+the rulers stay. On an empty table the button does nothing. The button sits before SAVE in the head row. Test
+(`tests/hmi/trend/test_window.py`, 1): an empty clear sends nothing; after a clear no request goes out and a late
+answer is dropped; the span (600 s) and the ruler (110 s) survive; a new window restores the cleared view from
+QSettings; an emptied row reads as an unused slot.
+
+## CXXVII.3 A-38: the sixteen modules' unit tests
+
+No ported code changed; each test pins behaviour that the module states or that its physics requires, on the stores'
+own fixed points where it has them. 140 tests:
+
+| Module | Tests | Pinned |
+|---|---|---|
+| `thermo.splits` | 7 | ratio 1 returns the licensor's split to the bit; a raised K sends more to the vapour at the others' own K (implied K-ratios 1.5, 1.0, 1.0 to 1e-12); the inert-vent closure, its ceiling and its feed cap |
+| `thermo.srk` | 16 | the cubic's largest real root on both branches; alpha 1 at Tc; Z at the critical point 1/3 to 2 % (a triple root, the five-figure constants amplify); ideal at vanishing pressure; sum y ln phi_i = ln phi |
+| `thermo.henry` | 12 | IAPWS G7-04 at 25 C against the textbook constants within the docstring's errors; CO2 against Rumpf and Maurer to 0.2, 2.3 and 5.0 %; NH3's solubility; the permanent gases' maxima |
+| `units.synthesis.hp_split` | 3 | ratio 1.0 at the reference; the service's `k_ratio` on the mass fractions; direction with T and P; the [0.02, 50] band |
+| `thermo.standard_state` | 31 | pKw 14.00, pKa 9.25, 6.37, 10.33 at 25 C; the reaction heats; van 't Hoff slope equals the Cp-integrated heat; formation values at 25 C |
+| `thermo.speciation` | 5 | N, C and charge closure; positive molalities; the ionic strength; pH and carbamate trends |
+| `thermo.activity` | 23 | water's reference; the infinite-dilution limits; Gibbs-Duhem; the molal ionic strength; A = 1.17 at 25 C |
+| `thermo.kvalues` | 8 | the bubble pressure's sum; the rigorous bubble T inverts it, the memo within 0.05 C; K-ratio 1.0 at its reference and outside every model; `OutOfDomain` |
+| `thermo.vle_grid` | 6 | node (5, 9, 6) solved cold reproduces the stored node (node (8, 14, 8) needs the build's continuation); the coordinate inverses; the envelope; 1 215 nodes, none failed |
+| `engine.plant.absorption` | 3 | I 22.1's set, hold and reset on TT-322015, XV-322915 and HS-322915; the seeds; the steps' reads and the one declared tear |
+| `engine.plant.boundary` | 3 | the battery limits; the operator seeds (CO2 54.618 t/h, HIC-322602 74 %, HIC-322605 60 %, HIC-322604 72 %, ten header valves, the hand switches, the run states); fresh objects each call |
+| `hmi.trend.plot` | 3 | the time window and the -2 to 102 % axis; pens marked and faded; rulers placed, re-used and dragged; the axes' labels |
+| `hmi.widgets.bargraph` | 8 | the 0-100 % clamp; no data on a missing, boolean or NaN value; the box and V1's 12 x 60 fallback; the fill from the bottom |
+| `hmi.widgets.icon_geometry` | 5 | the un-stretched box; the transform restoring the stretch; the mirror; the quarter turn |
+| `hmi.widgets.icons` | 4 | a pump on its machine's `on` or a boolean; unbound defaults; the block valve; every painted image ships |
+| `units.synthesis.reactor_calibration` | 3 | the seed's pre-exponentials reproduce the PFD's dehydration and biuret extents; K is the ceiling's mass-action quotient; the thermal-kinetic fixed point lands the overflow temperature |
+
+`engine/plant/boundary.py`'s docstring said HIC-322604 opened at 50 %; its seed is 72 % (decision 99), and the
+docstring now says so. A-38 keeps the five run flags of decision 227 (session 115's Track C).
+
+## CXXVII.4 Data gap 11: 335P001's duty point
+
+KSB's installation plan UD-AU-335-DZ-0026-001 (CPK-CHXYD 80-250), read visually on the scan: 82 m3/h at 65.2 m,
+differential 7.2 bar, discharge 8.15 bar, 1 221 kg/m3, 140 C, motor about 37 kW. The as-built curve
+H = 71 - 5 (Q / 80)^2 gives 65.75 m at 82 m3/h, 0.55 m (0.8 %) above the plan. The parts list UD-AU-335-DZ-0026-004,
+sheet 2, lists two impellers, item 230 "260/115/17" and item 230.02 "242-P03-250-D"; neither legend is decoded, and
+no impeller diameter is taken from them. The row stays open; no code changed.
+
+## CXXVII.5 Searches made: Uhde's level-transmitter data sheets
+
+The vendor archive's TOC (`TOC_UD_AM_G00_AB_0022_000_01_HL.pdf`, its text extracted) for the level instruments of
+data gaps 4, 8 and 10 and for 335P001 (§CXXVII.4). Uhde's level-instrument specifications are filed under G00 by part
+class, in `...\Soft copy\10\`; each is a scan with no text layer, rendered at 200 dpi, read by Windows OCR and checked
+visually on the page. They are per-tag data sheets, not generic part specifications. §LXXXIV.6's statement that
+"Uhde's DP-transmitter specifications list only the steam drums' transmitters" is wrong: the steam drums' are
+EC-0299 (LT-303506, LT-308501), and the others are:
+
+| Document (TOC class) | Tags |
+|---|---|
+| UD-MR-G00-EC-0133, DP-transmitters for level (KLDA001), 6 pages | LT-329501 to LT-329505, LT-335501, LT-381502 |
+| UD-MR-G00-EC-0134, DP-transmitters for level, capillary type (KLDL002), 7 pages | LT-322502, LT-323501 to 323503, LT-323505, LT-323506, LT-328501, LT-328503 to 328505 |
+| UD-MR-G00-EC-0135, 10 pages | LT-323504, LT-323507, LT-328507, LT-328508, LT-329506, LT-335507, and units 372 to 390 |
+| UD-MR-G00-EC-0136, DP-transmitters level with tubus, 5 pages | LT-324501, LT-335508, LT-335509 |
+| UD-MR-G00-EC-0109 (displacer), -0106 (magnetic indicators), -0107 (float switches) | outside units 321 to 329 but for LS-320502, 320505 and 335504 |
+
+**LT-329505** (EC-0133 page 4; Emerson 1151 DP; P&ID 105/1): location 324E001; low-pressure condensate against
+saturated LP steam; 4.1 bar a, 144 C, 922 kg/m3; set range 0 to 300 mbar; nozzle distance 3 000 mm. 300 mbar is
+3.318 m of 922 kg/m3 liquid; the sheet's 3 000 mm is 271.3 mbar, inside the range; the isometrics' 4 478 mm (data
+gap 10, §CIII.5) would be 404.9 mbar, above it.
+
+**LT-324501** (EC-0136 page 3; Emerson 1151 DP; P&ID 105/2): location printed "324020"; urea solution against vapours
+(phase G); design 2.00 and -1.00 bar g, 165 C; 0.13 bar a, 140 C, 1 220 kg/m3; set range -700 to 900 mbar; nozzle
+distance blank. HP side: a flanged chemical seal, DN 80 PN 40 DIN 2526 type D, tubus 100 mm, silicone oil; the LP
+side lists no connection, seal or capillary. The span, 1 600 mbar, is 13.37 m of 1 220 kg/m3 solution.
+
+Neither sheet is applied to the model: what 0 and 100 % of each transmitter mean on the built level is the process
+engineer's call (data gaps 4 and 10). EC-0134's sheets give the ranges of data gap 8's four transmitters, not the DCS
+limits that row needs. Flowserve's Pos. 148 and 149 (data gap 12) were not searched again; the row holds the earlier
+search. The trip schedule's Markdown was already in use.
+
+## CXXVII.6 The suite
+
+Before the copy, with V1 read from `D:\Work\Urea Simulation V1`: 8 180 collected, 8 179 passed, A-40 failing.
+After it, the same 15 groups with the hook raising `PermissionError` on any access to the external tree: 8 324
+collected (the 140 tests of §CXXVII.3, CLEAR's and the guard's three added), 8 322 passed, 2 failed: A-40's, and
+`test_v1s_driver_runs_in_its_own_process`, the Phase 7 driver's child process missing `pressure_drop.py`
+(§CXXVII.1). With that file copied and the import-closure test added, the Phase 7 tests and the guard rerun blocked:
+134 passed. No hook record names the external tree, and after the run every manifest row still matches: V1 rebuilt
+neither cache. The suite now: 8 325 collected, 8 324 pass, A-40's fails, and V1 need not be on the machine.

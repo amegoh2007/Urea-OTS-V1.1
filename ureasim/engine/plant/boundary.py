@@ -12,7 +12,7 @@ boundary.
 The operator's seeds are the hand valves, hand switches and set points at their design positions,
 as V1's ``State`` seeds them: HIC-323605, HIC-329605, HIC-329606, HV-323D002-TIE shut, HS-322915
 released, FIC-322404's 954, 322P002 running; the CO2 asked of 320K002 (V1's ``co2_set``, PFD 101's
-54.618 t/h; the instructor sets it and 322-1's CO2 FEED panel steps it, decision 220), HIC-322602 at the ejector's design 74 %, HIC-322605 at 60 %, HIC-322604 at 50 %,
+54.618 t/h; the instructor sets it and 322-1's CO2 FEED panel steps it, decision 220), HIC-322602 at the ejector's design 74 %, HIC-322605 at 60 %, HIC-322604 at 72 % (decision 99),
 XV-322903 open; ten of the granulator's twelve header valves online and HIC-335602 shut (decision
 224); the auxiliary pumps' roster, each pair's A machine running and B its spare, both
 in AUTO (``322P002`` is either of its pair running, which the command layer keeps), and 321P002's

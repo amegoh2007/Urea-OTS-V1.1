@@ -6,20 +6,23 @@ the window draws the answer it was given and nothing it was given before — no 
 a superseded answer is ignored; a refusal or a lost link blanks the pens and says why; the table's
 live value is the packet's, gauge where it reads gauge; MIN / MAX / AVG and the rulers read the
 answer; scrolling back asks for the window it moved to, and LIVE returns; marking a pen moves the
-left axis onto its range; a typed range fixes it and blank returns it to auto-scale; the view is
-kept in the console's settings; the window saves as an image; and a real engine session's
-historian answers it.
+left axis onto its range; a typed range fixes it and blank returns it to auto-scale; CLEAR takes
+every pen off, asks the historian nothing and drops an answer still due, keeping the span and the
+rulers (decision 211); the view is kept in the console's settings; the window saves as an image;
+and a real engine session's historian answers it.
 """
 
 from __future__ import annotations
 
 import pytest
 from PyQt6.QtCore import QSettings
+from PyQt6.QtWidgets import QPushButton
 
 from ureasim.data.trend import DEFAULT_SPAN_S, MAX_POINTS, RULERS_MAX, SLOTS
 from ureasim.hmi.state_access import ATM_BAR
 from ureasim.hmi.trend import series as se
-from ureasim.hmi.trend.table import C_AVG, C_MAX, C_MIN, C_RANGE, C_RULER, C_UNIT, C_VALUE
+from ureasim.hmi.trend.table import (C_AVG, C_MAX, C_MIN, C_RANGE, C_RULER, C_TAG, C_UNIT,
+                                     C_VALUE)
 from ureasim.hmi.trend.window import SETTINGS_KEY, TrendWindow
 from tests.hmi.conftest import FakeBridge
 
@@ -213,6 +216,35 @@ def test_the_view_is_kept_and_the_window_saves_as_an_image(qapp, tmp_path):
     assert again.marked == [3] and again.axis_pen == 3 and again.span_edit.text() == "10m"
     settings.setValue(SETTINGS_KEY, "not json")
     assert TrendWindow(FakeBridge(), SOURCES, settings).slots == [None] * SLOTS
+    again.close()
+
+
+def test_clear_takes_every_pen_off_and_keeps_the_span_and_rulers(qapp, tmp_path):
+    settings = QSettings(str(tmp_path / "ots.ini"), QSettings.Format.IniFormat)
+    w = TrendWindow(FakeBridge(dict(LATEST)), SOURCES, settings)
+    (clear,) = [b for b in w.findChildren(QPushButton) if b.text() == "CLEAR"]
+    clear.click()                                       # nothing to clear: nothing asked
+    assert w.bridge.history == []
+    w.add_tag("TI-1")
+    w.add_tag("PIC-1", 4)
+    w.set_mark(4, True)
+    w.set_span(600)
+    w.bridge.answer(_answer(100.0, 21, **{"X.t": lambda t: 40.0, "X.p": lambda t: 3.0}))
+    assert w.add_ruler(110.0) and _drawn(w, 0) == 21 and _drawn(w, 4) == 21
+    w.request(force=True)                               # an answer is due for the old pens
+    due, sent = w.bridge.history[-1]["id"], len(w.bridge.history)
+    clear.click()
+    assert w.slots == [None] * SLOTS and w.marked == [] and w.axis_pen == -1
+    assert len(w.bridge.history) == sent                # no pen, no request
+    assert _drawn(w, 0) == 0 and _drawn(w, 4) == 0
+    empty = _cell(w, SLOTS - 1, C_TAG)                  # a slot never used
+    assert _cell(w, 0, C_TAG) == empty and _cell(w, 4, C_TAG) == empty and "TI-1" not in empty
+    w.bridge.answer(_answer(100.0, 21, **{"X.t": lambda t: 41.0}), req_id=due)
+    assert w.answer is None and _drawn(w, 0) == 0
+    assert w.span == 600 and w.rulers == [110.0]
+    w.close()
+    again = TrendWindow(FakeBridge(dict(LATEST)), SOURCES, settings)
+    assert again.slots == [None] * SLOTS and again.span == 600 and again.marked == []
     again.close()
 
 

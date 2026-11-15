@@ -83,10 +83,10 @@ def test_the_demand_is_the_instructors_and_322_1s_step_decided_divergence():
     it (decision 149)."""
     import pathlib
 
+    from tests.equivalence.v1_loader import V1_ROOT
     from ureasim.data.screen_layout import OVERLAYS
-    js = pathlib.Path(r"D:/Work/Urea Simulation V1/frontend/co2_compressor.js")
-    if js.exists():
-        assert "type: 'co2_set'" in js.read_text(encoding="utf-8", errors="replace")
+    js = V1_ROOT / "frontend" / "co2_compressor.js"
+    assert "type: 'co2_set'" in js.read_text(encoding="utf-8", errors="replace")
     assert all(e.get("cmd") != "co2_set" for els in OVERLAYS.values() for e in els)
     assert [(sid, e["k"]) for sid, els in OVERLAYS.items() for e in els
             if e.get("cmd") == "co2_step"] == [("screen-322-1", "co2step")]

@@ -5083,3 +5083,15 @@ seed moves the output and LV-324501A; 369 far leaves by at most 1.6e-6 relative.
 the dip a restore then opened with, raised and closed on the engineer's choice (b): decision 238 opens LV-324501A at
 the stroke passing the save's drain (six exercises within 1e-10 bar). The suite: 8 179 of 8 180 pass, A-40 failing
 (the equivalence groups not rerun after decision 238). Part CXXVI; scratch `D:\Work\reports\Session_116_header`.
+
+### Session 117 — V1.1 independent of V1; the trend window's CLEAR; A-38's sixteen modules tested (2026-11-15)
+
+Opus with the Fable advisor. The process engineer's three instructions. A-33 closed (decision 210): an audit hook over
+the whole suite found the 37 files it reads from V1, and the Phase 7 driver's child process, unseen by the hook, added
+`pressure_drop.py` (32 modules, two caches, four scripts; 1.76 MB); they are copied byte for byte into
+`tests/equivalence/v1_reference` with a SHA-256 manifest and `-text`, the loader, the Phase 7 drivers, the CO2
+compressor test and two tools repointed, and a guard test fails, never skips. Decision 211: CLEAR on the trend window
+takes every pen off and keeps the span and the rulers. A-38's sixteen modules have 140 unit tests (its five run flags
+stay, session 115's Track C). Data gap 11: KSB's plan gives 335P001's 82 m3/h at 65.2 m, the law 0.8 % above. Uhde's
+level data sheets (EC-0133, EC-0136) give LT-329505's 0-300 mbar on 3 000 mm and LT-324501's -700 to 900 mbar, not
+applied. With V1 blocked: 8 325 tests, 8 324 pass, A-40 failing. Part CXXVII; decisions 210, 211.

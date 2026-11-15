@@ -1127,3 +1127,18 @@ decision on an item.
      holds no drain; their laws are unchanged), except with PIC-335201 in MAN or both 335P001 pumps stopped, where the
      valve stands on the save's output. A save holding the position is untouched. The six shipped exercises open on
      their adopted header within 1e-10 bar (0.10 to 0.45 bar dips before). As-Built §CXXVI.7.
+210. **V1's reference sources ship in the tree** (2026-11-15, the process engineer's instruction on handoff A-33,
+     closed: "copy all required data from V1 so V1.1 will become independent from V1"). It is neither of A-33's
+     options: not golden vectors, but V1's own bytes. An audit hook over the whole suite (15 groups, 8 180 tests)
+     recorded every file it read from `D:\Work\Urea Simulation V1`: 33 backend files (31 modules, the boot-pin
+     cache and the VLE-grid cache) and 4 front-end scripts; the Phase 7 driver's whole import of V1's `main.py`, in a
+     process of its own, adds V1's root module `pressure_drop.py`: 38 files, 1.76 MB. They are copied byte for byte into
+     `tests/equivalence/v1_reference` with a SHA-256 manifest, the folder `-text` in `.gitattributes` (20 of the
+     files are CRLF, and V1's caches key on the exact bytes); `v1_loader.V1_ROOT`, `phase7.drivers`, the CO2
+     compressor test and the two tools read the copy. `test_v1_reference` fails, never skips, on a missing or
+     changed file, and no executable string outside the copy names the external tree. `Claude.md` §0, §4, §5.4 and
+     §6 amended. As-Built §CXXVII.1.
+211. **The trend window has a CLEAR button** (2026-11-15, the process engineer's request). V1's `trend.js` has none.
+     CLEAR takes every pen off the plot and the table and keeps the span and the rulers; the cleared view is kept,
+     and with no pen the window asks the historian nothing, so an answer still due is dropped. A console view
+     action only: no command, no engine change. As-Built §CXXVII.2.

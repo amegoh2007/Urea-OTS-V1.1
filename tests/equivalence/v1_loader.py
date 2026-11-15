@@ -15,10 +15,10 @@ So V1 modules are loaded **by explicit file path** into a private namespace pref
 V1 internal imports
 -------------------
 V1's own modules import each other by bare name (`import props_nh3co2h2o as _props`).
-For those to resolve, `D:\\Work\\Urea Simulation V1\\backend` must be on `sys.path` while a V1
-module executes. `load()` adds it, and registers the loaded module under **both** its bare
-V1 name and its `v1_`-prefixed alias, so a later V1 module finds the same object rather
-than re-executing it.
+For those to resolve, `tests/equivalence/v1_reference/backend` (V1's sources, copied into this
+tree byte for byte, decision 210) must be on `sys.path` while a V1 module executes. `load()`
+adds it, and registers the loaded module under **both** its bare V1 name and its
+`v1_`-prefixed alias, so a later V1 module finds the same object rather than re-executing it.
 
 The bare-name registration is the price of V1's import style. It is confined to modules
 this loader has been explicitly asked for, and V1.1 never imports by bare name, so the two
@@ -31,9 +31,9 @@ Usage
     v1_iapws = load("iapws_if97")
     assert v1_iapws.tsat_c(4.4) == pytest.approx(...)
 
-If the V1 tree is absent (a machine that only has the rewrite), `v1_available()` returns
-False and the equivalence tests skip rather than fail — the rewrite must remain testable
-on its own.
+The V1 files the suite reads ship in this tree since decision 210, so `v1_available()` is true on
+every checkout and the equivalence layer runs everywhere. `test_v1_reference` fails, and never
+skips, when the copy is missing or differs from its manifest.
 """
 
 from __future__ import annotations
@@ -44,10 +44,11 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
-#: Root of the V1 project. Reference only — nothing here ever writes to it. A copy of
-#: E:\Simulator\Urea Simulation without its References folder, taken 2026-11-13 so the
-#: equivalence suites no longer need drive E: (the References live in Urea Simulation Docs).
-V1_ROOT = Path(r"D:\Work\Urea Simulation V1")
+#: Root of V1's reference sources: every file the suite reads from V1, copied byte for byte from
+#: D:\Work\Urea Simulation V1 (itself the copy of E:\Simulator\Urea Simulation, decision 223) on
+#: 2026-11-15, so the rewrite no longer needs V1 on the machine (decision 210). Reference only —
+#: nothing here ever writes to it; `MANIFEST.sha256` lists each file's hash.
+V1_ROOT = Path(__file__).resolve().parent / "v1_reference"
 
 #: V1's Python package directory. V1 modules import each other by bare name from here.
 V1_BACKEND = V1_ROOT / "backend"

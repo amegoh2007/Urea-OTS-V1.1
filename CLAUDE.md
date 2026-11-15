@@ -9,7 +9,8 @@ any file. They override habit, convenience and any "quicker way" that conflicts 
 
 `Urea Simulator V1.1` is a **ground-up rewrite** of the Urea Plant Operator Training Simulator
 (OTS) that lives in `E:\Simulator\Urea Simulation` (read from its copy `D:\Work\Urea Simulation V1`,
-decision 223). The old project grew organically ("vibe coded"):
+decision 223; the V1 files the suite reads are copied into `tests/equivalence/v1_reference`, decision 210,
+so V1.1 runs and tests without V1). The old project grew organically ("vibe coded"):
 a 12,500-line `main.py` with a 4,100-line `step_sim()` function, five near-duplicate `main_*.py`
 backups, ~40 `debug_*.py` scratch files, and a browser HMI in hand-written HTML/JS.
 
@@ -233,7 +234,9 @@ Resolution order for any datum:
    - `References\Gaps Closure\` — closure memos for previously-open modelling gaps.
 2. `skill: soft-copy-search` — the Helwan Fertilizers Company vendor-document archive. Use it
    when the datum is equipment-specific and not in `References\`.
-3. The V1 source, `D:\Work\Urea Simulation V1\backend\` (E:'s tree, copied; decision 223) —
+3. The V1 source: `tests/equivalence/v1_reference/`, V1's files the suite reads in V1's own layout
+   (decision 210),
+   and for any other file `D:\Work\Urea Simulation V1\backend\` (E:'s tree, copied; decision 223) —
    acceptable **only** for values that V1
    itself back-solved or anchored. When you take one, copy its provenance comment with it.
 
@@ -302,7 +305,9 @@ none of them is optional:
    Record the tolerance actually achieved in the As-Built reference. A test reaches V1 only through
    `tests/equivalence/v1_loader.py`: `load("reactor")` (or `lift(...)`), never a bare
    `import reactor` — V1's backend is appended to `sys.path`, so a bare V1 name is ambiguous and
-   could let a V1 module satisfy a V1.1 import (handoff A-3, closed).
+   could let a V1 module satisfy a V1.1 import (handoff A-3, closed). The loader reads the in-tree
+   copy `tests/equivalence/v1_reference` (decision 210); a test that needs another V1 file copies it
+   there byte for byte and adds its row to `MANIFEST.sha256`, and never points at a path outside.
 5. **Do not silently widen a clamp.** V1's limiters encode real operating envelopes.
 6. **A decided divergence is the only exception, and never the rewrite's own call.** When the
    process engineer decides a handoff item in favour of NOT reproducing V1, make the change.
@@ -322,7 +327,9 @@ none of them is optional:
 * No file enters this tree unless it is part of the product, its tests, or its documentation.
 * No `debug_*.py`, no `*_backup.py`, no `*_orig.py`, no `tmp_*`, no scratch output.
 * Scratch work goes to the session scratchpad directory, never to the project.
-* No asset is copied from V1 unless a screen actually renders it.
+* No asset is copied from V1 unless a screen actually renders it. The one exception is
+  `tests/equivalence/v1_reference` (decision 210): the V1 files the suite reads, byte for byte,
+  `-text` in `.gitattributes`, never edited.
 * `tests/` mirrors `ureasim/` one-to-one. A module with no test is an open item in `handoff.md`.
 
 ## 7. Session checklist

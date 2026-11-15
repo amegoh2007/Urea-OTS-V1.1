@@ -31,10 +31,11 @@ import sys
 import time
 from typing import Any, Callable
 
+from tests.equivalence import v1_loader
 from tests.phase7.scenarios import DT, WATCHES, Scenario, disturbance_at
 
-#: V1's source tree, read only (`tests.equivalence.v1_loader`).
-V1_BACKEND = r"D:\Work\Urea Simulation V1\backend"
+#: V1's source tree, read only: the in-tree reference copy (`tests.equivalence.v1_loader`).
+V1_BACKEND = str(v1_loader.V1_BACKEND)
 
 #: The cold loop's PT-329201 [bar a]: V1's 5.7 bar g on the standard atmosphere.
 COLD_P0_BARA = 5.7 + 1.01325

@@ -6,7 +6,7 @@ Up to ten instruments against plant time, each on its own range, over a span of 
 eight hours (or one typed, 5 s to 24 h), live or scrolled back through the historian's eight
 hours. Under the plot a table gives each pen's live value, its MIN / MAX / AVG over the view,
 its range and its value under every ruler. A pen is added from a screen element's menu
-("Trend") or by dragging the element onto the plot or onto a row.
+("Trend") or by dragging the element onto the plot or onto a row; CLEAR takes every pen off.
 
 Where the samples come from
 ---------------------------
@@ -19,8 +19,9 @@ answer would look live and not be. What the window does keep is its view: the pe
 span, the rulers, the ranges typed, which V1 kept in the browser's storage and the port keeps in
 the console's settings.
 
-Source: V1 ``frontend/trend.js`` (the popup role); the port's one change is the historian as the
-only source, where V1 also appended every packet's values to its pens.
+Source: V1 ``frontend/trend.js`` (the popup role). The port's changes: the historian as the only
+source, where V1 also appended every packet's values to its pens; and the CLEAR button, which V1
+did not have (the process engineer's request of 2026-11-15, decision 211).
 """
 
 from __future__ import annotations
@@ -147,6 +148,7 @@ class TrendWindow(QWidget):
         self.span_edit.setToolTip("Custom span — type a value like 30s, 10m, 3h, then press Enter")
         self.span_edit.returnPressed.connect(self._custom_span)
         head.addWidget(self.span_edit)
+        head.addWidget(self._button("CLEAR", self.clear_pens, "Remove every pen from the table"))
         head.addWidget(self._button("SAVE", self.save_dialog, "Save trend image"))
         column.addLayout(head)
 
@@ -313,6 +315,19 @@ class TrendWindow(QWidget):
             return
         self.slots[slot] = None
         self.set_mark(slot, False)
+        self._changed()
+
+    def clear_pens(self) -> None:
+        """Take every pen off the plot and the table; the span and the rulers stay.
+
+        The cleared view is kept, and with no pen left the window asks the historian nothing, so
+        an answer still due for the old pens is dropped when it arrives.
+        """
+        if all(p is None for p in self.slots):
+            return
+        self.slots = [None] * SLOTS
+        self.marked = []
+        self.axis_pen = -1
         self._changed()
 
     def set_mark(self, slot: int, on: bool) -> None:
