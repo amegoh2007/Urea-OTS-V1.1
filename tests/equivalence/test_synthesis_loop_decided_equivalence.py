@@ -495,26 +495,28 @@ def test_322e001s_tubes_standing_full_hold_the_liquor_back_in_the_reactor_decide
                                                    pytest.approx(140.0065, abs=1e-4))
 
 
+def _mean(hist, value, first: int, last: int) -> float:
+    """The mean of `value(hist[k])` over ticks `first` to `last`, both included."""
+    return sum(value(hist[k]) for k in range(first, last + 1)) / (last - first + 1)
+
+
 def test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence(v1):
     """B-106, decided 2026-10-22: below N/C 3.0 322E002's melt bubbles on the Extended UNIQUAC
     model's rise toward its azeotrope, added in bar (B-111), against V1's K_N line, which falls.
     The CO2 boundary +20 % at 0.5 s with 321P002B held (SIC-321951 in MAN): 4.5 s on, the melt
-    stands at N/C 2.615 on the port and bubbles at 162.97 bar a, so it holds 72 % of what it would
-    condense; V1's, condensing everything, falls to N/C 2.515 and 135.09 bar a (the transcription
-    reads the port's 308 and LP header, so its side moves with the port's). 100 s on, the port's
-    melt condenses 82.2 t/h where V1's condenses 198.8, and PT-329201 stands at 147.58 bar a
-    against 141.02; the port's loop reaches V1's trip 22.2 set point, 155 bar a, at 191.3 s and,
-    with no such trip (decision 189), stands at 155.75 bar a 8.7 s later, where V1's stands at
-    141.69 bar a. At 100 s the port's condensation falls 100 to 15 t/h in two seconds, ringing
-    tick to tick: decision 224's melt header, draining PFD 402 exactly where V1's selector drained
-    3 kg/h less, moves it a few ticks (74.6 t/h, 190.5 s and 155.68 bar a before it; As-Built
-    §CXXI.7), and LV-324501A's positioner and sheet inlet (decisions 236 and 237) a few more
-    (89.1 t/h, 147.59 bar a, 192.2 s and 155.81 bar a before them; As-Built §CXXVI.5).
-    (Both sides measured on 2026-11-12; until then the port's 22.2 latched on its next
-    tick, 190.7 s, and V1's side, reading the port's, stood at 141.72) (the session-69 valves and
-    322E006's water upstream, decisions 150
-    and 151, move the loop's feed in this fast transient: 101.9, 198.6, 147.64, 192.7 s and 141.72 (141.70 before decision 178)
-    before them)."""
+    stands at N/C 2.615 on the port and bubbles at 162.93 bar a, so it holds 72 % of what it would
+    condense; V1's, condensing everything, falls to N/C 2.516 and 135.14 bar a (the transcription
+    reads the port's 308 and LP header, so its side moves with the port's).
+
+    From 10 s on the port's condensation rings, a sawtooth from about 120 t/h to nothing with a
+    tick-to-tick alternation on it, so a single tick's value moves 14 t/h when a valve downstream
+    moves a few kilograms an hour (handoff A-50). The divergence is asserted on window means, which
+    three trees (89428cc, 4593bb2, 2ede52a: decisions 224, 236 and 237 between them) agree on to
+    0.02 t/h and 0.001 bar (As-Built §CXXIX.4): from 50 to 150 s the port's melt condenses 71.5
+    t/h on average where V1's condenses 198.0; from 90 to 110 s PT-329201 stands at 147.68 bar a
+    on the port against 141.02 on V1. The port's loop reaches V1's trip 22.2 set point, 155 bar a,
+    after 180 s and, with no such trip (decision 189), stands at 154.90 bar a on average over the
+    last 20 s, where V1's never passes 141.7 bar a."""
     def act(k, plant, s):
         if k == 0:
             plant.units["322E002"].low_nc_branch = True
@@ -530,14 +532,27 @@ def test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence(
     assert (c.condenser.p_bub_bara, out.hpcc["P_bub"]) == (pytest.approx(162.928, abs=1e-3),
                                                            pytest.approx(135.140, abs=1e-3))
     assert c.sat_frac == pytest.approx(0.72390, abs=1e-5)
-    out, res, p_v1 = hist[1000]
-    assert (res["322E002"].holdup.condenser.liq_th, out.hpcc["liq_th"]) == (
-        pytest.approx(82.25, abs=0.01), pytest.approx(198.76, abs=0.01))
-    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(141.0214, abs=1e-4),
-                                                   pytest.approx(147.5780, abs=1e-4))
-    over = next(k for k, (_, res, _) in enumerate(hist) if res["PT-329201"].p_syn_bara >= 155.0)
-    assert over == 1913 and hist[2000][2] == pytest.approx(141.6936, abs=1e-4)
-    assert hist[2000][1]["PT-329201"].p_syn_bara == pytest.approx(155.7516, abs=1e-4)
+
+    def liq(row):
+        return row[1]["322E002"].holdup.condenser.liq_th
+
+    def liq_v1(row):
+        return row[0].hpcc["liq_th"]
+
+    def p(row):
+        return row[1]["PT-329201"].p_syn_bara
+
+    def p_v1(row):
+        return row[2]
+
+    assert (_mean(hist, liq, 501, 1500), _mean(hist, liq_v1, 501, 1500)) == (
+        pytest.approx(71.49, abs=0.1), pytest.approx(197.98, abs=0.05))
+    assert (_mean(hist, p, 901, 1100), _mean(hist, p_v1, 901, 1100)) == (
+        pytest.approx(147.677, abs=0.005), pytest.approx(141.0222, abs=5e-4))
+    over = next(k for k, row in enumerate(hist) if p(row) >= 155.0)
+    assert 1800 < over <= 2000
+    assert _mean(hist, p, 1801, 2000) == pytest.approx(154.90, abs=0.03)
+    assert max(p_v1(row) for row in hist) < 141.7
 
 
 def test_323d001s_liquor_reaches_322e003_as_it_is_decided_divergence(v1):
