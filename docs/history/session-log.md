@@ -5119,3 +5119,4 @@ B-106 on window means three trees agree on to 0.02 t/h; the engine's own sawtoot
 decisions 215 to 217. From the code audit: a faceplate refuses NaN and infinity, which the bridge's strict JSON
 could not send and which crashed the console (`hmi/faceplates/base.number`, `test_hand_valve.py`); a failed
 exercise save leaves the file it was to replace (`engine/snapshot.save` encodes first and moves a temporary file).
+From the review: a pump held by its stop shows stopped, its command published apart (As-Built §CXXIX.1).

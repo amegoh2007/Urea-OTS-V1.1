@@ -83,3 +83,17 @@ def test_the_hand_switches_publish_each_keyswitchs_position():
     def turned(plant):
         plant.operator["HS-321634"] = True
     assert run(1, turned).packet["HAND_SWITCHES"]["HS_321634"] is True
+
+
+def test_the_pumps_publish_their_run_feedback_apart_from_the_command(monkeypatch):
+    """Review of decision 217: the icon showed 328P002A running while AC4's low-level stop held
+    the pair. ``on`` is the machine's feedback and ``cmd`` the operator's command; they differ
+    only while a stop holds the pair (here LT-328501's limit raised to 99 %, above the drum's
+    design level)."""
+    from ureasim.units.desorption import reflux_drum
+    pumps = run(1).packet["PUMPS"]
+    assert all(p["on"] == p["cmd"] for p in pumps.values()) and pumps["328P002A"]["on"]
+    monkeypatch.setattr(reflux_drum, "L2_PCT", {"LT-328501": 99.0})
+    pumps = run(1).packet["PUMPS"]
+    assert pumps["328P002A"] == {"on": False, "cmd": True, "mode": "AUTO"}
+    assert pumps["328P006A"]["on"] and pumps["335P001A"]["on"]

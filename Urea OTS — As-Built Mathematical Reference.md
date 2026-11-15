@@ -25754,7 +25754,10 @@ carries the switch and never the stand-in, so a restored exercise stops on the l
 (`tests/engine/test_snapshot.py`). The stop state is unit state (``p002_stopped``, ``p006_stopped``,
 ``p007_stopped``, ``p001_stopped``) and, with ``l2_stop``, is filled on a save made before it
 (`data/retired_state.ADDED_ATTRIBUTES`).
-Not built: the pump icon's run feedback; as for 323P008, the operator's run entry stays True while AC4 holds the pair.
+The packet's ``PUMPS`` block publishes each machine's run feedback as ``on``, off while its stop holds the pair
+(323P008's trip as well), and the operator's command as ``cmd`` (`engine/packet/status.pumps`, from the code
+review): the icon and the trend show the feedback; the START / STOP faceplate reads STOPPED (INTERLOCK) and keeps
+STOP live, so the operator can keep the pair from running again (`hmi/faceplates/pump`).
 
 Measured on the unit tests' drain scenarios, each valve wide open from the design seed:
 

@@ -34,6 +34,11 @@ _PUMPS = ("323P001A", "323P001B", "328P003A", "328P003B", "335P002A", "335P002B"
            "328P007A", "328P007B", "328P006A", "328P006B", "328P002A", "328P002B", "323P008A",
            "323P008B", "323P003A", "323P003B", "335P001A", "335P001B")
 
+#: The pairs an AC4 low-level stop holds, by pair: the unit that holds the stop and its state.
+_HELD = {"328P002": ("328D001", "p002_stopped"), "328P006": ("328C002", "p006_stopped"),
+         "328P007": ("328C004", "p007_stopped"), "335P001": ("324E003", "p001_stopped"),
+         "323P008": ("323E011", "p008_tripped")}
+
 
 def flags(t: Tick) -> dict:
     """V1's flags, in V1's order: the twelve its ``State`` seeds, then the ejector's stall its
@@ -83,9 +88,17 @@ def boundary_sinks(t: Tick) -> dict:
 
 
 def pumps(t: Tick) -> dict:
-    """Each auxiliary pump's run state and mode under its tag (decision 222)."""
-    return {tag: {"on": bool(t.operator[tag]["on"]), "mode": t.operator[tag]["mode"]}
-            for tag in _PUMPS}
+    """Each auxiliary pump's run state, its run command and mode under its tag (decision 222).
+    ``on`` is the machine's run feedback, which the icon and the trend show: off while AC4's
+    low-level stop holds the pair (decision 217), its command still on. ``cmd`` is the operator's
+    command, which the START / STOP faceplate's live button follows."""
+    out = {}
+    for tag in _PUMPS:
+        unit, held = _HELD.get(tag[:-1], (None, ""))
+        cmd = bool(t.operator[tag]["on"])
+        out[tag] = {"on": cmd and not (unit and getattr(t.units[unit], held)), "cmd": cmd,
+                    "mode": t.operator[tag]["mode"]}
+    return out
 
 
 def hand_switches(t: Tick) -> dict:

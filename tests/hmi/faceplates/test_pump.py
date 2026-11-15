@@ -55,6 +55,18 @@ def test_an_auxiliary_pair_sends_its_own_command_and_reads_n_a(bridge):
     face.close()
 
 
+def test_a_pair_held_by_its_low_level_stop_reads_stopped_and_can_still_be_stopped(bridge):
+    """Decision 217: AC4 holds 328P002A off with its command on. The status reads the
+    feedback; STOP stays live, so the operator can keep the pair from running again."""
+    pump = {"t": "pump", "tag": "328P002A", "bind": "PUMPS.328P002A", "id": "328P002A"}
+    face = PumpFaceplate(bridge, pump)
+    bridge.publish({**bridge.latest, "PUMPS": {"328P002A": {"on": False, "cmd": True, "mode": "AUTO"}}})
+    face.show()
+    assert face.status_field.text() == "STOPPED (INTERLOCK)"
+    assert face.stop_button.isEnabled() and not face.start_button.isEnabled()
+    face.close()
+
+
 def test_every_icon_that_opens_the_faceplate_drives_its_machine():
     """Each bound pump icon's command, sent with its id, stops and starts the machine on the
     engine, and the packet path the icon reads follows it."""

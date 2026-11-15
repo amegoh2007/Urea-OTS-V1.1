@@ -69,12 +69,16 @@ class PumpFaceplate(Faceplate):
 
     def refresh(self, state: Mapping[str, Any]) -> None:
         on = bool(get_path(state, f"{self.bind}.on"))
-        self.status_field.setText("RUNNING" if on else "STOPPED")
+        # The buttons follow the run command where the engine publishes one apart from the
+        # feedback (PUMPS: an AC4 stop holds the pair with its command on), else the run state.
+        cmd = get_path(state, f"{self.bind}.cmd")
+        cmd = on if cmd is None else bool(cmd)
+        self.status_field.setText("RUNNING" if on else "STOPPED (INTERLOCK)" if cmd else "STOPPED")
         self.interlock_field.setText(interlock_text(state, self.pump_id))
-        self.start_button.setEnabled(not on)
-        self.stop_button.setEnabled(on)
-        self.mark(self.start_button, not on, "primary")
-        self.mark(self.stop_button, on, "primary")
+        self.start_button.setEnabled(not cmd)
+        self.stop_button.setEnabled(cmd)
+        self.mark(self.start_button, not cmd, "primary")
+        self.mark(self.stop_button, cmd, "primary")
 
     def command(self, on: bool) -> None:
         self.send({"type": self.command_type, "id": self.pump_id, "on": on})
