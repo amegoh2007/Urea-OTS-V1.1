@@ -24884,3 +24884,496 @@ seed). Every other sign but TT-322004's matches the plant's. On Z + B at 92.3 % 
 (180 C) and PT band (136-143 bar g) fail, the top boils 1 825 kg/h on the seed with 3.74 K carried by the cap, and
 AY-322701 goes against the plant's sign. On all three, 322E001's bottoms (TT-322004) rise 10 to 24 K where the plant
 falls 1.4 to 5.7 K: the lean rise as built is the wrong sign on Book2 at both loads.
+
+# Part CXXIII — Session 113: sessions 111 and 112 reviewed on their files; the licensor's system pressure, the trips' inputs, 328P007 on P&ID 104 (2026-11-15)
+
+A review. Nothing under `ureasim/`, `tests/` or `tools/` changed; no arm was run but two 600 s seed arms (HEAD and
+its control). Read: session 111's commits `d20f759` to `000bdaa` and archive
+(`D:\Work\reports\Session_111_console`), session 112's run series (`D:\Work\reports\B118_s112\run\runs`), and the
+documents named below. `[I]` marks an inference; a desk figure is arithmetic on recorded values, not a
+measurement. The report is `D:\Work\reports\Sessions 111 and 112 review s113.md`; the plans are
+`Session 114 plan prompt s113.md` (B-118) and `Session 115 plan prompt s113.md` (a build) beside it; the scratch is
+`D:\Work\reports\Session_113_review`.
+
+## CXXIII.1 The suite on HEAD
+
+Session 111 ran the suite on `463d7e6` and reran one file on `000bdaa`. On HEAD `4593bb2`, whole, V1 read from
+`D:\Work\Urea Simulation V1`: **8 156 passed, 1 failed, none skipped, 3 607.30 s**. The failure is A-40's
+`test_a_bad_sample_costs_one_tick_of_control_action_and_nothing_else`.
+
+## CXXIII.2 Session 111 on its files
+
+**The seed.** A 600 s seed arm on HEAD (`arms111.py`'s `seed`) equals the archived `H_seed`, which ran on a scratch
+tree, on every leaf but the 32 `PUMPS` leaves the pump pairs added. Against the same arm on the pre-build control
+`89428cc`:
+
+| Measure | Value |
+|---|---|
+| Old leaves that differ within 600 s | 380 |
+| Largest relative departure | 1.3e-4: `melt_fwd_th` and `product_th`, 0.01 t/h, from tick 3 740 |
+| Stream leaves | about 1e-7 kg/h, from tick 60 |
+| Stage 2's drain at tick 2 | 75 938.117 472 215 4 kg/h against 75 938.117 471 907 32 |
+| `LIC_324501.op` | differs by structure: X is 35.0 on the header (decision 224) |
+| New leaves; retired | 41; 1 (`EVAP_324.E003.PIC_335201`) |
+| On the archive's 3 600 s arms | 477 old leaves differ; the drift at most 0.9 kg/h (S0719, S0703) and 3.6 kW |
+
+PIC-335201 moved inside the header's solve, and the departures are the size of that solve's tolerance. The Phase 7
+design-pin tests are unchanged and pass. §CXXI.3 records the drift; the session log's entry for session 111 ("at
+the seed X is 35.0 and no other leaf moves") is wrong and is corrected by this paragraph.
+
+**Nine header valves at 100 % (`H_n9`, 3 600 s).** The header holds 3.80 bar g. The melt forward falls to 71.79 t/h
+against 76.56 (-6.2 %). LV-324501B opens 6.7 to 21.3 % and the recycle runs 6.7 to 11.6 t/h, both still rising at
+the end. LI-323507 rises 10.0 to 15.1 % (8.0 to 12.1 m3), LI-324F001 55 to 65.4 %, FIC-324401 92.7 to 100.0 t/h.
+The route's mass residual is 0. Nine valves at the header's ceiling pass 93.8 % of the production: no steady state
+exists by mass balance, and the excess accumulates in 323D002. The model computes the process engineer's rule of
+one valve per 10 % of load; it is a fill, not a swing.
+
+**The pump pairs (`P_<pair>.json`).** On each of the eight pairs the swap arm (A stopped, B started) differs from
+its seed arm on 0 numeric leaves, exactly; each seed arm equals `H_seed` outside the `PUMPS` leaves; each stop arm
+stops the pair's stream. The flag `pump_running` in `first_desorber` (stream 743), `reflux_drum` (775, 776),
+`second_desorber` (LV-328505's flow), `flash_condenser` (323P008) and `solution_tank` (323P003) is named by no test
+in `tests/units/`; `lp_carbamate_condenser`'s `tw_pump_running` and `melt_header`'s have unit tests. Filed in A-38.
+
+**The re-pins (§CXXI.7).** Four tests were re-pinned on the header's 3 kg/h. Three are downstream of stage 2's
+drain and moved by amounts of the cause's size. The fourth,
+`test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence`
+(`tests/equivalence/test_synthesis_loop_decided_equivalence.py`), pins 322E002's condensation at tick 1 000
+(74.62 to 89.06 t/h), the tick PT-329201 passes 155 bar a (1 905 to 1 922) and the pressure at tick 2 000
+(155.6793 to 155.8075 bar a). At tick 1 000 the port's condensation is falling from 100 to 15 t/h in two seconds
+and alternating tick to tick, so the pin reads the ring's phase: a 3 kg/h change four units upstream moved it by
+14 t/h. The docstring records the same re-pin for decisions 150, 151, 178 and 189. A pin every upstream change
+moves asserts nothing about B-106's divergence. Raised as A-50. What the ring runs on was not measured.
+
+## CXXIII.3 Session 112 on its series
+
+Read on the run files' `series` (a sample every 10 s), not on `score_w3.txt`. The arms' base
+(`cfg/SB923_lu.json`): the ramp 0.5 % a minute, `settle_s` 3 600, `hold_s` 3 600, bundle A's lift and stagnant wall
+loss, B-126 (b)'s twelve compartments, the lean rise off, `proto112`'s S and B.
+
+**The nulls** (100 % seed, against `N100H36`). B alone: `b_rxn_K` -0.01 K at 3 600 s. S, either UA form (`N100Sp`
+equals `N100S1`): -0.05, -0.10, -0.14, -0.16, -0.17, -0.20 K at 600, 1 200, 1 800, 2 400, 3 000 and 3 600 s, still
+moving; `e_tadb` +0.42 K, `purge_t_out` -1.0 K, the boil-off -87 kg/h. The scored thermowells stay within 0.05 K
+and PT-329201 within 0.002 bar. The session 112 prompt's standard for a null was 0.05 K on every column; §CXXII.2
+gives the 0.20 K and does not say the standard was missed. S is written as departures from its first call, and its
+first call on the seed is not the design point: S is not neutral on the seed as prototyped.
+
+**92.3 %: a ring.** `SB923_lu` (S + B, UA as built, lean rise off), the turning points of `b_rxn_K`:
+
+| Time [s] | 2 090 | 3 340 | 4 230 | 5 400 | 6 360 | 7 540 |
+|---|---|---|---|---|---|---|
+| `b_rxn_K` [K] | 6.50 | 13.24 | 8.15 | 13.91 | 10.93 | 12.99 |
+
+Successive swings of 6.7, 5.1, 5.8, 3.0 and 2.1 K: period 2 300 to 2 400 s, a decay of about 0.45 a cycle `[I]`.
+TT-322005's minimum is 180.2 C at 4 810 s; at 8 160 s, the run's end, it is 181.7 C and rising (Book2's band
+180.6 to 184.6 C). PT-329201 stands 0.94 bar under the seed at 139.76 bar a, the cap at 182.50 C; the top does not
+boil; all seven scored signs are the plant's. The last swing's centre is 12.0 to 12.4 K `[I]` against D1's floor
+of 12.05 K. §CXXII.3's "misses TT-322005's floor by 0.4 K" is the ring's first undershoot inside the hold window,
+not a settled state; whether the arm stands is not decided by the run. `SB923_lur` (lean rise on) rings on the
+same period; its undershoot is shallower (TT-322005 181.4 C), which is why it passed the window, and TT-322004
+stands 10 K above the seed where the plant's falls 1.4 K. The seed's own mode is 2 700 to 3 000 s (§CXV.14).
+
+**69.3 %.** `SB693_lu` (UA as built): TT-322005 falls to 173.9 C at 9 370 s and is 174.8 C and rising at the end;
+322E002's CO2 gas fraction `e_phi_co2` is 0.107 against the seed's 0.204 and S's duty ratio `p112_s_q` 0.742; the
+reactor's off-gas falls to 1.0 t/h, close to the inerts alone (seed 22.4 t/h; `SB923_lu` 15.7; `ZB693_lr` 16.8).
+With its full UA at 69.3 % of the feed the condenser condenses too much. On P1 (UA on the CO2 demand to the power
+0.77) it condenses too little and the rise is 39 to 45 K. `ZB693_lr` is settled: rise 13.61 K, TT-322005 179.9 C,
+PT-329201 134.9 bar a, 1 846 kg/h boiled, TT-322004 195.7 C. The UA's exponent on the load decides the hold; the
+two values run bracket it and neither is derived from the plant under S.
+
+**The exponent's basis (desk `[I]`).** P1's 0.77 is a fit on Book2 under the as-built quench law (§CVII.1). Under S
+the duty is UA times the outlet's approach to the shell, so the exponent follows from Book2's TT-322010, the
+shell's saturation temperature at PT-329207 and the load: about 0.19 for a constant split on the engine's arm, 0.37
+to 0.45 on Book2's medians. Not a measurement; session 114's Track 0a derives it.
+
+**Not run by session 112**, beside §CXXII.5's list: the S + B arm at 69.3 % with the lean rise on, and decision
+180's other three holds. One session ran sessions 111 and 112 together.
+
+## CXXIII.4 328P007A/B on P&ID 104; stream 741's take-off
+
+Read on `References\Merged_Searchable_PIDs.pdf` page 7, P&ID 104 (UD-VT-328-FB-0003), rendered with PyMuPDF (clips
+in the archive's `pid\`):
+
+* 328C004's bottoms, line 328101, pass 328E007's hot side (N1 to N2) into line 328102.
+* 328102 tees. Line 328109 goes to 328E001 (N3 to N4), FV-328406 and lines 328103 / 328112 to 328D003: stream
+  741. This closes A-41's question: 741 leaves ahead of the pumps and FIC-328406 draws it on the column's pressure,
+  as built.
+* The other branch runs down to the suction manifold of 328P007A and B (328177, 328178) and continues past both
+  suction tees as 100-CPP3-328105 to LV-328505: stream 740 to the boundary.
+* The pumps discharge into 80-CPP3-328104, off the sheet to sheet 135, and into 50-CPP3-328110.
+
+The PFD (`Combined_1750_MTPD_100% load_PFD TablesProcess_Data.md`): 739 33 724 kg/h, 143 C, 3.9 bar a; 740 33 724
+kg/h, 34.9 m3/h, 89 C, 3.9 bar a; 741 0 kg/h, 40 C, 3.9 bar a. No pressure rise between them. The pumps' data sheet
+(`328P003, 328P006, 328P007 … Datasheets.md`): KSB CPK-C3.1 50-160, 25 m3/h at 32 m, 2 900 rpm, less than 740's
+34.9 m3/h; service, "either discharged to the cooling tower as make-up water or pumped by 328P007 to the
+granulation unit". `ureasim/data/unit_328c004.py` (lines 9 to 15) describes 739, 740 and 741 with no pump.
+
+Against them, `References\Mapping of Desorber Hydrolyzer unit.md` lines 30 to 33: 740 is "discharged from 328E007
+to pump 328P007", whose discharge splits to LV-328505 and to 328E001. The session 111 prompt's item 8 took 328P007's
+row from that note, and decision 227 built it (commit `46743dc`): `second_desorber`'s LV-328505 flow is zero while
+both machines are stopped, and 328C004 floods. On the P&ID, the PFD and the data sheet the pair delivers treated
+condensate to the granulation unit, which the simulator does not model, and 740 flows whatever the pair does. The
+two sides are put to the process engineer (handoff A-41); nothing was changed.
+
+## CXXIII.5 The system pressure and the synthesis pressure
+
+Session 112's Track 0c, not run, asked for the licensor's statement on the synthesis pressure against load. It is
+in Operating Manual III (UD-VT-G00-DC-0003; session 88's OCR, `ocr_002.txt` lines 668 to 735 and 1 124 to 1 134,
+`ocr_006.txt` lines 190 to 392; the same text in `References\fundamentals.md` lines 135 to 161 and 204 to 210):
+
+* Stamicarbon chose a system pressure of approximately 132 bar; with the inerts involved this gives a synthesis
+  pressure of approximately 139 to 143 bar. Glossary: the synthesis pressure is the sum of the system pressure and
+  the partial pressures of all other substances.
+* With a higher inert percentage in the reactor's top the system pressure is lower at a given synthesis pressure
+  and the bubble point is at a lower temperature. The gas the HP carbamate condenser leaves uncondensed keeps the
+  inert percentage in the top such that the partial pressures of ammonia and carbon dioxide are high enough.
+* Operation §5.2.1.7: top temperature 180 to 183 C; a low top temperature is caused by a pressure below
+  requirement, a wrong N/C, or too high a degree of condensation in the HP carbamate condenser (a low steam-drum
+  pressure); at 180 to 183 C the inert content at the reactor's outlet is at its design value. §5.2.1.8: 136 to
+  143 bar. The condenser condenses about 72 wt % of the stripper's gas; N/C 2.95; the path is covered to 95 %.
+
+**The engine.** `reactor_boil.liquor_bubble_t_c`:
+
+    1 / T_bub(P) = 1 / T_des - (R / dH_vap) ln(P_top / P_des),   P_top = PT-329201 + (P_des - P_loop,des)
+
+anchored at 183 C and `OFFGAS_P_DES_BARA` 141.3 bar a. P_top is the total pressure: the line has no inert term and
+no composition term, and session 112's law B inverts the same line. The design off-gas
+(`data/unit_322r001.OFFGAS_DES_KMOLH`) holds N2 44.53, O2 7.42, CH4 3.86 and H2 2.02 kmol/h in 963.76: 57.83
+kmol/h, 6.00 mol %, 8.48 bar of 141.3. The design's system pressure is 132.8 bar a, the licensor's figure.
+
+**Desk `[I]`.** Book2's 69.3 % band stands 7.9 bar and 1.3 K under its 100 % values; at 0.53 K a bar the 1.3 K
+accounts for 2.5 bar and 5.4 bar is left (§CXIX.7's 6 bar on its banding). Carried by the inerts alone, the top's
+inert pressure would fall from 8.5 to 3.1 bar, 6.0 to 2.3 mol %. The arms move the other way: the off-gas dries
+from 22.4 to 1.0 t/h at 69.3 %. The inerts cannot carry all of it, because §CXIX.7 finds the same distance at
+322E002's outlet (6.3 bar from TT-322010), where the same inert flow rides in several times the gas. The other
+carrier is the system pressure's dependence on the liquid: N/C (AY-322701 3.19 at 69.3 % against 3.25 at 92.3 %),
+water, and the conversion, which rises with the residence time; the engine's reactor stands at 60 % of its
+equilibrium against the licensor's 95 % (§CXVII.8). None of the three shares is measured. On the arms the S + B
+pair loses 1.0 bar at 92.3 % where Book2 loses 3.2: 1.2 K of cap, against margins of 0.2 to 1.0 K between the top
+and its cap that decide the verdicts of §CXXII.3 and §CXXII.6.
+
+## CXXIII.6 Trips 35.1, 35.3 and 35.4: the inputs
+
+`References\trip_and_interlock_schedule.md` §5.1 and §5.2 (UAN 01-3042, sheets 335/1+ and 335/2+, as-built):
+
+| Trip | Initiators | Action |
+|---|---|---|
+| 35.1 | 335P001A and B stopped (35P1AM1RS, 35P1BM1RS); sprayer air PSLL-335202 at 0.2 bar (PAL-335202 0.3 bar) | out 1 to trip 35.4; LV-324501B opened (override HS-335201B) |
+| 35.3 | trip 35.1 or trip 35.4 | 335P002A and B stopped (override HS-335620) |
+| 35.4 | trip 35.1; 335P002A and B stopped, with a delay of 10 min; emergency off HS-335621; 335K001 stopped; trip 35.16 (335K002); trip 35.18 (335K004); LVSL-324501A, the feed valve not open | HV-335602 opened (override HS-335602); LV-324501A closed (override HS-335201A); TIC-335015 to 125 C and manual |
+
+No input is an L2 limit. Inside the engine since decision 227: both 335P001 stopped and both 335P002 stopped;
+LV-324501A's travel. Outside the simulated plant: the sprayer air, the fans, the push-button. With §CXVI.4's clamps
+the three trips can be built on the run states without the DCS readback; handoff B-146's "the trips' inputs not
+read" is corrected. Not read: the trips' own logic sheets in AC4 PC35 (latch, reset, the timer's kind) and
+LVSL-324501A's setting. 335P001's stop on LY-324501's L2 is a separate MOTCON interlock and still waits on its
+limit (data gap 8).
+
+## CXXIII.7 What the searches did not give
+
+* The web, three searches, no project detail in a query: KSB's CPK 80-250 characteristic (data gap 11), the
+  Stamicarbon synthesis pressure against load, the HP carbamate condenser's part-load heat transfer. No curve that
+  can be tied to 335P001's impeller, and no relation with numbers; patents and brochures only.
+* Not searched again: the four L2 limits (session 111 searched both archives); Körting's curves; B-145's floor,
+  which is decision 150's class on a sheet already read (Flowserve Pos. 149, equal percentage 50:1).
+
+## CXXIII.8 The review's own errors, and the plans
+
+The session 111 prompt's item 8 gave 328P007's stream from a mapping note without the P&ID (§CXXIII.4). The session
+112 prompt's D1 scored "stands" on TT-322005's band and the rise alone, with no test of settling and no sign
+table: it passed an arm with TT-322004 on the wrong sign and failed one with every sign the plant's. Both prompts
+were sent to one session.
+
+Session 114 (`Session 114 plan prompt s113.md`; decisions 205 to 209, Part CXXIV, A-51, B-150 to B-152): B-118 in
+scratch on the export of `18a7656`: the desk work first (the exponent from Book2; the pressure's three carriers;
+the ring's phase), S on design-point references with full-length nulls, `SB923_lu` with `hold_s` 14 400, the
+69.3 % hold on the derived exponent, the pressure as a clamp, then step L2 and the other holds, and one arm on
+HEAD before anything is called a candidate. An arm that has not settled gets no verdict.
+
+Session 115 (`Session 115 plan prompt s113.md`; decisions 228 to 235, Part CXXV, A-52 to A-54, B-153 to B-155): a
+build: 328P007's service as the P&ID draws it (the default; the process engineer's line), trips 35.1, 35.3 and
+35.4 on the run states with their four software overrides, the five run flags' unit tests, and A-50's pin restated
+on a window.
+
+## CXXIII.9 The melt header's step on one header valve (the process engineer's question of 2026-11-15)
+
+The process engineer asked for the header's pressure drop and gain when a header valve (a "granulator") is added or
+removed to be revised. Searched under `CLAUDE.md` §4: `References\` holds no nozzle or header hydraulics (the tuning
+table's PIC-335201 row: K 0.65, Ti 40 s, Td 0, **TF 0.0 s**, DZ 2 %). The vendor archive: 335R001A/B's documents
+(UD-AU-335-DZ-0015-001 to -030, Andritz Fliessbett Systeme) are scans; the sprayer assembly (-019) gives the melt
+tube, 14 x 2 mm, and no rating; the commissioning and maintenance books (-023, -024) carry no pressure; the spray
+nozzles EN-RL-110-EC-0009 to -0011 belong to the scrubber's urea solution (14 m3/h, 3.5 bar a, BETE spiral), not to
+the granulator. No nozzle curve, no header pressure drop and no positioner speed for LV-324501A was found; Flowserve
+gives the valve's trip closure, under 3 s (§CXX.4).
+
+**The plant's step.** Session 93's traces of the 5 November 2026 restart (`Trends_511_2026_scripts`, photo 215637,
+PIC-335201 and LV-324501A QA passed), on a 4 s grid:
+
+| Event | PIC-335201 before / at the dip / +4 s / +8 s [bar g] | LV-324501A output before / kick [%] |
+|---|---|---|
+| 13:30:06, about the 9th valve (FT-335401 51 m3/h) | 3.78 / 3.47 / 3.60 / 3.67, then 3.68-3.69 | 74.9 / 80.2 |
+| 13:30:48, about the 10th (57 m3/h) | 3.65 / 3.40 / 3.58 / 3.61 | 77.7 / 82.1 |
+
+The kicks over PIC-335201's Kc of 16.25 % a bar give 0.33 and 0.27 bar: the controller saw the dip whole. HV-335602 was
+shut (HIC-335602 0.3 %). LV-324501B's trace fails its QA (13 to 63 % within a minute); the window means (31.7 % at
+13:28, 5.2 % at 13:36) put it open, so E1 stood on its 3.8 bar g ceiling `[I]`. The photo-215630 drops of §CXVI.5
+fall in windows whose QA fails.
+
+**The engine** (`hdr/step_proto.py`, unit-alone, X held, the drain unlimited):
+
+| Case | As built (PIC inside the solve) | LV-324501A held | One-tick read, positioner lag tau 0.5 to 3 s |
+|---|---|---|---|
+| seed, 10 to 11 valves | dip 0.112 bar (ratio 0.968), 3.402 at 8 s, 3.485 at 120 s | 3.165 (-0.335, ratio 0.904) | the held step for 0.1 s, then arm A's from 1 s (0.5 s) to 4 s (3 s) |
+| seed, 10 to 9 | +0.122 (1.035) | 3.871 (+0.371, 1.106) | the same |
+| E1 3.75, 8 to 9 (LV-324501B shut) | dip 0.135 (0.964), LV-324501A +3.14 % | 3.335 (-0.415, 0.889) | the same |
+| one-tick read, no lag | | | rings to the stroke limits (3.5 to 0.04 or 5.9 bar g), as session 110 found (§CXX.4) |
+
+The plant's dip, about 0.28 bar and 0.92 in ratio, lies between the as-built step (0.11 to 0.14) and the held-valve step
+(0.34 to 0.42). The lag sets only how long the held step shows; after 4 s every lagged arm sits on the as-built arm,
+whose remaining offset (0.12 to 0.14 bar) the integral removes over two minutes, where the plant's returns to about
+0.10 under its pre-step value within 8 s and holds. The step's size before and after the dip is set by the supply's
+stiffness: the engine anchors LV-324501A's sheet differential, 3.2 bar, on its 3.5 bar g header, so the valve's inlet is
+7.71 bar a where the sheet's is 6.9 (§CXX.4's prototype limit). Not measured: the step with the inlet on the sheet, with
+LV-324501B open as at 13:30, and LV-324501A's stroke against the trend windows (78-79 % at 63-64 m3/h, 81.9 % at 72.7,
+against the engine's 75.35 % at 62.2). Handoff A-51 holds the options.
+
+**Measured after the advisor's review** (`hdr/step_c.py`, unit-alone, X held, no drain limit). Two supply forms: as
+built (inlet 7.71 bar a) and **sheet**, LV-324501A's inlet at its sheet's 6.9 bar a on the design flow, so
+dP_A,des = 6.9 - 4.513 = 2.387 bar, kappa 0.1516 (0.1131 built), the design stroke where the trim passes the design
+drain at that differential (decision 150's rule) 79.09 % (75.35), the dead head 6.25 bar g (7.06). The lag is put
+inside the solve, h = h_prev + (dt / tau)(u(P) - h_prev) at the root, so that tau = 0 is decision 224 to the bit; it
+never rings. The 13:30 cases take E1 on its 3.8 bar g ceiling with LV-324501B at 27.5 % (X 63.75).
+
+| Case | Plant: dip ratio, PIC output kick | Built, tau 0 / 1 / 2 s: ratio, kick | Sheet, tau 0 / 1 / 2 s: ratio, kick |
+|---|---|---|---|
+| 13:30:06, 8 to 9 | 0.918, +5.3 % | 0.964 +2.2 / 0.910 +5.6 / 0.902 +6.1 | 0.965 +2.2 / 0.921 +4.9 / 0.915 +5.3 |
+| 13:30:48, 9 to 10 | 0.932, +4.4 % | 0.967 +2.0 / 0.919 +5.0 / 0.912 +5.5 | 0.968 +2.0 / 0.929 +4.4 / 0.924 +4.7 |
+| seed, 10 to 11 | | 0.968 +1.8 / 0.920 +4.6 / 0.913 +5.0 | 0.969 +1.8 / 0.928 +4.1 / 0.922 +4.4 |
+| seed, 10 to 9 | | 1.035 -2.0 / 1.088 -5.0 / 1.096 -5.5 | 1.034 -1.9 / 1.078 -4.5 / 1.084 -4.8 |
+
+The held-valve ratios: built 0.892, 0.903, 0.904, 1.106; sheet 0.907, 0.917, 0.915, 1.091. From 4 s every arm of a
+form sits on its tau-0 arm (13:30:06: 3.672 to 3.675 at 4 s, 3.680 to 3.683 at 8 s, 3.78 at 120 s, against the plant's
+3.60 at 4 s and 3.67 to 3.69 from 8 s): the plant recovers more slowly in its first seconds than tau 1 to 2 s gives.
+LV-324501A's stroke at the trend windows' flows and headers (LV-324501B shut in the calculation):
+
+| Window | Plant (PIC-335201's output) | Built | Sheet |
+|---|---|---|---|
+| 13:36, 59.4 m3/h, 3.23 bar g | 77.3 % | 73.0 | 76.4 |
+| 13:43, 66.4 m3/h, 3.41 bar g | 80.2 % | 76.9 | 80.6 |
+| 14:06, 72.7 m3/h, 3.38 bar g | 81.9 % | 79.4 | 83.2 |
+| 14:13, 73.5 m3/h, 3.43 bar g | 82.3 % | 79.9 | 83.8 |
+| 7 November live, 63.5 m3/h, 3.65 bar g | 78-79 % | 76.6 | 80.5 |
+
+On every reading the sheet form stands nearer the plant: at tau 1 s the step ratio within 0.003 and the kick within
+0.4 % (at 2 s, 0.008 and 0.3 %); the stroke within 1.5 % at the four 5 November windows and 1.5 to 2.5 % high on
+7 November, where the built form runs 2.4 to 4.3 % and 1.4 to 2.4 % low. The kick says the plant's controller saw the
+whole held step, which only a lag gives. No source fixes tau: PIC-335201's filter is
+0.0 s (the tuning table), PT-335201's loop sheet prints no damping, AC4's cycle time was not found, and Flowserve gives
+LV-324501A's trip closure (under 3 s), not its positioner's response.
+
+# Part CXXVI — Session 116: LV-324501A's positioner and its sheet inlet on the melt header (2026-11-15)
+
+The process engineer's choice of 2026-11-15 on handoff A-51 (§CXXIII.9): option (c), the positioner lag inside the
+header solve with LV-324501A's inlet at its sheet's 6.9 bar a, tau 1 s as a stand-in. Built in two steps, each proven
+on its own. Scratch: `D:\Work\reports\Session_116_header`.
+
+## CXXVI.1 The positioner lag (decision 236)
+
+`units/finishing/melt_header.py`, `positioner_pct`:
+
+    h_A = h_prev + (dt / tau) (u - h_prev),     h_A = u where tau <= 0
+
+u is PIC-335201's step on the trial header, h_prev LV-324501A's committed position (`MeltHeader.lv_a_position_pct`,
+new state). The root solve evaluates g(P) = phi_A(h_A(u(P)), P) - phi_noz(P) - phi_hv(P) on each trial P; at the root
+PIC-335201 is committed and then the position, from the same expression, pump running or not. tau is
+`data/unit_335.LV_324501A_TAU_S`, 1 s: dt / tau = 0.1 a tick. The branch at tau 0 returns u itself, since
+h + 1.0 (u - h) is not u to the bit. At the seed u = h_prev = the design stroke, so g(3.5) = 0 on the first evaluation.
+
+**The null** (`null_lag.py`, against HEAD's module exported before the first edit, tau patched to 0): 7 400 ticks over
+valve steps 10, 11, 9, X 63.75 % with LV-324501B open to 27.5 %, 9 and 10 valves on E1's ceiling, HV-335602 opened and
+closed, both pumps stopped and restarted (header 0 bar g), the heel limiting the drain (300 ticks capped), PIC-335201
+in MAN at 70 and 85 % (600 ticks), no valve online (dead head 7.06 bar g) and twelve valves: every result field and
+PIC-335201's whole state equal tick by tick, the position equal to the output. **0 ticks differ.**
+
+Step one alone, at tau 1 s on decision 224's constants (the inlet at 7.71 bar a, before decision 237), the module
+reproduces §CXXIII.9's built column: seed 10 to 11 ratio 0.920, kick
++4.55 %; 10 to 9 1.088, -5.03 %; 13:30:06 0.910, +5.57 %; 13:30:48 0.919, +5.00 %.
+
+`MeltHeaderResult.lv_a_pct` stays PIC-335201's output (the plant's trace is the output; the packet's `LV_324501A` and
+PIC-335201's faceplate read it); `lv_a_position_pct` is the valve. 324F003's seal air (`second_evaporator.py`) rides the
+position of the tick before.
+
+## CXXVI.2 The sheet inlet (decision 237)
+
+`data/unit_335`: `HEADER_P_DES_BARA` = 3.5 + 1.01325 = 4.51325; `LV_324501A_DP_DES_BAR` = 6.9 - 4.51325 = 2.38675 bar
+(A-13's subtraction; the audit's row names the two pressures); `LV_324501A_HEADER_OP_DES_PCT` =
+design_stroke_pct(LV-324501A, m_des sqrt(rho_case / 1221) sqrt(3.2 / 2.38675)) = 79.0946 %; KAPPA 0.151603 (0.113075);
+the dead head 6.2486 bar g (7.0618). `unit_324.LV_324501A_OP_DES_PCT` (75.347 %) and `LV_324501_DP_DES_BAR` (3.2) are
+unchanged: V1's selector, `leg_seal` and the valve audit stand on them, and the two pairs are the same trim,
+cv(79.0946) / cv(75.3469) = 1.1579012520596539 against sqrt(3.2 / 2.38675) = 1.1579012520596546 (7e-16). The seed:
+3.5 bar g, one evaluation, PFD 402 to the bit, PIC-335201's output and the position 79.0946 %.
+
+## CXXVI.3 The step, measured on the built module
+
+Unit-alone (X held, no heel limit), after 900 s settled:
+
+| Case | Plant | Built: ratio, kick | as built before (decision 224) |
+|---|---|---|---|
+| 13:30:06, 8 to 9 valves, X 63.75 % | 0.918, +5.3 % | 0.920664, +4.911230 % | 0.964, +2.2 % |
+| 13:30:48, 9 to 10 | 0.932, +4.4 % | 0.928876, +4.402885 % | 0.967, +2.0 % |
+
+The first tick after an operator's valve step at the seed: 9 valves 3.7739, 11 valves 3.2475, 12 valves 3.0156 bar g
+(3.6225, 3.3881, 3.2849 before). Over the next 60 s the header moves one way only, tick by tick, for 8 to 7, 7 to 8,
+11 to 12 valves and 9 to 10 with LV-324501B open; HV-335602 opened turns it once (minimum 2.6434 bar g); HV-335602
+closing turns it three times, at 17 s (the peak) and at 24.8-24.9 s where the valve reaches its seat, the same turns
+as at tau 0 (17.6, 24.8 and 24.9 s). PIC-335201 in MAN stepped to 85 %: the position is 85 - (85 - 79.0946) 0.9^k to
+1e-9. No valve online: PIC-335201's output 0 %, the position 4.5e-14 % after 60 s, under 1e-9 of PFD 402 at the dead
+head. Both pumps stopped for 30 s and restarted (`cover116.py`): PIC-335201's output has wound to 100 % and the
+position with it, so on the restart the valve, behind its positioner, lifts the header to 4.6511 bar g on the first tick
+(2.0902 at tau 0, where PIC-335201 shuts it inside the solve), under the 6.2486 bar g dead head; the header turns once,
+at 2.1214, and stands at 3.2905 two minutes on.
+
+**The whole plant** (`engine_step.py`; LIC-324501 live, 30 ms a tick): the eleventh valve online at the seed drops the
+header to 3.2475 bar g on the tick (ratio 0.928) and PIC-335201's output kicks +4.113 %; the header recovers one way
+only, 3.3789 at 1 s, 3.3975 at 4 s, 3.4065 at 10 s, 3.4471 at 60 s, while X eases from 35.0 to 33.4 % as 324F003's
+level falls; no sign change of dP over 600 ticks.
+
+## CXXVI.4 Saves (decision 226's mechanism)
+
+`data/retired_state.ADDED_ATTRIBUTES` gains `MeltHeader.lv_a_position_pct`. A save made on decision 224's header
+lacks it and would be refused (`check_compatible`); on load the fill copies the fresh plant's 79.09 % and
+`engine.plant.evaporation.adopt_header_position` then stood the valve on the save's PIC-335201 output (as first
+built; decision 238 opens it at the stroke passing the save's drain, §CXXVI.7). A save made
+before decision 224 takes the whole header from the fresh plant, and `adopt_boundary_header` sets the output and the
+position to the save's stroke together. Decision 226's rule, LV-324501A keeps the save's stroke, stood in this
+first build; decision 238 replaced it (§CXXVI.7).
+
+**The shipped exercises restored** (`restore_dip.py`, `restore_head.py`, 120 s each). All six were saved before
+decision 224, so LV-324501A takes the save's stroke on V1's selector; on decision 237's form that stroke passes less.
+The header [bar g]:
+
+| Exercise, valves, adopted header | HEAD's header (decision 224, constants patched in): tick 1, extreme, 120 s | Built, the save's stroke kept: tick 1, 10 s, 60 s, 120 s | Built, the stroke passing the save's drain at the adopted header |
+|---|---|---|---|
+| load090_steam, 9, 3.0443 | 3.1300, 3.0532, 3.0532 | 2.9451, 3.0092, 3.0293, 3.0399 | 3.0443 to 3.0445 (LV-324501A 71.9 %, the save's 70.87) |
+| load095_steam, 9, 3.4820 | 3.4964, 3.4837, 3.4837 | 3.1758, 3.3726, 3.4345, 3.4673 | 3.4820 to 3.4822 (75.9 %, 72.59) |
+| load100_conversion, 10, 3.7135 | 3.6736, 3.6736, 3.7093 | 3.2600, 3.5477, 3.6403, 3.6901 | 3.7135 (81.2 %, 76.10) |
+| load100_steam, 10, 3.5349 | 3.5285, 3.5285, 3.5342 | 3.1750, 3.4044, 3.4778, 3.5171 | 3.5348 to 3.5349 (79.4 %, 75.47) |
+| load105_conversion, 11, 3.3311 | 3.3494, 3.3330, 3.3330 | 3.0459, 3.2272, 3.2858, 3.3175 | 3.3311 (80.3 %, 77.15) |
+| load105_steam, 11, 3.2486 | 3.2814, 3.2519, 3.2519 | 3.0043, 3.1598, 3.2101, 3.2371 | 3.2486 (79.5 %, 76.83) |
+
+Kept as decision 226 writes it, a restore opens with a 0.10 to 0.45 bar dip that PIC-335201 recovers to within
+0.03 bar over two minutes, where decision 224's header moved at most 0.09 bar; the passing stroke opens with none. A
+save made on decision 224's header moves the same way, its output now on the sheet form. The choice, handoff A-56,
+was the passing stroke (§CXXVI.7).
+A save made 0.5 s after an eleventh valve came online, the position 1.31 % behind the output, restores both as saved
+and replays the header to the bit (`cover116.py`).
+
+## CXXVI.5 Pins moved and tests added
+
+Moved, each with its old value restated in the test (before decisions 236 and 237):
+
+* `test_melt_header`: the seed's stroke, 75.3469 to the header's 79.0946 %; the first tick after a valve step, 9, 11
+  and 12 valves, 3.6225, 3.3881, 3.2849 to 3.7739, 3.2475, 3.0156 bar g; no valve online, the forward flow from
+  exactly 0 to under 1e-9 (the position decays geometrically on its lag, 4.5e-14 % at 60 s).
+* `packet/test_evaporation`: PIC-335201's output and `LV_324501A` at the seed, 75.3 to 79.1 %; the two closures read
+  on the published leaves, from 0.0025 and 0.0035 t/h to the leaves' own rounding, 0.0105 and 0.0155 (0.0030 and
+  0.0100 measured; the exact residuals under 1e-6 kept).
+* `test_second_evaporator`, AC4's side: the seed's stroke; B-62 at 60 s 151.6476 to 151.6481 C and 593.40 to
+  593.39 kg/h, the seal at tick 1767 to 1765, the drain's stop 1875 to 1873, the stalled sweeps 1870-1901 to
+  1868-1899; B-63 the seal at 3616 to 3613, the stop 3725 to 3722, the heel's melt 162.1832 to 162.1849 C. The excess
+  test read its last tick, which now falls on a tick where LV-324501B's seat relay (B-145) has shut it; it reads the
+  last 300 s instead: E1 on its ceiling on 2 310 of 3 000 ticks, LV-324501B open on each, the mean header 3.8022 bar g
+  and the mean drain 0.99562 of PFD 402. The seal-air test reads the position.
+* `test_second_evaporator_decided_equivalence`, decision 224's two AC4 divergences, AC4's side only (V1's side to
+  its pinned digits unchanged): stage 1's feed cut a fifth, at 300 s the drain 71 673.1 to 71 725.7 kg/h, 324F003
+  2 656.69 to 2 653.95 kg, PIC-335201's output 72.287 to 75.563 %; one header valve fewer, at 900 s the drain
+  80 458.6 to 80 477.6 kg/h, 324F003 3 893.12 to 3 892.46 kg, the output 75.163 to 79.450 %, LV-324501B 15.545 to
+  15.594 %, the recycle 9 241.4 to 9 259.0 kg/h, LV-324501B's widest 16.932 to 17.006 %.
+* `test_vacuum_condenser_decided_equivalence`, the trip through the train: the second stage's vapour two minutes
+  after 323P003 stops 1 277.205 to 1 277.184 kg/h, and V1's train, driven on those inputs, vents 136.416 to
+  136.417 kg/h (the port's 29.080 kg/h and 54.009 C within their pins).
+* `test_synthesis_loop_decided_equivalence`, the azeotrope test (handoff A-50, its sixth re-pin): at tick 1 000,
+  inside the ring, the port's condensation 89.06 to 82.25 t/h and PT-329201 147.5872 to 147.5780 bar a; PT-329201
+  passes 155 bar a on tick 1 913 (1 922) and stands at 155.7516 bar a at 200 s (155.8075). V1's side (198.76 t/h,
+  141.0214 and 141.6936 bar a) and tick 50's pins are unchanged.
+* `test_check_valve_audit`: LV_324501A_DP_DES_BAR's two pressures, 6.9 bar a and HEADER_P_DES_BARA.
+* `test_snapshot`: the pre-header save's position, 75 %.
+
+Added (14): the trim identity and the sheet's constants; the two 13:30 steps; no ring after 8 to 7, 7 to 8, 9 to 10
+with LV-324501B open and 11 to 12 valves; HV-335602 opening turns the header once; the tau-0 null (position equal to
+output through a valve step, HV-335602 travelling and both pumps stopped); PIC-335201 in MAN; a save made on decision
+224's header; the whole plant's eleventh valve; the pump restart on the wound-up valve; a save made while LV-324501A
+travels.
+
+**The suite** on the built tree, 8 169 tests in eight parallel groups: 8 164 passed and 5 failed on the first
+pass, A-40's test (as on HEAD) and the four pins above that moved in the decided-equivalence files; re-pinned and
+rerun singly, the four pass. The last two tests above were added after the suite and pass with their two files
+(48 passed). 8 171 tests: 8 170 pass, A-40's fails, none skipped. The PyQt6 grep below `ureasim/hmi` prints nothing.
+
+## CXXVI.6 The seed against HEAD
+
+Session 111's runner (`arms111.py`, every packet leaf every 10 ticks, the drain, X, the level, the header and both
+strokes every tick) on the built tree, 600 s, against session 113's HEAD seed (`head_4593bb2_seed.json`): no leaf
+added or gone; 371 of 3 741 leaves differ. Two are the decision: PIC-335201's output and `LV_324501A`, 79.1 against
+75.3 %. The other 369 move by at most 1.6e-6 relative: 354 stream leaves, six steam-system residuals, four
+322E002 gas fractions, four controller leaves and FIC-335405's set point (0.617072 against 0.617071 t/h, its sixth
+decimal at 526 s). The cause, read tick by tick: the seed drifts on its own from tick 2 (324F003's level 1.2e-10 % a
+tick in both trees, X with it), and the two header laws answer that drift differently, the drain by at most
+0.0037 kg/h (5e-8) and the header by 1.6e-6 bar over the 600 s. Session 113 measured the same drift against the
+pre-header control: 380 leaves within 1.3e-4 relative (§CXXIII.2). The seed holds; the design-pin tests pass.
+
+## CXXVI.7 The passing stroke on restore (decision 238)
+
+The process engineer's choice of 2026-11-15 on handoff A-56: option (b). `units/finishing/melt_header.passing_stroke_pct`
+inverts `forward_fraction`, its quadratic solved for r at the given forward flow:
+
+    1 / r^2 = (c - 2 kappa beta phi_A) / phi_A^2 - kappa,     c = 1 + delta + kappa - kappa beta^2
+    h_A     = stroke(r cv(h_A,des))                           on LV-324501's trim (`stroke_for_cv_fraction`)
+
+0 % for no flow; 100 % where the trim cannot pass phi_A (c <= 0, the pumps' dead head; 1 / r^2 <= 0; or
+r cv(h_A,des) >= 1). Round trip over 10 000 points (`roundtrip.py`: stroke 0.5 to 100 %, beta 0 to 0.3, header 0.5 to
+6.0 bar g): the stroke back within 2.1e-14 %, the flow within 1.1e-15 relative; the design flow returns 79.0945800959126 %,
+the header's design stroke, to the bit.
+
+The adopters (`engine.plant.evaporation`):
+
+* `adopt_boundary_header`, a save made before decision 224: PIC-335201's output and the position stand at
+  passing_stroke_pct(L, beta(X), P(N)), L the save's load on V1's selector, X the adopted LIC-324501 output, P(N) the
+  adopted header (decision 226's valves and header unchanged). A save draining nothing shuts the valve, as before.
+* `adopt_header_position`, a save made on decision 224's header: the save holds no drain, but its header was
+  balanced, so the drain is phi_noz(N, P) + phi_hv(h_hv, P) at the saved header, on the two laws decision 237 did not
+  touch. With PIC-335201 in MAN, or both 335P001 pumps stopped, the output is the operator's hand value or the loop's
+  wind-up, not a drain, and the valve stands on it as saved: the build's reading of the choice, named in decision 238.
+* A save holding the position is untouched; the mid-step replay test passes unedited.
+
+**Measured** (`restore238.py`, 120 s each; header [bar g]):
+
+| Exercise | Adopted | Tick 1 | 10 s | 120 s | PIC-335201's output on load (the save's stroke) |
+|---|---|---|---|---|---|
+| load090_steam | 3.044305 | 3.044305 | 3.044306 | 3.044482 | 71.9133 % (70.87) |
+| load095_steam | 3.481965 | 3.481965 | 3.481967 | 3.482219 | 75.8710 % (72.59) |
+| load100_conversion | 3.713484 | 3.713484 | 3.713484 | 3.713488 | 81.1794 % (76.10) |
+| load100_steam | 3.534850 | 3.534850 | 3.534850 | 3.534839 | 79.4288 % (75.47) |
+| load105_conversion | 3.331090 | 3.331090 | 3.331090 | 3.331149 | 80.3021 % (77.15) |
+| load105_steam | 3.248632 | 3.248632 | 3.248633 | 3.248640 | 79.5162 % (76.83) |
+
+The scratch arm's "passing" rows of §CXXVI.4 are reproduced: each first tick on its adopted header within 9.7e-11 bar
+(`tick1_238.py`, seven evaluations of the header solve), where the kept stroke dipped it 0.10 to 0.45 bar.
+
+A save made on decision 224's header (HEAD's constants patched in, tau 0, nine valves settled 900 s on E1's 3.8 bar g
+ceiling, LV-324501B open at X 58.45 %; the position stripped from the document) loaded on the built tree: the save's
+output kept, 75.18 %, the header falls 3.8002 to 3.4246 bar g on the first tick (0.376 bar) and is at 3.6609 at 10 s and
+3.7754 at 120 s; on the passing stroke, 79.48 %, it is 3.800211 on the first tick and 3.8008 at 120 s.
+
+A save before decision 224 on V1's recycle route (PIC-335201's boundary 4.0 bar g, above its 3.8 bar g relief;
+LIC-324501 at 40 %): its load brings four valves online at 2.1952 bar g, under E1's 2.8 bar g floor. Decision 226's
+LV-324501A, shut on the recycle route, empties the header to 0.149 bar g on the first tick (2.77 at 120 s); the passing
+stroke, 43.06 %, holds 2.1954 on the first tick, and PIC-335201 then lifts the header toward E1 (3.33 bar g at the
+26.4 % X of 120 s), 3.00 bar g at 120 s.
+
+Tests. Moved: the pre-header save, PIC-335201's output and the position 75 to 78.2055 %, the first tick on the adopted
+3.4063 bar g to 1e-9; the save made before the positioner, 77 % to the design's 79.0946 %, the first tick on 3.5 bar g
+to 1e-9. Added (9): the inverse's round trip and its edges; the same save with PIC-335201 in MAN, and with both pumps
+stopped, keeping its 77 %; each shipped exercise's first tick on its adopted header to 1e-9 (six). The suite after decision 238: the engine, rest and units groups
+rerun, 2 330 passed (185, 1 313, 400 and 432), and the pumps-stopped test, added after them, passes with its file
+(24 passed); the equivalence groups and the synthesis file, which call no snapshot or adopter (grep), not rerun,
+their 5 849 standing from the run before (A-40 failing). 8 180 tests collected: 8 179 pass, A-40's fails.

@@ -227,15 +227,16 @@ def test_the_melt_header_on_ac4_decided_divergence(v1):
     X = 50, LV-324501B opens beside it, where V1's selector strokes one valve on LIC-324501's demand.
     Both on LV-324501's vendor trims (decision 150): the design drain on the first tick on both, and
     with stage 1's feed cut a fifth from 0.5 s they part on tick 6; five minutes on V1's drain passes
-    60.7 t/h on LV-324501A at 60.0 % and holds 3189 kg, AC4's 71.7 t/h at 72.3 % and 2657 kg, the
-    header following E1 down, neither recycling."""
+    60.7 t/h on LV-324501A at 60.0 % and holds 3189 kg, AC4's 71.7 t/h at 75.6 % and 2654 kg, the
+    header following E1 down, neither recycling. AC4's side before decisions 236 and 237 (the
+    positioner lag and the sheet's inlet): 71 673.1 kg/h at 72.287 % and 2 656.69 kg."""
     parted, hist = _both(v1, h._step(v1, 5, m=0.8 * d.P1_DES_KGH), 3001, None, vendor_drain=True,
                          ac4=True)
     assert hist[0]["leg"] == (d.P2_DES_KGH, d.P2_DES_KGH) and parted == 6
-    assert hist[3000]["leg"] == (pytest.approx(60742.6, abs=0.1), pytest.approx(71673.1, abs=0.1))
-    assert hist[3000]["M"] == (pytest.approx(3189.09, abs=0.01), pytest.approx(2656.69, abs=0.01))
+    assert hist[3000]["leg"] == (pytest.approx(60742.6, abs=0.1), pytest.approx(71725.7, abs=0.1))
+    assert hist[3000]["M"] == (pytest.approx(3189.09, abs=0.01), pytest.approx(2653.95, abs=0.01))
     assert hist[3000]["lv"] == ((pytest.approx(59.992, abs=1e-3), 0.0),
-                                (pytest.approx(72.287, abs=1e-3), 0.0))
+                                (pytest.approx(75.563, abs=1e-3), 0.0))
     assert all(r["recycle"] == (0.0, 0.0) for r in hist)
 
 
@@ -244,16 +245,18 @@ def test_one_header_valve_fewer_on_ac4_decided_divergence(v1):
     V1 has no header valve to take and its selector holds the design drain forward on LV-324501A
     alone; on AC4 the header rises, LIC-324501 lifts E1 to its 3.8 bar g ceiling and LV-324501B
     opens beside LV-324501A. They part on tick 5; fifteen minutes on V1 still drains the design's
-    75.9 t/h, all forward, while AC4's LV-324501B stands at 15.5 % returning 9.2 t/h of the 80.5 t/h
-    drain as the level, lifted 96 kg, comes back down (LV-324501B's widest 16.9 %)."""
+    75.9 t/h, all forward, while AC4's LV-324501B stands at 15.6 % returning 9.3 t/h of the 80.5 t/h
+    drain as the level, lifted 96 kg, comes back down (LV-324501B's widest 17.0 %). AC4's side
+    before decisions 236 and 237: 80 458.6 kg/h, 3 893.12 kg, PIC-335201's output 75.163 % and
+    LV-324501B 15.545 %, 9 241.4 kg/h returned, LV-324501B's widest 16.932 %."""
     parted, hist = _both(v1, h._step(v1, 5, headers=9), 9001, None, vendor_drain=True, ac4=True)
     assert parted == 5 and all(r["recycle"][0] == 0.0 and r["lv"][0][1] == 0.0 for r in hist)
-    assert hist[9000]["leg"] == (d.P2_DES_KGH, pytest.approx(80458.6, abs=0.1))
+    assert hist[9000]["leg"] == (d.P2_DES_KGH, pytest.approx(80477.6, abs=0.1))
     assert hist[9000]["M"] == (pytest.approx(d.F003_M_DES_KG, rel=1e-12),
-                               pytest.approx(3893.12, abs=0.01))
-    assert hist[9000]["lv"][1] == (pytest.approx(75.163, abs=1e-3), pytest.approx(15.545, abs=1e-3))
-    assert hist[9000]["recycle"][1] == pytest.approx(9241.4, abs=0.1)
-    assert max(r["lv"][1][1] for r in hist) == pytest.approx(16.932, abs=1e-3)
+                               pytest.approx(3892.46, abs=0.01))
+    assert hist[9000]["lv"][1] == (pytest.approx(79.450, abs=1e-3), pytest.approx(15.594, abs=1e-3))
+    assert hist[9000]["recycle"][1] == pytest.approx(9259.0, abs=0.1)
+    assert max(r["lv"][1][1] for r in hist) == pytest.approx(17.006, abs=1e-3)
 
 
 def test_pv_329212_on_its_vendor_trim_decided_divergence(v1):

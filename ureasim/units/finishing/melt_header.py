@@ -24,20 +24,25 @@ PFD 402, so the design is reproduced by construction — decision 23's anchoring
     phi_noz = (N / N_des) sqrt(P / P_des)                                      the header valves online
     phi_hv  = (m_hv,full / m_des) cv(h_hv) sqrt((P + p_atm - p_335D004) / dP_case)   HV-335602, Pos. 150
     phi_B   = m_B,full cv(h_B) / m_des                       LV-324501B on its own law (decision 150)
-    phi_A   LV-324501A on 335P001's head curve H = H0 - c (Q / Q_ref)^2, its inlet the design's moved
-            by the head the pumps' total flow costs; with r = cv(h_A) / cv(h_A,des) and beta = phi_B:
+    phi_A   LV-324501A on 335P001's head curve H = H0 - c (Q / Q_ref)^2, its inlet the sheet's 6.9 bar a
+            at design (decision 237) moved by the head the pumps' total flow costs; with
+            r = cv(h_A) / cv(h_A,des) and beta = phi_B:
               (1 / r^2 + kappa) phi_A^2 + 2 kappa beta phi_A - (1 + delta + kappa - kappa beta^2) = 0
               delta = (P_des - P) / dP_A,des,     kappa = rho g c Q_des^2 / (Q_ref^2 1e5 dP_A,des)
-    h_A     = u(P), PIC-335201's step on PV = P
-    g(P)    = phi_A(u(P), P) - phi_noz(P) - phi_hv(P) = 0
+    u(P)    PIC-335201's step on PV = P
+    h_A(P)  = h_prev + (dt / tau) (u(P) - h_prev)       LV-324501A's positioner (decision 236)
+    g(P)    = phi_A(h_A(P), P) - phi_noz(P) - phi_hv(P) = 0
 
-The last relation is solved for the header P inside the tick, PIC-335201 evaluated on each trial
-header: read a tick late, the loop's proportional gain of 1.8 on the header rings it at its stroke
-limits; evaluated inside the solve it settles (As-Built §CXX.4). The last committed header is tried
-first — exact at the seed and at a parked header — and otherwise the root is bracketed on
-[0, P_dead] (P_dead the pumps' dead head through LV-324501A) and found by the Illinois false
-position. PIC-335201 is committed once, at the root. With 335P001A and B both stopped neither valve
-passes melt and the header drains to 0 bar g. Trips 35.1 and 35.4 are not built (handoff).
+The last relation is solved for the header P inside the tick, PIC-335201 and the positioner
+evaluated on each trial header: read a tick late, the loop's proportional gain of 1.8 on the header
+rings it at its stroke limits; evaluated inside the solve it settles (As-Built §CXX.4). The
+positioner's lag lets a header valve's step reach the header before LV-324501A answers it, as the
+plant's does (As-Built §CXXIII.9); its tau is a stand-in (open data gap 12), and h_A = u at tau 0.
+The last committed header is tried first — exact at the seed and at a parked header — and
+otherwise the root is bracketed on [0, P_dead] (P_dead the pumps' dead head through LV-324501A) and
+found by the Illinois false position. PIC-335201 and the positioner are committed once, at the
+root. With 335P001A and B both stopped neither valve passes melt and the header drains to 0 bar g.
+Trips 35.1 and 35.4 are not built (handoff).
 
 Source: P&ID 130; AC4 UD-MR-G00-FF-0004 PC35.2 (pages 249 to 252); the DCS tuning table; the loop
 summaries UD-MR-324-EC-0001 (L 324501) and UD-MR-335-EC-0001 (P 335201, F 335401, H 335602);
@@ -52,12 +57,11 @@ import math
 from dataclasses import dataclass
 
 from ureasim.control.process_loop import ProcessLoop
-from ureasim.control.valve import cv_fraction
+from ureasim.control.valve import cv_fraction, stroke_for_cv_fraction
 from ureasim.core.numeric import clamp
 from ureasim.core.units_of_measure import ATM_BARA, G_ACC, PA_PER_BAR
 from ureasim.data.control_valves import HV_335602
 from ureasim.data.unit_324 import (
-    LV_324501A_OP_DES_PCT,
     LV_324501B_FULL_KGH,
     LV_324501_CHAR,
     LV_324501_RHO_KGM3,
@@ -75,6 +79,8 @@ from ureasim.data.unit_335 import (
     HV_335602_P_DOWN_BARA,
     LIC_324501_X_DES_PCT,
     LV_324501A_DP_DES_BAR,
+    LV_324501A_HEADER_OP_DES_PCT,
+    LV_324501A_TAU_S,
     P001_DROOP_M,
     P001_Q_REF_M3H,
     PC35_E1_BIAS_BARG,
@@ -92,11 +98,12 @@ from ureasim.data.unit_335 import (
 __all__ = [
     "KAPPA", "SOLVE_TOL_BAR", "SOLVE_RESID_TOL", "SOLVE_MAXIT", "characteriser", "e1_setpoint_barg",
     "x_for_setpoint", "lv_b_stroke_pct", "nozzle_fraction", "hv_fraction", "recycle_fraction", "forward_fraction",
-    "dead_head_barg", "pic_335201", "MeltHeaderResult", "MeltHeader",
+    "passing_stroke_pct", "dead_head_barg", "positioner_pct", "pic_335201", "MeltHeaderResult", "MeltHeader",
 ]
 
 #: 335P001's droop on LV-324501A's design differential [-]: what the curve's head costs between no
-#: flow and the design flow, as a fraction of the 3.2 bar the valve takes at design (0.113).
+#: flow and the design flow, as a fraction of the 2.39 bar the valve takes at design (0.152; decision
+#: 237).
 KAPPA = (LV_324501_RHO_KGM3 * G_ACC * P001_DROOP_M * HEADER_Q_DES_M3H ** 2
          / (P001_Q_REF_M3H ** 2 * PA_PER_BAR * LV_324501A_DP_DES_BAR))
 
@@ -248,7 +255,7 @@ def forward_fraction(stroke_pct: float, recycle_phi: float, p_barg: float) -> fl
     pumps' dead head reached, or with the valve shut.
     """
     r = (cv_fraction(stroke_pct / 100.0, LV_324501_CHAR)
-         / cv_fraction(LV_324501A_OP_DES_PCT / 100.0, LV_324501_CHAR))
+         / cv_fraction(LV_324501A_HEADER_OP_DES_PCT / 100.0, LV_324501_CHAR))
     if r <= 0.0:
         return 0.0
     delta = (HEADER_P_DES_BARG - p_barg) / LV_324501A_DP_DES_BAR
@@ -260,6 +267,35 @@ def forward_fraction(stroke_pct: float, recycle_phi: float, p_barg: float) -> fl
         return math.sqrt(c / a)
     b = KAPPA * recycle_phi
     return (-b + math.sqrt(b * b + a * c)) / a
+
+
+def passing_stroke_pct(forward_phi: float, recycle_phi: float, p_barg: float) -> float:
+    """LV-324501A's stroke [%] that passes ``forward_phi`` of PFD 402 up the header at ``p_barg``,
+    beside the recycle ``recycle_phi`` — the inverse of `forward_fraction` (decision 238).
+
+    Process utility
+    ---------------
+    Where a restored exercise opens the valve: at the stroke that passes the save's drain at the
+    header it restores, so that the header balances on the first tick and the board shows no dip
+    the plant never had.
+
+    Equation (`forward_fraction`'s quadratic solved for r at the given phi_A):
+        1 / r^2 = (c - 2 kappa beta phi_A) / phi_A^2 - kappa,   c = 1 + delta + kappa - kappa beta^2
+        h_A = stroke(r cv(h_A,des))                          on LV-324501's trim
+    0 % for no flow; 100 % where the trim cannot pass phi_A, the pumps' dead head reached or the
+    required Cv above the trim's rating.
+    """
+    if forward_phi <= 0.0:
+        return 0.0
+    delta = (HEADER_P_DES_BARG - p_barg) / LV_324501A_DP_DES_BAR
+    c = 1.0 + delta + KAPPA - KAPPA * recycle_phi * recycle_phi
+    inv_r2 = (c - 2.0 * KAPPA * recycle_phi * forward_phi) / (forward_phi * forward_phi) - KAPPA
+    if c <= 0.0 or inv_r2 <= 0.0:
+        return 100.0
+    phi_cv = cv_fraction(LV_324501A_HEADER_OP_DES_PCT / 100.0, LV_324501_CHAR) / math.sqrt(inv_r2)
+    if phi_cv >= 1.0:
+        return 100.0
+    return 100.0 * stroke_for_cv_fraction(phi_cv, LV_324501_CHAR)
 
 
 def dead_head_barg(recycle_phi: float) -> float:
@@ -276,17 +312,36 @@ def dead_head_barg(recycle_phi: float) -> float:
                                                         - KAPPA * recycle_phi * recycle_phi)
 
 
+def positioner_pct(position_pct: float, output_pct: float, dt: float) -> float:
+    """LV-324501A's stroke [%] one tick after PIC-335201 asks for ``output_pct`` (decision 236).
+
+    Process utility
+    ---------------
+    The valve does not stand where its controller asks at once. When the operator brings a header
+    valve online the header falls first, by most of what the held valve would give, and LV-324501A
+    opens after it: the dip the board sees, and PIC-335201's output kicking by the whole of it.
+
+    Equation
+    --------
+        h = h_prev + (dt / tau) (u - h_prev)        explicit first-order lag, tau = LV_324501A_TAU_S
+    and h = u exactly where tau is zero (decision 224's header, to the bit).
+    """
+    if LV_324501A_TAU_S <= 0.0:
+        return output_pct
+    return position_pct + dt / LV_324501A_TAU_S * (output_pct - position_pct)
+
+
 # ======================================================================================
 # PIC-335201 and the unit
 # ======================================================================================
 
 def pic_335201() -> ProcessLoop:
     """PIC-335201, the header's pressure: reverse acting, in CAS on E1, its output LV-324501A's
-    stroke [%], seeded at the valve's design stroke on its vendor trim (decision 150)."""
+    stroke [%], seeded at the header's design stroke on its vendor trim (decisions 150 and 237)."""
     p = HEADER_P_DES_BARG
     return ProcessLoop(
         tag="PIC-335201", Kc=PIC_335201_KC, Ti=PIC_335201_TI_S, Td=PIC_335201_TD_S, act=+1.0,
-        mode="CAS", op=LV_324501A_OP_DES_PCT, sp=p, pv=p, pv1=p, pv2=p,
+        mode="CAS", op=LV_324501A_HEADER_OP_DES_PCT, sp=p, pv=p, pv1=p, pv2=p,
         op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=PT_335201_SPAN_BAR, Dz=PIC_335201_DZ_BAR)
 
 
@@ -299,8 +354,10 @@ class MeltHeaderResult:
     headers_online: int
     x_pct: float
     e1_barg: float
-    #: LV-324501A's stroke (PIC-335201's output), LV-324501B's (PC35.2.2 .6) and HV-335602's [%].
+    #: PIC-335201's output, LV-324501A's stroke behind its positioner, LV-324501B's (PC35.2.2 .6) and
+    #: HV-335602's [%].
     lv_a_pct: float
+    lv_a_position_pct: float
     lv_b_pct: float
     hv_pct: float
     #: The flows as fractions of PFD 402 [-]: forward (LV-324501A, FT-335401's), recycle
@@ -323,10 +380,11 @@ class MeltHeaderResult:
 
 @dataclass
 class MeltHeader:
-    """The header's state: its pressure the tick before and HV-335602's position."""
+    """The header's state: its pressure the tick before, HV-335602's position and LV-324501A's."""
 
     p_barg: float = HEADER_P_DES_BARG
     hv_pct: float = 0.0
+    lv_a_position_pct: float = LV_324501A_HEADER_OP_DES_PCT
 
     def step(self, pic: ProcessLoop, x_pct: float, headers_online: int, hic_335602_pct: float,
              pump_running: bool, avail_kgh: float, dt: float) -> MeltHeaderResult:
@@ -357,11 +415,15 @@ class MeltHeader:
         beta = recycle_fraction(h_b) if pump_running else 0.0
         hv = self.hv_pct
 
+        h_prev = self.lv_a_position_pct
+
         def forward(p: float) -> float:
-            # LV-324501A on PIC-335201's trial step at the header p (the loop not committed).
+            # LV-324501A behind its positioner on PIC-335201's trial step at the header p (neither
+            # committed).
             if not pump_running:
                 return 0.0
-            return forward_fraction(copy.copy(pic).step(p, dt, cas_sp=e1), beta, p)
+            return forward_fraction(positioner_pct(h_prev, copy.copy(pic).step(p, dt, cas_sp=e1), dt),
+                                    beta, p)
 
         def g(p: float) -> float:
             return forward(p) - nozzle_fraction(n, p) - hv_fraction(hv, p)
@@ -380,11 +442,13 @@ class MeltHeader:
             evals += more
             capped = True
         lv_a = pic.step(p, dt, cas_sp=e1)
+        self.lv_a_position_pct = positioner_pct(h_prev, lv_a, dt)
         phi_noz, phi_hv = nozzle_fraction(n, p), hv_fraction(hv, p)
         out = phi_noz + phi_hv
         self.p_barg = p
         return MeltHeaderResult(
-            p_barg=p, headers_online=n, x_pct=x_pct, e1_barg=e1, lv_a_pct=lv_a, lv_b_pct=h_b,
+            p_barg=p, headers_online=n, x_pct=x_pct, e1_barg=e1, lv_a_pct=lv_a,
+            lv_a_position_pct=self.lv_a_position_pct, lv_b_pct=h_b,
             hv_pct=hv, phi_forward=phi_a, phi_recycle=beta, phi_nozzles=phi_noz, phi_hv=phi_hv,
             forward_kgh=phi_a * P2_DES_KGH, recycle_kgh=beta * P2_DES_KGH,
             hv_share=min(phi_hv / out, 1.0) if out > 0.0 else 0.0,

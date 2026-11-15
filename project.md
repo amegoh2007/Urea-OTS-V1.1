@@ -3,7 +3,7 @@
 **Working directory:** `D:\Work\Urea Simulator V1.1`
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223)
-**Last updated:** 2026-11-14, sessions 111 and 112
+**Last updated:** 2026-11-15, session 116
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -16,13 +16,25 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   (`docs/history/phase-checklist.md`). The whole plant runs — units 321 to 329 and the parts of 335 V1
   models, 320K002 a boundary feed (decision 73) — on a headless engine with a single local console
   (decision 149). Every module under `ureasim/` is at or below 600 lines (decision 152). Trip 22.2 is removed
-  (decision 189). The 335 melt header is computed on AC4 PC35.2 (decision 224).
+  (decision 189). The 335 melt header is computed on AC4 PC35.2 (decision 224), LV-324501A on a 1 s positioner lag
+  and its sheet's 6.9 bar a inlet (decisions 236, 237); a restore opens it on the save's drain (decision 238).
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A four (A-33, A-38, A-40 and A-41), Section B ten (B-118 with B-120 folded
-  in, B-125 to B-128, B-133, B-135, B-136, B-145 and B-146), Section C none, 9 open data gaps. Every data gap
+* **Open.** `handoff.md`: Section A five (A-33, A-38, A-40, A-41 and A-50), Section B ten (B-118 with B-120
+  folded in, B-125 to B-128, B-133, B-135, B-136, B-145 and B-146), Section C none, 10 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`D:\Work\reports\DCS readback checklist.md`).
+* **Session 113 reviewed sessions 111 and 112** on their files (Part CXXIII; report and the plans for sessions 114
+  and 115 in `D:\Work\reports`, `Sessions 111 and 112 review s113.md`). The full suite on HEAD 4593bb2: 8 156 passed,
+  1 failed (A-40), none skipped. Session 112's 92.3 % S + B arms ring and were scored unsettled; the licensor's
+  bubble point follows the system pressure, which the engine's reactor cap does not separate from the inerts'.
+  328P007's run state contradicts P&ID 104 (A-41).
+* **Session 116 built A-51's choice** (Part CXXVI; decisions 236, 237): LV-324501A follows PIC-335201 on a 1 s
+  positioner lag inside the header solve (a stand-in, data gap 12) and takes its sheet's 6.9 bar a inlet. One header
+  valve now steps the header as the plant did on 5 November 2026 (ratio within 0.004, PIC-335201's kick within 0.4 %).
+  The seed moves PIC-335201's output and LV-324501A to 79.09 %. A restored exercise opens LV-324501A at the stroke
+  that passes its drain, on the header it restores (decision 238; A-56 raised and closed).
+  Scratch: `D:\Work\reports\Session_116_header`.
 * **B-118 in scratch, sessions 99 to 112** (As-Built Parts CX to CXIX and CXXII). Session 99 ran the gap
   resolution plan (decisions 182 to 188). On bundle A 92.3 % passes decision 180's test and the low holds latch;
   B-126 (b)'s species holdup removes the low holds' latch and loses 92.3 % on the cold branch (session 103).
@@ -38,19 +50,18 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   valves (the GRANULATION HEADERS panel on 324-1b), LV-324501A on 335P001's curve, LV-324501B and HV-335602, with
   PIC-335201 inside the solve and LIC-324501's X setting its set point (decisions 224 to 226; saves migrate), and
   a run state on the eight pump pairs that had none (decision 227), one commit each. Open from it: the four pairs'
-  L2 stops and 741 (A-41), LV-324501B's seat relay (B-145), 324F003's low-level protection (B-146). Suite on
-  463d7e6: 8 155 passed, 2 failed, A-40 and a fixture short of 323P003's run state (fixed in 000bdaa, that file
-  rerun, 2 passed). Scratch: `D:\Work\reports\Session_110_console`, `Session_111_console`.
+  L2 stops and 328P007's service (A-41), LV-324501B's seat relay (B-145), 324F003's low-level protection (B-146).
+  Scratch: `D:\Work\reports\Session_110_console`, `Session_111_console`.
 
 ## Next free numbers
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 113 | `docs/history/session-log.md` |
-| Decision | 205 | `docs/decisions.md` |
-| As-Built Part | CXXIII | the As-Built reference, appended at its end |
-| Handoff Section A | A-50 | `handoff.md` |
-| Handoff Sections B and C | B-150 | `handoff.md` |
+| Session | 117 | `docs/history/session-log.md` |
+| Decision | 210 | `docs/decisions.md` |
+| As-Built Part | CXXVII | the As-Built reference, appended at its end |
+| Handoff Section A | A-57 | `handoff.md` |
+| Handoff Sections B and C | B-156 | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers
 here before it writes anything else.
@@ -65,6 +76,9 @@ the console session uses only this row, cuts it to the numbers it used and marks
 | the console build, the melt header and the eight pump pairs (`Session 111 plan prompt s109.md`; claimed 2026-11-14, session 109) | 111, taken | 224 to 227, taken | CXXI, taken | B-145 and B-146, taken |
 | B-118, 322R001's loop (`B-118 plan prompt s107.md`'s successor; 2026-11-13) | 108, taken | none taken | CXVIII, taken | none taken |
 | B-118, the laws S and B in scratch (`Session 112 plan prompt s109.md`; claimed 2026-11-14, session 109) | 112, taken | none taken | CXXII, taken | none taken |
+| B-118, the wave session 112 left (`Session 114 plan prompt s113.md`; claimed 2026-11-15, session 113) | 114 | 205 to 209 | CXXIV | A-52, B-150 to B-152 |
+| the build: trips 35.1 / 35.3 / 35.4, 328P007, A-38's flags, A-50 (`Session 115 plan prompt s113.md`; 2026-11-15) | 115 | 228 to 235 | CXXV | A-53 to A-55, B-153 to B-155 |
+| A-51, the melt header's step on a header valve (claimed 2026-11-15, session 113) | 116, taken | 236 to 238, taken | CXXVI, taken | A-56, taken |
 
 ---
 

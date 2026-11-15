@@ -442,9 +442,9 @@ class SecondEvaporator:
         # ----- the vacuum: the false air on last tick's stroke, then PIC-324203 ----------
         fa = false_air_kgh(loops.vacuum.op)
         # The lost seal's air (B-107) on the level and LV-324501A's stroke of the tick before
-        # (PIC-335201's output on AC4's side, LIC-324501's on V1's), against the vacuum it enters;
-        # it reaches 324E005 with the false air.
-        stroke = loops.header.op if self.ac4_header else loops.level.op
+        # (behind its positioner on AC4's side, LIC-324501's output on V1's), against the vacuum it
+        # enters; it reaches 324E005 with the false air.
+        stroke = self.header.lv_a_position_pct if self.ac4_header else loops.level.op
         air = (seal_air_kgh(self.m_kg / F003_M_FULL_KG * 100.0, stroke, self.p_bara,
                             vendor=self.vendor_drain)
                if self.seal_air else 0.0)

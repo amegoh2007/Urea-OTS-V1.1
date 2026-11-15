@@ -7,7 +7,8 @@ the answer; then the refusals: a foreign class, a damaged document, a different 
 reference to an object the save does not hold. A save made before a piece of the model was removed
 still loads, its retired state dropped (`data.retired_state`), and so does every shipped exercise; a
 save made before the melt header was computed loads, its added state filled from the present model
-and its boundary header handed to the computed one (decision 226).
+and its boundary header handed to the computed one (decision 226), LV-324501A opening at the stroke
+that passes the save's drain on the header it restores (decision 238).
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ from pathlib import Path
 
 import pytest
 
+from ureasim.data import unit_335 as u335
 from ureasim.engine import snapshot
 from ureasim.engine.historian import flatten
 from ureasim.engine.plant import build_plant
@@ -102,6 +104,9 @@ def test_a_snapshot_from_a_different_model_is_refused_with_the_difference():
 
 #: The shipped exercises, the intro's LOAD list's fixed half (decision 171).
 SCENARIOS = Path(__file__).resolve().parents[2] / "scenarios"
+#: A shipped exercise's first tick against the header it adopts [bar]: the header solve's own
+#: convergence; measured within 9.7e-11 on all six (As-Built §CXXVI.7).
+PASSING_TICK1_BAR = 1e-9
 
 #: The class path a snapshot names for the synthesis trips.
 SYNTHESIS_TRIPS = "ureasim.engine.plant.synthesis_loop:SynthesisTrips"
@@ -148,6 +153,7 @@ def test_a_save_holding_trip_22_2_loads_without_it():
 #: The class paths a snapshot names for stage 2 and its loops.
 SECOND_EVAPORATOR = "ureasim.units.evaporation.second_evaporator:SecondEvaporator"
 SECOND_EVAPORATOR_LOOPS = "ureasim.units.evaporation.second_evaporator:SecondEvaporatorLoops"
+MELT_HEADER = "ureasim.units.finishing.melt_header:MeltHeader"
 
 
 def _before_the_header(plant, stroke=75.0, p_barg=3.6):
@@ -171,23 +177,105 @@ def _before_the_header(plant, stroke=75.0, p_barg=3.6):
 
 
 def test_a_save_made_before_the_melt_header_loads_on_the_computed_one():
-    """Decision 226: LV-324501A keeps the save's 75 % stroke as PIC-335201's output; the save's load,
-    its drain on V1's selector, 98.65 % of PFD 402, brings ten valves online, whose header passing it
-    stands at 3.406 bar g, PIC-335201's history on it; LIC-324501's output is the 30.31 % whose E1 is
-    that header; HIC-335602 takes its seed and the boundary header is gone; the plant then runs."""
+    """Decision 226: the save's load, its drain on V1's selector at the save's 75 % stroke, 98.65 %
+    of PFD 402, brings ten valves online, whose header passing it stands at 3.406 bar g,
+    PIC-335201's history on it; LIC-324501's output is the 30.31 % whose E1 is that header;
+    HIC-335602 takes its seed and the boundary header is gone. Decision 238: PIC-335201's output and
+    LV-324501A's position stand at the 78.21 % that passes the load at that header (the save's 75 %
+    before it), and the header holds on the first tick; the plant then runs."""
     _, plant = build_plant()
     back = snapshot.loads(_before_the_header(plant), build_plant()[1])
     loops, unit = back.loops["324E003"][0], back.units["324E003"]
     p = pytest.approx(3.4063, abs=1e-4)
-    assert loops.header.op == 75.0 and loops.level.op == pytest.approx(30.3138, abs=1e-4)
+    assert loops.header.op == pytest.approx(78.2055, abs=1e-4)
+    assert loops.level.op == pytest.approx(30.3138, abs=1e-4)
+    assert unit.header.lv_a_position_pct == loops.header.op
     assert (loops.header.pv, loops.header.pv1, loops.header.pv2, unit.header.p_barg) == (p, p, p, p)
     assert loops.header.sp == p and unit.ac4_header is True and loops.header.mode == "CAS"
     assert (back.operator["GRANULATION-HEADERS"], back.operator["HIC-335602"]) == (10, 0.0)
     assert "PIC-335201.barg" not in back.boundary
+    adopted = unit.header.p_barg
     sch, _ = build_plant()
     s = Scheduler(sch, back)
-    for _ in range(10):
+    assert s.tick().results["324E003"].header.p_barg == pytest.approx(adopted, abs=1e-9)
+    for _ in range(9):
         s.tick()
+
+
+def _before_the_positioner(plant, op=77.0, mode=None, pumps=True):
+    """``plant``'s save as decision 224's model wrote it: PIC-335201's output ``op``, no position."""
+    doc = json.loads(snapshot.dumps(plant))
+    doc["state"]["a"]["operator"]["$d"]["335P001"] = pumps
+    objects = _objects(doc["state"], {})
+    (header,) = objects[MELT_HEADER]
+    del header["a"]["lv_a_position_pct"]
+    (loops,) = objects[SECOND_EVAPORATOR_LOOPS]
+    loops["a"]["header"]["a"]["op"] = op
+    if mode is not None:
+        loops["a"]["header"]["a"]["mode"] = mode
+    return json.dumps(doc)
+
+
+def test_a_save_made_before_the_positioner_opens_the_valve_on_the_headers_drain():
+    """Decisions 236 and 238: a save made on decision 224's header holds PIC-335201's output, here
+    77 %, and no position for LV-324501A, and is refused as it stands; on load PIC-335201's output
+    and the position stand at the stroke that passes what the ten valves take at the saved 3.5 bar g,
+    the design's 79.09 % to the bit, and the header holds on the first tick (before decision 238 the
+    valve stood on the save's 77 %)."""
+    _, plant = build_plant()
+    text = _before_the_positioner(plant)
+    with pytest.raises(snapshot.SnapshotError):
+        snapshot.check_compatible(snapshot.decode_state(json.loads(text)["state"]), build_plant()[1])
+    back = snapshot.loads(text, build_plant()[1])
+    assert (back.units["324E003"].header.lv_a_position_pct, back.loops["324E003"][0].header.op) == (
+        u335.LV_324501A_HEADER_OP_DES_PCT, u335.LV_324501A_HEADER_OP_DES_PCT)
+    sch, _ = build_plant()
+    s = Scheduler(sch, back)
+    assert s.tick().results["324E003"].header.p_barg == pytest.approx(3.5, abs=1e-9)
+    for _ in range(9):
+        s.tick()
+
+
+def test_a_save_made_before_the_positioner_in_man_keeps_its_output():
+    """Decision 238: PIC-335201 in MAN in the save, its 77 % the operator's: LV-324501A stands on it
+    as saved, PIC-335201 still in MAN."""
+    _, plant = build_plant()
+    back = snapshot.loads(_before_the_positioner(plant, mode="MAN"), build_plant()[1])
+    loops = back.loops["324E003"][0]
+    assert back.units["324E003"].header.lv_a_position_pct == 77.0 == loops.header.op
+    assert loops.header.mode == "MAN"
+
+
+def test_a_save_made_before_the_positioner_with_both_pumps_stopped_keeps_its_output():
+    """Decision 238: 335P001A and B both stopped in the save, PIC-335201's 77 % the loop's own, not a
+    drain: LV-324501A stands on it as saved."""
+    _, plant = build_plant()
+    back = snapshot.loads(_before_the_positioner(plant, pumps=False), build_plant()[1])
+    assert back.operator["335P001"] is False
+    assert back.units["324E003"].header.lv_a_position_pct == 77.0 == back.loops["324E003"][0].header.op
+
+
+def test_a_save_made_while_lv_324501a_travels_keeps_its_position_and_replays():
+    """Decision 236: saved 0.5 s after an eleventh header valve came online, LV-324501A stands
+    1.31 % behind PIC-335201's output; restored, the position and the output come back as saved,
+    and the header then replays the saved plant's to the bit."""
+    sch, plant = build_plant()
+    s = Scheduler(sch, plant)
+    s.tick()
+    plant.operator["GRANULATION-HEADERS"] = 11
+    for _ in range(5):
+        s.tick()
+    saved = (plant.units["324E003"].header.lv_a_position_pct, plant.loops["324E003"][0].header.op)
+    assert saved[1] - saved[0] == pytest.approx(1.3109, abs=1e-4)
+    back = snapshot.loads(snapshot.dumps(plant), build_plant()[1])
+    assert (back.units["324E003"].header.lv_a_position_pct,
+            back.loops["324E003"][0].header.op) == saved
+    runs = []
+    for p in (plant, back):
+        condensing_letdown._CACHE.clear()
+        sc = Scheduler(sch, p)
+        runs.append([vars(sc.tick().results["324E003"].header).copy() for _ in range(100)])
+    assert runs[0] == runs[1]
 
 
 def test_a_reference_to_an_object_the_save_does_not_hold_is_refused():
@@ -207,3 +295,15 @@ def test_every_shipped_exercise_loads_and_holds_no_retired_state(path):
     assert "i_22_2" not in trips["a"]
     back = snapshot.load(str(path), build_plant()[1])
     assert set(back.units["SYN-TRIPS"].latched) == {"21_2", "21_8", "21_10"}
+
+
+@pytest.mark.parametrize("path", sorted(SCENARIOS.glob("*.json")), ids=lambda p: p.stem)
+def test_every_shipped_exercise_opens_on_the_header_it_restores(path):
+    """Decision 238: each shipped exercise, saved before decision 224, opens LV-324501A at the stroke
+    that passes its drain at the header it adopts, and the first tick's header stands on that header
+    (decision 226's kept stroke dipped it 0.10 to 0.45 bar, As-Built §CXXVI.4)."""
+    back = snapshot.load(str(path), build_plant()[1])
+    adopted = back.units["324E003"].header.p_barg
+    sch, _ = build_plant()
+    s = Scheduler(sch, back)
+    assert s.tick().results["324E003"].header.p_barg == pytest.approx(adopted, abs=PASSING_TICK1_BAR)

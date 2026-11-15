@@ -5060,3 +5060,26 @@ session 108's rig (commit 18a7656, its proofs and nulls passed), arms at 92.3 an
 the top boils 1.8 t/h, off the licensor's windows). S alone moves neither the rise nor the latch; B lifts the rise;
 on the cold start B sits on its 180 bar a bound and adds no lift. Not run: Track 0's desk checks, step L2's
 +-0.1 bar steps, Track 4's clamp. B-118 and B-125 rewritten. Part CXXII; runs `D:\Work\reports\B118_s112`.
+
+### Session 113 — sessions 111 and 112 reviewed on their files; the header's step researched (2026-11-15)
+
+A review (Fable, then Opus with the Fable advisor); nothing under `ureasim/`, `tests/` or `tools/` changed; no decision.
+The full suite on HEAD 4593bb2: 8 156 passed, 1 failed (A-40), none skipped. Session 111's seed moves 380 old leaves
+by at most 1.3e-4 relative against 89428cc: its log entry's "no other leaf moves" is corrected (§CXXIII.2). Session
+112's 92.3 % S + B arms ring on a 2 300-2 400 s period and were scored unsettled; S drifts 0.20 K on the seed. The
+licensor's bubble point follows the system pressure, the synthesis pressure less the inerts (§CXXIII.5); trips 35.1,
+35.3 and 35.4's inputs are read (§CXXIII.6); P&ID 104 takes 740 and 741 past 328P007 (§CXXIII.4). The header's step on
+one valve is a third of the plant's 5 November dip (§CXXIII.9). Raised A-50 and A-51; claimed sessions 114 to 116.
+Part CXXIII; report and the session 114 and 115 prompts in `D:\Work\reports`; scratch `D:\Work\reports\Session_113_review`.
+
+### Session 116 — LV-324501A's positioner and its sheet inlet on the melt header (2026-11-15)
+
+Opus with the Fable advisor, in session 113's conversation. The process engineer chose A-51's option (c), tau 1 s:
+decision 236 puts LV-324501A on a first-order positioner lag inside the header solve (tau 0 is decision 224 to the
+bit: 7 400 ticks against HEAD's module, none differing); decision 237 takes its sheet's 6.9 bar a inlet, 2.387 bar on
+the design header, the design stroke 79.09 %. One header valve at 13:30 on 5 November 2026: ratio 0.921 and 0.929,
+kick 4.9 and 4.4 % (plant 0.918 and 0.932, 5.3 and 4.4 %); the eleventh valve dips 3.5 to 3.2475 bar g, no ring. The
+seed moves the output and LV-324501A; 369 far leaves by at most 1.6e-6 relative. A-51 closed; data gap 12 raised. A-56,
+the dip a restore then opened with, raised and closed on the engineer's choice (b): decision 238 opens LV-324501A at
+the stroke passing the save's drain (six exercises within 1e-10 bar). The suite: 8 179 of 8 180 pass, A-40 failing
+(the equivalence groups not rerun after decision 238). Part CXXVI; scratch `D:\Work\reports\Session_116_header`.

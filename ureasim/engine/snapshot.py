@@ -299,13 +299,21 @@ def adopt_added_state(plant: PlantState, reference: PlantState) -> None:
 
     Each added operator entry is seeded and each added attribute filled from ``reference``, a
     plant the present model builds, at the same path; a retired boundary value is dropped and
-    handed to the engine's adopter. A save holding all of it is left as it is.
+    handed to the engine's adopter, and a header saved before LV-324501A had a positioner opens the
+    valve at the stroke that passes the save's drain (decisions 236 and 238). A save holding all of
+    it is left as it is.
     """
     retired = {k: plant.boundary.pop(k) for k in RETIRED_BOUNDARY if k in plant.boundary}
     for key in ADDED_OPERATOR:
         if key not in plant.operator and key in reference.operator:
             plant.operator[key] = copy.deepcopy(reference.operator[key])
+    unit = plant.units.get("324E003")
+    header = _attributes(unit).get("header") if unit is not None else None
+    lacks_position = header is not None and "lv_a_position_pct" not in _attributes(header)
     _fill_added(plant, reference, set())
+    if lacks_position:
+        from ureasim.engine.plant.evaporation import adopt_header_position
+        adopt_header_position(plant)
     if "PIC-335201.barg" in retired:
         from ureasim.engine.plant.evaporation import adopt_boundary_header
         adopt_boundary_header(plant, retired["PIC-335201.barg"])

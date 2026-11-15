@@ -57,10 +57,10 @@ DIFFERENTIALS = {
                                 stripper_sump.LV_322501_P_DOWN_BARA),
     "LV_324501_DP_DES_BAR": (unit_324, unit_324.LV_324501_P_UP_BARA,
                              unit_324.LV_324501_P_DOWN_BARA),
-    # The 335 melt header (decisions 224 and 225): LV-324501A's design differential on 335P001's
-    # curve, and HV-335602's on its one sizing case.
-    "LV_324501A_DP_DES_BAR": (unit_335, unit_324.LV_324501_P_UP_BARA,
-                              unit_324.LV_324501_P_DOWN_BARA),
+    # The 335 melt header (decisions 224, 225 and 237): LV-324501A's design differential on
+    # 335P001's curve, its sheet's inlet less the design header, and HV-335602's on its one sizing
+    # case.
+    "LV_324501A_DP_DES_BAR": (unit_335, unit_324.LV_324501_P_UP_BARA, unit_335.HEADER_P_DES_BARA),
     "HV_335602_DP_CASE_BAR": (unit_335, unit_335.HV_335602.normal_case.p1_bara,
                               unit_335.HV_335602.normal_case.p2_bara),
 }

@@ -106,19 +106,21 @@ def test_the_trip_through_the_train_decided_divergence(v1):
     condensing at 54.0 C and sends 29.1 kg/h (the chests on their vendor trims, decided
     2026-10-14, and LV-324501A on its, decision 150; 1296 kg/h, 135.9 and 32.1 C on V1's linear
     valves; 1294 kg/h, 135.0 and 32.15 C, the port's 29.05 kg/h, on the Neldisc chord before decision
-    170, which feeds both trains the second stage's vapour of PV-329212 on the S-Disc table)."""
+    170, which feeds both trains the second stage's vapour of PV-329212 on the S-Disc table). Before
+    decisions 236 and 237 (LV-324501A's positioner and its sheet inlet) the second stage sent
+    1277.205 kg/h and V1's train vented 136.416."""
     r1, r2, tr = _plant(1201, cut_at=5)[1200]
     mot = (tr.streams_kgh["924"], tr.streams_kgh["927"], tr.streams_kgh["929"])
     args = (MEVAP_DES_KGH, r1.m_vap_kgh + r1.m_boil_kgh, r2.m_vap_kgh + r2.m_boil_kgh,
             r1.false_air_kgh, r2.false_air_kgh)
     assert (args[1], args[2]) == (pytest.approx(105.722, abs=1e-3),
-                                  pytest.approx(1277.205, abs=1e-3))
+                                  pytest.approx(1277.184, abs=1e-3))
     theirs = v1["vacuum_train_324"](*args, *mot, cw_factors={}, p_e002_bara=r1.p_bara,
                                     p_e005_bara=r2.p_bara, sub_703=None)
     mine = vt.vacuum_train(*args, vt.MotiveSteam(*mot), p_324e002_bara=r1.p_bara,
                            p_324e005_bara=r2.p_bara)
     assert (theirs["streams_kgh"]["722"], theirs["nodes"]["324E007"]["t_vent_c"]) == (
-        pytest.approx(136.416, abs=1e-3), pytest.approx(32.020, abs=1e-3))
+        pytest.approx(136.417, abs=1e-3), pytest.approx(32.020, abs=1e-3))
     assert (mine.streams_kgh["722"], mine.nodes["324E007"].t_vent_c) == (
         pytest.approx(29.080, abs=1e-3), pytest.approx(54.009, abs=1e-3))
 

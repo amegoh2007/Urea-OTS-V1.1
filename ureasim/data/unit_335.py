@@ -29,15 +29,16 @@ from __future__ import annotations
 import math
 
 from ureasim.core.packet import normalise_solution_mass_fraction as _w_norm
-from ureasim.data.control_valves import HV_335602
+from ureasim.core.units_of_measure import ATM_BARA
+from ureasim.data.control_valves import HV_335602, LV_324501A
 from ureasim.data.unit_324 import (
-    LV_324501_P_DOWN_BARA,
+    LV_324501_DP_DES_BAR,
     LV_324501_P_UP_BARA,
     LV_324501_RHO_KGM3,
     P2_DES_KGH,
     PIC_335201_DES_BARG,
 )
-from ureasim.data.valve_sizing import full_stroke_m3h
+from ureasim.data.valve_sizing import design_stroke_pct, full_stroke_m3h
 
 #: PFD 402G, the raw melt into unit 335 at the granulation case [kg/h].
 PFD_402G_KGH = 85405.0
@@ -99,9 +100,11 @@ FIC_335405_SP_HI_TH = 1.0
 HEADER_VALVES_MAX = 12
 HEADER_VALVES_DES = 10
 
-#: The design header [bar g] (V1's approved G12 datum, ``unit_324.PIC_335201_DES_BARG``) and the
-#: design melt in it, PFD 402 at the loop summary's 1221 kg/m3 [m3/h], 62.19.
+#: The design header [bar g] (V1's approved G12 datum, ``unit_324.PIC_335201_DES_BARG``), the same in
+#: bar a on the engine's atmosphere, and the design melt in it, PFD 402 at the loop summary's
+#: 1221 kg/m3 [m3/h], 62.19.
 HEADER_P_DES_BARG = PIC_335201_DES_BARG
+HEADER_P_DES_BARA = HEADER_P_DES_BARG + ATM_BARA
 HEADER_Q_DES_M3H = P2_DES_KGH / LV_324501_RHO_KGM3
 
 #: PT-335201, the header's transmitter: 0 to 4 bar g (UD-MR-335-EC-0001 rev 01, P 335201, PDF page
@@ -137,12 +140,32 @@ LIC_324501_X_DES_PCT = round((HEADER_P_DES_BARG - PC35_E1_BIAS_BARG) * PC35_XTAB
 #: 335P001A / B, the melt pumps (KSB, UD-AU-335-EC-0039): the head curve as read on the scanned
 #: datasheet, H = H0 - c (Q / Q_ref)^2 [m, m3/h] — shut-off about 71 m, the duty marker about 80 m3/h
 #: and 65 m on the middle of the three curves; the impeller legend is unreadable (As-Built §CXIX.4;
-#: open data gap). Only the curve's droop enters the header: LV-324501A's inlet is the design's, the
-#: loop summary's 3.2 bar differential on the 3.5 bar g header, moved by the head the flow costs.
+#: open data gap). Only the curve's droop enters the header: LV-324501A's inlet is the design's,
+#: moved by the head the flow costs.
 P001_H0_M = 71.0
 P001_DROOP_M = 5.0
 P001_Q_REF_M3H = 80.0
-LV_324501A_DP_DES_BAR = LV_324501_P_UP_BARA - LV_324501_P_DOWN_BARA
+
+#: LV-324501A on the header (decided 2026-11-15, decision 237): its inlet at design is the loop
+#: summary's 6.9 bar a (L 324501, sheet 2/4), so its differential on the design header is 6.9 less
+#: 4.51 bar a, 2.39 bar, where the sheet's sizing case runs it to 3.7 bar a, 3.2 bar
+#: (``unit_324.LV_324501_DP_DES_BAR``, which the seal's blow-through and V1's side keep). The header's
+#: design stroke is where the trim passes the design drain across that differential (decision 150's
+#: rule), 79.09 % — the same trim as 75.35 % across 3.2 bar. On the 5 November 2026 trends the plant
+#: runs LV-324501A within 1.5 % of this form at four windows, where the sheet's 3.2 bar on the
+#: 3.5 bar g header (an inlet of 7.71 bar a) runs it 2.4 to 4.3 % low (As-Built §CXXIII.9).
+LV_324501A_DP_DES_BAR = LV_324501_P_UP_BARA - HEADER_P_DES_BARA
+LV_324501A_HEADER_OP_DES_PCT = design_stroke_pct(
+    LV_324501A, P2_DES_KGH * math.sqrt(LV_324501A.normal_case.rho / LV_324501_RHO_KGM3)
+    * math.sqrt(LV_324501_DP_DES_BAR / LV_324501A_DP_DES_BAR))
+
+#: LV-324501A's positioner [s]: the valve follows PIC-335201's output as a first-order lag. No
+#: document gives it — PIC-335201's filter is 0.0 s (the tuning table), PT-335201's loop sheet prints
+#: no damping, AC4's cycle time is not in the archive and Flowserve gives only the trip closure, under
+#: 3 s — so it is the process engineer's stand-in (2026-11-15, decision 236; open data gap 12), the
+#: better of 1 and 2 s on the 5 November 2026 header steps at 13:30:06 and 13:30:48 (As-Built
+#: §CXXIII.9): the dip's ratio and PIC-335201's output kick.
+LV_324501A_TAU_S = 1.0
 
 #: HV-335602 on Flowserve's Pos. 150 (``control_valves.HV_335602``): its downstream pressure [bar a]
 #: and differential [bar] on its one case, and what it passes wide open across that differential at
@@ -162,11 +185,12 @@ HV_335602_CLOSE_S = 25.0
 HIC_335602_DES_PCT = 0.0
 
 __all__ = [
-    "HEADER_VALVES_MAX", "HEADER_VALVES_DES", "HEADER_P_DES_BARG", "HEADER_Q_DES_M3H",
+    "HEADER_VALVES_MAX", "HEADER_VALVES_DES", "HEADER_P_DES_BARG", "HEADER_P_DES_BARA", "HEADER_Q_DES_M3H",
     "PT_335201_SPAN_BAR", "PIC_335201_KC", "PIC_335201_TI_S", "PIC_335201_TD_S",
     "PIC_335201_DZ_BAR", "PC35_XTAB", "PC35_E1_YTAB", "PC35_E1_DIVISOR", "PC35_E1_BIAS_BARG",
     "PC35_LVB_YTAB", "LIC_324501_X_DES_PCT", "P001_H0_M", "P001_DROOP_M", "P001_Q_REF_M3H",
-    "LV_324501A_DP_DES_BAR", "HV_335602_P_DOWN_BARA", "HV_335602_DP_CASE_BAR",
+    "LV_324501A_DP_DES_BAR", "LV_324501A_HEADER_OP_DES_PCT", "LV_324501A_TAU_S",
+    "HV_335602_P_DOWN_BARA", "HV_335602_DP_CASE_BAR",
     "HV_335602_FULL_KGH", "HV_335602_OPEN_S", "HV_335602_CLOSE_S", "HIC_335602_DES_PCT",
     "PFD_402G_KGH", "PFD_697_KGH", "PFD_697_T_C", "PFD_697_RHO_KGM3", "W_697", "UF_RATIO_DES",
     "UF85_DES_KGH", "FIC_335405_OP_DES_PCT", "FT_335405_TAU_S", "FFIC_335406_KC",

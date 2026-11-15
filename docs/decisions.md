@@ -1091,6 +1091,7 @@ decision on an item.
      the header valves online are the number whose header passing that drain stands nearest 3.5 bar g without
      rising above E1's 3.8 bar g ceiling; LV-324501A keeps the save's stroke and LIC-324501's X becomes the one whose
      E1 is that header. The six shipped exercises load on 9, 9, 10, 10, 11 and 11 valves. As-Built §CXXI.5.
+     LV-324501A's stroke on restore: decision 238.
 227. **Each pump pair the console opens holds a run state** (2026-11-14, the process engineer's instruction I-4; handoff
      A-41). `data/operator_commands.RUN_STATE_PAIRS` lists the pairs whose flow follows their run state: 322P002, as
      V1 holds it, and the pairs session 111 builds. Each machine is seeded as V1 seeds its own pairs (A running, B
@@ -1099,3 +1100,30 @@ decision on an item.
      START / STOP faceplate. A save made before a pair existed is filled from a fresh plant (decision 226's
      mechanism). No interlock stop is built on a limit no archive gives (the L2 levels of LT-328501, LT-328503,
      LT-328505 and LY-324501). As-Built §CXXI.8.
+236. **LV-324501A follows PIC-335201's output on a 1 s positioner lag inside the header solve** (2026-11-15, the
+     process engineer's choice (c) on handoff A-51, closed). `units/finishing/melt_header.py`: on each trial header
+     the valve stands at h = h_prev + (dt / tau)(u(P) - h_prev), u PIC-335201's trial step, and both are committed at
+     the root; tau = 0 is decision 224's header to the bit (7 400 ticks over valve steps, LV-324501B open, HV-335602
+     travelling, the pumps stopped, the heel cap and MAN: none differs). tau is `data/unit_335.LV_324501A_TAU_S`, 1 s,
+     a stand-in (data gap 12): no document gives the positioner's response. The seal's blow-through rides the
+     position; `MeltHeaderResult.lv_a_pct` stays PIC-335201's output and `lv_a_position_pct` is the valve's. A save
+     made before the position existed stands the valve on the save's PIC-335201 output (decision 226's mechanism,
+     `engine.plant.evaporation.adopt_header_position`). As-Built §CXXVI.1, §CXXVI.3, §CXXVI.4. The restored stroke:
+     decision 238.
+237. **LV-324501A's inlet stands at its sheet's 6.9 bar a at design** (2026-11-15, the same choice). `data/unit_335`:
+     the valve's differential on the 3.5 bar g header is 6.9 - (3.5 + p_atm) = 2.387 bar (3.2 before: the sheet's
+     sizing case moved onto the header, an inlet of 7.71 bar a); kappa 0.152 (0.113); the header's design stroke, where
+     the trim passes the design drain across that differential, 79.09 % (75.35), the same trim, so
+     `unit_324.LV_324501A_OP_DES_PCT` and `LV_324501_DP_DES_BAR` stay for V1's side and the seal; the dead head
+     6.25 bar g (7.06). With decision 236 a header valve's step lands within 0.004 of the plant's dip ratio and 0.4 % of
+     PIC-335201's kick on 5 November 2026 at 13:30, and the stroke within 1.5 % at four trend windows (2.4 to 4.3 % low
+     before). As-Built §CXXIII.9, §CXXVI.2.
+238. **A restored exercise opens LV-324501A at the stroke that passes its drain** (2026-11-15, the process engineer's
+     choice (b) on handoff A-56, closed). It replaces decision 226's "LV-324501A keeps the save's stroke" and decision
+     236's "stands the valve on the save's PIC-335201 output". `units/finishing/melt_header.passing_stroke_pct`
+     inverts the forward law (round trip within 2e-14 %). A save made before decision 224: PIC-335201's output and the
+     position stand at the stroke that passes the save's load at the adopted header. A save made on decision 224's
+     header: at the stroke that passes what the header valves online and HV-335602 took at the saved header (the save
+     holds no drain; their laws are unchanged), except with PIC-335201 in MAN or both 335P001 pumps stopped, where the
+     valve stands on the save's output. A save holding the position is untouched. The six shipped exercises open on
+     their adopted header within 1e-10 bar (0.10 to 0.45 bar dips before). As-Built §CXXVI.7.

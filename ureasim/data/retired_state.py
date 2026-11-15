@@ -20,7 +20,8 @@ a save refers to it.
 
 The 335 melt header, computed since 2026-11-14 (decision 224): PIC-335201's boundary pressure
 retired, the granulator's header valves and HIC-335602 added to what the operator holds, and stage
-2's header state and PIC-335201's loop added to its unit and its loops (decision 226).
+2's header state and PIC-335201's loop added to its unit and its loops (decision 226). LV-324501A's
+positioner, added to the header's state on 2026-11-15 (decision 236).
 """
 
 from __future__ import annotations
@@ -48,8 +49,11 @@ ADDED_OPERATOR = ("GRANULATION-HEADERS", "HIC-335602", "335P002", "335P002A", "3
                   "323P003", "323P003A", "323P003B", "335P001", "335P001A", "335P001B")
 
 #: Attributes a save made before they existed lacks, by the class path a snapshot names, filled
-#: from the present model's object at the same path. source = decision 224 (2026-11-14).
+#: from the present model's object at the same path. source = decision 224 (2026-11-14) and
+#: decision 236 (LV-324501A's positioner, 2026-11-15; the engine then opens the valve at the stroke
+#: that passes the save's drain, decision 238).
 ADDED_ATTRIBUTES = MappingProxyType({
     "ureasim.units.evaporation.second_evaporator:SecondEvaporatorLoops": ("header",),
     "ureasim.units.evaporation.second_evaporator:SecondEvaporator": ("ac4_header", "header"),
+    "ureasim.units.finishing.melt_header:MeltHeader": ("lv_a_position_pct",),
 })

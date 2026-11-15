@@ -32,12 +32,14 @@ from ureasim.units.evaporation.melt_route import selector_drain
 from ureasim.units.finishing import melt_header as mh
 from ureasim.units.finishing import uf85_dosing as uf
 
-__all__ = ["MOTIVE", "TRAIN", "DOSING", "units", "steps", "tears"]
+__all__ = ["MOTIVE", "TRAIN", "DOSING", "PUMP_PAIR", "units", "steps", "tears"]
 
 #: The two motive valves' step, and the vacuum train's, by the names the schedule gives them.
 MOTIVE = "HV-329605/6"
 TRAIN = "324E002-E007"
 DOSING = "335"
+#: 335P001A / B's run state, True while either runs (decision 227): the header's pumps.
+PUMP_PAIR = "335P001"
 
 
 def units() -> tuple[dict, dict]:
@@ -60,18 +62,20 @@ def adopt_boundary_header(plant, p_335201_barg: float) -> None:
     passing that drain, stands nearest the design's 3.5 bar g without rising above E1's 3.8 bar g
     ceiling (I-3: the valves proportional to the load, to hold 3.2 to 3.8 bar g; ten at design). A
     header above the ceiling would leave LIC-324501 at full E1 and the excess on LV-324501B. The
-    header starts at that pressure, with PIC-335201's history on it and LV-324501A at the save's
-    stroke, and LIC-324501's output becomes the X whose E1 is that header. A save draining nothing
-    keeps the seeded valves and its header; a drain no number of valves can hold under the ceiling
-    takes all twelve.
+    header starts at that pressure, with PIC-335201's history on it, and LIC-324501's output becomes
+    the X whose E1 is that header. PIC-335201's output and LV-324501A's position stand at the stroke
+    that passes the save's drain at that header (decision 238, which replaced decision 226's save's
+    stroke: on the header's law that stroke passes less, and the header opened with a dip), so the
+    header balances on the first tick. A save draining nothing keeps the seeded valves and its
+    header, LV-324501A shut; a drain no number of valves can hold under the ceiling takes all twelve.
 
     Equation: P(N) = P_des (N_des L / N)^2, N = argmin |P(N) - P_des| over the N in 1 to 12 with
-    P(N) <= E1(100 %).
+    P(N) <= E1(100 %); h_A = `passing_stroke_pct`(L, beta(X), P(N)).
     """
     loops, unit = plant.loops["324E003"][0], plant.units["324E003"]
     p = max(float(p_335201_barg), 0.0)
     stroke = clamp(loops.level.op, 0.0, 100.0)
-    drain, _recycle, lv_a, _lv_b = selector_drain(stroke, p, unit.vendor_drain, float("inf"))
+    drain, _recycle, _lv_a, _lv_b = selector_drain(stroke, p, unit.vendor_drain, float("inf"))
     load = drain / P2_DES_KGH
     if load > 0.0:
         def header(k: int) -> float:
@@ -81,10 +85,45 @@ def adopt_boundary_header(plant, p_335201_barg: float) -> None:
         plant.operator[GRANULATION_HEADERS_TAG] = n
         p = header(n)
     loops.level.op = mh.x_for_setpoint(p)
-    loops.header.op = lv_a
+    loops.header.op = unit.header.lv_a_position_pct = mh.passing_stroke_pct(
+        load, _recycle_phi(plant, loops.level.op), p)
     loops.header.pv = loops.header.pv1 = loops.header.pv2 = p
     loops.header.sp = mh.e1_setpoint_barg(loops.level.op)
     unit.header.p_barg = p
+
+
+def _recycle_phi(plant, x_pct: float) -> float:
+    # LV-324501B's share on LIC-324501's output X, as the header's step takes it: none with both
+    # 335P001 pumps stopped.
+    if not plant.operator.get(PUMP_PAIR, True):
+        return 0.0
+    return mh.recycle_fraction(mh.lv_b_stroke_pct(x_pct))
+
+
+def adopt_header_position(plant) -> None:
+    """Open LV-324501A on a save made before it had a positioner (decisions 236 and 238).
+
+    Process utility
+    ---------------
+    An exercise saved on decision 224's header held PIC-335201's output, which was then the valve's
+    stroke, on the inlet decision 237 has since moved: at that stroke the valve now passes less and
+    the header would open with a dip. The save holds no drain, but its header was balanced, so the
+    drain is what the header valves online and HV-335602 took at the saved header (their laws are
+    unchanged). PIC-335201's output and the valve's position stand at the stroke that passes it, so
+    the header balances on the first tick. With PIC-335201 in MAN, or both 335P001 pumps stopped,
+    the output is the operator's hand value or the loop's wind-up, not a drain, and the valve stands
+    on it as saved.
+
+    Equation: h_A = `passing_stroke_pct`(phi_noz(N, P) + phi_hv(h_hv, P), beta(X), P).
+    """
+    unit, loops = plant.units["324E003"], plant.loops["324E003"][0]
+    header, pic = unit.header, loops.header
+    if pic.mode != "MAN" and plant.operator.get(PUMP_PAIR, True) and header.p_barg > 0.0:
+        n = int(clamp(plant.operator.get(GRANULATION_HEADERS_TAG, HEADER_VALVES_DES), 0,
+                      HEADER_VALVES_MAX))
+        drain = mh.nozzle_fraction(n, header.p_barg) + mh.hv_fraction(header.hv_pct, header.p_barg)
+        pic.op = mh.passing_stroke_pct(drain, _recycle_phi(plant, loops.level.op), header.p_barg)
+    header.lv_a_position_pct = pic.op
 
 
 def _motive(plant, a, dt):
@@ -143,7 +182,7 @@ def steps() -> dict:
             "p_discharge_bara": State(TRAIN, "p_324e006_bara"),
             "t_vent_324e005_c": State(TRAIN, "lag_state.324E005"),
             "headers_online": Operator("GRANULATION-HEADERS"),
-            "hic_335602_pct": Operator("HIC-335602"), "p001_running": Operator("335P001")},
+            "hic_335602_pct": Operator("HIC-335602"), "p001_running": Operator(PUMP_PAIR)},
             _324e003),
         DOSING: Step(DOSING, "UF85 dosing, FFIC-335406 and FIC-335405", "335", 30, {
             "route": Result(e003, "route"), "p002_running": Operator("335P002")}, _uf85),
