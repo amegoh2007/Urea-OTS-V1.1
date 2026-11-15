@@ -180,6 +180,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from ureasim.control.interlocks import low_level_stop
 from ureasim.control.process_loop import FlowLoop, ProcessLoop
 from ureasim.control.valve import cv_fraction
 from ureasim.core.node import stable_pressure_step, vapour_volume_m3, vessel_dpdt
@@ -481,12 +482,7 @@ class FlashCondenser:
         # 2026-10-14, handoff B-93): the motor blocks' interlock, with no latch the sheets do not
         # draw — nothing is drawn, and the pumps run again once the level clears the limit by its
         # hysteresis (B-96, decided 2026-10-15).
-        if self.l2_pct is None:
-            self.p008_tripped = False
-        elif self.p008_tripped:
-            self.p008_tripped = level < self.l2_pct + self.l2_hyst_pct
-        else:
-            self.p008_tripped = level < self.l2_pct
+        self.p008_tripped = low_level_stop(self.p008_tripped, level, self.l2_pct, self.l2_hyst_pct)
         tripped = self.p008_tripped
         if tripped or not pump_running:
             m_718a = m_718b = 0.0

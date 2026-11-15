@@ -25753,7 +25753,8 @@ switch, ``l2_stop`` (False, V1's, is no stop), and reads its L2 from `data/low_l
 carries the switch and never the stand-in, so a restored exercise stops on the limit the model holds then
 (`tests/engine/test_snapshot.py`). The stop state is unit state (``p002_stopped``, ``p006_stopped``,
 ``p007_stopped``, ``p001_stopped``) and, with ``l2_stop``, is filled on a save made before it
-(`data/retired_state.ADDED_ATTRIBUTES`).
+(`data/retired_state.ADDED_ATTRIBUTES`). 323P008's stop calls the same function since the code review, its
+comparison unchanged.
 The packet's ``PUMPS`` block publishes each machine's run feedback as ``on``, off while its stop holds the pair
 (323P008's trip as well), and the operator's command as ``cmd`` (`engine/packet/status.pumps`, from the code
 review): the icon and the trend show the feedback; the START / STOP faceplate reads STOPPED (INTERLOCK) and keeps
