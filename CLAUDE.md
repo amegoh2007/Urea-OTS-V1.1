@@ -9,7 +9,7 @@ any file. They override habit, convenience and any "quicker way" that conflicts 
 
 `Urea Simulator V1.1` is a **ground-up rewrite** of the Urea Plant Operator Training Simulator
 (OTS) that lives in `E:\Simulator\Urea Simulation` (read from its copy `D:\Work\Urea Simulation V1`,
-decision 223; the V1 files the suite reads are copied into `tests/equivalence/v1_reference`, decision 210,
+decision 223; the V1 files the suite reads are copied into `Tests and Reports/tests/equivalence/v1_reference`, decision 210,
 so V1.1 runs and tests without V1). The old project grew organically ("vibe coded"):
 a 12,500-line `main.py` with a 4,100-line `step_sim()` function, five near-duplicate `main_*.py`
 backups, ~40 `debug_*.py` scratch files, and a browser HMI in hand-written HTML/JS.
@@ -75,7 +75,7 @@ This is the house style. It is not negotiable.
    `hmi` must never compute a bubble point. `ureasim/data`, rule 7's constants, sits beside the
    ranking between `control` and `units` (2026-11-11, decision 182): it may import `thermo`,
    `core` and `control`, and `thermo`, `core` and `control` read nothing from it, except
-   `thermo/empirical.py`'s read of the leaf `data/design_point.py`. `tests/test_layering.py`
+   `thermo/empirical.py`'s read of the leaf `data/design_point.py`. `Tests and Reports/tests/test_layering.py`
    enforces these directions and rule 3.
 3. **The engine is headless. Nothing at or below `ureasim/net` may import Qt.**
    The simulator has a single local console (decision 149), and the engine still runs headless
@@ -204,7 +204,7 @@ of history; it now reads the state. These rules keep it so, and they bind as the
 4. **A session-log entry** is at most 12 lines: the date, what was decided, built and measured, and
    the Part and the decisions that hold it.
 5. **Read by grep.** Grep, then read the section, never the file. Send a long run's output to a file
-   in the scratchpad and read its tail. Do not print a document to check an edit.
+   in the session's scratch folder (§6) and read its tail. Do not print a document to check an edit.
 6. **A document over its ceiling** is cut back in the same session: the excess is history, and it is
    already in the As-Built Part it cites.
 
@@ -234,7 +234,7 @@ Resolution order for any datum:
    - `References\Gaps Closure\` — closure memos for previously-open modelling gaps.
 2. `skill: soft-copy-search` — the Helwan Fertilizers Company vendor-document archive. Use it
    when the datum is equipment-specific and not in `References\`.
-3. The V1 source: `tests/equivalence/v1_reference/`, V1's files the suite reads in V1's own layout
+3. The V1 source: `Tests and Reports/tests/equivalence/v1_reference/`, V1's files the suite reads in V1's own layout
    (decision 210),
    and for any other file `D:\Work\Urea Simulation V1\backend\` (E:'s tree, copied; decision 223) —
    acceptable **only** for values that V1
@@ -251,7 +251,7 @@ interface and the console attached to it over `ureasim/hmi/bridge.py`. Behind th
 plant is held at its design seed until the operator presses 100% LOAD (2026-11-04, `project.md`
 decision 166; `--no-intro` runs it from the start), or presses LOAD, which restores a saved exercise
 the operator chooses from the engine's list before the same release (2026-11-06, decision 171; the
-list is the instructor's folder, `UREASIM_EXERCISES` or `~/ureasim-exercises`, which SAVE writes, and
+list is the instructor's folder, `UREASIM_EXERCISES` or this folder's `exercises` (decision 218), which SAVE writes, and
 the repository's shipped `scenarios`, which nothing writes, so training saves stay out of the tree). A plant
 reset or restored while frozen publishes its rehearsed first tick, the plant unstepped (2026-11-04,
 decision 169), so a held console is never blank; an engine that has stopped publishing is never shown as
@@ -302,13 +302,13 @@ none of them is optional:
    comment that explains it.
 3. **Provenance travels with the number.** If V1 says a coefficient was back-solved from
    PFD table 3, the new code says so too.
-4. **Port, then prove.** Every ported unit gets a regression test in `tests/` that drives the
+4. **Port, then prove.** Every ported unit gets a regression test in `Tests and Reports/tests/` that drives the
    V1 module and the V1.1 module with the same inputs and asserts agreement to tolerance.
    Record the tolerance actually achieved in the As-Built reference. A test reaches V1 only through
-   `tests/equivalence/v1_loader.py`: `load("reactor")` (or `lift(...)`), never a bare
+   `Tests and Reports/tests/equivalence/v1_loader.py`: `load("reactor")` (or `lift(...)`), never a bare
    `import reactor` — V1's backend is appended to `sys.path`, so a bare V1 name is ambiguous and
    could let a V1 module satisfy a V1.1 import (handoff A-3, closed). The loader reads the in-tree
-   copy `tests/equivalence/v1_reference` (decision 210); a test that needs another V1 file copies it
+   copy `Tests and Reports/tests/equivalence/v1_reference` (decision 210); a test that needs another V1 file copies it
    there byte for byte and adds its row to `MANIFEST.sha256`, and never points at a path outside.
 5. **Do not silently widen a clamp.** V1's limiters encode real operating envelopes.
 6. **A decided divergence is the only exception, and never the rewrite's own call.** When the
@@ -326,13 +326,31 @@ none of them is optional:
 
 ## 6. Clean-codebase rules
 
-* No file enters this tree unless it is part of the product, its tests, or its documentation.
-* No `debug_*.py`, no `*_backup.py`, no `*_orig.py`, no `tmp_*`, no scratch output.
-* Scratch work goes to the session scratchpad directory, never to the project.
+* No file enters git unless it is part of the product, its tests, or its documentation.
+* No `debug_*.py`, no `*_backup.py`, no `*_orig.py`, no `tmp_*`, no scratch output outside
+  `Tests and Reports/scratch`.
+* **Every file the simulator uses lives inside this folder** (2026-11-15, the process engineer's
+  instruction; decision 218). Nothing it reads or writes at run time lies outside
+  `D:\Work\Urea Simulator V1.1`; the instructor's saved exercises default to `exercises` here,
+  which git ignores.
+* **Every non-essential file is saved in its sub-folder of `Tests and Reports`, and nowhere else**
+  (decision 218):
+
+  | Sub-folder | Holds | In git |
+  |---|---|---|
+  | `Tests and Reports/tests` | the pytest suite, the package `tests` | yes |
+  | `Tests and Reports/reports` | session reports, plan prompts, reviews, research briefs and notes, the Phase 7 runner's output, and each session's archived scripts and run series (`Session_NNN_<topic>`); `D:\Work\reports` until 2026-11-15 | no |
+  | `Tests and Reports/scratch` | a session's scratch scripts and run output while it works, one folder a session (`session-NNN`) | no |
+
+  The harness's temporary scratchpad and `D:\Work\reports` are not used for project work. An older
+  record's `D:\Work\reports\X` is now `Tests and Reports\reports\X`, and its `tests/X` is now
+  `Tests and Reports/tests/X`. A new kind of non-essential file gets a sub-folder of its own here,
+  added to this table, before it is written.
 * No asset is copied from V1 unless a screen actually renders it. The one exception is
-  `tests/equivalence/v1_reference` (decision 210): the V1 files the suite reads, byte for byte,
+  `Tests and Reports/tests/equivalence/v1_reference` (decision 210): the V1 files the suite reads, byte for byte,
   `-text` in `.gitattributes`, never edited.
-* `tests/` mirrors `ureasim/` one-to-one. A module with no test is an open item in `handoff.md`.
+* `Tests and Reports/tests/` mirrors `ureasim/` one-to-one. A module with no test is an open item in
+  `handoff.md`. The suite runs from this folder (`python -m pytest`; `pytest.ini` names its path).
 
 ## 7. Session checklist
 

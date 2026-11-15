@@ -11,3 +11,9 @@ desktop.ini
 
 # Generated activity table cache (rebuilt on demand)
 .vle_activity_grid.json
+
+# Every file the simulator uses lives in its folder (decision 218); what is not the product stays out
+# of git: the instructor's saved exercises, and the reports and scratch beside the test suite.
+/exercises/
+/Tests and Reports/*
+!/Tests and Reports/tests/

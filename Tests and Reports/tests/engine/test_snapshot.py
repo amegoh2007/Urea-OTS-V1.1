@@ -118,7 +118,7 @@ def test_a_snapshot_from_a_different_model_is_refused_with_the_difference():
 
 
 #: The shipped exercises, the intro's LOAD list's fixed half (decision 171).
-SCENARIOS = Path(__file__).resolve().parents[2] / "scenarios"
+SCENARIOS = Path(__file__).resolve().parents[3] / "scenarios"
 #: A shipped exercise's first tick against the header it adopts [bar]: the header solve's own
 #: convergence; measured within 9.7e-11 on all six (As-Built §CXXVI.7).
 PASSING_TICK1_BAR = 1e-9

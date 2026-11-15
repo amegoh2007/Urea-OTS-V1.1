@@ -12,6 +12,7 @@ from __future__ import annotations
 import dataclasses
 import json
 import math
+import os
 import subprocess
 import sys
 
@@ -20,7 +21,7 @@ import pytest
 from tests.equivalence.v1_loader import v1_available
 from tests.phase7 import compare as cmpmod
 from tests.phase7.drivers import COLD_P0_BARA, _Watch, flatten, run_port, smith_foptd
-from tests.phase7.run import ROOT
+from tests.phase7.run import CHILD_PYTHONPATH, ROOT
 from tests.phase7.scenarios import CORE_TAGS, DT, SCENARIOS, WATCHES, disturbance_at
 
 
@@ -133,6 +134,7 @@ def test_the_comparison_pairs_the_two_records_by_time():
 def test_v1s_driver_runs_in_its_own_process(tmp_path):
     subprocess.run([sys.executable, "-m", "tests.phase7.run", "vacuum_break", "--side", "v1",
                     "--duration", "1", "--out", str(tmp_path)], cwd=ROOT, check=True,
+                   env={**os.environ, "PYTHONPATH": CHILD_PYTHONPATH},
                    capture_output=True, timeout=600)
     rec = json.loads((tmp_path / "vacuum_break_v1.json").read_text(encoding="utf-8"))
     assert rec["side"] == "v1" and len(rec["t"]) == 0      # 1 s, sampled every 5 s

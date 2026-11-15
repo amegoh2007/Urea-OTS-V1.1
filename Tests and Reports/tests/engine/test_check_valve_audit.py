@@ -33,7 +33,7 @@ from ureasim.engine.scheduler import Scheduler
 from ureasim.thermo import iapws
 from ureasim.units.synthesis import reactor_boil, scrubber, stripper_sump
 
-ROOT = pathlib.Path(__file__).resolve().parents[2] / "ureasim"
+ROOT = pathlib.Path(__file__).resolve().parents[3] / "ureasim"
 
 #: Every anchored design differential, its module, and the two design pressures it subtracts.
 DIFFERENTIALS = {

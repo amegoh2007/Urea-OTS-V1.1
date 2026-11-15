@@ -17,6 +17,7 @@ publishes the same packet; the plant at the engine's launch publishes nothing un
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -289,10 +290,11 @@ def test_a_save_never_writes_the_shipped_folder_or_shadows_a_shipped_name(tmp_pa
 
 def test_without_a_shipped_folder_the_instructors_folder_is_the_only_one(tmp_path, monkeypatch):
     monkeypatch.delenv(session_module.EXERCISE_DIR_ENV, raising=False)
-    monkeypatch.setenv("USERPROFILE", str(tmp_path))
-    monkeypatch.setenv("HOME", str(tmp_path))
+    root = Path(session_module.__file__).resolve().parents[2]
+    assert session_module.DEFAULT_EXERCISE_DIR == root / "exercises"      # inside the folder (decision 218)
+    monkeypatch.setattr(session_module, "DEFAULT_EXERCISE_DIR", tmp_path / "exercises")
     s = EngineSession()
-    assert s.shipped_dir is None and s.exercise_dir == tmp_path / "ureasim-exercises"
+    assert s.shipped_dir is None and s.exercise_dir == tmp_path / "exercises"
     assert s.exercises() == []
     monkeypatch.setenv(session_module.EXERCISE_DIR_ENV, str(tmp_path / "env"))
     assert EngineSession(shipped_dir=tmp_path / "shipped").exercise_dir == tmp_path / "env"

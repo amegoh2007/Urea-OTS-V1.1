@@ -34,7 +34,7 @@ Window means are steady across trees (A-50's test asserts them). Not measured: w
 foot of each cycle (the holdup's composition, its level law or 322R001's tear), and whether a melt at N/C 2.2 to 2.5
 cycles on the plant. Acceptance: the cause named on a per-tick trace; then the process engineer's choice between
 keeping it as built and a change, the design pin held to the bit either way. Next step: trace the holdup's mass and
-composition and the tear's inputs over one cycle (`ring_trace_implicit.py` in `D:\Work\reports\Session_119_build`).
+composition and the tear's inputs over one cycle (`ring_trace_implicit.py` in `Tests and Reports\reports\Session_119_build`).
 
 ---
 
@@ -65,7 +65,7 @@ plant's own handles, TT-322005 inside Book2's band (+/- 2 K) and no trip:
 | 68.9 %, 46 min | the same | the same |
 
 Licensor's windows (Operating Manual III §5.2): N/C 2.90-3.10, TT-322005 180-183 C, PT-329201 136-143 bar. A-34's atoms
-close tick by tick on a turndown (`tests/phase7/test_loop_atoms.py`, §CX.1). Decision 190 adds the procedure's criteria (a)-(d) and (f); decision 196 fails a hold on a relief's lift.
+close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atoms.py`, §CX.1). Decision 190 adds the procedure's criteria (a)-(d) and (f); decision 196 fails a hold on a relief's lift.
 
 **Established. Do not measure these again; cite the section.**
 
@@ -113,7 +113,7 @@ p_disch,eff = p_disch - 2.41 (1 - r^2) (decision 180); `unit_322e001.SLIP_GAIN` 
 §CXIV.6): bundle A passes 92.3 % and latches or leaves the band below it; with B-126 (b)'s holdup the low holds are
 trip-free and 92.3 and 90.5 % latch on the cold branch; 111 % is out of band on both.
 
-**Next step.** Session 114 (`D:\Work\reports\Session 114 plan prompt s113.md`), scratch: the desk tracks, S on design-
+**Next step.** Session 114 (`Tests and Reports\reports\Session 114 plan prompt s113.md`), scratch: the desk tracks, S on design-
 point references, S + B at 92.3 % to its settled state, the UA exponent from Book2, the pressure as a clamp, then 69.3 %
 and the other holds. Then the process engineer's choice. B-126, B-135 and B-136 held.
 
@@ -206,13 +206,13 @@ lost feed or a feed-pump trip stage 2 now holds about 346 kg of melt at 5 % and 
 drained to its heel (§CXXIX.1). Trips 35.1, 35.3 and 35.4 (UAN 01-3042 sheets 335/1+, 335/2+) clamp LV-324501A and B,
 open HV-335602 and stop 335P002; the initiators the engine holds are both 335P001 stopped, both 335P002 stopped (10
 min) and LV-324501A not open (§CXXIII.6). None is built. Options: (a) keep as built; (b) the trips on the run states
-(session 115's Track B, `D:\Work\reports\Session 115 plan prompt s113.md`).
+(session 115's Track B, `Tests and Reports\reports\Session 115 plan prompt s113.md`).
 
 ### B-156 — Seven level transmitters read V1's holdup ratio, not their taps
 
 *Raised 2026-11-15, session 118 (As-Built §CXXVIII.5).* Uhde's data sheets (UD-MR-G00-EC-0133, EC-0134) print every
 level transmitter's nozzle distance. Six modelled levels read between their taps on those distances
-(`tests/data/test_level_transmitter_sheets.py`). Seven still read V1's holdup ratio: LT-323501 (323C003, 2 000 mm),
+(`Tests and Reports/tests/data/test_level_transmitter_sheets.py`). Seven still read V1's holdup ratio: LT-323501 (323C003, 2 000 mm),
 LT-323502 (323D001, 1 910 mm), LT-323503 (323D011, 1 310 mm), LT-328503 (328C002, 1 200 mm), LT-328504 (328C003, 1
 000 mm), LT-328505 (328C004, 1 000 mm) and LT-329501 (322E003's sump, 10 000 mm). Acceptance: each reads between its
 sheet's nozzles on its vessel's datasheet geometry, its design level reproduced. Established: the set ranges are 0.99
@@ -234,11 +234,11 @@ its datasheet and both sides measured.
 # Open data gaps
 
 *`Claude.md` §4: a datum that `References\`, the vendor archive and the V1 source all fail to supply. The ledger was accepted by the process engineer on 2026-10-16 (decision 128); each row keeps its stand-in as built; every row's full search record is in `docs/history/handoff-record-to-session-95.md` (grep the tag before the archive is searched again).
-Rows 2, 4, 5, 8, 9 and 10 close on one plant DCS readback session (`D:\Work\reports\DCS readback checklist.md`); rows 1 and 3 on Körting's curves, rows 11 and 13 on KSB's sheets, row 12 on the SRI986 positioner's response data or a plant step test. The checklist's row 14, TV-323013B's flow and differential, is decision 178's cross-check and no ledger row.*
+Rows 2, 4, 5, 8, 9 and 10 close on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`); rows 1 and 3 on Körting's curves, rows 11 and 13 on KSB's sheets, row 12 on the SRI986 positioner's response data or a plant step test. The checklist's row 14, TV-323013B's flow and differential, is decision 178's cross-check and no ledger row.*
 
 | # | Datum | Needed by | As built | Found so far | Route to close |
 |---|---|---|---|---|---|
-| 1 | 322F001's nozzle and mixing-throat geometry, loss coefficients and performance diagrams | `control/jet_pump.py`, `data/unit_322f001.py` | both areas back-solved from the licensor's design duty on open-literature loss coefficients; the design point exact, the stall margin not (B-12's 90.7 %, §LXXI.3); the lift a fixed 4.2 bar | no vendor geometry or curve in either archive (§LIX.4). The plant keeps the entrainment ratio from 69 to 102 % load, mu / mu_ref 1.031 +/- 0.044, n 15; the as-built closure stalls on that line at 69.9-80.7 %; a friction share of at least 2.41 bar of the lift passes it, a fit (§CV.3-4). Book2's points: LT-329501 11 % at HV-322602 40 % (69.3 %), 1 % at 54 % (80.4 %). LT-329501 is not in the 5 November trends, so the level term is unfitted; session 99 (§CX.9): the friction share needed is 0-2.41 bar over the 15 windows, and no level law fits Book2's four points (V1's passes 1-23 % of the plant's suction there) | Körting's 14 diagrams, order 2/131/4/04219 (draft request: `D:\Work\reports\Koerting request draft s99.md`). The lift prototype is held with B-118 (decision 180) |
+| 1 | 322F001's nozzle and mixing-throat geometry, loss coefficients and performance diagrams | `control/jet_pump.py`, `data/unit_322f001.py` | both areas back-solved from the licensor's design duty on open-literature loss coefficients; the design point exact, the stall margin not (B-12's 90.7 %, §LXXI.3); the lift a fixed 4.2 bar | no vendor geometry or curve in either archive (§LIX.4). The plant keeps the entrainment ratio from 69 to 102 % load, mu / mu_ref 1.031 +/- 0.044, n 15; the as-built closure stalls on that line at 69.9-80.7 %; a friction share of at least 2.41 bar of the lift passes it, a fit (§CV.3-4). Book2's points: LT-329501 11 % at HV-322602 40 % (69.3 %), 1 % at 54 % (80.4 %). LT-329501 is not in the 5 November trends, so the level term is unfitted; session 99 (§CX.9): the friction share needed is 0-2.41 bar over the 15 windows, and no level law fits Book2's four points (V1's passes 1-23 % of the plant's suction there) | Körting's 14 diagrams, order 2/131/4/04219 (draft request: `Tests and Reports\reports\Koerting request draft s99.md`). The lift prototype is held with B-118 (decision 180) |
 | 2 | TT-322015's H2 hysteresis | I 22.1's release (B-56) | H2 110 C (the DCS readback, decision 103); hysteresis V1's 2 K, cleared below 108 C | the object display shows range 0-200 C, H1 100.0, H2 110.0, delay 0 and no hysteresis field (photograph of 24 October 2026); the archive holds no set-point or alarm list (§CXXVIII.1) | checklist row 1: the engineering view of the limit; else the 2 K stand-in signed off |
 | 3 | Körting's performance curves of 324F002, 324F004 and 324F005 | `ejector_map`, B-57's interpolation on the synthesized maps (§XLIX.4, §L.1) | synthesized maps, anchored on the PFD's design loads; in-situ factors 0.919, 0.336, 0.497 | one duty point an ejector; no curve in the archive (§XLVIII.2). The plant's motive break-off, the datum a curve must meet: HIC-329605 between 55 and 64 % (HIC-329606 38-40 %) at PT-329207 4.20-4.24 bar g, 5 November 2026 13:11-13:16, 75 % load; the engine's vacuum still holds there (§CV.5) | Körting, orders 2/115/4/09674 and 2/232/4/00503 (the same draft); checklist row 13: 324E002's and 324E005's cold-end and cooling-water temperatures for 5 November 13:00-13:30 |
 | 4 | LT-324501's taps | LI-324501 between its taps (decision 33's class) | V1's holdup ratio (§L.4) | one 80 mm instrument on the barometric leg at EL +8495 (isometric UD-RL-100-MB-0180, item 22); no second connection drawn; the span cannot be weighed from the trends (§CV.7). Uhde's data sheet UD-MR-G00-EC-0136 p. 3: set range -700 to 900 mbar on 1 220 kg/m3, nozzle distance blank, an HP-side flanged seal and no LP-side connection (§CXXVII.5). Its level, like row 10's, is a holdup ratio on no vessel geometry (§CXXVIII.5) | checklist row 11: LRV, URV and the reference connection; a walk-down |

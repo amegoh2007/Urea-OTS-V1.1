@@ -55,8 +55,8 @@ refusal says why.
 The engine runs the plant on its own physics thread: the design seed at start, fixed 0.1 s
 steps at the instructor's pacing, the console packet (V1's WebSocket key paths) published to
 the console ten times a second, each command applied between two ticks and answered with the
-plant's reason when it is refused. Exercises are saved under `~/ureasim-exercises` unless
-`UREASIM_EXERCISES` names another folder; the verified steady states shipped in the repository's
+plant's reason when it is refused. Exercises are saved under `exercises` in this folder, ignored by
+git, unless `UREASIM_EXERCISES` names another folder; the verified steady states shipped in the repository's
 `scenarios` folder are listed beside them, by the intro's LOAD and the instructor's panel alike,
 and never overwritten. The status bar shows whether the engine is running, frozen or faulted.
 
@@ -94,19 +94,20 @@ hours of the exercise whenever it is opened.
 python -m pytest
 ```
 
-The suite includes **V1-equivalence regressions**: they load the V1 modules from
-`D:\Work\Urea Simulation\backend` by file path and assert bit-for-bit agreement with the
-ported code. If the V1 tree is absent those tests skip, and the rest of the suite still
-runs.
+The suite lives in `Tests and Reports/tests`; the reports and scratch work beside it, in
+`Tests and Reports/reports` and `Tests and Reports/scratch`, are kept out of git. It includes
+**V1-equivalence regressions**: they load the V1 modules from the in-tree copy
+`Tests and Reports/tests/equivalence/v1_reference` by file path and assert bit-for-bit agreement
+with the ported code.
 
 The Phase 7 transient runner drives V1 and the rewrite through the same operating procedure at
-the same fixed 0.1 s step, one process each, and writes a comparison report outside the project
-tree (by default `<temp>/ureasim_phase7`). The scenarios are `cold_start`, `tempered_water_loss`,
+the same fixed 0.1 s step, one process each, and writes a comparison report to the reports
+folder (by default `Tests and Reports/reports/phase7`). The scenarios are `cold_start`, `tempered_water_loss`,
 `hpcc_rupture`, `vacuum_break` and `steady_state` (the design seed for an hour, every packet leaf
 compared); `--duration` shortens one for a smoke run:
 
 ```bash
-python -m tests.phase7.run all --side both
+PYTHONPATH=".;Tests and Reports" python -m tests.phase7.run all --side both
 ```
 
 ## Regenerate the screen layout

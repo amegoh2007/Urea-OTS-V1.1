@@ -17,11 +17,12 @@ reserves for the instructor:
     snapshot_load  an exercise restored by name, checked against the present model; the trends
                    restart, since the plant clock has jumped
 
-Exercises live in the instructor's folder (``UREASIM_EXERCISES``, or ``~/ureasim-exercises``), which
-SAVE writes, and, when one is given, a folder of exercises shipped with the simulator (the repository's
-``scenarios``, verified steady states) that is listed and restored beside it and never written. A
-shipped name always means the shipped file: a save under it is refused, so no instructor's file shadows
-a verified state, and the repository stays clean of training saves (`project.md` decision 171).
+Exercises live in the instructor's folder (``UREASIM_EXERCISES``, or ``exercises`` in the simulator's
+own folder, kept out of git: decision 218), which SAVE writes, and, when one is given, a folder of
+exercises shipped with the simulator (the repository's ``scenarios``, verified steady states) that is
+listed and restored beside it and never written. A shipped name always means the shipped file: a save
+under it is refused, so no instructor's file shadows a verified state, and the repository stays clean of
+training saves (`project.md` decision 171).
 
 Every answer is (accepted, reason), the reason a refusal's, so it reaches the console that asked.
 
@@ -74,8 +75,12 @@ __all__ = ["EXERCISE_DIR_ENV", "STALLED_AFTER_S", "EngineSession"]
 
 log = logging.getLogger(__name__)
 
-#: The environment variable naming where exercises are saved; ``~/ureasim-exercises`` without it.
+#: The environment variable naming where exercises are saved; ``DEFAULT_EXERCISE_DIR`` without it.
 EXERCISE_DIR_ENV = "UREASIM_EXERCISES"
+
+#: The instructor's folder without that variable: ``exercises`` in the simulator's own folder, ignored by
+#: git, so every file the simulator uses lives inside its folder (decision 218).
+DEFAULT_EXERCISE_DIR = Path(__file__).resolve().parents[2] / "exercises"
 
 #: No clean step for this long and the engine reads as stalled [s] (V1's ``/api/health``).
 STALLED_AFTER_S = 5.0
@@ -98,7 +103,7 @@ class EngineSession:
         self._rehearsal: Rehearsal | None = None
         self._rehearsal_failed = False
         self.exercise_dir = Path(exercise_dir or os.environ.get(EXERCISE_DIR_ENV)
-                                 or Path.home() / "ureasim-exercises")
+                                 or DEFAULT_EXERCISE_DIR)
         #: The exercises shipped with the simulator, read and never written; None without them.
         self.shipped_dir = Path(shipped_dir) if shipped_dir else None
         self._health = {"ok": True, "error": None, "type": None, "traceback": None,

@@ -11,7 +11,7 @@ press releases it. Pinned, over a real socket and the real engine:
 * the intro's start command releases it, the engine acks, and the plant publishes from its design seed;
 * a plant built the other way runs from the start;
 * the repository's ``scenarios`` folder is shipped beside the instructor's folder (``UREASIM_EXERCISES`` or
-  ``~/ureasim-exercises``): the intro's LOAD and the instructor's panel list both, SAVE writes only the
+  the folder's ``exercises``, decision 218): the intro's LOAD and the instructor's panel list both, SAVE writes only the
   instructor's and refuses a shipped name, and every scenario there loads on the present model (decision 171).
 """
 

@@ -44,4 +44,4 @@ def test_importing_the_package_and_the_scene_loads_no_qt() -> None:
 def _root():
     from pathlib import Path
 
-    return Path(__file__).resolve().parents[3]
+    return Path(__file__).resolve().parents[4]

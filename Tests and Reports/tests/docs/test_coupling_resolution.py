@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-DOCS = Path(__file__).resolve().parents[2] / "docs"
+DOCS = Path(__file__).resolve().parents[3] / "docs"
 MAP = DOCS / "step_sim_dataflow.md"
 RESOLUTION = DOCS / "coupling_resolution.md"
 

@@ -25,7 +25,7 @@ from pathlib import Path
 
 from tests.equivalence.v1_loader import V1_BACKEND, V1_ROOT, v1_available
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[3]
 MANIFEST = V1_ROOT / "MANIFEST.sha256"
 #: The external tree's folder name, lower case, built in two parts so this file is not a hit.
 EXTERNAL = "urea simulation" + " v1"
@@ -120,7 +120,8 @@ def _code_strings(path: Path):
 
 def test_nothing_points_back_at_the_external_v1_tree():
     hits = []
-    for top in ("ureasim", "tests", "tools"):
+    for top in ("ureasim", "Tests and Reports/tests", "tools"):
+        assert (REPO / top).is_dir(), top
         for path in sorted((REPO / top).rglob("*.py")):
             if V1_ROOT in path.parents:
                 continue

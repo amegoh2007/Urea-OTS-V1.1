@@ -21,17 +21,18 @@ import json
 import os
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 from tests.phase7.compare import compare, report_markdown
 from tests.phase7.scenarios import SCENARIOS
 
 #: The project root, the working directory each engine's process is started in.
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
+#: Each engine process's import path: the project root and the folder that holds ``tests``.
+CHILD_PYTHONPATH = os.pathsep.join((str(ROOT), str(Path(__file__).resolve().parents[2])))
 
-#: Default output directory, outside the project tree (CLAUDE.md §6).
-DEFAULT_OUT = Path(tempfile.gettempdir()) / "ureasim_phase7"
+#: Default output directory, the reports' sub-folder (CLAUDE.md §6).
+DEFAULT_OUT = ROOT / "Tests and Reports" / "reports" / "phase7"
 
 
 def _scenario(name: str, duration_s: float | None):
@@ -59,7 +60,7 @@ def run_both(name: str, out: Path, duration_s: float | None = None) -> Path:
             args += ["--duration", str(duration_s)]
         log = open(out / f"{name}_{side}.log", "w", encoding="utf-8")
         procs[side] = (subprocess.Popen(args, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT,
-                                        env={**os.environ, "PYTHONPATH": str(ROOT)}), log)
+                                        env={**os.environ, "PYTHONPATH": CHILD_PYTHONPATH}), log)
     for side, (p, log) in procs.items():
         if p.wait() != 0:
             log.close()

@@ -53,7 +53,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-DEFAULT_SOURCE = (Path(__file__).resolve().parents[1] / "tests" / "equivalence" / "v1_reference"
+DEFAULT_SOURCE = (Path(__file__).resolve().parents[1] / "Tests and Reports" / "tests" / "equivalence" / "v1_reference"
                   / "backend" / "main.py")
 DEFAULT_OUT = Path(__file__).resolve().parents[1] / "docs" / "step_sim_dataflow.md"
 

@@ -42,7 +42,7 @@ import re
 import sys
 from pathlib import Path
 
-DEFAULT_SOURCE = (Path(__file__).resolve().parents[1] / "tests" / "equivalence" / "v1_reference"
+DEFAULT_SOURCE = (Path(__file__).resolve().parents[1] / "Tests and Reports" / "tests" / "equivalence" / "v1_reference"
                   / "frontend" / "overlays.js")
 DEFAULT_OUT = Path(__file__).resolve().parents[1] / "ureasim" / "data" / "screen_layout.py"
 

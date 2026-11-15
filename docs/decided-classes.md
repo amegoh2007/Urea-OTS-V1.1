@@ -15,7 +15,7 @@ one line, with its decision number.
 - a pump capped at its vessel's heel, a full vessel's excess published as an overflow, a transmitter reading the delivered flow (decision 11)
 - a fixed-effectiveness exchanger's feed taking only what the hot side gave (decision 14)
 - a loop gain read per cent of its transmitter's span, a cascade master's output onto its slave's span, and no scale V1 derived to hold an engineering-unit loop gain (decisions 10, 21)
-- a design differential written as a subtraction of two design pressures (A-13; closed 2026-10-16, `tests/engine/test_check_valve_audit.py` enforces it)
+- a design differential written as a subtraction of two design pressures (A-13; closed 2026-10-16, `Tests and Reports/tests/engine/test_check_valve_audit.py` enforces it)
 - a heater's chest on its datasheet's pressure (decision 20)
 - a control valve on its vendor's trim, its design stroke where its rated capacity passes the design flow (decision 23)
 - a column's negative net duty condensing vapour, not clamped (decision 15)

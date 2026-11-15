@@ -16,10 +16,10 @@ import numpy as np
 import pytest
 from PIL import Image
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
 import restore_slide_regions as rsr  # noqa: E402
 
-SCREENS = Path(__file__).resolve().parents[2] / "ureasim" / "hmi" / "assets" / "screens"
+SCREENS = Path(__file__).resolve().parents[3] / "ureasim" / "hmi" / "assets" / "screens"
 
 
 def test_a_region_clear_of_every_element_is_kept_whole():

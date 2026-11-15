@@ -90,7 +90,7 @@ def test_the_demand_is_the_instructors_and_322_1s_step_decided_divergence():
     assert all(e.get("cmd") != "co2_set" for els in OVERLAYS.values() for e in els)
     assert [(sid, e["k"]) for sid, els in OVERLAYS.items() for e in els
             if e.get("cmd") == "co2_step"] == [("screen-322-1", "co2step")]
-    hmi = pathlib.Path(__file__).resolve().parents[3] / "ureasim" / "hmi"
+    hmi = pathlib.Path(__file__).resolve().parents[4] / "ureasim" / "hmi"
     senders = {p.relative_to(hmi).as_posix() for p in hmi.rglob("*.py")
                if "co2_set" in p.read_text(encoding="utf-8")}
     assert senders == {"instructor/panel.py"}

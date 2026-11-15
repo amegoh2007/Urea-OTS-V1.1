@@ -115,7 +115,7 @@ and the test suites and the Phase 7 runners drive the engine with no display.
 above it but the leaf `data/design_point.py`; `data` sits beside the ranking between `control` and
 `units` (decision 182). `hmi` imports `net` and `data` and, below them, `core.units_of_measure`
 alone: the faceplates convert a gauge display to absolute and back on the engine's own atmosphere
-(decision 183, handoff A-32). `tests/test_layering.py` enforces every direction.
+(decision 183, handoff A-32). `Tests and Reports/tests/test_layering.py` enforces every direction.
 
 ### 3.3 Directory layout
 
@@ -138,7 +138,11 @@ Urea Simulator V1.1/
 │  ├─ net/         console protocol + server (headless)
 │  ├─ hmi/         PyQt6 client (screens, widgets, faceplates, trend)
 │  └─ data/        design basis, tag registry, screen definitions
-├─ tests/          mirrors ureasim/, plus V1-equivalence regressions
+├─ Tests and Reports/   the non-essential files (decision 218)
+│  ├─ tests/       mirrors ureasim/, plus V1-equivalence regressions (in git)
+│  ├─ reports/     session reports, plans, reviews, archived run series (not in git)
+│  └─ scratch/     one folder a session (not in git)
+├─ exercises/      the instructor's saved exercises (not in git)
 └─ tools/          migration utilities (overlay converter)
 ```
 

@@ -1181,3 +1181,10 @@ decision on an item.
      the bit. A save carries the switch, never the limit, which the unit reads from the data module on every tick;
      a save made before it fills the new state (`ADDED_ATTRIBUTES`). A decided divergence: V1 has no such stop.
      As-Built §CXXIX.1.
+218. **Every file the simulator uses lives in its folder; the non-essential ones in `Tests and Reports`** (2026-11-15,
+     the process engineer's instruction, session 120). The suite moves to `Tests and Reports/tests` (the package
+     `tests` kept; `pytest.ini` names the path and puts the folder and `Tests and Reports` on the import path),
+     `D:\Work\reports` to `Tests and Reports/reports`, scratch to `Tests and Reports/scratch/session-NNN`; reports
+     and scratch are ignored by git. The instructor's saved exercises default to the folder's `exercises`, ignored by
+     git, in place of `~/ureasim-exercises` (amends decision 171; `UREASIM_EXERCISES` still overrides it).
+     `CLAUDE.md` §6 holds the table of sub-folders. As-Built §CXXX.1.

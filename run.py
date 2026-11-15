@@ -32,7 +32,8 @@ The engine runs the plant (`ureasim.engine.session`) on its own physics thread
 (`ureasim.net.engine_host`): the design seed at start, stepped in fixed 0.1 s steps at the
 instructor's pacing, the console packet published ten times a second, each command applied between
 two ticks and answered with the plant's reason when it is refused. Exercises are saved under
-``~/ureasim-exercises`` unless ``UREASIM_EXERCISES`` names another folder; the exercises shipped in
+``exercises`` in this folder, ignored by git (decision 218), unless ``UREASIM_EXERCISES`` names another
+folder; the exercises shipped in
 the repository's ``scenarios`` folder, verified steady states, are listed and restored beside them
 and never written, by the intro's LOAD and the instructor's panel alike (decision 171).
 """

@@ -17,7 +17,7 @@ import ureasim.data.intro_flyby as flyby_data_module
 import ureasim.data.intro_plant as plant_data_module
 from ureasim.data.intro import LOGO
 
-_INTRO_DIR = Path(__file__).resolve().parents[3] / "ureasim" / "hmi" / "intro"
+_INTRO_DIR = Path(__file__).resolve().parents[4] / "ureasim" / "hmi" / "intro"
 _QT_FREE = ("ops.py", "timeline.py", "camera.py", "model3d.py", "flyby.py", "scene.py", "sequencer.py")
 _DATA_MODULES = (data_module, flyby_data_module, plant_data_module)
 _QT_ALLOWED = ("painter.py", "canvas.py", "splash.py", "__main__.py")

@@ -30,7 +30,7 @@ import pytest
 from ureasim.control import valve
 from ureasim.control.valve import FF_CONST, FL_GLOBE, PC_WATER_BARA, valve_liquid_anchored
 
-ROOT = Path(__file__).resolve().parents[2] / "ureasim"
+ROOT = Path(__file__).resolve().parents[3] / "ureasim"
 
 #: The absolute pair, on the flat intercept, and the anchored law, on the full correlation.
 ABSOLUTE = {"valve_flow_liquid", "cv_from_design_liquid", "gravity_outflow_kgh"}

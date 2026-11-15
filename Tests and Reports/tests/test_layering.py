@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1] / "ureasim"
+ROOT = Path(__file__).resolve().parents[2] / "ureasim"
 
 #: The ranked layers, lowest first (`Claude.md` section 1 rule 2).
 RANK = {"thermo": 0, "core": 1, "control": 2, "units": 3, "engine": 4, "net": 5, "hmi": 6}
