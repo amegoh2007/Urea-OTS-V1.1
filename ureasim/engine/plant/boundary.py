@@ -35,6 +35,7 @@ from ureasim.data.operator_commands import (
     EXT_OVERRIDE_TAG,
     RUN_STATE_PAIRS,
     TRIP_21_HAND_SWITCHES,
+    TRIP_35_HAND_SWITCHES,
 )
 from ureasim.data.unit_321 import CO2_DES_KGH
 from ureasim.data.unit_322c001 import C001_CPL_DES_KGH
@@ -94,7 +95,7 @@ def operator_seeds() -> dict:
         "HIC-329606": HV_329606_OP_DES_PCT,
         "HV-323D002-TIE": False,
         "HS-322915": False,
-        **{f"HS-{t}": False for t in TRIP_21_HAND_SWITCHES},
+        **{f"HS-{t}": False for t in TRIP_21_HAND_SWITCHES + TRIP_35_HAND_SWITCHES},
         "FIC-322404": C001_CPL_DES_KGH,
         **{pair: True for pair in RUN_STATE_PAIRS},
         "320K002-CO2": CO2_DES_KGH / 1000.0,

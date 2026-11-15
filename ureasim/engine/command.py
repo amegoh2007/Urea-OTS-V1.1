@@ -46,6 +46,7 @@ from ureasim.data.operator_commands import (
     RATIO_SP_MIN,
     RUN_STATE_PAIRS,
     TRIP_21_HAND_SWITCHES,
+    TRIP_35_HAND_SWITCHES,
     TIC_329005_SP_MIN_C,
 )
 from ureasim.data.faceplates import (
@@ -304,11 +305,13 @@ def _xv_toggle(plant: PlantState, cmd: Mapping, _r) -> str:
 
 
 def _keyswitch_set(plant: PlantState, cmd: Mapping, _r) -> str:
-    """A maintained hand switch: HS-322915, XV-322915's OVERRIDE CLOSE keyswitch (B-59), and AC4
+    """A maintained hand switch: HS-322915, XV-322915's OVERRIDE CLOSE keyswitch (B-59), AC4
     PC21.5.1's on trip 21.2 — HS-321634, HS-323604 and HS-322606 its start-up bypasses, HS-321603
-    and HS-321604 its trip switches (handoff A-12)."""
+    and HS-321604 its trip switches (handoff A-12) — and AC4 PC35's overrides on trips 35.1, 35.3
+    and 35.4, HS-335201A, HS-335201B, HS-335602 and HS-335620 (decision 228)."""
     hs = str(cmd.get("id", ""))
-    if hs != "HS-322915" and hs not in {f"HS-{t}" for t in TRIP_21_HAND_SWITCHES}:
+    if hs != "HS-322915" and hs not in {f"HS-{t}" for t in TRIP_21_HAND_SWITCHES
+                                        + TRIP_35_HAND_SWITCHES}:
         raise _Refused(f"no keyswitch {cmd.get('id')!r}")
     if "on" not in cmd:
         raise _Refused("the command needs 'on'")

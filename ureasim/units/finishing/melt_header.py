@@ -42,7 +42,8 @@ The last committed header is tried first — exact at the seed and at a parked h
 otherwise the root is bracketed on [0, P_dead] (P_dead the pumps' dead head through LV-324501A) and
 found by the Illinois false position. PIC-335201 and the positioner are committed once, at the
 root. With 335P001A and B both stopped neither valve passes melt and the header drains to 0 bar g.
-Trips 35.1 and 35.4 are not built (handoff).
+AC4 PC35's trips act on the header as arguments (`control.granulation_trips`, decision 228): on 35.4
+LV-324501A shuts, PIC-335201 is clamped and HV-335602 travels open; on 35.1 LV-324501B fails open.
 
 Source: P&ID 130; AC4 UD-MR-G00-FF-0004 PC35.2 (pages 249 to 252); the DCS tuning table; the loop
 summaries UD-MR-324-EC-0001 (L 324501) and UD-MR-335-EC-0001 (P 335201, F 335401, H 335602);
@@ -56,6 +57,7 @@ import copy
 import math
 from dataclasses import dataclass
 
+from ureasim.control.granulation_trips import HEALTHY_35, Unit35Actions
 from ureasim.control.process_loop import ProcessLoop
 from ureasim.control.valve import cv_fraction, stroke_for_cv_fraction
 from ureasim.core.numeric import clamp
@@ -387,7 +389,8 @@ class MeltHeader:
     lv_a_position_pct: float = LV_324501A_HEADER_OP_DES_PCT
 
     def step(self, pic: ProcessLoop, x_pct: float, headers_online: int, hic_335602_pct: float,
-             pump_running: bool, avail_kgh: float, dt: float) -> MeltHeaderResult:
+             pump_running: bool, avail_kgh: float, dt: float,
+             trips: Unit35Actions = HEALTHY_35) -> MeltHeaderResult:
         """Advance the header one tick.
 
         Arguments
@@ -404,14 +407,17 @@ class MeltHeader:
             335P001A or B running.
         avail_kgh
             What 324F003 can drain this tick above its heel [kg/h] (decision 11's class).
+        trips
+            AC4 PC35's actions this tick: LV-324501A shut and PIC-335201 clamped at its stand-in
+            reference, LV-324501B failed open, HV-335602 driven open (decision 228).
         """
         n = int(clamp(headers_online, 0, HEADER_VALVES_MAX))
-        # HV-335602 travels toward HIC-335602: fast open, slow close (H 335602).
-        move = hic_335602_pct - self.hv_pct
+        # HV-335602 travels toward HIC-335602, or open on 35.4: fast open, slow close (H 335602).
+        move = (100.0 if trips.hv_335602_open else hic_335602_pct) - self.hv_pct
         self.hv_pct = clamp(self.hv_pct + clamp(move, -100.0 / HV_335602_CLOSE_S * dt,
                                                 100.0 / HV_335602_OPEN_S * dt), 0.0, 100.0)
         e1 = e1_setpoint_barg(x_pct)
-        h_b = lv_b_stroke_pct(x_pct)
+        h_b = 100.0 if trips.lv_324501b_open else lv_b_stroke_pct(x_pct)
         beta = recycle_fraction(h_b) if pump_running else 0.0
         hv = self.hv_pct
 
@@ -420,7 +426,7 @@ class MeltHeader:
         def forward(p: float) -> float:
             # LV-324501A behind its positioner on PIC-335201's trial step at the header p (neither
             # committed).
-            if not pump_running:
+            if not pump_running or trips.lv_324501a_shut:
                 return 0.0
             return forward_fraction(positioner_pct(h_prev, copy.copy(pic).step(p, dt, cas_sp=e1), dt),
                                     beta, p)
@@ -441,8 +447,9 @@ class MeltHeader:
                                  dead_head_barg(0.0))
             evals += more
             capped = True
-        lv_a = pic.step(p, dt, cas_sp=e1)
-        self.lv_a_position_pct = positioner_pct(h_prev, lv_a, dt)
+        lv_a = pic.step(p, dt, cas_sp=e1, hold=trips.pic_335201_hold_pct)
+        # The solenoid vents the actuator: shut at once, whatever the positioner asks.
+        self.lv_a_position_pct = 0.0 if trips.lv_324501a_shut else positioner_pct(h_prev, lv_a, dt)
         phi_noz, phi_hv = nozzle_fraction(n, p), hv_fraction(hv, p)
         out = phi_noz + phi_hv
         self.p_barg = p

@@ -12,6 +12,9 @@ network left this tick (handoff B-73). Stage 1 takes 323D002's discharge of this
 line and the pre-evaporator's overhead through HV-323605; stage 2 takes stage 1's melt of this
 tick; both read the cold ends their condensers settled at, lagged, and stage 2 324E006's shell, as
 the train left them on the tick before; the train takes both stages' overheads of this tick.
+AC4 PC35's trips 35.1, 35.3 and 35.4 (decision 228) are evaluated at the tick's end on its pumps'
+run feedback and LV-324501A's stroke; the header, LIC-324501 and the UF85 pumps act on them from the
+next tick.
 
 Source: V1 ``backend/main.py`` ``step_sim`` 9695-10065; the units' modules (`ureasim.units.
 evaporation`) and their equivalence tests.
@@ -19,10 +22,20 @@ evaporation`) and their equivalence tests.
 
 from __future__ import annotations
 
+from ureasim.control.granulation_trips import Unit35TripInputs, Unit35Trips
 from ureasim.core.numeric import clamp
 from ureasim.data.faceplates import GRANULATION_HEADERS_TAG
 from ureasim.data.unit_324 import P2_DES_KGH
-from ureasim.data.unit_335 import HEADER_P_DES_BARG, HEADER_VALVES_DES, HEADER_VALVES_MAX
+from ureasim.data.operator_commands import TRIP_35_HAND_SWITCHES
+from ureasim.data.unit_335 import (
+    HEADER_P_DES_BARG,
+    HEADER_VALVES_DES,
+    HEADER_VALVES_MAX,
+    LIC_324501_CLAMPREF_PCT,
+    LVSL_324501A_PCT,
+    PIC_335201_CLAMPREF_PCT,
+    TRIP_35_4_P002_TD_S,
+)
 from ureasim.engine.schedule import Boundary, DeclaredTear, Operator, Result, State, Step
 from ureasim.units.evaporation import ejector_map as em
 from ureasim.units.evaporation import first_evaporator as fe
@@ -32,21 +45,24 @@ from ureasim.units.evaporation.melt_route import selector_drain
 from ureasim.units.finishing import melt_header as mh
 from ureasim.units.finishing import uf85_dosing as uf
 
-__all__ = ["MOTIVE", "TRAIN", "DOSING", "PUMP_PAIR", "units", "steps", "tears"]
+__all__ = ["MOTIVE", "TRAIN", "DOSING", "TRIPS_35", "PUMP_PAIR", "units", "steps", "tears"]
 
 #: The two motive valves' step, and the vacuum train's, by the names the schedule gives them.
 MOTIVE = "HV-329605/6"
 TRAIN = "324E002-E007"
 DOSING = "335"
+TRIPS_35 = "335-TRIPS"
 #: 335P001A / B's run state, True while either runs (decision 227): the header's pumps.
 PUMP_PAIR = "335P001"
 
 
 def units() -> tuple[dict, dict]:
-    """The two stages and their controllers, the train, and the UF85 dosing's two loops, seeded on
-    the design."""
+    """The two stages and their controllers, the train, the UF85 dosing's two loops and AC4 PC35's
+    trips, seeded on the design."""
     return ({"324E001": fe.FirstEvaporator(), "324E003": se.SecondEvaporator(),
-             TRAIN: vt.VacuumTrain()},
+             TRAIN: vt.VacuumTrain(),
+             TRIPS_35: Unit35Trips(TRIP_35_4_P002_TD_S, LIC_324501_CLAMPREF_PCT,
+                                   PIC_335201_CLAMPREF_PCT)},
             {"324E001": (fe.FirstEvaporatorLoops(),), "324E003": (se.SecondEvaporatorLoops(),),
              DOSING: (uf.ffic_335406(), uf.fic_335405())})
 
@@ -144,12 +160,25 @@ def _324e003(plant, a, dt):
         em.nozzle_pressure_bara("324F004", a["m_927_kgh"]), a["p_discharge_bara"],
         a["t_vent_324e005_c"], unit.header.p_barg, dt,
         headers_online=int(clamp(a["headers_online"], 0, HEADER_VALVES_MAX)),
-        hic_335602_pct=a["hic_335602_pct"], pump_running=bool(a["p001_running"]))
+        hic_335602_pct=a["hic_335602_pct"], pump_running=bool(a["p001_running"]),
+        trips=a["trips_35"])
 
 
 def _uf85(plant, a, dt):
-    # 335P002A and B both stopped stop the dosing (decision 227).
-    return uf.uf85_split_step(*plant.loops[DOSING], a["route"], not a["p002_running"], dt)
+    # 335P002A and B both stopped stop the dosing (decision 227), or held by trip 35.3 (decision 228).
+    return uf.uf85_split_step(*plant.loops[DOSING], a["route"],
+                              not (a["p002_running"] and a["p002_permit"]), dt)
+
+
+def _trips_35(plant, a, dt):
+    # The run feedback: a pair runs on its command unless AC4 holds it (LY-324501's L2 stop on
+    # 335P001, decision 217; 35.3 on 335P002, this unit's own interlock of the tick before).
+    trips = plant.units[TRIPS_35]
+    return trips.step(Unit35TripInputs(
+        p001_running=bool(a["p001_on"]) and not a["p001_stopped"],
+        p002_running=bool(a["p002_on"]) and trips.actions.p002_permit,
+        lvsl_324501a=a["lv_a_pct"] <= LVSL_324501A_PCT,
+        **{f"hs_{t.lower()}": bool(a[f"hs_{t}"]) for t in TRIP_35_HAND_SWITCHES}), dt)
 
 
 def _train(plant, a, dt):
@@ -182,10 +211,15 @@ def steps() -> dict:
             "p_discharge_bara": State(TRAIN, "p_324e006_bara"),
             "t_vent_324e005_c": State(TRAIN, "lag_state.324E005"),
             "headers_online": Operator("GRANULATION-HEADERS"),
-            "hic_335602_pct": Operator("HIC-335602"), "p001_running": Operator(PUMP_PAIR)},
-            _324e003),
+            "hic_335602_pct": Operator("HIC-335602"), "p001_running": Operator(PUMP_PAIR),
+            "trips_35": State(TRIPS_35, "actions")}, _324e003),
         DOSING: Step(DOSING, "UF85 dosing, FFIC-335406 and FIC-335405", "335", 30, {
-            "route": Result(e003, "route"), "p002_running": Operator("335P002")}, _uf85),
+            "route": Result(e003, "route"), "p002_running": Operator("335P002"),
+            "p002_permit": State(TRIPS_35, "actions.p002_permit")}, _uf85),
+        TRIPS_35: Step(TRIPS_35, "granulator feed trips 35.1, 35.3 and 35.4", "335", 34, {
+            "p001_on": Operator(PUMP_PAIR), "p001_stopped": State(e003, "p001_stopped"),
+            "p002_on": Operator("335P002"), "lv_a_pct": State(e003, "header.lv_a_position_pct"),
+            **{f"hs_{t}": Operator(f"HS-{t}") for t in TRIP_35_HAND_SWITCHES}}, _trips_35),
         TRAIN: Step(TRAIN, "vacuum train", "324", 31, {
             "m_790_kgh": Result("323F010", "pull_kgh"),
             "sub_703": Result("323F010", "blowthrough_share"),
@@ -202,7 +236,8 @@ def steps() -> dict:
 
 
 def tears() -> tuple[DeclaredTear, ...]:
-    """The one-tick reads unit 324's stages make of the train (handoffs B-65, B-66)."""
+    """The one-tick reads unit 324's stages make of the train (handoffs B-65, B-66), and the
+    header's and the dosing's of PC35's trips (decision 228)."""
     return (
         DeclaredTear(State(TRAIN, "lag_state.324E002"), "324E001",
                      "324E002's cold end, lagged on its tubes' water (B-65), the train "
@@ -211,4 +246,9 @@ def tears() -> tuple[DeclaredTear, ...]:
                      "324E005's cold end, likewise"),
         DeclaredTear(State(TRAIN, "p_324e006_bara"), "324E003",
                      "324F004 discharges against 324E006's shell, a live node (B-66)"),
+        DeclaredTear(State(TRIPS_35, "actions"), "324E003",
+                     "AC4 PC35's actions, evaluated at the tick's end on the pumps' run feedback "
+                     "(decision 228)"),
+        DeclaredTear(State(TRIPS_35, "actions.p002_permit"), DOSING,
+                     "335P002A / B's interlock 35.3, likewise"),
     )

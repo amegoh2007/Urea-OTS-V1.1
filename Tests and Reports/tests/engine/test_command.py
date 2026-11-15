@@ -385,3 +385,14 @@ def test_a_command_reaches_the_plant_on_the_next_tick():
     before = s.tick().results["322R001"].m_out_kgh
     _ok(plant, type="hic605_set", op=45.0)
     assert s.tick().results["322R001"].m_out_kgh < before
+
+
+def test_the_pc35_overrides_are_keyswitches(plant):
+    """AC4 PC35's four overrides on trips 35.1, 35.3 and 35.4 (decision 228), maintained, released
+    at the seed; each turned and released by the one command."""
+    for hs in ("HS-335201A", "HS-335201B", "HS-335602", "HS-335620"):
+        assert plant.operator[hs] is False
+        _ok(plant, type="keyswitch_set", id=hs, on=True)
+        assert plant.operator[hs] is True
+        _ok(plant, type="keyswitch_set", id=hs, on=False)
+        assert plant.operator[hs] is False

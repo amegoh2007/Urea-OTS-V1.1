@@ -142,8 +142,10 @@ class ProcessLoop:
         if self.mode not in MODES:
             raise ValueError(f"unknown mode {self.mode!r} for {self.tag}")
 
-    def step(self, pv: float, dt: float, cas_sp: float | None = None) -> float:
-        """Advance one simulation tick and return the output [%].
+    def step(self, pv: float, dt: float, cas_sp: float | None = None,
+             hold: float | None = None) -> float:
+        """Advance one simulation tick and return the output [%]; with ``hold`` the output is
+        clamped there instead (AC4's CLAMP and its CLAMPREF, `hold`).
 
         Process utility
         ---------------
@@ -164,6 +166,8 @@ class ProcessLoop:
             instead of stepping its output by Kc times the PV's move through the outage, which
             is V1's behaviour and ``reseed_after_bad = False``.
         """
+        if hold is not None:
+            return self.hold(pv, hold)
         if not pv_ok(pv, self.sp):
             if self.reseed_after_bad:
                 self.pv1 = self.pv2 = math.nan                # the history through it is unknown
@@ -229,6 +233,19 @@ class ProcessLoop:
         self.pv2 = self.pv1
         self.pv1 = pv
         self.pv = pv
+
+    def hold(self, pv: float, op: float) -> float:
+        """AC4's CLAMP: the output forced to the clamp reference, the PV still watched; return it.
+
+        Process utility
+        ---------------
+        A trip parks a controller where its trip sends the valve (PC35's LIC-324501 at 100 %,
+        UD-MR-324-FF-0002 page 2), in any mode, so that when the trip clears the loop resumes from
+        there on a current PV history (`observe`) instead of from an output wound up meanwhile.
+        """
+        self.set_op(op)
+        self.observe(pv)
+        return self.op
 
     def set_mode(self, mode: str) -> None:
         """Select MAN, AUTO or CAS.

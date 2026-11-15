@@ -321,7 +321,8 @@ def test_a_reference_to_an_object_the_save_does_not_hold_is_refused():
 def test_every_shipped_exercise_loads_and_holds_no_retired_state(path):
     """The six shipped exercises carry no trip 22.2 record (cut from them on 2026-11-12) and load on
     the present model. Saved before decision 212, each lacks 322P002's field-set delivery and loads it
-    from the seed, the PFD's 744."""
+    from the seed, the PFD's 744; saved before decision 228, each lacks PC35's trips and loads them
+    healthy."""
     doc = json.loads(path.read_text(encoding="utf-8"))
     (trips,) = _objects(doc["state"], {})[SYNTHESIS_TRIPS]
     assert "i_22_2" not in trips["a"]
@@ -329,6 +330,7 @@ def test_every_shipped_exercise_loads_and_holds_no_retired_state(path):
     back = snapshot.load(str(path), build_plant()[1])
     assert set(back.units["SYN-TRIPS"].latched) == {"21_2", "21_8", "21_10"}
     assert back.operator[P002_DELIVERY_TAG] == M744_DES_KGH
+    assert back.units["335-TRIPS"].actions.p002_permit and not back.operator["HS-335201A"]
 
 
 @pytest.mark.parametrize("path", sorted(SCENARIOS.glob("*.json")), ids=lambda p: p.stem)

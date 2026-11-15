@@ -23,7 +23,7 @@ writes (7379-10414) and 11302-11318.
 
 from __future__ import annotations
 
-from ureasim.data.operator_commands import TRIP_21_HAND_SWITCHES
+from ureasim.data.operator_commands import TRIP_21_HAND_SWITCHES, TRIP_35_HAND_SWITCHES
 from ureasim.engine.packet._common import Tick
 from ureasim.engine.plant.boundary import BOUNDARY_SINKS
 
@@ -34,10 +34,11 @@ _PUMPS = ("323P001A", "323P001B", "328P003A", "328P003B", "335P002A", "335P002B"
            "328P007A", "328P007B", "328P006A", "328P006B", "328P002A", "328P002B", "323P008A",
            "323P008B", "323P003A", "323P003B", "335P001A", "335P001B")
 
-#: The pairs an AC4 low-level stop holds, by pair: the unit that holds the stop and its state.
+#: The pairs an AC4 motor-control interlock holds, by pair: the unit that holds it and its state —
+#: the low-level stops (decision 217) and 335P002's trip 35.3 (decision 228).
 _HELD = {"328P002": ("328D001", "p002_stopped"), "328P006": ("328C002", "p006_stopped"),
          "328P007": ("328C004", "p007_stopped"), "335P001": ("324E003", "p001_stopped"),
-         "323P008": ("323E011", "p008_tripped")}
+         "323P008": ("323E011", "p008_tripped"), "335P002": ("335-TRIPS", "p002_held")}
 
 
 def flags(t: Tick) -> dict:
@@ -63,9 +64,9 @@ def flags(t: Tick) -> dict:
 
 
 def _interlocks(t: Tick) -> dict:
-    syn = t.units["SYN-TRIPS"]
+    syn, t35 = t.units["SYN-TRIPS"], t.units["335-TRIPS"]
     return {"21_2": syn.i_21_2, "21_8": syn.i_21_8, "21_10": syn.i_21_10,
-            "22_1": t.units["TRIPS"].i_22_1}
+            "22_1": t.units["TRIPS"].i_22_1, "35_1": t35.flag_35_1, "35_4": t35.flag_35_4}
 
 
 def trips(t: Tick) -> dict:
@@ -90,8 +91,9 @@ def boundary_sinks(t: Tick) -> dict:
 def pumps(t: Tick) -> dict:
     """Each auxiliary pump's run state, its run command and mode under its tag (decision 222).
     ``on`` is the machine's run feedback, which the icon and the trend show: off while AC4's
-    low-level stop holds the pair (decision 217), its command still on. ``cmd`` is the operator's
-    command, which the START / STOP faceplate's live button follows."""
+    low-level stop holds the pair (decision 217), or trip 35.3 335P002 (decision 228), its command
+    still on. ``cmd`` is the operator's command, which the START / STOP faceplate's live button
+    follows."""
     out = {}
     for tag in _PUMPS:
         unit, held = _HELD.get(tag[:-1], (None, ""))
@@ -104,4 +106,4 @@ def pumps(t: Tick) -> dict:
 def hand_switches(t: Tick) -> dict:
     """Each maintained keyswitch's position, True turned, under its tag's key (decision 98)."""
     return {f"HS_{tag}": bool(t.operator[f"HS-{tag}"])
-            for tag in ("322915",) + TRIP_21_HAND_SWITCHES}
+            for tag in ("322915",) + TRIP_21_HAND_SWITCHES + TRIP_35_HAND_SWITCHES}

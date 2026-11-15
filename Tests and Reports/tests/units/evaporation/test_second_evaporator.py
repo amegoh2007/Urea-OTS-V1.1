@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import pytest
 
+from ureasim.control.granulation_trips import Unit35TripInputs, Unit35Trips
 from ureasim.data import unit_324 as d
+from ureasim.data import unit_335 as u335
 from ureasim.data.design_point import R324_FEED_DES
 from ureasim.data.unit_323 import MEVAP_DES_KGH, W_S317
 from ureasim.data.unit_329 import P_LP_BARA, P_MP_BARA
@@ -195,7 +197,19 @@ def test_the_seal_air_leg_uncovers_on_pic_335201s_stroke():
     assert r.seal_air_kgh == seal_air_kgh(level, stroke, p) > 0.0 == seal_air_kgh(level, 0.0, p)
 
 
-def _chain(n, cut_at=None, ac4=True, stop=True):
+def _trips_beside(trips, unit):
+    # AC4 PC35's trips on stage 2's state after its step, read a tick late as the engine reads them.
+    if trips is not None:
+        trips.step(Unit35TripInputs(not unit.p001_stopped, trips.actions.p002_permit,
+                                    unit.header.lv_a_position_pct <= u335.LVSL_324501A_PCT), 0.1)
+
+
+def _pc35():
+    return Unit35Trips(u335.TRIP_35_4_P002_TD_S, u335.LIC_324501_CLAMPREF_PCT,
+                       u335.PIC_335201_CLAMPREF_PCT)
+
+
+def _chain(n, cut_at=None, ac4=True, stop=True, trips=None):
     u1, l1 = fe.FirstEvaporator(), fe.FirstEvaporatorLoops()
     u2 = se.SecondEvaporator(ac4_header=ac4)
     if not stop:
@@ -206,7 +220,8 @@ def _chain(n, cut_at=None, ac4=True, stop=True):
         m = 0.0 if cut_at is not None and k >= cut_at else R324_FEED_DES
         r1 = u1.step(l1, m, 99.0, W_S317, P_LP_BARA, 4.1, 1.0, MEVAP_DES_KGH, None, TV2, 0.1)
         r2 = u2.step(l2, r1.m_401_kgh, r1.t_c, r1.w, P_MP_BARA, P_MOTIVE, P_E006, TV5,
-                     d.PIC_335201_DES_BARG, 0.1)
+                     d.PIC_335201_DES_BARG, 0.1, trips=trips.actions if trips else se.HEALTHY_35)
+        _trips_beside(trips, u2)
         out.append((r1, r2))
     return out
 
@@ -280,7 +295,7 @@ def test_a_lost_feed_on_ac4s_header_stops_335p001_on_ly_324501s_l2_b62():
     hysteresis). The pumps stop at 169.3 s on 4.99 %, the header drawing 69.5 t/h the tick before;
     with no feed the level cannot recover and the pair stays stopped, so the seal never uncovers and
     stage 2 holds 346.0 kg of melt at 175.33 C and 98.64 %, where with the stop off it drains to its
-    1 kg heel and draws air. Trips 35.1, 35.3 and 35.4 stay unbuilt (handoff B-146)."""
+    1 kg heel and draws air. Trips 35.1, 35.3 and 35.4 act beside it in the engine (decision 228)."""
     unit, loops = se.SecondEvaporator(), se.SecondEvaporatorLoops()
     out = []
     for k in range(3000):
@@ -312,3 +327,25 @@ def test_a_feed_pump_trip_on_ac4s_header_stops_335p001_on_ly_324501s_l2_b63():
     assert (r2.m_kg, r2.t_c, r2.w["Urea"]) == (pytest.approx(346.693, abs=1e-3),
                                                pytest.approx(162.1849, abs=1e-4),
                                                pytest.approx(0.98413, abs=1e-5))
+
+
+def test_on_b62_and_b63_the_trips_follow_the_l2_stop_and_leave_the_holdup_as_it_was():
+    """Decision 228 on §CXXI.6's two cases: the L2 stop loses 35.1 and 35.4 on its tick, and from
+    the next LV-324501A is shut, LIC-324501 clamped at 100 %, HV-335602 driven open and 335P002
+    held. With no feed the pumps stay stopped, so stage 2 holds what it holds without the trips, to
+    the bit: the seal is the L2 stop's. What the trips change is the valves: LV-324501A parked shut
+    where without them PIC-335201 winds it open on the empty header."""
+    trips, unit, loops = _pc35(), se.SecondEvaporator(), se.SecondEvaporatorLoops()
+    for k in range(3000):
+        feed = 0.0 if k >= 5 else d.P1_DES_KGH
+        r = unit.step(loops, feed, d.E001_T_DES_C, d.W_S401, P_MP_BARA, P_MOTIVE, P_E006, TV5,
+                      d.PIC_335201_DES_BARG, 0.1, trips=trips.actions)
+        _trips_beside(trips, unit)
+    assert (unit.m_kg, r.t_c, unit.w["Urea"]) == (pytest.approx(346.043, abs=1e-3),
+                                                  pytest.approx(175.3256, abs=1e-4),
+                                                  pytest.approx(0.98644, abs=1e-5))
+    assert (trips.flag_35_1.latched, trips.flag_35_4.latched, trips.p002_held) == (True,) * 3
+    assert (loops.level.op, unit.header.lv_a_position_pct, unit.header.hv_pct) == (100.0, 0.0, 100.0)
+    off, on = _chain(4000, cut_at=5), _chain(4000, cut_at=5, trips=_pc35())
+    assert [(a[1].m_kg, a[1].t_c, a[1].m_402_kgh) for a in off] == [
+        (b[1].m_kg, b[1].t_c, b[1].m_402_kgh) for b in on]

@@ -117,6 +117,10 @@ _KEY_NOTE = ("a maintained control-room keyswitch on AC4 PC21's trip 21.2 (UD-MR
 #: local, not keyswitches; each holds until it is released.
 _ESD_NOTE = ("emergency shut-off switch on AC4 PC21's trip 21.2 (UD-MR-G00-FF-0004): the lamp is "
              "amber while 21.2's flag is lost, green while the switch is operated")
+#: AC4 PC35's overrides are typed "DCS-software" by the trip schedule (UAN 01-3042, sheets 335/1+
+#: and 335/2+), each held until it is released.
+_PC35_NOTE = ("a maintained DCS-software override on AC4 PC35's trips (UD-MR-G00-FF-0004): the "
+              "lamp is amber while the trip's flag is lost, green while the override is on")
 DECIDED_ADDITIONS = (
     # Decided 2026-10-10 (project.md decision 98, handoff A-12's open screen elements): the five
     # hand switches of trip 21.2, so an operator can bypass its inputs and start the plant — the
@@ -165,6 +169,25 @@ DECIDED_ADDITIONS = (
                        "cmd": "granulation_headers",
                        "note": ("the granulator's header valves online, 0 to 12, each feeding two "
                                 "injection headers; DECREASE and INCREASE move one valve")}),
+    # Decided 2026-11-15 (decision 228, the process engineer's D3): AC4 PC35's four override
+    # switches on trips 35.1, 35.3 and 35.4, released at the seed, together in the free space below
+    # 335D004 beside the header's end.
+    ("screen-324-1b", {"k": "ovrhs335201a", "t": "ovrd", "x": 1200, "y": 540, "w": 120, "h": 18,
+                       "tag": "HS-335201A", "cmd": "HS-335201A", "xv": "HAND_SWITCHES.HS_335201A",
+                       "latch": "35_4",
+                       "note": "HS-335201A OVERRIDE TRIP 35.4 TO LV-324501A, " + _PC35_NOTE}),
+    ("screen-324-1b", {"k": "ovrhs335201b", "t": "ovrd", "x": 1200, "y": 570, "w": 120, "h": 18,
+                       "tag": "HS-335201B", "cmd": "HS-335201B", "xv": "HAND_SWITCHES.HS_335201B",
+                       "latch": "35_1",
+                       "note": "HS-335201B OVERRIDE TRIP 35.1 TO LV-324501B, " + _PC35_NOTE}),
+    ("screen-324-1b", {"k": "ovrhs335602", "t": "ovrd", "x": 1200, "y": 600, "w": 120, "h": 18,
+                       "tag": "HS-335602", "cmd": "HS-335602", "xv": "HAND_SWITCHES.HS_335602",
+                       "latch": "35_4",
+                       "note": "HS-335602 OVERRIDE TRIP 35.4 TO HV-335602, " + _PC35_NOTE}),
+    ("screen-324-1b", {"k": "ovrhs335620", "t": "ovrd", "x": 1200, "y": 630, "w": 120, "h": 18,
+                       "tag": "HS-335620", "cmd": "HS-335620", "xv": "HAND_SWITCHES.HS_335620",
+                       "latch": "35_4",
+                       "note": "HS-335620 OVERRIDE TRIP 35.3 TO 335P002A/B, " + _PC35_NOTE}),
 )
 
 #: Element types the process engineer decided to render as another type, every element of the

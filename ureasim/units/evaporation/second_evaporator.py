@@ -68,7 +68,8 @@ Where this stage departs from V1 — each a decided divergence, run both ways in
     LV-324501A, and both valves may pass melt — where V1 routes the whole drain to one valve on a
     boundary header (`melt_route.selector_drain`, the harness's side). AC4 stops 335P001A / B on
     LY-324501 below L2 (decision 217; MOTCON IC2, As-Built §CXIX.2): the header has no pumps from
-    L2 until the level clears it by the hysteresis (the limits the stand-in of `data.low_level_stops`).
+    L2 until the level clears it by the hysteresis (stand-ins, `data.low_level_stops`). PC35's trips
+    clamp LIC-324501 at 100 % on 35.1 and act on the header (decision 228).
 
 PV-329212 runs on its vendor trim (decision 23's class, decided 2026-10-14): Metso's DN 80
 balanced Neldisc, Cv 150, its printed capacities and Valmet's S-Disc shape between them as its curve
@@ -87,6 +88,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
+from ureasim.control.granulation_trips import HEALTHY_35, Unit35Actions
 from ureasim.control.interlocks import low_level_stop
 from ureasim.control.process_loop import ProcessLoop
 from ureasim.control.valve import cv_fraction
@@ -398,7 +400,8 @@ class SecondEvaporator:
              feed_w: dict, p_mp_bara: float, p_motive_bara: float, p_discharge_bara: float,
              t_vent_324e005_c: float, p_335201_barg: float, dt: float, *,
              headers_online: int = HEADER_VALVES_DES, hic_335602_pct: float = 0.0,
-             pump_running: bool = True) -> SecondEvaporatorResult:
+             pump_running: bool = True,
+             trips: Unit35Actions = HEALTHY_35) -> SecondEvaporatorResult:
         """Advance stage 2 by one tick.
 
         Arguments
@@ -420,9 +423,9 @@ class SecondEvaporator:
         p_335201_barg
             The 335 melt header [bar g] V1's selector reads, a battery-limit input: above
             PIC-335201's relief setting LIC-324501's demand goes to LV-324501B (V1's side only).
-        headers_online, hic_335602_pct, pump_running
-            AC4's side: the header valves online, HIC-335602 [%], 335P001A or B running; the
-            pair delivers nothing while AC4 holds it stopped on LY-324501's L2 (decision 217).
+        headers_online, hic_335602_pct, pump_running, trips
+            AC4's side: the header valves online, HIC-335602 [%], 335P001A or B running (nothing
+            while held below LY-324501's L2, decision 217), PC35's actions (decision 228).
 
         The order is V1's: the cascade acts on the state at the top of the tick and the chest is
         solved; the false air is the vacuum stroke the tick before, and PIC-324203 then steps on
@@ -547,7 +550,7 @@ class SecondEvaporator:
 
         # ----- LIC-324501 and the drain: the melt header (AC4), or V1's selector --------------
         level = clamp(m_pre / F003_M_FULL_KG * 100.0, 0.0, 100.0)
-        level_op = loops.level.step(level, dt)
+        level_op = loops.level.step(level, dt, hold=trips.lic_324501_hold_pct)
         # The drain takes only the melt above the 1 kg floor (decision 11's class).
         m_402_avail = (max(m_pre - F003_M_FLOOR_KG, 0.0) / max(dt, DT_FLOOR_S) * 3600.0
                        + feed_kgh - m_vap - m_boil)
@@ -556,7 +559,8 @@ class SecondEvaporator:
             l2 = L2_PCT["LY-324501"] if self.l2_stop else None
             self.p001_stopped = low_level_stop(self.p001_stopped, level, l2, L2_HYST_PCT)
             header = self.header.step(loops.header, level_op, headers_online, hic_335602_pct,
-                                      pump_running and not self.p001_stopped, m_402_avail, dt)
+                                      pump_running and not self.p001_stopped, m_402_avail, dt,
+                                      trips)
             m_402 = header.forward_kgh + header.recycle_kgh
             recycle, lv_a, lv_b = header.recycle_kgh > 0.0, header.lv_a_pct, header.lv_b_pct
             route = melt_split(header.forward_kgh, header.recycle_kgh, w_pre, self.t_c,
@@ -590,8 +594,7 @@ class SecondEvaporator:
 
 __all__ = [
     "P_MP_LAG_KEY", "EJECTOR_TAG", "W_EQ_FLOOR", "HEAT_CAPACITY_FLOOR_KJK", "FLOW_FLOOR_KGH",
-    "DT_FLOOR_S",
-    "tic_324002", "pic_329212", "pic_324203", "lic_324501", "SecondEvaporatorLoops",
+    "DT_FLOOR_S", "tic_324002", "pic_329212", "pic_324203", "lic_324501", "SecondEvaporatorLoops",
     "leg_urea_strength", "false_air_kgh", "SecondEvaporatorResult",
     "SecondEvaporator",
 ]

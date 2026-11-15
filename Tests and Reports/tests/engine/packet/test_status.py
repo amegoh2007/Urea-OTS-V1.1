@@ -17,7 +17,7 @@ V1_FLAGS = ["SCRUBBER_SOLIDIFICATION", "STRIPPER_SOLIDIFICATION", "LV322501_EROS
             "LV323505_BLOWTHROUGH", "LV323501_BLOWTHROUGH", "CARBAMATE_DEPOSITION",
             "RATIO_PV_BAD", "SYN_PSV_LIFT", "TOXIC_RELEASE", "LP_ABSORBER_OVERLOAD",
             "LP_ABSORBER_RELIEF", "EJECTOR_STALL"]
-TRIPS = ["21_2", "21_8", "21_10", "22_1"]
+TRIPS = ["21_2", "21_8", "21_10", "22_1", "35_1", "35_4"]
 
 
 def test_all_clear_at_design(design):
@@ -74,11 +74,12 @@ def test_the_boundary_sinks_publish_each_overflow_and_its_temperature():
 
 
 def test_the_hand_switches_publish_each_keyswitchs_position():
-    """Not V1's (decision 98, 2026-10-10): HS-322915 and trip 21.2's five, released at the seed;
-    HS-321634 turned reads turned."""
+    """Not V1's (decision 98, 2026-10-10): HS-322915 and trip 21.2's five, and PC35's four overrides
+    (decision 228), released at the seed; HS-321634 turned reads turned."""
     p = run(1).packet
     assert p["HAND_SWITCHES"] == dict.fromkeys(
-        ("HS_322915", "HS_321634", "HS_323604", "HS_322606", "HS_321603", "HS_321604"), False)
+        ("HS_322915", "HS_321634", "HS_323604", "HS_322606", "HS_321603", "HS_321604",
+         "HS_335201A", "HS_335201B", "HS_335602", "HS_335620"), False)
 
     def turned(plant):
         plant.operator["HS-321634"] = True

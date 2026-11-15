@@ -20,6 +20,7 @@ import math
 
 import pytest
 
+from ureasim.control.granulation_trips import HEALTHY_35, Unit35Actions
 from ureasim.control.valve import cv_fraction
 from ureasim.data import unit_324 as d
 from ureasim.data import unit_335 as u
@@ -263,3 +264,33 @@ def test_one_valve_fewer_rides_the_ceiling_and_lv_324501b_returns_the_excess(loa
     assert drain == pytest.approx(load * d.P2_DES_KGH, rel=5e-3)
     assert mh.nozzle_fraction(n, 3.8) < load < mh.nozzle_fraction(n + 1, 3.8) or math.isclose(
         mh.nozzle_fraction(n + 1, 3.5), load)
+
+
+def test_trip_35_4_shuts_lv_324501a_clamps_pic_335201_and_opens_hv_335602():
+    """Decision 228: on 35.4 LV-324501A's solenoid shuts it at once, PIC-335201 stands on its
+    stand-in clamp reference, 0 %, and HV-335602 opens in its 3 s; the header drains to 0 bar g."""
+    header, pic = mh.MeltHeader(), mh.pic_335201()
+    act = Unit35Actions(lv_324501a_shut=True, hv_335602_open=True,
+                        pic_335201_hold_pct=u.PIC_335201_CLAMPREF_PCT, p002_permit=False)
+    rs = [header.step(pic, LIC_324501_X_DES_PCT, HEADER_VALVES_DES, 0.0, True, NO_HEEL, 0.1, act)
+          for _ in range(31)]
+    assert all(r.lv_a_position_pct == r.lv_a_pct == r.forward_kgh == r.p_barg == 0.0 for r in rs)
+    assert rs[0].hv_pct == pytest.approx(100.0 / 30.0, abs=1e-12)
+    assert rs[29].hv_pct == pytest.approx(100.0, abs=1e-12) and rs[-1].hv_pct == 100.0
+    assert (pic.op, rs[-1].lv_b_pct, rs[-1].recycle_kgh) == (0.0, 0.0, 0.0)
+
+
+def test_trip_35_1_fails_lv_324501b_open_on_running_pumps():
+    """With an override holding 35.4's actions off and a pump running, LV-324501B fails open on its
+    full stroke whatever LIC-324501 asks."""
+    header, pic = mh.MeltHeader(), mh.pic_335201()
+    r = header.step(pic, LIC_324501_X_DES_PCT, HEADER_VALVES_DES, 0.0, True, NO_HEEL, 0.1,
+                    Unit35Actions(lv_324501b_open=True))
+    assert r.lv_b_pct == 100.0 and r.phi_recycle == mh.recycle_fraction(100.0) > 0.0
+
+
+def test_healthy_actions_are_the_call_without_them_to_the_bit():
+    a, pa, b, pb = mh.MeltHeader(), mh.pic_335201(), mh.MeltHeader(), mh.pic_335201()
+    for n in (HEADER_VALVES_DES,) * 5 + (HEADER_VALVES_DES - 1,) * 300:
+        assert (_step(a, pa, n=n) == b.step(pb, LIC_324501_X_DES_PCT, n, 0.0, True, NO_HEEL, 0.1,
+                                             HEALTHY_35))

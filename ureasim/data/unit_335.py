@@ -184,6 +184,22 @@ HV_335602_CLOSE_S = 25.0
 #: 13:36 (DCS legend, Group D, As-Built §CXVI.5).
 HIC_335602_DES_PCT = 0.0
 
+#: AC4 PC35.5.2's timer on 335P002A / B [s]: element .2, TD "10:0", ten minutes in the sheets'
+#: minutes:seconds (UD-MR-G00-FF-0004 PDF page 283; the trip schedule UAN 01-3042 sheet 335/2+ row 2,
+#: "with a delay of 10 min."). The scan does not resolve the element's mode; it is read as an on-delay
+#: of both pumps stopped, the process engineer's reading of 2026-11-15 (decision 228; data gap 5).
+TRIP_35_4_P002_TD_S = 600.0
+
+#: LVSL-324501A, LV-324501A's closed limit switch [% stroke]: at the closed end, the process
+#: engineer's stand-in of 2026-11-15 (decision 228). No document gives its setting (data gap 14).
+LVSL_324501A_PCT = 0.0
+
+#: The controllers' clamp references on PC35's trips [%] (UD-MR-324-FF-0002 page 2): LIC-324501's
+#: CLAMPREF 100, drawn; PIC-335201's is not drawn, and 0 %, the stroke its trip gives LV-324501A,
+#: is the stand-in (decision 228; data gap 5).
+LIC_324501_CLAMPREF_PCT = 100.0
+PIC_335201_CLAMPREF_PCT = 0.0
+
 __all__ = [
     "HEADER_VALVES_MAX", "HEADER_VALVES_DES", "HEADER_P_DES_BARG", "HEADER_P_DES_BARA", "HEADER_Q_DES_M3H",
     "PT_335201_SPAN_BAR", "PIC_335201_KC", "PIC_335201_TI_S", "PIC_335201_TD_S",
@@ -192,6 +208,7 @@ __all__ = [
     "LV_324501A_DP_DES_BAR", "LV_324501A_HEADER_OP_DES_PCT", "LV_324501A_TAU_S",
     "HV_335602_P_DOWN_BARA", "HV_335602_DP_CASE_BAR",
     "HV_335602_FULL_KGH", "HV_335602_OPEN_S", "HV_335602_CLOSE_S", "HIC_335602_DES_PCT",
+    "TRIP_35_4_P002_TD_S", "LVSL_324501A_PCT", "LIC_324501_CLAMPREF_PCT", "PIC_335201_CLAMPREF_PCT",
     "PFD_402G_KGH", "PFD_697_KGH", "PFD_697_T_C", "PFD_697_RHO_KGM3", "W_697", "UF_RATIO_DES",
     "UF85_DES_KGH", "FIC_335405_OP_DES_PCT", "FT_335405_TAU_S", "FFIC_335406_KC",
     "FFIC_335406_TI_S", "FFIC_335406_RATIO_HI", "FFIC_335406_RAT_LO", "FFIC_335406_RAT_HI",

@@ -46,7 +46,7 @@ from ureasim.engine.plant import (
     synthesis_loop,
 )
 from ureasim.engine.plant.boundary import boundary_values, operator_seeds
-from ureasim.engine.plant.evaporation import DOSING, MOTIVE, TRAIN
+from ureasim.engine.plant.evaporation import DOSING, MOTIVE, TRAIN, TRIPS_35
 from ureasim.engine.plant.steam import USERS
 from ureasim.engine.schedule import Result, Schedule
 from ureasim.engine.state import PlantState
@@ -58,7 +58,7 @@ ORDER = ("320K002", "321", "322F001", "322E001", "322E002", "322R001", "329", "3
          "HV-322604", "322-DISPLAY", "323C003", "323F004", "323F010", "323D002", "323C005",
          "328D003", "328E007", "328C002", "328C003", "328C004", "328D001", "322E006", "322C001",
          "323E003", "323E011", MOTIVE, "324E001", "324E003", DOSING, TRAIN, USERS, "SIC-323902",
-         "SYN-TRIPS", "TRIPS", "PT-329201")
+         "SYN-TRIPS", TRIPS_35, "TRIPS", "PT-329201")
 
 #: Each recycle tear and the producer output written into it when the tick is committed.
 TEAR_WRITES = {

@@ -71,3 +71,18 @@ def test_a_trip_21_2_keyswitch(bridge):
     plant = build_plant()[1]
     assert apply_command(plant, bridge.sent[-1]).ok and plant.operator["HS-321634"] is True
     key.close()
+
+
+def test_a_pc35_override(bridge):
+    """HS-335201A from its 324-1b element (decision 228): the override's position and 35.4's flag,
+    TURN a ``keyswitch_set`` the engine takes."""
+    from ureasim.data.screen_layout import OVERLAYS
+    el = next(e for e in OVERLAYS["screen-324-1b"] if e["k"] == "ovrhs335201a")
+    assert (el["cmd"], el["xv"], el["latch"]) == ("HS-335201A", "HAND_SWITCHES.HS_335201A", "35_4")
+    key = KeyswitchFaceplate(bridge, el)
+    key.show()
+    key.turn(True)
+    assert bridge.sent == [{"type": "keyswitch_set", "id": "HS-335201A", "on": True}]
+    plant = build_plant()[1]
+    assert apply_command(plant, bridge.sent[-1]).ok and plant.operator["HS-335201A"] is True
+    key.close()

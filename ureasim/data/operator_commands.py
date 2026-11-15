@@ -15,7 +15,8 @@ from __future__ import annotations
 from types import MappingProxyType
 
 __all__ = [
-    "FACEPLATE_MODES", "AUX_PUMP_SEEDS", "RUN_STATE_PAIRS", "TRIP_21_HAND_SWITCHES", "RATIO_SP_MIN",
+    "FACEPLATE_MODES", "AUX_PUMP_SEEDS", "RUN_STATE_PAIRS", "TRIP_21_HAND_SWITCHES",
+    "TRIP_35_HAND_SWITCHES", "RATIO_SP_MIN",
     "RATIO_SP_MAX",
     "STEAM_SP_MAX_BARA", "CPL_MAX_FACTOR", "FIC_329409_SP_MAX_FACTOR",
     "TIC_329005_SP_MIN_C", "EXT_OVERRIDE_TAG",
@@ -123,6 +124,13 @@ RUN_STATE_PAIRS = (
 #: bypasses as control-room keyswitches and HS-321603 / HS-321604 as emergency shut-off switches,
 #: control-room and local, each held until released — all five maintained, as built.
 TRIP_21_HAND_SWITCHES = ("321634", "323604", "322606", "321603", "321604")
+
+#: AC4 PC35's override switches on trips 35.1, 35.3 and 35.4 (UD-MR-G00-FF-0004 pages 282 and 283;
+#: the trip schedule UAN 01-3042 sheets 335/1+ and 335/2+ type each "DCS-software"), maintained,
+#: released at the seed (decision 228): HS-335201A holds LV-324501A's solenoid energised and
+#: PIC-335201 unclamped on 35.4; HS-335201B LV-324501B's and LIC-324501's on 35.1; HS-335602
+#: HV-335602's on 35.4; HS-335620 releases 335P002A / B's interlock 35.3.
+TRIP_35_HAND_SWITCHES = ("335201A", "335201B", "335602", "335620")
 
 #: The ammonia-to-CO2 ratio set point's limits [-]. Source: V1 ``ratio_set``.
 RATIO_SP_MIN, RATIO_SP_MAX = 2.0, 5.0

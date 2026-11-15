@@ -58,6 +58,7 @@ from typing import Any
 from ureasim.data.retired_state import (
     ADDED_ATTRIBUTES,
     ADDED_OPERATOR,
+    ADDED_UNITS,
     RETIRED_ATTRIBUTES,
     RETIRED_BOUNDARY,
 )
@@ -298,8 +299,8 @@ def _fill_added(obj: Any, ref: Any, seen: set) -> None:
 def adopt_added_state(plant: PlantState, reference: PlantState) -> None:
     """Bring a save made before a piece of state was added onto the present model (decision 226).
 
-    Each added operator entry is seeded and each added attribute filled from ``reference``, a
-    plant the present model builds, at the same path; a retired boundary value is dropped and
+    Each added operator entry and unit is seeded and each added attribute filled from
+    ``reference``, a plant the present model builds, at the same path; a retired boundary value is dropped and
     handed to the engine's adopter, and a header saved before LV-324501A had a positioner opens the
     valve at the stroke that passes the save's drain (decisions 236 and 238). A save holding all of
     it is left as it is.
@@ -308,6 +309,9 @@ def adopt_added_state(plant: PlantState, reference: PlantState) -> None:
     for key in ADDED_OPERATOR:
         if key not in plant.operator and key in reference.operator:
             plant.operator[key] = copy.deepcopy(reference.operator[key])
+    for key in ADDED_UNITS:
+        if key not in plant.units and key in reference.units:
+            plant.units[key] = copy.deepcopy(reference.units[key])
     unit = plant.units.get("324E003")
     header = _attributes(unit).get("header") if unit is not None else None
     lacks_position = header is not None and "lv_a_position_pct" not in _attributes(header)

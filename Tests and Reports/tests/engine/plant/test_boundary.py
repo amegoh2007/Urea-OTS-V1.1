@@ -12,7 +12,7 @@ reaches the next seed.
 from __future__ import annotations
 
 from ureasim.data.operator_commands import (AUX_PUMP_SEEDS, EXT_OVERRIDE_TAG, RUN_STATE_PAIRS,
-                                            TRIP_21_HAND_SWITCHES)
+                                            TRIP_21_HAND_SWITCHES, TRIP_35_HAND_SWITCHES)
 from ureasim.engine.plant.boundary import BOUNDARY_SINKS, boundary_values, operator_seeds
 
 
@@ -28,7 +28,7 @@ def test_the_operator_seeds_are_the_design_positions():
     assert s["XV-322903"] is True and s["GRANULATION-HEADERS"] == 10 and s["HIC-335602"] == 0.0
     assert s["FIC-322404"] == 1750.0
     assert s["HS-322915"] is False and s["HV-323D002-TIE"] is False
-    assert all(s[f"HS-{t}"] is False for t in TRIP_21_HAND_SWITCHES)
+    assert all(s[f"HS-{t}"] is False for t in TRIP_21_HAND_SWITCHES + TRIP_35_HAND_SWITCHES)
     assert all(s[pair] is True for pair in RUN_STATE_PAIRS)
     for pump, (on, mode) in AUX_PUMP_SEEDS.items():
         assert s[pump] == {"on": on, "mode": mode}

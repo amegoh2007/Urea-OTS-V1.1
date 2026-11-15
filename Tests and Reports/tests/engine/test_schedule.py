@@ -106,14 +106,14 @@ def test_a_lookup_walks_attributes_and_keys():
 # --------------------------------------------------------------------------------------
 
 def test_the_plants_schedule_is_v1s_order_every_unit_once():
-    """35 steps in V1's ``step_sim`` order: the synthesis loop's feeds and units (sections 1-3),
+    """36 steps in V1's ``step_sim`` order: the synthesis loop's feeds and units (sections 1-3),
     the network (4), 322E003 and HV-322604 (5), the loop's displayed indicators (6), the liquor
     train (7-13), unit 328 (14-20), 322C001 (22), the two LP condensers (23, 24), unit 324 (26-31) with unit
     335's UF85 dosing (30),
     the steam users' meter, 323P001B's standby faceplate (33), the trips (34, 35) and PT-329201
-    (37)."""
+    (37); AC4 PC35's trips, not V1's, at 34 with the synthesis trips (decision 228)."""
     s = P.schedule()
-    assert s.order == P.ORDER and len(set(s.order)) == len(s.order) == 35
+    assert s.order == P.ORDER and len(set(s.order)) == len(s.order) == 36
     assert [st.v1_section for st in s.steps] == sorted(st.v1_section for st in s.steps)
 
 
@@ -142,7 +142,7 @@ def test_the_plants_order_is_a_topological_order_of_its_torn_flowsheet():
 
 
 def test_every_one_tick_read_of_the_plant_is_declared_with_a_reason():
-    """78 declared tears, each read: the V1 recycles and their kin, every downstream
+    """80 declared tears, each read: the V1 recycles and their kin, every downstream
     pressure a unit reads before its owner steps, the steam users' draws, the trips' output; the
     synthesis loop's — PT-329201 to the seven units that read it, the trips' latches to the feeds
     (21.2's to 320K002 too, decided 2026-10-16: its flag shuts XV-322902) and the network, 322E003's sump to 322F001 (its mushy zone too) and to 322R001's pulse, the
@@ -152,9 +152,10 @@ def test_every_one_tick_read_of_the_plant_is_declared_with_a_reason():
     323C005 (A-20); and B-31's eight (decided 2026-10-16): 323E011's temperature to 323E003, unit
     324's four cold ends to 328D003, 328D001's, 328C003's and 328C004's temperatures to 328C002;
     and B-97's (decided 2026-10-16), 324F002's discharge temperature to 323C005; and B-105's two
-    (decided 2026-10-22), 308's composition and temperature to 322E003."""
+    (decided 2026-10-22), 308's composition and temperature to 322E003; and decision 228's two, PC35's
+    actions to 324E003 and its 335P002 interlock to the UF85 dosing."""
     s = P.schedule()
-    assert len(s.tears) == 78 and all(t.reason for t in s.tears)
+    assert len(s.tears) == 80 and all(t.reason for t in s.tears)
     assert set(s.tear_writes) == set(P.TEAR_WRITES)
 
 

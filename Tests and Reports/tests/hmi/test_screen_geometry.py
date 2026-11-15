@@ -237,14 +237,18 @@ def test_the_decided_additions_are_on_their_screens():
     """Decision 98 (2026-10-10): trip 21.2's five keyswitches and AI-329701, each on the screen of
     the equipment it serves, through the converter's `DECIDED_ADDITIONS`; decision 220
     (2026-11-13): 322-1's CO2 FEED panel at V1's own place; decision 224 (2026-11-14): 324-1b's
-    GRANULATION HEADERS panel, above the GRANULATION label."""
+    GRANULATION HEADERS panel, above the GRANULATION label; decision 228 (2026-11-15): PC35's four
+    overrides on 324-1b."""
     where = {el["tag"]: sid for sid, elements in OVERLAYS.items() for el in elements
              if el["k"] in ("ovrhs321634", "ovrhs321603", "ovrhs321604", "ovrhs322606",
-                            "ovrhs323604", "ai329701", "co2step")}
+                            "ovrhs323604", "ai329701", "co2step", "ovrhs335201a", "ovrhs335201b",
+                            "ovrhs335602", "ovrhs335620")}
     assert where == {"HS-321634": "screen-321-1", "HS-321603": "screen-321-1",
                      "HS-321604": "screen-321-1", "HS-322606": "screen-322-1",
                      "HS-323604": "screen-323-2", "AI-329701": "screen-329-1",
-                     "320K002": "screen-322-1"}
+                     "320K002": "screen-322-1", "HS-335201A": "screen-324-1b",
+                     "HS-335201B": "screen-324-1b", "HS-335602": "screen-324-1b",
+                     "HS-335620": "screen-324-1b"}
     steps = [(sid, el["k"], el["x"], el["y"]) for sid, elements in OVERLAYS.items()
              for el in elements if el["t"] == "step"]
     assert steps == [("screen-322-1", "co2step", 104, 378.5),

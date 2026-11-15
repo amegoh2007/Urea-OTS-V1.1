@@ -63,3 +63,16 @@ def test_without_a_bad_pv_the_two_sides_are_the_same_to_the_bit(monkeypatch):
     monkeypatch.setattr(ProcessLoop, "reseed_after_bad", False)
     v1 = _loop()
     assert [v1.step(pv, DT) for pv in trace] == a
+
+
+def test_a_clamp_holds_the_output_in_any_mode_and_the_loop_resumes_from_it():
+    """AC4's CLAMP (decision 228, PC35's LIC-324501 at 100 %): the output stands on the clamp
+    reference in AUTO and in MAN, the PV history stays current, and released the loop acts from the
+    reference on that history: no proportional kick, one integral step."""
+    loop = _loop()
+    for mode in ("AUTO", "MAN"):
+        loop.set_mode(mode)
+        assert loop.step(12.0, DT, hold=100.0) == 100.0 == loop.op
+    assert (loop.pv, loop.pv1, loop.pv2) == (12.0, 12.0, 12.0)
+    loop.set_mode("AUTO")
+    assert loop.step(12.0, DT) == pytest.approx(100.0 + 2.0 * DT / 60.0 * (10.0 - 12.0), abs=1e-12)
