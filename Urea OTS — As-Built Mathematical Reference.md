@@ -1647,6 +1647,7 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 347 | PV-329204, PV-329207A / B, PV-329208 and PV-329212 on Valmet's S-Disc table through their sheets' printed points (decision 170) | the chord between the printed points and from the last to wide open (decisions 108, 153) | `data/control_valves_metso` ``S_DISC_RELATIVE_CV``, ``_s_disc``; every unit's ``*_OP_DES_PCT`` through ``design_stroke_pct`` | **`[DECIDED DIVERGENCE]`** 2026-11-06: every printed point and the rated capacity kept, the table's shape between them; design strokes 55.9717 % (PV-329207B, 54.9630 on the chord), 27.2640 % (PV-329208, 27.2232) and 54.6843 % (PV-329212, 54.6805), PV-329204's 44.1 % and PV-329207A's full stroke unchanged; the chord rebuilt through ``_neldisc`` for the test, both ways in `test_decision_170_both_sides`; the nine conventional Neldiscs keep the chord (§CI.1) |
 | 348 | Trip 22.2 named as the simulator's own on the console (decision 174) | V1's faceplate and refusals: "TRIP 22.2", "trip 22.2" | `data/unit_322_loop` ``TRIP_LABELS``, ``trip_label``; `engine/command_payload` ``_trip_name``; `hmi/faceplates/pump` ``interlock_text`` | **`[DECIDED DIVERGENCE]`** 2026-11-06: "22.2 (simulator)" wherever the console names the trip; the trip's logic and set points V1's (§CIII.3) |
 | 349 | The nine conventional Neldiscs on Valmet's L-series Cv rows through their sheets' printed points (decision 178) | the chord between the printed points and from the last to wide open (decisions 108, 153) | `data/control_valves_metso` ``L_SERIES_CV``, ``_l_series``, ``_through_table``; each unit's design stroke through ``design_stroke_pct`` | **`[DECIDED DIVERGENCE]`** 2026-11-07: every printed point and the rated capacity kept; design strokes +0 to +0.54 stroke-%; both sides pinned in `tests/data/test_control_valves_metso.py` (§CIII.10) |
+| 350 | AC4's low-level stops of 328P002A / B, 328P006A / B, 328P007A / B and 335P001A / B (decision 217) | — (V1 none: its pumps run to the heel, decision 11's floor) | `control/interlocks` ``low_level_stop``; `data/low_level_stops` ``L2_PCT``, ``L2_HYST_PCT``; each unit's ``l2_stop`` and ``p002_stopped``, ``p006_stopped``, ``p007_stopped``, ``p001_stopped`` | **`[DECIDED DIVERGENCE]`** 2026-11-15: each pair stops below 5 % on its level and runs again at 7 %, the process engineer's stand-in (data gap 8); ``l2_stop = False``, V1's, on the harnesses; both sides in the three desorption decided tests and, on AC4's header against V1's selector, which throttles and has no stop, in `test_second_evaporator_decided_equivalence.py`; the seed identical to HEAD (§CXXIX.1) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -22048,7 +22049,7 @@ decided after Wave 3, and nothing is: it was skipped.
 
 No data gap closes: none has its datum. What changed is how cheaply each will close when its datum arrives.
 
-**The stand-ins, one row each** (`tests/data/test_data_gap_standins.py`, 21 tests, pins every value below; the
+**The stand-ins, one row each** (`tests/data/test_data_gap_standins.py`, 23 tests, pins every value below; the
 day a readback or a curve arrives, closing the gap is the constant changed and its row re-pinned):
 
 | gap | constant (`ureasim/data/`) | stand-in | stands in for | other tests that pin it |
@@ -22058,7 +22059,7 @@ day a readback or a curve arrives, closing the gap is the constant changed and i
 | 3 | `ejector_map(tag).k_capacity` (`units/evaporation/ejector_map.py:237`), computed from `data/unit_324.py:289` `EJECTOR_DESIGN_LOADS` | 324F002 0.33635, 324F004 0.91921, 324F005 0.49739 | the in-situ factors anchoring each vendor map on the PFD's design load (B-61); the curves would replace the map | `units/evaporation/test_ejector_map.py` |
 | 4 | `unit_324.py:354-355` `F003_M_TAU_S`, `F003_LEVEL_SP_PCT` | 180 s, 54.7 % | LI-324501 on V1's holdup ratio | - |
 | 5 | `unit_322_loop.py:193, 188` `TRIP_21_2_FY_L2_FRAC`, `TRIP_21_8_PDY_L2_BAR` | 0.05, 0.1 bar | FY-322403's L2 (V1's 21.4 threshold), PDY-321203 / 204's L2 | the synthesis-loop equivalence suite (V1 side) |
-| 8 | `unit_323e011.py:238, 244` `LT_323503_L2_PCT`, `LT_323503_L2_HYST_PCT` | 5.0 %, 2.0 % | LT-323503's L2 (the faceplate's) and its restart hysteresis | `units/recirc/test_flash_condenser.py` |
+| 8 | `unit_323e011.py:238, 244` `LT_323503_L2_PCT`, `LT_323503_L2_HYST_PCT`; `low_level_stops.py` `L2_PCT`, `L2_HYST_PCT` | 5.0 %, 2.0 %; 5.0 % on LT-328501, LT-328503, LT-328505 and LY-324501, 2.0 % | LT-323503's L2 (the faceplate's) and its restart hysteresis; the four other AC4 L2 stops and theirs (decision 217) | `units/recirc/test_flash_condenser.py`; `data/test_low_level_stops.py`, the three desorption unit tests, `units/evaporation/test_second_evaporator.py` |
 | 9 | `unit_335.py:75-76` `FIC_335405_KC`, `FIC_335405_TI_S` | 100 per t/h, 15 s | FIC-335405's tuning, V1's | - |
 | 10 | `unit_324.py:221, 220` `E001_COND_TAU_S`, `E001_COND_LEVEL_SP_PCT` | 90 s, 50.0 % | LI-329505 on V1's holdup ratio | - |
 
@@ -25721,3 +25722,147 @@ entry existed, restores it at PFD 744 (`test_every_shipped_exercise_loads_and_ho
 them the suite collects 8 336; the files they touch were rerun and pass, the whole suite not again. The whole suite in 15 parallel groups:
 8 335 collected, 8 334 passed, 1 failed, A-40's `test_a_bad_sample_costs_one_tick_of_control_action_and_nothing_else`
 as on HEAD.
+
+# Part CXXIX — Session 119: A-38, A-40, A-41 and A-50 closed: four low-level stops, 328P007 as built, two tests restated (2026-11-15)
+
+Opus with the Fable advisor. The process engineer's answers of 2026-11-15: 328P007 kept as built (decision 215); the
+bad-sample test restated on decision 186 (decision 216); L2 = 5 % for all four AC4 low-level stops (decision 217).
+V1.1's `master` was pushed to its own repository (`origin`, `Urea-OTS-V1.1`). The plan, the scratch scripts and the
+run files are in `D:\Work\reports\Session_119_build`.
+
+## CXXIX.1 The four low-level stops (decision 217)
+
+AC4's motor-control blocks (UD-MR-G00-FF-0004, §CXIX.2) wire each pair's process interlock IC2 to its suction level
+below L2. Built in the unit that holds the level and the flow, as 323P008's stop on LT-323503 (B-93, B-96):
+
+| Pair | Level, as the unit computes it | Unit | Stream stopped |
+|---|---|---|---|
+| 328P002A / B | LI-328501 between its taps (`lt_328501_pct`) | `units/desorption/reflux_drum` | 775 (FIC-328404) and 776 (LV-328501) |
+| 328P006A / B | LI-328503, M / M_des x 50 | `units/desorption/first_desorber` | 743 (LV-328503) |
+| 328P007A / B | LI-328505, M / M_des x 50 | `units/desorption/second_desorber` | LV-328505's letdown (decision 215) |
+| 335P001A / B | LY-324501, M / M_full x 100 | `units/evaporation/second_evaporator` (AC4's header only) | the header's pumps: forward melt and LV-324501B's return |
+
+    stopped' = level < L2 + hyst   if stopped
+               level < L2          otherwise          (control.interlocks.low_level_stop)
+    delivering = pump_running and not stopped
+
+L2 = 5.0 % (LT-323503's read-back limit, decision 103) and hyst = 2.0 % (decision 111's class), both the process
+engineer's stand-ins in `data/low_level_stops.py`, logged in data gap 8. The level is the one the LIC reads at the top
+of the tick; NaN compares False and stops nothing. No latch, no reset (decision 39). The unit holds the stop's
+switch, ``l2_stop`` (False, V1's, is no stop), and reads its L2 from `data/low_level_stops.py` on every tick: a save
+carries the switch and never the stand-in, so a restored exercise stops on the limit the model holds then
+(`tests/engine/test_snapshot.py`). The stop state is unit state (``p002_stopped``, ``p006_stopped``,
+``p007_stopped``, ``p001_stopped``) and, with ``l2_stop``, is filled on a save made before it
+(`data/retired_state.ADDED_ATTRIBUTES`).
+Not built: the pump icon's run feedback; as for 323P008, the operator's run entry stays True while AC4 holds the pair.
+
+Measured on the unit tests' drain scenarios, each valve wide open from the design seed:
+
+| Unit | First stop | Level then | Runs again | Level then | Heel reached |
+|---|---|---|---|---|---|
+| 328D001, LV-328501 at 100 % (dt 0.5 s) | 303.5 s | 4.97 % | 331.0 s | 7.04 % | never (cycles about every 41 s) |
+| 328C002, LV-328503 at 100 % (dt 0.1 s) | 34.9 s | 4.87 % | 42.1 s | 7.00 % | never |
+| 328C004, LV-328505 at 100 % (dt 0.5 s) | 414.0 s | 4.96 % | 420.5 s | 7.08 % | never |
+
+With the stop off the three reach their heels at 548, 38.6 and 461 s, as before (decision 11's tests, now run with
+``l2_stop = False``). B-62 and B-63 on AC4's header (`test_second_evaporator.py`):
+
+| Case | Stop on | Stop off (the record before decision 217) |
+|---|---|---|
+| B-62, the feed lost at 0.5 s | 335P001 stops at 169.3 s on 4.99 % (the header drawing 69.5 t/h the tick before); no restart; the seal never uncovers; 346.0 kg held at 175.33 C, 98.64 % | the seal uncovers at 176.5 s, the heel at 187.3 s, 1 kg at 175.36 C |
+| B-63, 323P003 stopped at 0.5 s | stops at 354.0 s on 4.99 %; no restart; no seal air; 346.7 kg held at 162.18 C, 98.41 %, never below 140 C | the seal at 361.3 s, the heel at 372.2 s, 1.9 t/h of air |
+
+The seed: a 600 s arm of the working tree against an export of HEAD 2ede52a, every flattened packet leaf (755) hashed
+on its exact repr each tick: 6 000 ticks, none differs, no leaf added or removed.
+
+Both sides of decision 217, against V1 (`ALL - {"heel"}` on V1's side, so V1 drains as it does). The three
+desorption pairs, each valve wide open from the design seed: the sides are identical to the tick the port's level
+first reads below L2; there the port's pair stops and V1's runs on to its heel and its 1 kg floor makes the
+liquid; the port runs again at 7 %, is never at its heel and makes none. 335P001, on AC4's header (decision 224)
+against V1's selector, stage 1's leg stopped at 0.5 s: they part on tick 6, AC4's header; V1's selector throttles
+LV-324501 as the level falls and needs no stop.
+
+| Test | Parted | V1 after | Port after |
+|---|---|---|---|
+| `test_328p006s_low_level_stop_decided_divergence` (`test_first_desorber_equivalence.py`, dt 0.1 s) | tick 349 (743 nothing) | to its heel; its floor makes more than 1 kg | runs again at tick 421; never at the heel; books closed to 1e-9 |
+| `test_328p002s_low_level_stop_decided_divergence` (`test_reflux_drum_decided_equivalence.py`, dt 0.5 s) | tick 607, 303.5 s | 776 at 28 162.75 kg/h, 3.60 t made (decision 11's numbers) | never at the heel; books closed to 1e-6 |
+| `test_328p007s_low_level_stop_decided_divergence` (`test_second_desorber_decided_equivalence.py`, dt 0.5 s) | tick 828, 414.0 s | 739 at 44 466.4 kg/h, 2.20 t made | never drained; books closed to 1e-6 |
+| `test_335p001s_low_level_stop_on_ac4_decided_divergence` (`test_second_evaporator_decided_equivalence.py`, dt 0.1 s) | the stop at tick 1 693, 169.3 s, 69.5 t/h forward the tick before | at 300 s still drains 352 kg/h, 775 kg held | nothing forward after the stop, 345.6 kg held, no seal air |
+
+The equivalence harnesses build the port's three desorption units with ``l2_stop = False``, V1's line, so
+decision 11's heel tests and every tick-by-tick scenario run as before; decision 217 has its own tests above.
+
+
+## CXXIX.2 328P007's service kept as built (decision 215)
+
+P&ID 104 (UD-VT-328-FB-0003, the renders in `D:\Work\reports\Session_113_review\pid`, read again in this session):
+the suction manifold 100-CPP3-328177 / 328178 continues past both pumps' suction tees as 100-CPP3-328105, which runs to
+LV-328505 and the cooling-tower make-up (329107); the pumps discharge into 80-CPP3-328104 to sheet 135 (335002, the
+granulation unit) and 50-CPP3-328110. The PFD gives 739, 740 and 741 at 3.9 bar a and 740 at 34.9 m3/h against the
+pumps' rated 25 m3/h (KSB CPK 50-160). On the drawings the pair moves no modelled stream. The process engineer kept
+decision 227's wiring: both machines stopped, or AC4's stop on LT-328505, and LV-328505 passes nothing. A-41 (2) is
+closed as built; the docstrings of `second_desorber` and `data/unit_328e007` keep the as-built service.
+
+## CXXIX.3 The bad-sample test restated (decision 216)
+
+`test_a_bad_sample_costs_one_tick_of_control_action_and_nothing_else` (`tests/equivalence/test_co2_line_equivalence.py`),
+PIC-322203 (act -1, no derivative), a PV rising 0.5 bar a tick with one NaN at tick 45: identical to the clean loop to
+tick 45; frozen open at tick 46; at tick 47 the integral alone, to the bit, a[47] = a[46] + act Kc (dt / Ti)(SP - PV);
+from then on the clean loop's moves, offset by act Kc (PV_47 - PV_45) = -1.0 % of stroke, within 1e-9, neither loop on
+a rail in the window. V1's step on recovery is asserted with `ProcessLoop.reseed_after_bad = False` in
+`tests/control/test_process_loop.py`. The suite's one standing failure is gone.
+
+## CXXIX.4 The azeotrope test on window statistics (A-50)
+
+The scenario of `test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence`
+(`tests/equivalence/test_synthesis_loop_decided_equivalence.py`): the CO2 boundary +20 % at 0.5 s with 321P002B held,
+322E002 on B-106's branch, traced tick by tick to 200 s on exports of three trees, 89428cc (before decision 224),
+4593bb2 (before decisions 236 and 237) and 2ede52a (HEAD). From 10 s on the port's condensation is a sawtooth, near
+tick 1 000 about 120 t/h down to nothing in some 20 ticks (175 to 178 t/h at its highest, late in the run), with a
+tick-to-tick alternation on it: on each tree about 1 000 of the 1 900 ticks from 10 s change the sign of the
+liquid's step by more than 1 t/h. V1's stays within 197.6 to 199.5 t/h from 95 to 105 s and 181 to 205 t/h over
+the run. Single ticks move between the trees; window means do not:
+
+| Statistic | 89428cc | 4593bb2 | 2ede52a | Asserted |
+|---|---|---|---|---|
+| port liquid at tick 1 000, t/h (the old pin) | 74.62 | 89.06 | 82.25 | dropped |
+| port liquid, mean over ticks 501 to 1 500, t/h | 71.474 | 71.495 | 71.488 | 71.49 +/- 0.1 |
+| V1 liquid, the same window, t/h | 197.982 | 197.989 | 197.983 | 197.98 +/- 0.05 |
+| port PT-329201, mean over ticks 901 to 1 100, bar a | 147.6765 | 147.6775 | 147.6775 | 147.677 +/- 0.005 |
+| V1 PT-329201, the same window, bar a | 141.0222 | 141.0223 | 141.0223 | 141.0222 +/- 0.0005 |
+| port PT-329201 first at 155 bar a, tick | 1 905 | 1 922 | 1 913 | after tick 1 800 |
+| port PT-329201, mean over ticks 1 801 to 2 000, bar a | 154.8922 | 154.9002 | 154.9000 | 154.90 +/- 0.03 |
+| V1 PT-329201, the run's maximum, bar a | 141.6930 | 141.6936 | 141.6936 | below 141.7 |
+
+Tick 50's pins are kept, identical on the three trees: N/C 2.6159 against 2.5162, the bubble pressure 162.928
+against 135.140 bar a, 72.390 % saturated. The restated test passes on the working tree. A test change only; A-50
+closed.
+
+The ring read per tick, ticks 988 to 1 011 on 2ede52a: the liquid is the saturated fraction times 202.4 to 202.8
+t/h on every tick; through the fall the melt's N/C goes from 2.44 to 2.31, its bubble pressure from 181 to 212 bar
+a and the fraction from 0.49 to 0.12. The alternation is on the fraction (0.494, 0.535, 0.513, 0.529 at ticks 988
+to 991) and dies within the fall. The test runs the synthesis harness's plant, which reads B-91's fraction a tick
+late as V1's transcription does (`harness_plant`, ``implicit_saturation = False``); the engine solves it on the
+tick (A-21, decided 2026-10-17). The same scenario on 2ede52a with the fraction solved on the tick:
+
+| | the harness's tear | solved on the tick (the engine) |
+|---|---|---|
+| sign changes of the liquid's step above 1 t/h, ticks 101 to 2 000 | 1 013 | 38 |
+| the sawtooth's cycle, ticks (mean) | 56 to 79 (66.5) | 41 to 60 (49.6) |
+| the liquid, ticks 101 to 2 000, t/h | 0.01 to 174.9 | 0.01 to 130.7; up to 43.5 a tick |
+| the melt's N/C, ticks 101 to 2 000 | 2.205 to 2.528 | 2.216 to 2.481 |
+| the liquid, mean over ticks 501 to 1 500, t/h | 71.488 | 65.271 |
+| PT-329201, mean over ticks 901 to 1 100, bar a | 147.6775 | 147.4842 |
+| PT-329201 first at 155 bar a, tick; at tick 2 000, bar a | 1 913; 155.7516 | 1 948; 155.5876 |
+| tick 50: N/C, bubble pressure (bar a), saturated | 2.6159, 162.928, 72.390 % | 2.6173, 162.382, 72.081 % |
+
+The tick-to-tick alternation is the tear's, which A-21 removed from the engine. The sawtooth is the engine's own,
+on B-106's branch and A-21's solve, both its defaults: raised as A-57. Script: `ring_trace_implicit.py`.
+
+## CXXIX.5 The checks
+
+Every module touched is at or below 600 lines; the PyQt6 grep prints nothing; `tests/docs` and the layering test
+pass. The seed is identical to HEAD (§CXXIX.1). The whole suite, in 15 parallel groups: 8 353 passed, 0 failed, 0 skipped.
+Added after it: 335P001's both-sides test (§CXXIX.1) and decision 217's class in `docs/decided-classes.md`, from
+the advisor's audit; from the code review, each stop's switch in place of its stored limit, with the restore test
+(§CXXIX.1). Their files were rerun and pass, and the seed is again identical to HEAD.

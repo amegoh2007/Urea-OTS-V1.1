@@ -4,7 +4,7 @@
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-15, session 118
+**Last updated:** 2026-11-15, session 119
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -22,14 +22,13 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A four (A-38, A-40, A-41 and A-50), Section B nine (B-118 with B-120
-  folded in, B-125 to B-128, B-135, B-136, B-146 and B-156), Section C none, 11 open data gaps. Every data gap
+* **Open.** `handoff.md`: Section A one (A-57), Section B nine (B-118 with B-120 folded in, B-125 to B-128,
+  B-135, B-136, B-146 and B-156), Section C none, 11 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`D:\Work\reports\DCS readback checklist.md`).
 * **Session 113 reviewed sessions 111 and 112** on their files (Part CXXIII; report and the plans for sessions 114
-  and 115 in `D:\Work\reports`, `Sessions 111 and 112 review s113.md`). The full suite on HEAD 4593bb2: 8 156 passed,
-  1 failed (A-40), none skipped. Session 112's 92.3 % S + B arms ring and were scored unsettled; the licensor's
-  bubble point follows the system pressure, which the engine's reactor cap does not separate from the inerts'.
-  328P007's run state contradicts P&ID 104 (A-41).
+  and 115 in `D:\Work\reports`, `Sessions 111 and 112 review s113.md`). Session 112's 92.3 % S + B arms ring and
+  were scored unsettled; the licensor's bubble point follows the system pressure, which the engine's reactor cap
+  does not separate from the inerts'.
 * **Sessions 117 and 118** (Parts CXXVII, CXXVIII; decisions 210 to 214). V1.1 runs and tests without V1: the 38 V1
   files the suite reads are copied byte for byte into `tests/equivalence/v1_reference` with a SHA-256 manifest (A-33
   closed). The trend window has a CLEAR button; A-38's sixteen modules have unit tests. Session 118 searched the
@@ -37,8 +36,13 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   engineer's three choices: 322P002's delivery is set by hand in the field from the instructor's panel, as Operating
   Manual III sets it at FI-322402 (decision 212, B-133 closed); B-145 is closed as built, LV-324501B's floor being its
   sheet's 50:1 (decision 213); the seven levels still on V1's holdup ratio move to their sheets' nozzles unit by unit
-  (decision 214, B-156). The suite: 8 336 tests, all but A-40's passing. Research:
-  `D:\Work\reports\Session_118_research`.
+  (decision 214, B-156). Research: `D:\Work\reports\Session_118_research`.
+* **Session 119 closed A-38, A-40, A-41 and A-50** (Part CXXIX; decisions 215 to 217). `master` is pushed to its own repository.
+  AC4's low-level stops of 328P002, 328P006, 328P007 and 335P001 are built on the process engineer's 5 % L2 with
+  2 % hysteresis (decision 217, A-41); 328P007's service is kept as built (decision 215); the bad-sample test is
+  restated on decision 186 (decision 216, A-40); A-38's run flags have tests; the azeotrope test asserts B-106 on
+  window means three trees agree on (A-50); the engine's own sawtooth there is raised as A-57. The seed is unchanged to the bit. The
+  suite: 8 355 tests, all passing (the whole suite, 8 353, before the review's fix and 335P001's test; their files rerun after). Scratch: `D:\Work\reports\Session_119_build`.
 * **Session 116 built A-51's choice** (Part CXXVI; decisions 236, 237): LV-324501A follows PIC-335201 on a 1 s
   positioner lag inside the header solve (a stand-in, data gap 12) and takes its sheet's 6.9 bar a inlet. One header
   valve now steps the header as the plant did on 5 November 2026 (ratio within 0.004, PIC-335201's kick within 0.4 %).
@@ -59,18 +63,18 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   222), V1 read from its copy on D: (decision 223). Session 111 built the melt header from the twelve header
   valves (the GRANULATION HEADERS panel on 324-1b), LV-324501A on 335P001's curve, LV-324501B and HV-335602, with
   PIC-335201 inside the solve and LIC-324501's X setting its set point (decisions 224 to 226; saves migrate), and
-  a run state on the eight pump pairs that had none (decision 227), one commit each. Open from it: the four pairs'
-  L2 stops and 328P007's service (A-41) and 324F003's low-level protection (B-146).
+  a run state on the eight pump pairs that had none (decision 227), one commit each. Open from it: trips 35.1, 35.3
+  and 35.4 (B-146); the L2 stops and 328P007's service were closed by session 119.
   Scratch: `D:\Work\reports\Session_110_console`, `Session_111_console`.
 
 ## Next free numbers
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 119 | `docs/history/session-log.md` |
-| Decision | 215 | `docs/decisions.md` |
-| As-Built Part | CXXIX | the As-Built reference, appended at its end |
-| Handoff Section A | A-57 | `handoff.md` |
+| Session | 120 | `docs/history/session-log.md` |
+| Decision | 218 | `docs/decisions.md` |
+| As-Built Part | CXXX | the As-Built reference, appended at its end |
+| Handoff Section A | A-58 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers
@@ -87,7 +91,7 @@ the console session uses only this row, cuts it to the numbers it used and marks
 | B-118, 322R001's loop (`B-118 plan prompt s107.md`'s successor; 2026-11-13) | 108, taken | none taken | CXVIII, taken | none taken |
 | B-118, the laws S and B in scratch (`Session 112 plan prompt s109.md`; claimed 2026-11-14, session 109) | 112, taken | none taken | CXXII, taken | none taken |
 | B-118, the wave session 112 left (`Session 114 plan prompt s113.md`; claimed 2026-11-15, session 113) | 114 | 205 to 209 | CXXIV | A-52, B-150 to B-152 |
-| the build: trips 35.1 / 35.3 / 35.4, 328P007, A-38's flags, A-50 (`Session 115 plan prompt s113.md`; 2026-11-15) | 115 | 228 to 235 | CXXV | A-53 to A-55, B-153 to B-155 |
+| the build: trips 35.1 / 35.3 / 35.4 (`Session 115 plan prompt s113.md`'s Track B; 2026-11-15; its 328P007, A-38 and A-50 tracks done by session 119) | 115 | 228 to 235 | CXXV | A-53 to A-55, B-153 to B-155 |
 | A-51, the melt header's step on a header valve (claimed 2026-11-15, session 113) | 116, taken | 236 to 238, taken | CXXVI, taken | A-56, taken |
 
 ---

@@ -1162,3 +1162,22 @@ decision on an item.
      LT-329501 each move to read between the nozzles Uhde's data sheet prints, on their vessel's datasheet
      geometry with the design level reproduced, one unit a session, each measured on both sides before it is
      built; B-156 stays open as the work list. As-Built §CXXVIII.5.
+215. **328P007A / B's run state keeps stopping LV-328505's letdown** (2026-11-15, the process engineer's choice on
+     handoff A-41 (2), closed as built). P&ID 104, the PFD (739 to 741 all at 3.9 bar a) and the pumps' data sheet
+     (KSB CPK 50-160, 25 m3/h, "to the granulation unit") draw stream 740 to LV-328505 past the pumps' suction
+     manifold, so on the drawings the pair moves no modelled stream; decision 227's wiring, after `Mapping of Desorber
+     Hydrolyzer unit.md`, stops LV-328505's flow with both machines, and it stays. As-Built §CXXIX.2.
+216. **A-40's test is restated on decision 186** (2026-11-15, the process engineer's choice; handoff A-40 closed). The
+     bad-sample test asserts the loop frozen on the bad tick, its integral alone on the first good sample, to the bit,
+     and afterwards the clean loop's moves offset by the proportional step not taken, 1.0 % of stroke; V1's step on
+     recovery stays asserted in `tests/control/test_process_loop.py`. A test change only. As-Built §CXXIX.3.
+217. **AC4's low-level stops of 328P002, 328P006, 328P007 and 335P001 are built on a 5 % stand-in** (2026-11-15, the
+     process engineer's choice on handoff A-41 (1), closed). Each pair's motor-control interlock IC2
+     (UD-MR-G00-FF-0004, As-Built §CXIX.2) stops both machines while LT-328501, LT-328503, LT-328505 or LY-324501
+     stands below its L2. Neither archive gives the L2 values, so every limit is LT-323503's read-back 5 % (decision
+     103), with decision 111's 2-unit hysteresis, held in `data/low_level_stops.py` and logged in data gap 8 until
+     the readback. Built as 323P008's stop (B-93): in the unit that holds the level and the flow
+     (`control.interlocks.low_level_stop`), no latch (decision 39), ``l2_stop = False`` V1's. The seed is unchanged to
+     the bit. A save carries the switch, never the limit, which the unit reads from the data module on every tick;
+     a save made before it fills the new state (`ADDED_ATTRIBUTES`). A decided divergence: V1 has no such stop.
+     As-Built §CXXIX.1.

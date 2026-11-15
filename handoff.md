@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-15, session 118.
+**Last updated:** 2026-11-15, session 119.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -20,43 +20,21 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 # Section A — Rewrite issues
 
-A-38 was raised by session 99 (§CX.6); A-40 by session 105 (§CXV.2); A-50 by session 113 (Part CXXIII).
+A-57 was raised by session 119 (Part CXXIX).
 
-### A-40 — The CO2 line's bad-sample test predates decision 186
+### A-57 — 322E002's condensation cycles every 5 s below N/C 3.0
 
-*Raised 2026-11-12, session 105 (As-Built §CXV.2).* `test_a_bad_sample_costs_one_tick_of_control_action_and_nothing_else`
-(`tests/equivalence/test_co2_line_equivalence.py`) asserts that after one bad sample PIC-322203 is, to the bit, the loop
-that never saw it. Decision 186 made `ProcessLoop` reseed its PV history on the first good sample, which drops one
-tick's proportional step by design (1.0 % of stroke on the tick after the frozen one). It is the suite's one failure on
-HEAD (§CXXIII.1). The process engineer's answer of 2026-11-12: not decided, the test stays failing. Options: (a) restate
-the test as decision 186's (frozen for the bad tick, the integral alone on the next, then the clean loop's increments;
-its V1 sibling still asserts V1's kick), a test change only; (b) reopen decision 186. Next step: the process engineer's.
-
-### A-38 — Five run flags have no unit test
-
-*Raised 2026-11-11, session 99 (As-Built §CX.6); widened session 113 (§CXXIII.2); the sixteen modules tested in
-session 117 (§CXXVII.3).* Decision 227's `pump_running` in `first_desorber`, `reflux_drum`, `second_desorber`,
-`flash_condenser` and `solution_tank` is named by no unit test (the engine's tests reach it). To do: a behaviour
-test of each (session 115's Track C).
-
-### A-41 — Four pump pairs' low-level stops are not built; 328P007's service contradicts P&ID 104
-
-*Raised 2026-11-13, session 106; rewritten sessions 111 and 113 (As-Built §CXXI.8, §CXIX.2, §CXXIII.4; decision
-227).* Built: the eight pairs hold a run state, their icons open START / STOP, both machines stopped stop the pair's
-flow, a swap moves nothing; 323P008 keeps its stop on LT-323503's L2. Open: (1) AC4 stops 328P002, 328P006, 328P007
-and 335P001 when LT-328501, LT-328503, LT-328505 and LY-324501 fall below L2; no L2 value is in either archive, so no
-stop is built (data gap 8; for 335P001, B-146). (2) 328P007's service: P&ID 104, the PFD (739 to 741 all at 3.9 bar a)
-and the pumps' data sheet (25 m3/h, "to the granulation unit") take 740 to LV-328505 and 741 to FV-328406 on 328C004's
-pressure, past the pumps' suction; decision 227 stops LV-328505's flow with the pair, after `Mapping of Desorber
-Hydrolyzer unit.md`. Options for (2): (a) as built; (b) as the P&ID draws it, the pair moving no modelled stream. Next
-step: the DCS readback for (1); the process engineer's line for (2) (session 115's prompt, D1).
-
-### A-50 — The synthesis loop's azeotrope test pins a value on a tick-to-tick ring
-
-*Raised 2026-11-15, session 113 (As-Built §CXXIII.2).* The azeotrope test of `test_synthesis_loop_decided_equivalence.py`
-pins 322E002's condensation at tick 1 000, where it falls 100 to 15 t/h in two seconds and alternates tick to tick;
-decision 224's 3 kg/h moved it 14 t/h, decisions 236 and 237 6.8 t/h more (§CXXVI.5); it has been re-pinned six times.
-Acceptance: B-106's divergence asserted on statistics both trees agree on; tick 50's pins kept. A test change only.
+*Raised 2026-11-15, session 119 (As-Built §CXXIX.4).* On the azeotrope test's scenario (the CO2 boundary +20 % with
+321P002B held) the engine's 322E002, on B-106's branch and A-21's fraction solved on the tick (both its defaults),
+condenses in a sawtooth from 10 s on: in each cycle the melt's N/C falls from about 2.48 to 2.22, its bubble pressure
+rises toward the azeotrope and the saturated fraction falls to nothing; then condensation returns, up to 43.5 t/h in a
+tick. The cycle is 41 to 60 ticks (5.0 s on average), between nothing and 131 t/h; V1's condenses 181 to 205 t/h. The
+harness's tick-late fraction, V1's transcription, adds a tick-to-tick alternation and lengthens the cycle to 6.6 s.
+Window means are steady across trees (A-50's test asserts them). Not measured: what returns the condensation at the
+foot of each cycle (the holdup's composition, its level law or 322R001's tear), and whether a melt at N/C 2.2 to 2.5
+cycles on the plant. Acceptance: the cause named on a per-tick trace; then the process engineer's choice between
+keeping it as built and a change, the design pin held to the bit either way. Next step: trace the holdup's mass and
+composition and the tear's inputs over one cycle (`ring_trace_implicit.py` in `D:\Work\reports\Session_119_build`).
 
 ---
 
@@ -220,15 +198,15 @@ load, and all five holds are lost. Acceptance: the plant's TT-322004, the hydrol
 below, 323D001 at its set point, the 100 % pin to the bit. Options: (a) keep as built, L3 reported as not
 fulfilled; (b) the rise off with the change that holds 322R001 (B-118), never alone. Next step: B-118's.
 
-### B-146 — 324F003 has no low-level protection; trips 35.1 and 35.4 are not built
+### B-146 — Trips 35.1, 35.3 and 35.4 of the granulator's feed are not built
 
-*Raised 2026-11-14, session 111 (As-Built §CXXI.4, §CXXI.8, §CXXIII.6; decision 224).* At E1's 2.8 bar g floor the
-header valves still pass 89 % of their design share: AC4's header cannot shut stage 2's drain when its feed fails. AC4
-stops 335P001A and B on LY-324501 below L2 (§CXIX.2; no L2 in hand). Trips 35.1, 35.3 and 35.4 (UAN 01-3042 sheets
-335/1+, 335/2+) clamp LV-324501A and B, open HV-335602 and stop 335P002; the initiators the engine holds are both
-335P001 stopped, both 335P002 stopped (10 min) and LV-324501A not open (§CXXIII.6). None is built. On a lost feed, a
-feed-pump trip, 12 valves at 100 % or HV-335602 open, stage 2 drains to its heel. Options: (a) keep as built; (b) the
-trips on the run states now (session 115's Track B), the L2 stop at the readback (checklist row 20).
+*Raised 2026-11-14, session 111 (As-Built §CXXI.4, §CXXI.8, §CXXIII.6; decision 224); 324F003's low-level stop built in
+session 119 (decision 217, §CXXIX.1).* AC4 stops 335P001A and B on LY-324501 below L2, built on the 5 % stand-in: on a
+lost feed or a feed-pump trip stage 2 now holds about 346 kg of melt at 5 % and its seal stays covered, where it
+drained to its heel (§CXXIX.1). Trips 35.1, 35.3 and 35.4 (UAN 01-3042 sheets 335/1+, 335/2+) clamp LV-324501A and B,
+open HV-335602 and stop 335P002; the initiators the engine holds are both 335P001 stopped, both 335P002 stopped (10
+min) and LV-324501A not open (§CXXIII.6). None is built. Options: (a) keep as built; (b) the trips on the run states
+(session 115's Track B, `D:\Work\reports\Session 115 plan prompt s113.md`).
 
 ### B-156 — Seven level transmitters read V1's holdup ratio, not their taps
 
@@ -241,8 +219,9 @@ sheet's nozzles on its vessel's datasheet geometry, its design level reproduced.
 to 1.08 times the head over the nozzle distance (93 to 101 % at the upper nozzle); LT-329504 and LT-329505 are set at
 100 mbar per metre, 1.11 times; LT-329502's 92 mbar is 0.742 times, its range ending 1.113 m above the lower nozzle
 of the modelled 1.500 m. Decided (decision 214): decision 33's class reaches the seven unit by unit, one a session,
-each measured on both sides before it is built, as 323F004's was (decision 138). Next step: the first unit, its
-vessel's geometry read from its datasheet and both sides measured.
+each measured on both sides before it is built, as 323F004's was (decision 138). Decision 217's stops on LT-328503
+and LT-328505 read the same levels and move with them. Next step: the first unit, its vessel's geometry read from
+its datasheet and both sides measured.
 
 ---
 
@@ -264,7 +243,7 @@ Rows 2, 4, 5, 8, 9 and 10 close on one plant DCS readback session (`D:\Work\repo
 | 3 | Körting's performance curves of 324F002, 324F004 and 324F005 | `ejector_map`, B-57's interpolation on the synthesized maps (§XLIX.4, §L.1) | synthesized maps, anchored on the PFD's design loads; in-situ factors 0.919, 0.336, 0.497 | one duty point an ejector; no curve in the archive (§XLVIII.2). The plant's motive break-off, the datum a curve must meet: HIC-329605 between 55 and 64 % (HIC-329606 38-40 %) at PT-329207 4.20-4.24 bar g, 5 November 2026 13:11-13:16, 75 % load; the engine's vacuum still holds there (§CV.5) | Körting, orders 2/115/4/09674 and 2/232/4/00503 (the same draft); checklist row 13: 324E002's and 324E005's cold-end and cooling-water temperatures for 5 November 13:00-13:30 |
 | 4 | LT-324501's taps | LI-324501 between its taps (decision 33's class) | V1's holdup ratio (§L.4) | one 80 mm instrument on the barometric leg at EL +8495 (isometric UD-RL-100-MB-0180, item 22); no second connection drawn; the span cannot be weighed from the trends (§CV.7). Uhde's data sheet UD-MR-G00-EC-0136 p. 3: set range -700 to 900 mbar on 1 220 kg/m3, nozzle distance blank, an HP-side flanged seal and no LP-side connection (§CXXVII.5). Its level, like row 10's, is a holdup ratio on no vessel geometry (§CXXVIII.5) | checklist row 11: LRV, URV and the reference connection; a walk-down |
 | 5 | AC4 PC21's limits and elements: FY-322403's L2; PT-321211 / 221's L2; ST-321952 / 953's H2; the T elements' mode; the SR flip-flops' dominance; TRIP_84_8_FLAG1's L2 | trips 21.2, 21.8 and 21.10 (§LXV.6) | FY-322403's L2 V1's 5 %; PDY's L2 0.1 bar; the T elements on-delays; reset dominant; PT-321211 / 221, ST-321952 / 953 and TRIP_84_8 taken healthy | the limits are database entries; the scan does not resolve the timer symbol (UD-MR-G00-FF-0004 pages 5, 7, 20); TRIP_84_8 is the instrument air, two of PT-384207A / B / C below L2 (§LXXIII.2); no set-point list in the archive (§CXXVIII.1) | checklist rows 3 to 8, one readback session |
-| 8 | LT-323503's L2 hysteresis; the L2 limits of LT-328501, LT-328503, LT-328505 and LY-324501 | 323P008's restart (B-96); the stops of 328P002, 328P006, 328P007 and 335P001 (A-41, B-146) | trip below 5 %, restart at 7 %: the 2 % stand-in of 2026-10-15 (§LXVIII.2); the four other stops not built | the faceplate confirms L2 5.0 %, H1 80.0 %, L1 20.0 %, delay 0 s; no hysteresis shown. The four L2 values are DCS database entries (AC4 MOTCON IC2, §CXIX.2); `References\` and the vendor archive searched in session 111: none; no set-point list in its TOC (§CXXVIII.1) | checklist rows 2 and 17 to 20; else the stand-in signed off |
+| 8 | LT-323503's L2 hysteresis; the L2 limits of LT-328501, LT-328503, LT-328505 and LY-324501 | 323P008's restart (B-96); the stops of 328P002, 328P006, 328P007 and 335P001 (decision 217) | trip below 5 %, restart at 7 %: the 2 % stand-in of 2026-10-15 (§LXVIII.2); the four other stops built on the process engineer's stand-in of 2026-11-15, LT-323503's 5 % with the same 2 % (`data/low_level_stops.py`, §CXXIX.1) | the faceplate confirms L2 5.0 %, H1 80.0 %, L1 20.0 %, delay 0 s; no hysteresis shown. The four L2 values are DCS database entries (AC4 MOTCON IC2, §CXIX.2); `References\` and the vendor archive searched in session 111: none; no set-point list in its TOC (§CXXVIII.1) | checklist rows 2 and 17 to 20; else the stand-ins signed off |
 | 9 | FIC-335405's row in the DCS tuning table | the loop on the plant's tuning (decisions 76, 77) | V1's 100 per t/h and 15 s | not in `References/Master_PID_Tuning_Constants.md`; not photographed; the trends log FT-335405 alone, its ratio to FT-335401 0.0046-0.0050 (§CV.7) | checklist row 9: the faceplate's tuning page, then decision 10's span conversion |
 | 10 | LT-329505's tap elevations | LI-329505 between its taps (decision 33's class) | V1's holdup ratio; LV-329505 on Flowserve's trim (§LXVIII.5) | upper tap 324E001 / N5 at EL +15129; lower tap on the DN700 condensate pot at EL +10651 (isometric UD-RL-100-MB-0312): 4 478 mm apart. The loop summary prints 3 000 mm. The conflict is logged, not resolved (§CIII.5). Uhde's data sheet UD-MR-G00-EC-0133 p. 4: nozzle distance 3 000 mm, set range 0 to 300 mbar on 922 kg/m3, so the 4 478 mm would over-range it (§CXXVII.5); the range is 100 mbar per metre of nozzle distance, 1.11 times the head of 922 kg/m3, as LT-329504's is (§CXXVIII.5) | checklist row 10: the transmitter's LRV and URV decide which span its 0-100 % covers |
 | 11 | 335P001A / B's impeller and head curve | `units/finishing/melt_header.py`: LV-324501A's inlet moves with the curve's droop | H = 71 - 5 (Q / 80)^2 m, read off the middle of three curves (`data/unit_335.py`) | KSB CPK 80-250, data sheet UD-AU-335-EC-0039: shut-off about 71 m, duty about 80 m3/h at 65 m; the impeller legend is unreadable on the scan (§CXIX.4). KSB's installation plan UD-AU-335-DZ-0026-001 (CPK-CHXYD 80-250): 82 m3/h at 65.2 m, 7.2 bar, 1221 kg/m3, 140 C; the law gives 65.75 m there. The parts list (-004, sheet 2) lists two impellers, 230 "260/115/17" and 230.02 "242-P03-250-D", not decoded (§CXXVII.4). No performance test in the archive: DZ-0026-007 is KSB's test description with no result, DZ-0007-049 is fan 335K007's (§CXXVIII.2) | a legible copy of the sheet, or the pump's nameplate |

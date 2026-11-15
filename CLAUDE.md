@@ -318,7 +318,7 @@ none of them is optional:
    the handoff item is deleted.
 7. **A decided class applies to every new unit (2026-09-30).** Once the process engineer has
    decided a class of V1 flaw, apply it without re-asking wherever a new unit shows it. The classes,
-   103 of them, one a line with its decision number, are in `docs/decided-classes.md` and are binding
+   104 of them, one a line with its decision number, are in `docs/decided-classes.md` and are binding
    (moved there 2026-11-11, wording unchanged). Before a unit's physics is ported or changed, grep
    that file for the mechanism and for the equipment's kind; never read it whole. A class decided
    later is appended there as one line. A new mechanism still goes to the process engineer, with

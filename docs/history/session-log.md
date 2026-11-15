@@ -5106,3 +5106,14 @@ the instructor's panel, in FI-322402's m3/h, seeded at PFD 744 (decision 212, B-
 HEAD at the seed); B-145 closed as built, LV-324501B's floor being its sheet's 50:1 (decision 213); decision 33's
 class for the seven, unit by unit (decision 214). Research: `D:\Work\reports\Session_118_research`. Part CXXVIII;
 decisions 212 to 214.
+
+### Session 119 — A-38, A-40, A-41 and A-50 closed: four low-level stops, 328P007 as built, two tests restated (2026-11-15)
+
+Opus with the Fable advisor; inline. `master` pushed to `Urea-OTS-V1.1`. The process engineer chose: 328P007 kept as
+built (decision 215); A-40's test restated on decision 186 (decision 216); L2 = 5 % for all four AC4 low-level stops
+(decision 217, A-41). Built: `control.interlocks.low_level_stop` and `data/low_level_stops.py`; 328P002, 328P006,
+328P007 and 335P001 stop below 5 % and run again at 7 %, no latch; saves migrate; the seed identical to HEAD over
+600 s on 755 leaves. Measured: the three desorption drains cycle between 5 and 7 % and never reach their heels; on
+B-62 and B-63 stage 2 holds 346 kg and its seal stays covered. A-38's run flags have unit tests; A-50's test asserts
+B-106 on window means three trees agree on to 0.02 t/h; the engine's own sawtooth is A-57. Suite: 8 355 tests, all passing (the whole suite, 8 353, before the review's fix and 335P001's test; their files rerun after). Part CXXIX;
+decisions 215 to 217.
