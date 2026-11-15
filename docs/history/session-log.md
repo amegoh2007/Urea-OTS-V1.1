@@ -5095,3 +5095,14 @@ takes every pen off and keeps the span and the rulers. A-38's sixteen modules ha
 stay, session 115's Track C). Data gap 11: KSB's plan gives 335P001's 82 m3/h at 65.2 m, the law 0.8 % above. Uhde's
 level data sheets (EC-0133, EC-0136) give LT-329505's 0-300 mbar on 3 000 mm and LT-324501's -700 to 900 mbar, not
 applied. With V1 blocked: 8 325 tests, 8 324 pass, A-40 failing. Part CXXVII; decisions 210, 211.
+
+### Session 118 — The open data gaps searched in the archive; the level transmitters' sheets against the model (2026-11-15)
+
+Opus with the Fable advisor; research inline, no model code changed. The archive holds no set-point or alarm list
+(gaps 2, 5, 8), no KSB performance test of 335P001 (gap 11; DZ-0007-049 is 335K007's) and no response time for
+LV-324501A's SRI986 positioner (gap 12; Uhde EC-0211, Flowserve Pos. 148). LV-324501B's sheet (Pos. 149) prints the
+50:1 decision 150 already runs, so B-145's option (b) is the floor built. Operating Manual III sets B-133's flow by
+hand at FI-322402 (pp. 1-58, 4-8, 4-14, 4-19). Uhde's level sheets (EC-0133, EC-0134) confirm the six modelled tap
+spans, now pinned by `tests/data/test_level_transmitter_sheets.py`, and leave seven levels on V1's holdup ratio: B-156
+raised. Set ranges run 0.74 to 1.11 times the head over the nozzles. Research: `D:\Work\reports\Session_118_research`.
+Part CXXVIII.

@@ -25519,3 +25519,121 @@ collected (the 140 tests of §CXXVII.3, CLEAR's and the guard's three added), 8 
 (§CXXVII.1). With that file copied and the import-closure test added, the Phase 7 tests and the guard rerun blocked:
 134 passed. No hook record names the external tree, and after the run every manifest row still matches: V1 rebuilt
 neither cache. The suite now: 8 325 collected, 8 324 pass, A-40's fails, and V1 need not be on the machine.
+
+
+# Part CXXVIII — Session 118: the open data gaps searched in the archive; the level transmitters' sheets against the model (2026-11-15)
+
+Opus with the Fable advisor; the research ran inline (`Claude.md` §3). No model code changed. The archive is the
+vendor soft copy (`...\Soft copy\10\` to `15\`); its scans have no text layer and were rendered at 200 dpi, read by
+Windows OCR and checked on the page image wherever a value is quoted here. The extraction scripts, the OCR text and
+the page crops are kept in `D:\Work\reports\Session_118_research`.
+
+## CXXVIII.1 Searches made: a set-point and alarm list (data gaps 2, 5 and 8)
+
+The TOC (`TOC_UD_AM_G00_AB_0022_000_01_HL.pdf`), its text joined into its 21 906 rows, grepped for set point,
+setpoint, alarm, trip setting, switch setting, limit and interlock: the only hits are the fire-alarm and
+gas-detection systems. No document in the archive lists the DCS's alarm, trip or switch values for units 321 to
+329. Data gaps 2, 5 and 8 stay on the DCS readback.
+
+## CXXVIII.2 Searches made: a performance test of 335P001 (data gap 11)
+
+335P001's rows are UD-AU-335-DZ-0026-001 to -013. DZ-0026-007 is KSB's generic description of the test
+(AN 1897 70-01) and holds no result. UD-AU-335-DZ-0007-049 (158 pages, fabrication and inspection documents)
+belongs to fan 335K007: the TOC's tag column runs one row out of step with its description column there. No
+measured curve of 335P001 is in the archive; data gap 11 stays.
+
+## CXXVIII.3 LV-324501A and B: the positioner and the sizing sheet (data gap 12, B-145)
+
+**Positioner.** Flowserve's specification sheet UD-MR-G00-DZ-0048-003, PDF page 148 (LV 324501A): KP diaphragm
+actuator size P4, stroke 40 mm, spring 1.0 to 1.7 bar, air to open, supply 2.0 bar g; positioner "Generic
+Positioner", product SRI 986, 4-20 mA. Uhde's positioner specification UD-MR-G00-EC-0211 (part class MZA0006, 12
+pages): Foxboro Eckardt SRI986-BIDS7EAANA-CL, linear travel, linear characteristic, supply 3.5 to 6.0 bar; its
+page 10, lines 13 and 14, gives LVGC 324501A on L 324501 closed at 4 mA and open at 20 mA, and LVGC 324501B closed
+at 20 mA and open at 4 mA. Neither document gives a response time or a stroking time. The model works in stroke:
+the signal's direction belongs to the output card and the positioner and is not modelled. Data gap 12 stays.
+
+**LV-324501B's sizing sheet** (DZ-0048-003 PDF page 149, checked on the page): Kvs 100 (trim 63), equal percent,
+rangeability printed "50.0-1"; SG 0.751 at 140 C. Its three cases against the port's equal-percentage law on that
+rangeability, Kv = Kvs 50^(h - 1):
+
+| Case | P1 -> P2 bar a | Flow m3/h | Kv on the sheet | Stroke on the sheet | Kv on the law at that stroke |
+|---|---|---|---|---|---|
+| 1 | 8.0 -> 1.0 | 8.0 | 2.599 | 8 % | 2.735 |
+| 2 | 6.9 -> 1.8 | 70.5 | 26.839 | 65 % | 25.431 |
+| 3 | 4.8 -> 2.0 | 82.0 | 42.150 | 76 % | 39.106 |
+
+Decision 150 already runs LV-324501B on this sheet's curve and its 50:1 (`data/control_valves.py`). The 2 % trim
+floor of B-145 is that rangeability: `control.valve.cv_fraction` gives 1/50 of the full capacity as the stroke
+leaves the seat and 0 at the seat. The sheet's own smallest case sits at 8 % stroke, Kv 2.6 % of Kvs. B-145's
+option (b), the floor read from the sizing sheet, therefore gives the floor already built, and nothing in the
+model changes from it.
+
+## CXXVIII.4 B-133: the operating manual sets 322P002's flow by hand at FI-322402
+
+Uhde's Operating Manual Part III (UD-VT-G00-DC-0003), the OCR text of session 88; the passages of pages 1-58 and
+4-19 checked on the page image:
+
+* Section 1 (file _002), page 1-58: 322C001's lower bed is wetted with process condensate from 322P002A/B through
+  322E006, cooled from 45 to 40 C (TI322101); "The flow can be adjusted through FI322402."
+* Section 4 (file _005), page 4-8: 15 m3/h of condensate to the LP absorber by 322P002 via FI322402, LIC322502 at
+  35 % on auto; page 4-14: 30 m3/h via FI322402; page 4-19: about 31.3 m3/h of process water to the LP absorber
+  using FI322402, once HIC322604 is set.
+
+No passage names a controller or a control valve. FI-322402 is an indicator (P&ID 102, decision 81), and the
+pumps' discharges carry a check valve and a manual valve each (§CXVIII.5). The plant's handle for L10 is
+therefore a field adjustment of 322P002's delivery, read on FI-322402: a hand valve in the field, not a DCS move.
+This answers B-133's acceptance question from a plant document; whether the console models that hand valve is the
+process engineer's choice.
+
+## CXXVIII.5 The level transmitters' data sheets against the model (B-156)
+
+Uhde's sheets (UD-MR-G00-EC-0133 and EC-0134; §CXXVII.5 maps the tags) print, for each transmitter, its vessel,
+its operating densities on the high- and low-pressure sides, its set range and its nozzle distance. Every value
+below was checked on the page image. The head is the liquid column over the nozzle distance at the sheet's
+densities, (rho_HP - rho_LP) g L; the last column is the set range over that head, so a level standing at the
+upper nozzle reads 100 / (set / head) % of the transmitter's range:
+
+| Tag | Vessel | Sheet | rho HP / LP kg/m3 | Set range mbar | Nozzle distance mm | Head mbar | Set / head | The model |
+|---|---|---|---|---|---|---|---|---|
+| LT-322502 | 322C001 | EC-0134 p. 3 | blank | 0-73.93 | 800 | - | - | between taps, 0.800 m (`unit_322c001`) |
+| LT-323501 | 323C003 | EC-0134 p. 4 | 1106 | 0-230 | 2 000 | 216.9 | 1.060 | V1's holdup ratio, M / M_full x 100 |
+| LT-323502 | 323D001 | EC-0134 p. 4 | 1218 | 0-245 | 1 910 | 228.1 | 1.074 | V1's holdup ratio, M / M_des x the set point |
+| LT-323503 | 323D011 | EC-0134 p. 4 | 1065 | 0-135.28 | 1 310 | 136.8 | 0.989 | V1's holdup ratio, M / M_des x the set point |
+| LT-323505 | 323F004 | EC-0134 p. 5 | 1130 | 0-326 | 2 900 | 321.4 | 1.014 | between taps, 2.900 m (decision 138) |
+| LT-323506 | 323D001 | EC-0134 p. 5 | 1218 | 0-245 | 1 910 | 228.1 | 1.074 | not modelled |
+| LT-328501 | 328D001 | EC-0134 p. 6 | 1095 | 0-165 | 1 510 | 162.1 | 1.018 | between taps, 1.510 m (decision 33) |
+| LT-328503 | 328C002 | EC-0134 p. 6 | 923.0 / 2.31 | 0-110.51 | 1 200 | 108.4 | 1.020 | V1's holdup ratio, M / M_des x 50 |
+| LT-328504 | 328C003 | EC-0134 p. 6 | 908 | 0-96.15 | 1 000 | 89.0 | 1.080 | V1's holdup ratio, M / M_des x 50 |
+| LT-328505 | 328C004 | EC-0134 p. 7 | 923 | 0-96.5 | 1 000 | 90.5 | 1.066 | V1's holdup ratio, M / M_des x 50 |
+| LT-329501 | lines 329256 / 329257 (322E003's sump) | EC-0133 p. 3 | 1133 | 0-1200 | 10 000 | 1111.1 | 1.080 | V1's holdup ratio, M / M_NLL x L_NLL |
+| LT-329502 | 329D005 | EC-0133 p. 3 | 850.4 / 7.47 | 0-92 | 1 500 | 124.0 | 0.742 | between taps, 1.500 m (`unit_329_network`) |
+| LT-329503 | 329D009 | EC-0133 p. 3 | 893.2 / 4.36 | 0-68 | 750 | 65.4 | 1.040 | between taps, 0.750 m (`unit_329_network`) |
+| LT-329504 | 322D001A | EC-0133 p. 4 | 919 / 2.36 | 0-150 | 1 500 | 134.8 | 1.112 | between taps, 1.500 m (`unit_329_network`) |
+| LT-329505 | 324E001 | EC-0133 p. 4 | 922 | 0-300 | 3 000 | 271.3 | 1.106 | V1's holdup ratio (data gap 10) |
+
+LT-322502's sheet leaves the density blank; its range is the head of 942 kg/m3 over 800 mm.
+
+Findings:
+
+1. **The six modelled tap spans agree with the sheets** to the millimetre: LT-322502, LT-323505, LT-328501,
+   LT-329502, LT-329503 and LT-329504. `tests/data/test_level_transmitter_sheets.py` pins each modelled span to
+   its sheet's nozzle distance.
+2. **Seven modelled levels still read V1's holdup ratio** although their sheets print the nozzle distance:
+   LT-323501, LT-323502, LT-323503, LT-328503, LT-328504, LT-328505 and LT-329501 (handoff B-156). LT-323506,
+   323D001's second transmitter, has no consumer in the model.
+3. **The set ranges are not the heads.** Eleven of the fourteen sheets with a density set their range at 0.99 to
+   1.08 times the head over the nozzle distance, so a level at the upper nozzle reads 93 to 101 % of the range.
+   LT-329504 and LT-329505 are set at 100 mbar per metre of nozzle distance, 1.11 times the head of their stated
+   condensate. LT-329502's 92 mbar is 0.742 times its head: at the sheet's densities its range ends 1.113 m above
+   the lower nozzle of the 1.500 m between them. Decision 33's class maps 0 and 100 % to the two taps; what the
+   transmitter's range maps them to is its LRV and URV, which the DCS readback checklist already asks for gaps 4
+   and 10.
+
+No level was changed: decision 33's class was applied to 323F004 only after the process engineer chose it with
+both sides measured (decision 138), and B-156 asks the same question for the seven.
+
+## CXXVIII.6 The checks
+
+`tests/data/test_level_transmitter_sheets.py`: 6 passed. `tests/docs`, `tests/test_layering.py` and the suite's
+collection were run after the documents were written; the full suite was not rerun, since no module under
+`ureasim/` changed.
