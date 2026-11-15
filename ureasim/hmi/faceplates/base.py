@@ -22,6 +22,7 @@ Source: V1 ``frontend/index.html`` (``.modal``, 171-199) and ``app.js`` (the fac
 
 from __future__ import annotations
 
+import math
 from typing import Any, Mapping
 
 from PyQt6.QtCore import QObject, Qt
@@ -212,11 +213,12 @@ class Faceplate(QDialog):
 
     @staticmethod
     def number(field: QLineEdit) -> float | None:
-        """The number typed in a field, or None."""
+        """The finite number typed in a field, or None: NaN and infinity cannot cross the bridge."""
         try:
-            return float(field.text().strip())
+            v = float(field.text().strip())
         except ValueError:
             return None
+        return v if math.isfinite(v) else None
 
     # ---- commands ----
 

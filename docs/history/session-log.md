@@ -5116,4 +5116,5 @@ built (decision 215); A-40's test restated on decision 186 (decision 216); L2 = 
 600 s on 755 leaves. Measured: the three desorption drains cycle between 5 and 7 % and never reach their heels; on
 B-62 and B-63 stage 2 holds 346 kg and its seal stays covered. A-38's run flags have unit tests; A-50's test asserts
 B-106 on window means three trees agree on to 0.02 t/h; the engine's own sawtooth is A-57. Suite: 8 355 tests, all passing (the whole suite, 8 353, before the review's fix and 335P001's test; their files rerun after). Part CXXIX;
-decisions 215 to 217.
+decisions 215 to 217. From the code audit: a faceplate refuses NaN and infinity, which the bridge's strict JSON
+could not send and which crashed the console (`hmi/faceplates/base.number`, `test_hand_valve.py`).

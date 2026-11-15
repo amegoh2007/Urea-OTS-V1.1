@@ -25,6 +25,19 @@ def test_the_live_opening_and_the_stations_command(bridge, packet):
     face.close()
 
 
+def test_nan_and_infinity_are_refused_and_nothing_is_sent(bridge):
+    """`float` reads "nan" and "inf"; the bridge's JSON refuses them, and the console crashed."""
+    face = HandValveFaceplate(bridge, HIC604)
+    face.show()
+    sent = len(bridge.sent)
+    for text in ("nan", "inf", "-Infinity"):
+        face.entry.setText(text)
+        face.primary.click()
+        assert face.message.text() == "enter a numeric value"
+    assert len(bridge.sent) == sent
+    face.close()
+
+
 def test_pv_322203_opens_hic_322203(bridge):
     face = HandValveFaceplate(bridge, {"t": "ind", "tag": "PV-322203", "face": "hic2",
                                        "bind": "CO2_FEED.PV_322203"})
