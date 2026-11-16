@@ -467,7 +467,9 @@ def test_322e001s_tubes_standing_full_hold_the_liquor_back_in_the_reactor_decide
     reads 141.57 C against 165.59 (165.58 before decision 170). V1's loop climbs to 146.67 bar a — its
     PT-329201 books the liquor its clamp deletes as gas (B-103's finding) — where the port's stands at
     140.01 (140.02 before decision 170). Nothing
-    arrives past the ceiling."""
+    arrives past the ceiling. LI-323503 between its taps (decision 233) moves the discharge from 26 284.6 to
+    26 286.1 kg/h and the two loops from 146.6702 and 140.0065 to 146.6699 and 140.0064 bar a, V1's side through
+    the port's 308 and steam pressures, which `run_both` feeds it."""
     def act(k, plant, s):
         if k == 0:
             plant.units["322E001"].hold_full = True
@@ -486,13 +488,13 @@ def test_322e001s_tubes_standing_full_hold_the_liquor_back_in_the_reactor_decide
     assert (out.sump.held_kg, sp.held_kg) == (0.0, pytest.approx(8403.2, abs=0.1))
     assert st.submerged_frac == pytest.approx(0.9671, abs=1e-4)
     assert (sp.take_kgh, rr.m_out_kgh) == (pytest.approx(20458.1, abs=1.0),
-                                           pytest.approx(26284.6, abs=1.0))
+                                           pytest.approx(26286.1, abs=1.0))
     assert (s.react_level_pct, rr.level_pct) == (pytest.approx(80.337, abs=1e-3),
                                                  pytest.approx(85.943, abs=1e-3))
     assert (out.sump.tt_322004_c, sp.tt_322004_c) == (pytest.approx(165.59, abs=0.01),
                                                       pytest.approx(141.57, abs=0.01))
-    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(146.6702, abs=1e-4),
-                                                   pytest.approx(140.0065, abs=1e-4))
+    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(146.6699, abs=1e-4),
+                                                   pytest.approx(140.0064, abs=1e-4))
 
 
 def _mean(hist, value, first: int, last: int) -> float:

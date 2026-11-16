@@ -227,6 +227,54 @@ D011_M_DES_KG = D011_M718_DES_KGH / 3600.0 * D011_M_TAU_S
 #: tank at 50% capacity" (`References/328E021 328E007 328P003 328P006.md`).
 D011_LVL_SP_PCT = 50.0
 
+#: 323D011's nominal volume [m3], 3.15 (Uhde's datasheet UD-AU-323-EC-0006 rev 00; NSF's as-built
+#: drawing UD-AU-323-DZ-0006-005 rev 02 prints 3.277), the basis decision 219 takes, and its bore
+#: [m2]. Each 2:1 head holds half of what the shell between its tangent lines does not.
+D011_NOMINAL_M3 = 3.15
+D011_AREA_M2 = math.pi * 0.25 * D011_ID_M ** 2
+D011_HEAD_M3 = 0.5 * (D011_NOMINAL_M3 - D011_AREA_M2 * D011_SHELL_M)
+
+#: LT-323503, a DP cell across N2B and N2A (the datasheet's principle sketch, p. 5): N2B 220 mm
+#: above the bottom tangent line, N2A 270 mm below the top one, 1310 mm apart (Uhde's
+#: UD-MR-G00-EC-0134, sheet p. 4, nozzle distance 1310 mm, 1065 kg/m3, 0 to 135.28 mbar) [m].
+#: Decided 2026-11-16 (decision 233, handoff B-156): LI-323503 reads the liquid between the taps,
+#: where V1 reads M / M_des x 50.
+LT_323503_LO_M = 0.220
+LT_323503_SPAN_M = 1.310
+
+#: The sheet's density [kg/m3], PFD 718's (`RHO_718_KGM3`); the holdup at N2B [kg], 665.2, and per
+#: 100 % between the taps [kg], 1950.0.
+LT_323503_RHO_KGM3 = 1065.0
+D011_M_LO_KG = LT_323503_RHO_KGM3 * (D011_HEAD_M3 + LT_323503_LO_M * D011_AREA_M2)
+LT_323503_SPAN_KG = LT_323503_RHO_KGM3 * D011_AREA_M2 * LT_323503_SPAN_M
+
+#: LT-323503's reading at the design holdup [%], 26.77: LIC-323503's set point between the taps,
+#: 571 mm above the bottom tangent line, inside the sketch's L.L.L. (300 mm, 6.1 %) and H.L.L.
+#: (1250 mm, 78.6 %).
+LT_323503_DES_PCT = (D011_M_DES_KG - D011_M_LO_KG) / LT_323503_SPAN_KG * 100.0
+
+
+def lt_323503_pct(m_kg: float) -> float:
+    """LI-323503 [%]: the height of 323D011's liquid between LT-323503's taps (decision 233).
+
+    Process utility
+    ---------------
+    What the board shows and LIC-323503 holds by LV-323503's draw, and what AC4's L2 stop on
+    323P008A / B reads. A DP cell reads only between its taps: 0 % with 665 kg still in the tank
+    (V1 reads 28.0 % there), 100 % at 2615 kg; the reading moves 1.22 times as far per kilogram as
+    V1's 50 % over the design holdup.
+
+    Equation
+    --------
+        LI = clamp( LI_des + (M - M_des) / (rho A L) . 100, 0, 100 )
+
+    written as the departure from the design holdup, so the design holdup reads its set point
+    exactly. Source: As-Built §CXXXIV.
+    """
+    return min(max(LT_323503_DES_PCT + (m_kg - D011_M_DES_KG) / LT_323503_SPAN_KG * 100.0, 0.0),
+               100.0)
+
+
 #: Floor on the tank holdup [kg]: V1's ``max(..., 1.0)``.
 D011_M_FLOOR_KG = 1.0
 
@@ -368,6 +416,8 @@ __all__ = [
     "E011_RHO_L_KGM3", "E011_FULL_KG", "E011_MW_VAP",
     "E011_PV_OP_DES_PCT", "PV_323203_OP_DES_PCT", "PV_323203_CHAR", "VENT_DP_FLOOR_BAR", "VENT_DP_MIN_BAR", "E011_P_FLOOR_BARA",
     "D011_M_TAU_S", "D011_M_DES_KG", "D011_LVL_SP_PCT", "D011_M_FLOOR_KG", "LT_323503_L2_PCT", "LT_323503_L2_HYST_PCT",
+    "D011_NOMINAL_M3", "D011_AREA_M2", "D011_HEAD_M3", "LT_323503_LO_M", "LT_323503_SPAN_M",
+    "LT_323503_RHO_KGM3", "D011_M_LO_KG", "LT_323503_SPAN_KG", "LT_323503_DES_PCT", "lt_323503_pct",
     "LV503_OP_DES_PCT", "FIC418_OP_DES_PCT", "LV503_CHAR", "FV418_CHAR", "RHO_718_KGM3", "FT_323418_TAU_S",
     "M718A_TAU_S", "M718A_LINE_KG", "M718A_TAU_MAX_S",
     "CP_LP_CARBAMATE", "E011_Q_DES_KW", "E011_UA_KW", "E011_SENS_KW", "E011_LAMV_KJKG",

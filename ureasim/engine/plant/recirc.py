@@ -34,6 +34,7 @@ Source: V1 ``backend/main.py`` ``step_sim`` 8183-8664, 9513-9664, 10081; the uni
 
 from __future__ import annotations
 
+from ureasim.data import unit_323e011 as e011
 from ureasim.engine.schedule import DeclaredTear, Operator, Result, State, Step, Tear
 from ureasim.units.recirc import flash_condenser as fc
 from ureasim.units.recirc import flash_tank as ft
@@ -43,7 +44,7 @@ from ureasim.units.recirc import rectifying_column as rc
 from ureasim.units.recirc import solution_tank as st
 from ureasim.units.synthesis.stripper_sump import TOP_GAS_MW_FALLBACK
 
-__all__ = ["units", "steps", "tears"]
+__all__ = ["units", "steps", "tears", "adopt_tap_reading"]
 
 
 def units() -> tuple[dict, dict]:
@@ -59,6 +60,24 @@ def units() -> tuple[dict, dict]:
                          lpcc.tic_323013()),
              "323E011": (fc.pic_323203(), fc.lic_323503(), fc.fic_323418()),
              "SIC-323902": (lpcc.sic_323902(),)})
+
+
+def adopt_tap_reading(plant) -> None:
+    """Restate LIC-323503 between LT-323503's taps on a save made on V1's reading (decision 233).
+
+    Process utility
+    ---------------
+    An exercise saved before decision 233 holds LIC-323503's set point and PV history as V1's
+    reading, M / M_des x 50. Taken as tap readings they would ask for 453 kg more in 323D011 and
+    kick the loop on its first tick. Each is restated as the tap reading of the holdup it stood
+    for, so the tank holds the level it was saved at and the first tick moves nothing.
+
+    Equation: r_taps = `lt_323503_pct`(r_v1 / 50 . M_des).
+    """
+    lic = plant.loops["323E011"][1]
+    for name in ("sp", "pv", "pv1", "pv2"):
+        setattr(lic, name, e011.lt_323503_pct(getattr(lic, name) / e011.D011_LVL_SP_PCT
+                                              * e011.D011_M_DES_KG))
 
 
 def _323c003(plant, a, dt):

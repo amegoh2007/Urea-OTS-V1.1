@@ -364,3 +364,29 @@ def test_every_shipped_exercise_opens_on_the_header_it_restores(path):
     sch, _ = build_plant()
     s = Scheduler(sch, back)
     assert s.tick().results["324E003"].header.p_barg == pytest.approx(adopted, abs=PASSING_TICK1_BAR)
+
+
+def test_a_save_made_on_v1s_lt_323503_reading_restates_lic_323503_between_the_taps():
+    """Decision 233: a save made before LI-323503 read between its taps lacks 323E011's ``taps`` and
+    holds LIC-323503 on V1's reading, its set point 50 % and its last PV 40 %. On load the unit reads
+    between the taps and each is restated as the tap reading of the holdup it stood for: the set point
+    the design holdup's 26.77 %, the PV 0.8 of it; the first tick from the design holdup moves
+    nothing."""
+    from ureasim.data.unit_323e011 import D011_M_DES_KG, LT_323503_DES_PCT, lt_323503_pct
+    _, plant = build_plant()
+    doc = json.loads(snapshot.dumps(plant))
+    objects = _objects(doc["state"], {})
+    (unit,) = objects["ureasim.units.recirc.flash_condenser:FlashCondenser"]
+    del unit["a"]["taps"]
+    (lic,) = [o for o in objects["ureasim.control.process_loop:ProcessLoop"]
+              if o["a"]["tag"] == "LIC-323503"]
+    lic["a"].update(sp=50.0, pv=40.0, pv1=50.0, pv2=50.0)
+    back = snapshot.loads(json.dumps(doc), build_plant()[1])
+    loop = back.loops["323E011"][1]
+    assert back.units["323E011"].taps is True
+    assert (loop.sp, loop.pv1, loop.pv2) == (LT_323503_DES_PCT,) * 3
+    assert loop.pv == lt_323503_pct(0.8 * D011_M_DES_KG)
+    loop.pv = loop.sp
+    op = loop.op
+    Scheduler(build_plant()[0], back).tick()
+    assert loop.op == op

@@ -92,8 +92,9 @@ def test_the_stroke_and_the_dew_point_set_the_node(stroke, p_settled):
     """The node settles where what the condenser leaves on its dew point is what PV-323203 passes,
     G - cap(P) = m_702(P) (B-30, decided 2026-10-15): on the Neldisc 1.148 (1.147 before decision 178) bar a at 10 %, 1.085 (1.079 before decision 178) at
     50 %, venting 208 and 1178 kg/h (1.148 and 1.105 on V1's linear trim), where V1's constant
-    capacity left the stroke alone to set it, 1.81 and 1.03."""
-    r, _, _, _, _ = _run(1800.0, pic_man=stroke)
+    capacity left the stroke alone to set it, 1.81 and 1.03. An hour on: LIC-323503 between
+    LT-323503's taps (decision 233) still trims the tank's vapour space at 30 minutes."""
+    r, _, _, _, _ = _run(3600.0, pic_man=stroke)
     assert r.gen_kgh == pytest.approx(r.m_702_kgh, abs=0.02)
     assert r.p_bara == pytest.approx(p_settled, abs=1e-5)
 
@@ -126,8 +127,9 @@ def test_below_v1s_capacity_the_node_holds_on_its_dew_point():
     """701 down 10 % puts the gas 3 kg/h under V1's 5589 kg/h, PV-323203 held at its design stroke.
     V1's node empties to its 0.1 bar a floor, 248.8 s on, its vent running backwards (the
     equivalence test). On the dew point the node falls only until the condenser leaves what the
-    vent passes: 1.102 bar a within 6 s, 391 kg/h vented, no floor, not a gram created."""
-    r, at, first, created, _ = _run(1800.0, m701=_step(0.9), pic_man=PV_DES, trace=(15.6,))
+    vent passes: 1.102 bar a within 6 s, 391 kg/h vented, no floor, not a gram created (an hour on,
+    LIC-323503 between its taps settling the tank's vapour space past 30 minutes, decision 233)."""
+    r, at, first, created, _ = _run(3600.0, m701=_step(0.9), pic_man=PV_DES, trace=(15.6,))
     assert at[15.6].p_bara == pytest.approx(1.10233, abs=1e-5)
     assert "node floor" not in first and abs(created) < 1e-9
     assert (r.p_bara, r.m_702_kgh) == (pytest.approx(1.10244, abs=1e-5),
@@ -161,9 +163,10 @@ def test_a_shut_vent_stands_on_the_condensers_ceiling():
 def test_sv32357_holds_a_shut_vent():
     """SV32357's law (A-16), on V1's constant capacity, which gives a shut vent no ceiling of its
     own: 7.1 bar a at 100 s, 24.9 at 400 s on the envelope's volume (the equivalence test asserts
-    V1's side). SV32357 lifts at its 6.01 bar a set pressure 110.3 s on and vents 816 kg/h of the
+    V1's side). SV32357 lifts at its 6.01 bar a set pressure 110.4 s on and vents 816 kg/h of the
     node's vapour, nearly twice the 440 kg/h excess, so the node falls to 5.51 bar a, where the
-    valve reseats, and climbs again: a lift every 25.1-25.3 s, 12 in 400 s, the peak 6.0125 bar a,
+    valve reseats, and climbs again: a lift every 25.2-25.4 s, 12 in 400 s, the peak 6.0144 bar a
+    (110.3 s, 25.1-25.3 s and 6.0125 bar a before decision 233, on LT-323503's whole-tank reading),
     36.6 kg vented on orifice F's gas coefficient 0.922 (decision 130; 25.4 s and 36.4 kg on the
     0.917 assumed until 2026-10-16) (on the envelope's volume alone, B-51: 82.1 s, 17 lifts every 19.1 s). The
     tank books the relief as it books the vent: not a gram is created."""
@@ -186,8 +189,8 @@ def test_sv32357_holds_a_shut_vent():
         p_hi = max(p_hi, r.p_bara)
         if lifts:
             p_lo = min(p_lo, r.p_bara)
-    assert lifts[:3] == [110.3, 135.4, 160.7] and len(lifts) == 12
-    assert p_hi == pytest.approx(6.0125, abs=1e-4) and p_lo == e.SV32357_RESEAT_BARA == 5.51
+    assert lifts[:3] == [110.4, 135.6, 160.9] and len(lifts) == 12
+    assert p_hi == pytest.approx(6.0144, abs=1e-4) and p_lo == e.SV32357_RESEAT_BARA == 5.51
     assert vented == pytest.approx(36.6, abs=0.05)
     assert abs(created) < 1e-9
 
@@ -282,7 +285,8 @@ def test_the_flash_lost_runs_the_tank_to_its_heel_and_323p008_loses_suction():
     and the node falls until the condenser
     takes no more than the gas left, 0.875 bar a (V1's constant capacity: 0.695 bar a, the node
     standing where the vent left it). FIC-323418 keeps drawing its 3561.5 kg/h set point, and
-    the tank reaches its 1 kg heel at 1993 s. There 323P008 loses suction: 718B falls to what
+    the tank reaches its 1 kg heel at 1917 s (1993 s before decision 233: LIC-323503 reads 0 %
+    below N2B's 665 kg). There 323P008 loses suction: 718B falls to what
     arrives, FT-323418 follows it down, FIC-323418 opens fully against it, and nothing is made
     up. (V1 kept drawing 3561.5 kg/h off its floor and made 2.78 t in the same four hours.)"""
     r, _, first, created, (pic, lic, fic) = _run(4 * 3600.0, dt=1.0,
@@ -290,7 +294,7 @@ def test_the_flash_lost_runs_the_tank_to_its_heel_and_323p008_loses_suction():
                                                  trip=False)
     assert first["vent shut"] == 106.0 and "node floor" not in first
     assert r.p_bara == pytest.approx(0.87533, abs=1e-5)
-    assert first["suction lost"] == first["tank floor"] == 1993.0
+    assert first["suction lost"] == first["tank floor"] == 1917.0
     assert r.suction_lost and r.m_kg == e.D011_M_FLOOR_KG
     assert r.in_kgh == pytest.approx(3136.39, abs=0.01)
     assert (r.m_718b_kgh, r.m_718a_kgh) == (pytest.approx(r.in_kgh, rel=1e-12), 0.0)
@@ -321,19 +325,21 @@ def test_the_flash_lost_trips_323p008_at_lt_323503s_l2_and_restarts_it_past_its_
     """Handoffs B-93 and B-96, decided 2026-10-14 and 2026-10-15: AC4 stops 323P008A / B while
     LT-323503 stands below its L2, 5 % (PC23.1.9 / 1.10), and runs them again once the level is
     2 % above it (a stated stand-in for the limit's hysteresis). The same flash lost trips the pumps
-    at 1755 s, the tank at 118.6 kg; nothing is drawn and nothing is made. On the hysteresis they
-    restart at 7 %, 55 s later, and cycle 48 times in four hours, the level between 5.0 and 7.0 %;
-    on the live flag they relayed 5808 times, the level held at 4.96-5.04 % (both ways)."""
+    at 616 s, the tank at 763 kg between LT-323503's taps (decision 233); nothing is drawn and
+    nothing is made. On the hysteresis they restart at 7 %, 46 s later, and cycle 79 times in four
+    hours, the level between 5.0 and 7.0 %; on the live flag they relayed 6336 times, the level held
+    at 4.95-5.04 % (both ways). On V1's whole-tank reading, before decision 233: 1755 s at 118.6 kg,
+    55 s, 48 cycles, 5808 relays."""
     r, _, first, created, (pic, lic, fic) = _run(4 * 3600.0, dt=1.0,
                                                  m701=lambda t: 0.0 if t > 60.0 else M701)
-    assert first["323P008 tripped"] == 1755.0 and "tank floor" not in first
+    assert first["323P008 tripped"] == 616.0 and "tank floor" not in first
     assert "suction lost" not in first and abs(created) < 1e-9
     stops, restarts, lo, hi = _trip_cycles(e.LT_323503_L2_HYST_PCT)
-    assert (stops, restarts) == (48, [1810, 2074])
-    assert (lo, hi) == (pytest.approx(4.995, abs=1e-3), pytest.approx(7.017, abs=1e-3))
+    assert (stops, restarts) == (79, [662, 846])
+    assert (lo, hi) == (pytest.approx(4.993, abs=1e-3), pytest.approx(7.010, abs=1e-3))
     stops, restarts, lo, hi = _trip_cycles(0.0)
-    assert (stops, restarts) == (5808, [1756, 1761])
-    assert (lo, hi) == (pytest.approx(4.958, abs=1e-3), pytest.approx(5.037, abs=1e-3))
+    assert (stops, restarts) == (6336, [617, 623])
+    assert (lo, hi) == (pytest.approx(4.948, abs=1e-3), pytest.approx(5.045, abs=1e-3))
 
 
 # ======================================================================================
@@ -474,3 +480,23 @@ def test_323p008s_run_flag_true_is_the_default_call_and_false_draws_nothing():
     out, created = run(pump_running=False)
     assert all(r.m_718a_kgh == 0.0 == r.m_718b_kgh and not r.p008_tripped for r in out)
     assert abs(created) < 1e-9
+
+
+def test_li_323503_reads_between_its_taps_and_v1s_law_reads_the_holdup_ratio():
+    """Decision 233: LI-323503 reads the liquid between N2B and N2A, 26.77 % at the design holdup,
+    0 and 100 % at the taps; ``taps=False`` with its loop is V1's M / M_des x 50. At the design
+    holdup each law reads its own set point, so LIC-323503 moves nothing on its first tick; off it,
+    each loop takes its own law's reading."""
+    assert e.lt_323503_pct(e.D011_M_DES_KG) == e.LT_323503_DES_PCT == pytest.approx(26.7688, abs=1e-4)
+    assert e.lt_323503_pct(e.D011_M_LO_KG) == pytest.approx(0.0, abs=1e-12)
+    assert e.lt_323503_pct(e.D011_M_LO_KG + e.LT_323503_SPAN_KG) == pytest.approx(100.0, abs=1e-12)
+    assert (e.lt_323503_pct(100.0), e.lt_323503_pct(3000.0)) == (0.0, 100.0)
+    for taps, read in ((True, e.lt_323503_pct), (False, lambda m: m / e.D011_M_DES_KG * 50.0)):
+        for m in (e.D011_M_DES_KG, 900.0):
+            cond, lic = fc.FlashCondenser(taps=taps), fc.lic_323503(taps=taps)
+            cond.m_kg = m
+            r = cond.step(fc.pic_323203(), lic, fc.fic_323418(), M701, 0.0, 0.0, e.E011_M786_DES_KGH,
+                          e.E011_M321_DES_KGH, e.E011_M402_DES_KGH, 0.1)
+            assert r.lic_pv_pct == read(m) and r.level_pct == read(cond.m_kg), (taps, m)
+            if m == e.D011_M_DES_KG:
+                assert r.lic_op_pct == e.LV503_OP_DES_PCT, taps

@@ -43,7 +43,7 @@ from ureasim.data import unit_328d001 as d
 from ureasim.data.unit_322_loop import SYN_P_DES_BARA
 from ureasim.data.unit_322e001 import RHO_BOTTOM
 from ureasim.data.unit_323c003 import SV32351_SET_BARA
-from ureasim.data.unit_323e011 import D011_LVL_SP_PCT, D011_M_DES_KG
+from ureasim.data.unit_323e011 import D011_M_LO_KG, LT_323503_SPAN_KG, lt_323503_pct
 from ureasim.engine import snapshot
 from ureasim.engine.command import apply_command
 from ureasim.engine.historian import flatten
@@ -234,19 +234,19 @@ def test_trip_22_1_floods_the_vent_line_until_its_keyswitch_closes_it():
 
 def test_323p008_stops_on_lt_323503s_l2_and_runs_again_above_its_hysteresis():
     """LT-323503 injected at 3 %, under its 5 % L2 (B-93): AC4 stops 323P008A / B on the tick, 718A
-    with them; the tank refills on its inflows and the pumps run again 48.1 s on, the level past
-    the 2 % stand-in hysteresis (B-96)."""
+    with them; the tank refills on its inflows and the pumps run again 39.5 s on, the level past
+    the 2 % stand-in hysteresis (B-96). The level is LT-323503's between its taps (decision 233)."""
     sched = _plant()
     fc = sched.plant.units["323E011"]
-    fc.m_kg = 0.03 / (D011_LVL_SP_PCT / 100.0) * D011_M_DES_KG
+    fc.m_kg = D011_M_LO_KG + 0.03 * LT_323503_SPAN_KG
     r = sched.tick().results
     assert fc.p008_tripped and r["323E011"].m_718a_kgh == 0.0
     for k in range(1, 1201):
         sched.tick()
         if not fc.p008_tripped:
             break
-    assert k * DT == pytest.approx(48.1, abs=0.15)
-    assert fc.m_kg / D011_M_DES_KG * D011_LVL_SP_PCT >= 7.0
+    assert k * DT == pytest.approx(39.5, abs=0.15)
+    assert lt_323503_pct(fc.m_kg) >= 7.0
 
 
 def test_pic_329205s_pi_is_bumpless_from_man_and_leaves_its_limit_at_once():

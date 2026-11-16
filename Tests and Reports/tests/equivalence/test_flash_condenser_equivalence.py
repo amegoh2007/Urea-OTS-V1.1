@@ -291,7 +291,7 @@ def _loops(v1_gain: bool = True):
     pic = fc.pic_323203(e.E011_PV_OP_DES_PCT)
     if v1_gain:
         pic.Kc = e.PIC_323203_KC_TABLE
-    return pic, fc.lic_323503(), fc.fic_323418()
+    return pic, fc.lic_323503(taps=False), fc.fic_323418()
 
 
 # --------------------------------------------------------------------------------------
@@ -588,7 +588,7 @@ def test_pv_323203_on_its_vendor_trim_decided_divergence(v1):
     1.2992 (1.2784 before decision 178) on 27.36 (26.66 before decision 178) %, both venting the 883 kg/h the constant capacity leaves."""
     s = _v1_state(v1)
     cond = fc.FlashCondenser(**{**fc.V1_CONDENSER, "pv_323203": fc.PV_323203_TRIM})
-    loops = (fc.pic_323203(), fc.lic_323503(), fc.fic_323418())
+    loops = (fc.pic_323203(), fc.lic_323503(taps=False), fc.fic_323418())
     loops[0].Kc = e.PIC_323203_KC_TABLE
     parted = None
     for k in range(7200):
@@ -917,3 +917,41 @@ def test_the_inlets_at_their_producers_temperatures_decided_divergence(v1):
     assert (s.r3232_e011_T, a["Q"]) == (45.0, 3440.0)
     assert (cond.t_c, b.q_kw) == (pytest.approx(45.0900, abs=1e-4), pytest.approx(3470.9, abs=0.1))
     assert cond.p_bara == pytest.approx(e.E011_P_BARA, abs=1e-6)
+
+
+def test_li_323503_between_its_taps_decided_divergence(v1):
+    """Decision 233, 2026-11-16 (handoff B-156): V1 reads 323D011's level as its holdup over the
+    design's, x 50; the port reads it between LT-323503's taps, N2B and N2A, 1310 mm apart on the
+    cylinder, and seeds LIC-323503 on the design holdup's tap reading, 26.77 %. The 791 wash halved
+    at 1 s, twenty minutes at 0.5 s: on V1's switch the port is V1's on every tick. Between the taps
+    the first ticks are V1's, and LIC-323503 parts at 1.5 s, once the level moves; a kilogram then
+    moves the reading 1.22 times as far: the dip bottoms at 25.44 % at 212.5 s where V1's bottoms at
+    48.79 % at 236.5 s, a holdup the taps read 25.29 %: 26 kg below the design, not V1's 29."""
+    s = _v1_state(v1)
+    old, loops_old = fc.FlashCondenser(**fc.V1_CONDENSER), _loops()
+    new = fc.FlashCondenser(**{**fc.V1_CONDENSER, "taps": True})
+    loops_new = (_loops()[0], fc.lic_323503(), fc.fic_323418())
+    script = _step(2, _design(), _design(m402=e.E011_M402_DES_KGH * 0.5))
+    parted, lo_v1, lo_taps = None, (1e9, None), (1e9, None)
+    for k in range(2400):
+        x = script(k)
+        args = (x["m701"], x["b505"], x["b501"], x["m786"], x["m321"], x["m402"], 0.5)
+        a = _v1_stage9(v1, s, *args)
+        m_pre = new.m_kg
+        b, c = old.step(*loops_old, *args), new.step(*loops_new, *args)
+        _assert_tick(a, b, s, old, loops_old, f"V1's tank, tick {k}")
+        assert (c.lic_pv_pct, c.level_pct) == (e.lt_323503_pct(m_pre),
+                                               e.lt_323503_pct(new.m_kg)), k
+        if parted is None and (c.lic_op_pct, c.m_718a_kgh) != (a["lic"], a["718A"]):
+            parted = k
+        if parted is None:
+            assert (c.m_kg, c.p_bara) == (s.r3232_e011_M, s.r3232_e011_P), k
+        if k < 2:
+            assert (c.level_pct, a["LI"]) == (e.LT_323503_DES_PCT, 50.0), k
+        lo_v1, lo_taps = min(lo_v1, (a["LI"], k)), min(lo_taps, (c.level_pct, k))
+    assert parted == 3
+    assert (lo_v1[0], lo_v1[1]) == (pytest.approx(48.7870, abs=1e-4), 473)
+    assert (lo_taps[0], lo_taps[1]) == (pytest.approx(25.4438, abs=1e-4), 425)
+    assert e.lt_323503_pct(lo_v1[0] / 50.0 * e.D011_M_DES_KG) == pytest.approx(25.292, abs=1e-3)
+    assert (a["LI"], c.level_pct) == (pytest.approx(49.6254, abs=1e-4),
+                                      pytest.approx(26.3696, abs=1e-4))

@@ -98,6 +98,12 @@ An eighth, decided 2026-10-17 (decision 23's class): **PV-323203 on Metso's Neld
 capacities as its curve, from the 21.64 % where its sheet passes PFD 702; V1 runs it linear from
 25 %. PIC-323203 is seeded there, so the design point is exact on either.
 
+A ninth, decided 2026-11-16 (decision 233, handoff B-156): **LI-323503 reads between LT-323503's
+taps**, N2B and N2A, 1310 mm apart (`data.unit_323e011.lt_323503_pct`): 26.77 % at V1's design
+holdup, LIC-323503's set point, 1.22 times V1's reading per kilogram, 0 and 100 % at the taps.
+AC4's L2 stop reads it too, so 323P008A / B stop at 763 kg, not V1's reading's 119 kg. V1 reads
+M / M_des x 50; ``V1_CONDENSER`` and ``lic_323503(taps=False)`` are V1's.
+
 A seventh, decided 2026-10-16 (handoff B-31): **each inlet at its producer's live temperature.**
 V1 charges 701 at 106 C, 786 at 61 C, 321 at 74 C and 791 at 56 C whatever 323F004, 328D001,
 323E003 and 328D003's compartment II do. The port charges each as its departure from its
@@ -221,25 +227,10 @@ from ureasim.data.unit_323e011 import (
     E011_UA_KW,
     E011_VOL_M3,
     F004_VAPOUR_M3,
-    FIC418_OP_DES_PCT,
-    FV418_CHAR,
-    FIC_323418_KC,
-    FIC_323418_SP_HI_M3H,
-    FIC_323418_TD_S,
-    FIC_323418_TI_S,
-    FT_323418_TAU_S,
-    LIC_323503_KC,
-    LIC_323503_TI_S,
     LV503_CHAR,
     LV503_OP_DES_PCT,
     M718A_LINE_KG,
     M718A_TAU_MAX_S,
-    M718B_DES_KGH,
-    PIC_323203_KC,
-    PIC_323203_SP_HI_BARA,
-    PIC_323203_SP_LO_BARA,
-    PIC_323203_TD_S,
-    PIC_323203_TI_S,
     RHO_718_KGM3,
     SV32357_AREA_M2,
     SV32357_KD,
@@ -247,7 +238,9 @@ from ureasim.data.unit_323e011 import (
     SV32357_SET_BARA,
     VENT_DP_FLOOR_BAR,
     VENT_DP_MIN_BAR,
+    lt_323503_pct,
 )
+from ureasim.units.recirc.flash_condenser_loops import fic_323418, lic_323503, pic_323203
 from ureasim.units.recirc.flash_gas_node import (
     PV_323203_TRIM,
     condensation_capacity_kgh,
@@ -267,43 +260,8 @@ DT_FLOOR_S = 1e-9
 
 #: 323E011 as V1 runs it — the constant capacity and the reverse vent — which the equivalence
 #: harness keeps (handoff B-30, decided 2026-10-15): ``FlashCondenser(**V1_CONDENSER)``.
-V1_CONDENSER = {"dew_capacity": False, "vent_dp_floor_bar": VENT_DP_FLOOR_BAR, "pv_323203": None}
-
-
-# ======================================================================================
-# The three controllers, seeded exactly as V1 seeds them
-# ======================================================================================
-
-def pic_323203(op_des_pct: float = PV_323203_TRIM[0]) -> ProcessLoop:
-    """PIC-323203, the node pressure. DIRECT acting: a node above set point opens PV-323203.
-
-    Seeded as V1 seeds it, but at PV-323203's vendor design stroke (V1's 25 % is
-    ``E011_PV_OP_DES_PCT``) and with the table's gain rescaled to PT-323203's span — 60 %/bar,
-    not V1's 0.60 (decided 2026-09-27, handoff B-32)."""
-    return ProcessLoop(
-        tag="PIC-323203", Kc=PIC_323203_KC, Ti=PIC_323203_TI_S, Td=PIC_323203_TD_S, act=-1.0,
-        op=op_des_pct, sp=E011_P_BARA, pv=E011_P_BARA, pv1=E011_P_BARA, pv2=E011_P_BARA,
-        op_lo=0.0, op_hi=100.0, sp_lo=PIC_323203_SP_LO_BARA, sp_hi=PIC_323203_SP_HI_BARA)
-
-
-def lic_323503() -> ProcessLoop:
-    """LIC-323503, the 323D011 level. DIRECT acting: a level above set point raises the total
-    718 draw demand."""
-    return ProcessLoop(
-        tag="LIC-323503", Kc=LIC_323503_KC, Ti=LIC_323503_TI_S, Td=0.0, act=-1.0,
-        op=LV503_OP_DES_PCT, sp=D011_LVL_SP_PCT, pv=D011_LVL_SP_PCT, pv1=D011_LVL_SP_PCT,
-        pv2=D011_LVL_SP_PCT, op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=100.0)
-
-
-def fic_323418() -> FlowLoop:
-    """FIC-323418, the 718B lean-carbamate leg to 323E003 — a VOLUMETRIC loop in m3/h."""
-    v = M718B_DES_KGH / RHO_718_KGM3
-    loop = ProcessLoop(
-        tag="FIC-323418", Kc=FIC_323418_KC, Ti=FIC_323418_TI_S, Td=FIC_323418_TD_S, act=+1.0,
-        op=FIC418_OP_DES_PCT, sp=v, pv=v, pv1=v, pv2=v,
-        op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=FIC_323418_SP_HI_M3H)
-    return FlowLoop(loop=loop, design_flow=M718B_DES_KGH, op_des=FIC418_OP_DES_PCT,
-                    tau_s=FT_323418_TAU_S, rho_kgm3=RHO_718_KGM3, characteristic=FV418_CHAR)
+V1_CONDENSER = {"dew_capacity": False, "vent_dp_floor_bar": VENT_DP_FLOOR_BAR, "pv_323203": None,
+                "taps": False}
 
 
 def sv_32357() -> GasReliefValve:
@@ -395,6 +353,8 @@ class FlashCondenser:
     #: Each inlet at its producer's live temperature, as its departure from the producer's design
     #: (decided 2026-10-16, handoff B-31); False is V1's design temperatures.
     live_inlets: bool = True
+    #: LT-323503 between its taps (decided 2026-11-16, decision 233); False is V1's M / M_des x 50.
+    taps: bool = True
 
     def step(self, pic: ProcessLoop, lic: ProcessLoop, fic418: FlowLoop,
              m_701_kgh: float, blow_505_kgh: float, blow_501_kgh: float,
@@ -459,7 +419,8 @@ class FlashCondenser:
             gen = vent_generation_kgh(gas)
 
         # ----- LIC-323503 -> the 718 draw: FIC-323418 on 718B, 718A the remainder --------
-        level = self.m_kg / D011_M_DES_KG * D011_LVL_SP_PCT
+        level = (lt_323503_pct(self.m_kg) if self.taps
+                 else self.m_kg / D011_M_DES_KG * D011_LVL_SP_PCT)
         lic_op = lic.step(level, dt)
         # LV-323503 on its vendor trim (handoff B-44, decided 2026-09-30).
         m_718_dmd = D011_M718_DES_KGH * (cv_fraction(lic_op / 100.0, LV503_CHAR)
@@ -587,7 +548,8 @@ class FlashCondenser:
             m_cond_kgh=m_cond, m_relief_kgh=m_relief, relief_lifted=self.sv_32357.valve.lifted,
             m_overflow_kgh=m_overflow,
             p_bara=self.p_bara, t_c=self.t_c, m_kg=self.m_kg,
-            level_pct=self.m_kg / D011_M_DES_KG * D011_LVL_SP_PCT, p008_tripped=tripped,
+            level_pct=(lt_323503_pct(self.m_kg) if self.taps
+                       else self.m_kg / D011_M_DES_KG * D011_LVL_SP_PCT), p008_tripped=tripped,
         )
 
 
