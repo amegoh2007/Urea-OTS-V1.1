@@ -778,6 +778,9 @@ def harness_plant():
     plant.units["322E002"].low_nc_branch = False
     plant.units["322E002"].release_heat = False          # decision 185, V1's clamp
     plant.units["323E003"].track_species = False
+    # V1's LI-323502, the holdup over the drum's: the reading between LT-323502's taps (decision
+    # 219, 2026-11-16) has its own tests.
+    plant.units["323E003"].taps = False
     plant.units["322E003"].wash_line = False
     # V1's reactor PT on the melt's bubble pressure and its feed line on the live loop: its cap at
     # 322E002's pressure (B-109) and its line on the PFD's design drop (B-112), decided 2026-10-22,

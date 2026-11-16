@@ -2,11 +2,11 @@
 
 What this pins
 --------------
-Decision 33's class reads a level between its transmitter's taps. Six modelled levels do so, each on a tap
+Decision 33's class reads a level between its transmitter's taps. Seven modelled levels do so, each on a tap
 span taken from a general arrangement drawing, a nozzle schedule or the isometrics. Uhde's level-transmitter
 data sheets (UD-MR-G00-EC-0133 and UD-MR-G00-EC-0134, scans read in session 118 and checked on the page
 image) print each transmitter's nozzle distance. This file pins every modelled span to its sheet, so a span
-that moves off the sheet fails here. The seven levels that still read V1's holdup ratio are handoff B-156
+that moves off the sheet fails here. The six levels that still read V1's holdup ratio are handoff B-156
 and have no row; LT-324501 and LT-329505 are data gaps 4 and 10.
 """
 
@@ -21,6 +21,8 @@ import pytest
 SHEETS: list[tuple[str, str, str, int, str, Callable[[object], float]]] = [
     ("LT-322502", "322C001", "EC-0134 p. 3", 800, "ureasim.data.unit_322c001",
      lambda m: m.LT_322502_SPAN_M),
+    ("LT-323502", "323D001", "EC-0134 p. 4", 1910, "ureasim.data.unit_323e003",
+     lambda m: m.LT_323502_SPAN_M),
     ("LT-323505", "323F004", "EC-0134 p. 5", 2900, "ureasim.data.unit_323",
      lambda m: m.LT_323505_SPAN_M),
     ("LT-328501", "328D001", "EC-0134 p. 6", 1510, "ureasim.data.unit_328d001",

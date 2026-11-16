@@ -35,6 +35,10 @@ tank's heel in place of V1's floor guard (B-35). The transcription carries both 
 switch on exactly those two lines, so the identity scenarios compare the rest of V1's stage 8
 tick for tick wherever the two limits are reached; the tests of the two decisions run V1's own
 lines and assert both sides.
+
+LI-323502 reads between LT-323502's taps (decision 219, 2026-11-16); V1 reads the holdup over the
+drum's. Every identity scenario runs the condenser on V1's switch, ``V1_TANK``; the decision's test
+runs both and asserts both sides.
 """
 
 from __future__ import annotations
@@ -348,7 +352,7 @@ def test_the_state_and_controllers_are_seeded_as_v1_seeds_them(v1):
                 v1c["sp_lo"], v1c["sp_hi"]) == (
             loop.mode, loop.op, loop.sp, loop.pv, loop.pv1, loop.pv2, loop.Kc, loop.Ti,
             loop.Td, loop.act, loop.op_lo, loop.op_hi, loop.sp_lo, loop.sp_hi), loop.tag
-    lpcc = lp.LpCarbamateCondenser()
+    lpcc = lp.LpCarbamateCondenser(**lp.V1_TANK)
     assert (s.r3232_d001_M, s.r3232_e003_T, s.r3232_d001_P) == (lpcc.m_kg, lpcc.t_c,
                                                                 lpcc.p_bara)
     assert lpcc.tw_return_c == v1["R3232_TW_RET_T"] and "R3232_TW_RET" not in s.tlag
@@ -377,7 +381,7 @@ def _run(v1, script, ticks: int, dt: float = DT, before=None, v1_gain: bool = Tr
     """Drive the condenser alone through `script(k)`, comparing everything every tick with V1's
     stage 8 on the decided relations (B-34, B-35)."""
     s = _v1_state(v1)
-    lpcc, loops = lp.LpCarbamateCondenser(), _loops(v1_gain)
+    lpcc, loops = lp.LpCarbamateCondenser(**lp.V1_TANK), _loops(v1_gain)
     if before:
         before(s, lpcc, loops)
     b = None
@@ -504,7 +508,7 @@ def test_pv_323202_on_fishers_anchor_decided_divergence(v1):
     per per cent of stroke, holds 3.2554 with it at 82.19 % passing 3023 — the dew point
     condensing the rest."""
     s = _v1_state(v1, vent=False)
-    lpcc, loops = lp.LpCarbamateCondenser(), _loops(v1_gain=True)
+    lpcc, loops = lp.LpCarbamateCondenser(**lp.V1_TANK), _loops(v1_gain=True)
     for k in range(7200):
         x = _gas(1.1 if k >= 10 else 1.0)
         s.r3232_e011_P = x["p_e011"]
@@ -529,7 +533,7 @@ def test_pic_323202_on_its_transmitter_span_decided_divergence(v1):
     point holds both near 3.2 bar a — the condenser, not the vent, sets this node — and the
     port's vent has taken more of the excess."""
     s = _v1_state(v1)
-    lpcc, loops = lp.LpCarbamateCondenser(), _loops(v1_gain=False)
+    lpcc, loops = lp.LpCarbamateCondenser(**lp.V1_TANK), _loops(v1_gain=False)
     parted = None
     for k in range(7200):
         x = _gas(1.1 if k >= 10 else 1.0)
@@ -557,7 +561,7 @@ def _diverge(v1, script, ticks: int, dt: float, before, limit_reached):
     `limit_reached(k, a, b)` first holds, then both driven on and every later tick handed back
     as (V1 result, V1 holdup before and after, the port's holdup before, port result)."""
     s = _v1_state(v1)
-    lpcc, loops = lp.LpCarbamateCondenser(), _loops()
+    lpcc, loops = lp.LpCarbamateCondenser(**lp.V1_TANK), _loops()
     if before:
         before(s, lpcc, loops)
     after, parted = [], None
@@ -645,7 +649,7 @@ def test_the_column_rides_the_lpcc_node(v1):
     s = _v1_state(v1)
     col = rc.RectifyingColumn(chest=rc.V1_CHEST)
     loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
-    lpcc, loops8 = lp.LpCarbamateCondenser(), _loops()
+    lpcc, loops8 = lp.LpCarbamateCondenser(**lp.V1_TANK), _loops()
     for k in range(1500):
         drain = FEED_DES * (0.85 if k >= 20 else 1.0)
         a1 = stage1._v1_stage1(v1, s, drain, 119.0, stage1.BOTTOMS_PCT, DT)
@@ -666,7 +670,7 @@ def test_the_two_lp_condensers_through_321_and_718b(v1):
     the tick and vents against its own node; 323E003 takes 718B on the next tick — V1's
     ``R3232_718B`` tear, seeded with the design flow."""
     s = _v1_state(v1)
-    lpcc, loops8 = lp.LpCarbamateCondenser(), _loops()
+    lpcc, loops8 = lp.LpCarbamateCondenser(**lp.V1_TANK), _loops()
     cond, loops9 = fc.FlashCondenser(**fc.V1_CONDENSER), stage9._loops()
     m718b_prev = e3.E003_M718B_DES_KGH
     for k in range(3000):
@@ -698,7 +702,7 @@ def test_the_recirculation_end_to_end_through_a_stripper_feed_cut(v1):
     drum, lic5 = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
     sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False, own_head_leg=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()
-    lpcc, loops8 = lp.LpCarbamateCondenser(), _loops()
+    lpcc, loops8 = lp.LpCarbamateCondenser(**lp.V1_TANK), _loops()
     cond, loops9 = fc.FlashCondenser(**fc.V1_CONDENSER), stage9._loops()
     m718b_prev = e3.E003_M718B_DES_KGH
     for k in range(800):
@@ -746,7 +750,7 @@ def test_pfd_734_decided_divergence(v1):
     closes on the five inlets, so the ammonia water reaches the synthesis instead of leaving the
     plant."""
     s = _v1_state(v1)
-    lpcc, loops = lp.LpCarbamateCondenser(), _loops()
+    lpcc, loops = lp.LpCarbamateCondenser(**lp.V1_TANK), _loops()
     x = _design()
     for k in range(600):
         s.r3232_e011_P = x["p_e011"]
@@ -756,7 +760,7 @@ def test_pfd_734_decided_divergence(v1):
                       x["m718b"], x["m776"], x["p_e011"], 1.0, m_734_kgh=1534.0)
         _assert_tick(a, b, s, lpcc, loops, f"PFD 734 at design, tick {k}")
     s = _v1_state(v1)
-    lpcc, loops = lp.LpCarbamateCondenser(), _loops()
+    lpcc, loops = lp.LpCarbamateCondenser(**lp.V1_TANK), _loops()
     for _ in range(1800):
         s.r3232_e011_P = x["p_e011"]
         m_pre = lpcc.m_kg
@@ -790,7 +794,7 @@ def test_the_inlets_at_their_producers_temperatures_decided_divergence(v1):
     x = _design()
     for kw, live in ((B31_DES, True), (B31_HOT, False)):
         s = _v1_state(v1)
-        lpcc, loops = lp.LpCarbamateCondenser(live_inlets=live), _loops()
+        lpcc, loops = lp.LpCarbamateCondenser(live_inlets=live, **lp.V1_TANK), _loops()
         for k in range(600):
             s.r3232_e011_P = x["p_e011"]
             a = _v1_stage8(v1, s, x["m305"], x["m718b"], x["m776"], x["flash"], x["pool"],
@@ -799,7 +803,7 @@ def test_the_inlets_at_their_producers_temperatures_decided_divergence(v1):
                           x["b323501"], x["m718b"], x["m776"], x["p_e011"], DT, **kw)
             _assert_tick(a, b, s, lpcc, loops, f"live {live}, tick {k}")
     s = _v1_state(v1)
-    lpcc, loops = lp.LpCarbamateCondenser(), _loops()
+    lpcc, loops = lp.LpCarbamateCondenser(**lp.V1_TANK), _loops()
     for k in range(1800):
         s.r3232_e011_P = x["p_e011"]
         a = _v1_stage8(v1, s, x["m305"], x["m718b"], x["m776"], x["flash"], x["pool"],
@@ -813,3 +817,47 @@ def test_the_inlets_at_their_producers_temperatures_decided_divergence(v1):
     assert (lpcc.t_c, lpcc.p_bara, b.q_kw, b.m_308_kgh) == (
         pytest.approx(74.1850, abs=1e-4), pytest.approx(3.20286, abs=1e-5),
         pytest.approx(14136.3, abs=0.1), pytest.approx(36800.50, abs=0.01))
+
+
+# --------------------------------------------------------------------------------------
+# Decision 219: LI-323502 between LT-323502's taps
+# --------------------------------------------------------------------------------------
+
+def test_li_323502_between_its_taps_decided_divergence(v1):
+    """Decision 219, 2026-11-16 (handoff B-156): V1 reads 323D001's level as its holdup over the
+    11.10 m3 drum's; the port reads it between LT-323502's taps, 1 910 mm apart on the cylinder.
+    The gas 25 % down at 2 s, an hour at 1 s: on V1's switch the port is V1's on every tick. Between
+    the taps the design holdup reads V1's 50 %, so the first ticks are V1's, and LIC-323502 parts on
+    the tick after the gas falls. A kilogram then moves the reading 1.56 times as far: the dip
+    bottoms at 46.32 % at 362 s where V1's bottoms at 46.92 % at 472 s, a holdup the taps read
+    45.20 %."""
+    s = _v1_state(v1)
+    old, loops_old = lp.LpCarbamateCondenser(**lp.V1_TANK), _loops()
+    new, loops_new = lp.LpCarbamateCondenser(), _loops()
+    parted, lo_v1, lo_taps = None, (1e9, None), (1e9, None)
+    for k in range(3600):
+        x = _gas(0.75 if k >= 2 else 1.0)
+        s.r3232_e011_P = x["p_e011"]
+        a = _v1_stage8(v1, s, x["m305"], x["m718b"], x["m776"], x["flash"], x["pool"],
+                       x["b322501"], x["b323501"], 1.0)
+        args = (x["m305"], x["flash"], x["pool"], x["b322501"], x["b323501"], x["m718b"],
+                x["m776"], x["p_e011"], 1.0)
+        m_pre = new.m_kg
+        b, c = old.step(*loops_old, *args), new.step(*loops_new, *args)
+        _assert_tick(a, b, s, old, loops_old, f"V1's tank, tick {k}")
+        assert (c.lic_pv_pct, c.level_pct) == (e3.lt_323502_pct(m_pre),
+                                               e3.lt_323502_pct(new.m_kg)), k
+        if parted is None and (c.lic_op_rpm, c.m_308_kgh) != (a["lic"], a["m308"]):
+            parted = k
+        if parted is None:
+            assert (c.lic_pv_pct, c.m_kg) == (a["lvl"], s.r3232_d001_M), k
+        if k < 2:
+            assert c.level_pct == a["LI"] == 50.0, k
+        lo_v1, lo_taps = min(lo_v1, (a["LI"], k)), min(lo_taps, (c.level_pct, k))
+    assert parted == 3
+    assert (lo_v1[0], lo_v1[1]) == (pytest.approx(46.9203, abs=1e-4), 472)
+    assert (lo_taps[0], lo_taps[1]) == (pytest.approx(46.3182, abs=1e-4), 362)
+    assert e3.lt_323502_pct(lo_v1[0] / 100.0 * e3.D001_M_FULL_KG) == pytest.approx(45.196,
+                                                                                    abs=1e-3)
+    assert (a["LI"], c.level_pct) == (pytest.approx(49.9435, abs=1e-4),
+                                      pytest.approx(50.0477, abs=1e-4))

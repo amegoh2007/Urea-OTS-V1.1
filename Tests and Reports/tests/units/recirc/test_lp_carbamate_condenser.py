@@ -177,13 +177,13 @@ def test_pfd_734_enters_as_its_departure_from_the_pfd():
     """Handoffs B-37 and B-94, decided 2026-10-10 and 2026-10-14: FIC-323401's ammonia water enters
     at 56 C as its departure from PFD 734's 1534 kg/h, which the PFD's 323E003 balance closes
     without. At the design flow the unit is V1's to the bit. FIC-323401 at 2000 kg/h lifts 323D001
-    0.25 % in ten minutes and LIC-323502, on the plant DCS's tuning, passes the 466 kg/h on in PFD
-    308: after four hours 37 304.4 kg/h, 469.2 over the design, the level back on 50 %; shut, 308
+    0.24 % between LT-323502's taps in ten minutes (0.25 % before decision 219) and LIC-323502, on
+    the plant DCS's tuning, passes the 466 kg/h on in PFD 308: after four hours 37 304.4 kg/h, 469.2 over the design, the level back on 50 %; shut, 308
     carries 1544.6 kg/h less."""
     assert _run_734(1534.0, 600)[600] == _run_734(None, 600)[600]
     up = _run_734(2000.0, 4 * 3600)
     assert up[600].in_kgh == pytest.approx(e3.E003_IN_DES_KGH + 466.0, rel=1e-12)
-    assert up[600].level_pct == pytest.approx(50.249, abs=1e-3)
+    assert up[600].level_pct == pytest.approx(50.239, abs=1e-3)
     assert up[14400].m_308_kgh == pytest.approx(37304.4, abs=0.1)
     assert up[14400].level_pct == pytest.approx(50.0, abs=1e-3)
     assert up[14400].t_c == pytest.approx(73.993, abs=1e-3)
@@ -196,12 +196,13 @@ def test_the_liquor_carries_the_ammonia_water_into_308():
     """Handoff B-105, decided 2026-10-22: the tank carries NH3, CO2, H2O and urea as its departure
     from PFD 308, each inlet at its PFD row and the condensate at its closure on PFD 308. At the
     design inlets 308 is PFD 308's row to the bit. FV-323401 wide open, 7 015 kg/h of 328D003's
-    90 % water: ten minutes on 308 carries 35.69 % water where PFD 308 has 30.83; after four hours
+    90 % water: ten minutes on 308 carries 35.72 % water (35.69 % before decision 219, LIC-323502
+    reading between its taps) where PFD 308 has 30.83; after four hours
     38.51 %, the stirred mix of what enters. V1's mass-only tank, the switch off, delivers PFD 308's
     row whatever it takes in."""
     assert _run_734(1534.0, 600)[600].w_308 == e3.W_308
     up = _run_734(7015.0, 4 * 3600)
-    assert up[600].w_308["H2O"] == pytest.approx(0.35691, abs=1e-5)
+    assert up[600].w_308["H2O"] == pytest.approx(0.35716, abs=1e-5)
     assert up[14400].w_308 == {"NH3": pytest.approx(0.27327, abs=1e-5),
                                "CO2": pytest.approx(0.33996, abs=1e-5),
                                "H2O": pytest.approx(0.38510, abs=1e-5),
@@ -236,3 +237,33 @@ def test_329p003_stopped_takes_the_shells_duty_and_its_condensation_away():
     assert (r.q_kw, r.capacity_kgh) == (0.0, 0.0)
     # With no duty the return is the supply.
     assert r.p_bara > s.p_bara and r.tw_return_c == u.lag_state[lp.TW_SUPPLY_LAG_KEY]
+
+
+# ======================================================================================
+# Decision 219: LI-323502 between LT-323502's taps
+# ======================================================================================
+
+def test_li_323502_reads_between_its_taps():
+    """The taps stand 220 mm inside each tangent line of 323D001's 2 350 mm cylinder, so the
+    design holdup, half the 11.10 m3 drum, reads 50 % to the bit; the reading is 0 % with the
+    liquid at the lower tap and 100 % at the upper, and a kilogram moves it 1.56 times as far as
+    V1's fraction of the drum. On V1's switch the condenser reads V1's fraction."""
+    assert e3.D001_M_HALF_KG == e3.D001_M_DES_KG
+    assert e3.lt_323502_pct(e3.D001_M_DES_KG) == 50.0
+    band = e3.D001_RHO_KGM3 * e3.D001_AREA_M2 * e3.LT_323502_SPAN_M
+    assert band == pytest.approx(8667.3, abs=0.1)
+    assert e3.lt_323502_pct(e3.D001_M_DES_KG - band / 2.0) == pytest.approx(0.0, abs=1e-9)
+    assert e3.lt_323502_pct(e3.D001_M_DES_KG + band / 2.0) == pytest.approx(100.0, abs=1e-9)
+    assert (e3.lt_323502_pct(2426.0), e3.lt_323502_pct(11094.0)) == (0.0, 100.0)
+    assert (e3.lt_323502_pct(e3.D001_M_FLOOR_KG), e3.lt_323502_pct(1e5)) == (0.0, 100.0)
+    assert e3.D001_M_FULL_KG / band == pytest.approx(1.5599, abs=1e-4)
+    for taps, law in ((True, e3.lt_323502_pct),
+                      (False, lambda m: m / e3.D001_M_FULL_KG * 100.0)):
+        u = lp.LpCarbamateCondenser(taps=taps)
+        u.m_kg = 5000.0
+        r = u.step(lp.pic_323202(), lp.lic_323502(), lp.sic_323901(), lp.tic_323013(), M305,
+                   FLASH, POOL, 0.0, 0.0, e3.E003_M718B_DES_KGH, e3.E003_M776_DES_KGH,
+                   e.E011_P_BARA, 0.1)
+        assert r.level_pct == law(u.m_kg)
+        assert r.lic_pv_pct == (law(5000.0) if taps
+                                else 5000.0 / e3.D001_M_DES_KG * e3.D001_LVL_SP_PCT)

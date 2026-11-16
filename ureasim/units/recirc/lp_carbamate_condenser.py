@@ -106,6 +106,10 @@ node on its set point runs as V1 runs it; the fourth, PFD 734, adds an inlet V1 
     ``T_in = T_in,des + (T_producer - T_producer,des)``: 323C003's, 328D001's and 322C001's of
     this tick, 323E011's of the tick before (it steps after this unit). At the design seed each
     is V1's to the bit; ``live_inlets=False`` is V1's, which the plant-level harness keeps.
+  * **LI-323502 reads between LT-323502's taps (decision 219, handoff B-156).** V1 reads the
+    drum's fraction, M / 13 519.8 kg x 100; here the liquid's height between the taps, 1910 mm
+    apart on the shell (`data.unit_323e003.lt_323502_pct`): 50 % on V1's design holdup, 1.56
+    times V1's reading per kilogram, 0 and 100 % at the taps. ``V1_TANK`` is V1's.
 
 PIC-323202 drives the one vent, as in V1. The functional diagram gives the controller a second,
 split-range output, PV-323202B, but the sources disagree on the valve it drives, and the process
@@ -195,6 +199,7 @@ from ureasim.data.unit_323e003 import (
     W_734,
     W_776,
     W_COND,
+    lt_323502_pct,
 )
 from ureasim.data.desorption_train import D001_T_C
 from ureasim.data.unit_322c001 import C001_T_C
@@ -431,6 +436,9 @@ class LpCarbamateCondenser:
     #: The liquor's composition carried through the tank into 308 (decided 2026-10-22, handoff
     #: B-105); False is V1's mass-only LPCC, which the plant-level harnesses keep.
     track_species: bool = True
+    #: LI-323502 between LT-323502's taps (decided 2026-11-16, decision 219); False is V1's
+    #: fraction of the drum (`V1_TANK`), which the V1 harnesses keep.
+    taps: bool = True
 
     def step(self, pic: ProcessLoop, lic: ProcessLoop, sic: ProcessLoop, tic: ProcessLoop,
              m_305_kgh: float, m_flash_gas_kgh: float, m_heater_gas_kgh: float,
@@ -484,7 +492,8 @@ class LpCarbamateCondenser:
         m_321 = vent_valve_kgh(pic_op, self.p_bara, p_e011_bara)
 
         # ----- LIC-323502 -> SIC-323901 -> 323P001 -----------------------------------------
-        level = self.m_kg / D001_M_DES_KG * D001_LVL_SP_PCT
+        level = (lt_323502_pct(self.m_kg) if self.taps
+                 else self.m_kg / D001_M_DES_KG * D001_LVL_SP_PCT)
         lic_op = lic.step(level, dt)
         # The speed transmitter reads the scoop tube's last setting through its own lag.
         speed_pv = first_order_lag(self.lag_state, SPEED_LAG_KEY, sic.op,
@@ -572,13 +581,18 @@ class LpCarbamateCondenser:
             tic_op_pct=tic_op, q_kw=q, tw_return_c=self.tw_return_c, m_cond_kgh=m_cond,
             env_in_kgh=env_in, t_dew_c=t_dew, capacity_kgh=capacity, env_cond_kgh=env_cond,
             p_bara=self.p_bara, t_c=self.t_c, m_kg=self.m_kg,
-            level_pct=self.m_kg / D001_M_FULL_KG * 100.0,
+            level_pct=(lt_323502_pct(self.m_kg) if self.taps
+                       else self.m_kg / D001_M_FULL_KG * 100.0),
             w_308={k: W_308[k] + self.dw[k] for k in LIQUOR_SPECIES},
         )
 
 
+#: The tank as V1 reads it, its level the drum's fraction (decision 219): the V1 harnesses' tank.
+V1_TANK = {"taps": False}
+
+
 __all__ = [
-    "SPEED_LAG_KEY", "TW_SUPPLY_LAG_KEY", "STROKE_FLOOR_PCT", "HEAT_CAPACITY_FLOOR_KJK",
+    "V1_TANK", "SPEED_LAG_KEY", "TW_SUPPLY_LAG_KEY", "STROKE_FLOOR_PCT", "HEAT_CAPACITY_FLOOR_KJK",
     "DT_FLOOR_S",
     "vent_valve_kgh", "tempered_water_supply_ss_c", "dew_point_c", "condensation_capacity_kgh",
     "pic_323202", "lic_323502", "sic_323901", "tic_323013",

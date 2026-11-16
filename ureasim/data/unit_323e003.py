@@ -15,6 +15,9 @@ Sources
   323P001 Datasheets.md`` — streams 305, 308, 321, 718B, 776 and 797, the tempered water (1102
   at 55 C, 1103 at 65 C), the 14 000 kW duty, 323D001's 11.10 m3 and the 3.2 bar a set point,
   and 323P001's plunger geometry.
+* ``References/Datasheets/323D001 Datasheet.pdf`` (Uhde UD-AU-323-EC-0005), the as-built drawing
+  UD-AU-323-DZ-0005-005 rev 03 and Uhde's level-transmitter sheet UD-MR-G00-EC-0134 (the vendor
+  archive) — 323D001's bore and LT-323502's taps (decision 219).
 * ``References/Master_PID_Tuning_Constants.md`` — PIC-323202 (its "B" row), SIC-323901 and
   TIC-323013.
 * Uhde loop summaries for unit 323, UD-MR-323-EC-0001 rev 1 (the vendor archive) — PT-323202's,
@@ -26,6 +29,8 @@ Sources
 """
 
 from __future__ import annotations
+
+import math
 
 from ureasim.data.control_valves import design_stroke_pct
 from ureasim.data.control_valves_fisher import PV_323202
@@ -138,6 +143,48 @@ D001_M_FULL_KG = D001_VOL_M3 * D001_RHO_KGM3
 #: LI-323502's set point [%] and the design holdup it implies [kg], 6760.
 D001_LVL_SP_PCT = 50.0
 D001_M_DES_KG = D001_M_FULL_KG * (D001_LVL_SP_PCT / 100.0)
+
+#: 323D001's bore [m2], 3.7257: a vertical drum of inside diameter 2178 mm, 2350 mm between its
+#: tangent lines (Uhde's datasheet UD-AU-323-EC-0005 p. 2; the as-built drawing UD-AU-323-DZ-0005-005
+#: rev 03 the same).
+D001_AREA_M2 = math.pi * 0.25 * 2.178 ** 2
+
+#: LT-323502, a DP cell across N6B and N6A (the datasheet's nozzle table and principle sketch, p. 3
+#: and 5): its taps 220 mm inside each tangent line, 1910 mm apart (Uhde's UD-MR-G00-EC-0134, sheet
+#: 3/6, nozzle distance 1910 mm) [m]. Decided 2026-11-16 (decision 219, handoff B-156): LI-323502
+#: reads the liquid between the taps, where V1 reads M / M_full x 100.
+LT_323502_SPAN_M = 1.910
+
+#: LT-323502's reading with the liquid at the shell's mid-plane [%]. The taps stand symmetric about
+#: it, and the drum holds half its 11.10 m3 below it whatever its heads hold, so V1's design holdup
+#: is the holdup at the mid-plane. The drawing's normal liquid level, 1096 mm above the bottom
+#: tangent line, reads 45.9 %.
+LT_323502_MID_PCT = 50.0
+
+#: The holdup at the shell's mid-plane [kg], 6759.9: half the drum, V1's design holdup to the bit.
+D001_M_HALF_KG = D001_M_FULL_KG * 0.5
+
+
+def lt_323502_pct(m_kg: float) -> float:
+    """LI-323502 [%]: the height of 323D001's liquid between LT-323502's taps (decision 219).
+
+    Process utility
+    ---------------
+    What the board shows and LIC-323502 holds by 323P001's speed. Both taps are on the shell, so
+    above the bottom head every m3 lifts the level by 1 / A and the reading moves 1.56 times as far
+    per kilogram as V1's fraction of the whole drum. A DP cell reads only between its taps: the
+    reading stops at 0 % with 2426 kg left in the drum (V1 reads 17.9 % there) and at 100 % with
+    11 094 kg in it (V1 82.1 %), not at the drum's empty or full.
+
+    Equation
+    --------
+        LI = clamp( 50 + (M - M_half) / (rho A L) . 100, 0, 100 ),   M_half = 11.10 rho / 2
+
+    written as the departure from the mid-plane's holdup, so the design holdup reads its set point
+    exactly. Source: As-Built §CXXXI.3.
+    """
+    return min(max(LT_323502_MID_PCT + (m_kg - D001_M_HALF_KG)
+                   / (D001_RHO_KGM3 * D001_AREA_M2 * LT_323502_SPAN_M) * 100.0, 0.0), 100.0)
 
 #: Floors on the holdup [kg] and on the node [bar a]: V1's ``max(..., 1.0)`` and
 #: ``max(..., 0.1)``.
@@ -292,7 +339,8 @@ __all__ = [
     "E003_M_COND_DES_KGH", "E003_T_C", "E003_T305_C", "E003_T718B_C", "E003_T776_C",
     "TW_SUP_T_C", "TW_RET_T_C", "TW_T_C", "TV13_DES_PCT", "TW_TAU_S", "TW_SUP_FLOOR_C",
     "D001_P_BARA", "E003_PV_OP_DES_PCT", "D001_VOL_M3", "D001_RHO_KGM3", "D001_M_FULL_KG",
-    "D001_LVL_SP_PCT", "D001_M_DES_KG", "D001_M_FLOOR_KG", "D001_P_FLOOR_BARA",
+    "D001_LVL_SP_PCT", "D001_M_DES_KG", "D001_AREA_M2", "LT_323502_SPAN_M", "LT_323502_MID_PCT",
+    "D001_M_HALF_KG", "lt_323502_pct", "D001_M_FLOOR_KG", "D001_P_FLOOR_BARA",
     "ENV_GAS_RHO_DES_KGM3", "ENV_GAS_C_KG_BAR", "TSAT_E003_DES_C", "E003_Q_DES_KW",
     "E003_UA_KW", "E003_SENS_KW", "E003_LAMC_KJKG", "P001_M3H_PER_RPM", "P001_RPM_DES",
     "SIC_323901_PV_TAU_S", "PIC_323202_KC_TABLE", "PIC_323202_TI_S", "PIC_323202_TD_S",
