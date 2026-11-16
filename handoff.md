@@ -20,7 +20,22 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 # Section A — Rewrite issues
 
-*None open.*
+### A-60 — B-104's tubes' take rings with a period of two ticks
+
+*Raised 2026-11-17, session 124 (As-Built §CXXXV.4).* With LT-322501's sump full and the tubes' ceiling on (B-104's
+scenario: LIC-322501 in MAN, LV-322501 at 10 %), the tubes' take alternates 20.5 and 32.8 t/h and 322R001's discharge
+26.3 and 37.8 t/h from one tick to the next over the last 20 s read (ticks 5 800 to 6 000), on either of 323C003's laws; PT-329201 moves
+1e-4 bar with it. Acceptance: the take and the discharge hold one value from tick to tick, or the ring is shown to be
+the plant's; the scenario's two-tick means within their tolerances.
+Established: decision 241 moved the ring's phase by a tick (the cap at tick 2 180, not 2 181), and the single tick 6 000
+then read 37.8 t/h where V1's column reads 26.3; the two-tick means agree to 5 kg/h on either law (`probe_b104.py` in
+`Tests and Reports\reports\Session_124_b156\c003`). The test asserts the means of the held liquor, the take and the
+discharge; its other tick-6000 pins (the submerged fraction, the levels, TT-322004, the loops) are single ticks.
+The 37.7 and 32.7 t/h the test quoted before decision 170 match the ring's high half.
+Ruled out: none yet.
+Options: (a) keep as built, the means asserted; (b) find the quantity read a tick late that rings and solve it on the
+tick, as A-21's saturation fraction was.
+Next step: trace the ring's tear; then the process engineer's choice between (a) and (b).
 
 ---
 

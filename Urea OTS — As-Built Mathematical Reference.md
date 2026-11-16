@@ -26612,7 +26612,7 @@ The full suite in nine parallel groups, 8 400 tests: 8 399 passed and the B-104 
 
 # Part CXXXV — Session 124: LI-323501 between its taps, data gaps 2 and 8 signed off (2026-11-16)
 
-Decisions 241 and 242. B-156 down to four units; data gaps 2 and 8 closed. Scratch and runs:
+Decisions 241 and 242. B-156 down to four units; data gaps 2 and 8 closed; A-60 raised. Scratch and runs:
 `Tests and Reports\reports\Session_124_b156` (`geom.py` the geometry, `proto_seed_c003.py` and `score230.py` the
 whole plant's seed on three design readings, `probe_divergence.py` stage 1 against V1, `measure_bound.py` the
 built seed; the page renders of the sources read).
@@ -26635,7 +26635,11 @@ arrangement drawing UD-AU-323-DZ-0001-001 rev 01.
 * N5, LV-323501's drain, DN 400 (406.4 x 5.6 pipe, MB-0148), normal to the cone, its axis meeting the wall 525 mm
   above R.L. (DZ-0001-001); its bore spans 0.3952 cos 15 deg = 0.382 m of height, its lower edge 0.334 m above R.L.
 * The plant's reading (`References/DCS Trends/Book2.xlsx`): LIC-323501's PV 40.0 % over the two months, 38.8 to
-  40.4 % (5 279 samples).
+  40.4 % (5 279 samples). A cross-check, logged and not built: on the transmitter's own range, 230 mbar for 100 % (2.121 m
+  of 1 106 kg/m3), 40 % is 0.848 m of liquid; from the isometric's line seal at EL +15.380 m that stands 0.525 m above
+  R.L., N5's axis, 25 mm under the build's 0.550 m (the sheet's 2 000 mm span, the class of every built level,
+  §CXXVIII.5). It favours the isometric's tap elevation in the 73 mm discrepancy, and it reads the plant's level at
+  N5's axis, the nozzle half covered and the liquid seal in the line below; the build seals N5 from 32.21 %.
 
 ## CXXXV.2 The law (decision 241)
 
@@ -26703,6 +26707,11 @@ Measured on the build:
   (3.96453, 4.18171). The steam shut, five minutes: the heater's ratio 0.0270, 3.6050 bar a, 115.50 C (0.0282, 3.6056,
   115.55). 30 t/h blowing through: 5.4431 bar a (5.4486).
 * The console: LIC-323501's faceplate shows 40.0 % and sets 40.000 at the design (60).
+* The six shipped exercises (`scenarios`, saved on V1's reading) load at 3 530.6 to 3 531.2 kg, LIC-323501 restated to
+  40.000 with its PV at 39.998 to 40.017 %, and tick 1 sealed, nothing blowing through (`check_scenarios.py`).
+* The deviation survey (`tests/phase7/deviations.py`): S2-4.2a and b set LIC-323501 to 90 and 2 %, now from 40; the
+  labels say so. 90 % between the taps holds about 5 608 kg (5 296 on V1's), 2 % about 2 752 kg, below N5, so the seal
+  is still lost. The survey and the Phase 7 runners were not run.
 * The decided synthesis loop, V1's side moving through the port's 308 and steam pressures, which `run_both` feeds it:
   B-76's V1 sump 3 649.34 kg (3 649.25); B-91 (a)'s melt bubble 122.553 bar a (122.562); A-21's condensation 227 353.1,
   131 846.1 and 131 859.5 kg/h (227 352.6, 131 846.0, 131 859.3); B-103's held 2 223.44 kg, the loops 141.9953 and
@@ -26728,4 +26737,6 @@ The full suite in nine parallel groups with an approx recorder (`plug\rec124.py`
 logged, seven failures (the B-104 tick, 323D011's boil-off bound, the faceplate's three 60 % pins, and two of the
 recorder's own: a ``!=`` against approx and a test file edited after collection). A second recorder pass on
 `test_recirc.py` and B-104 took the pins the first failures hid. After the re-pins, the full suite clean, nine groups:
-8 408 collected, 8 408 passed. The PyQt6 grep printed nothing; `rectifying_column.py` stands at 593 lines.
+8 408 collected, 8 408 passed. The PyQt6 grep printed nothing; `rectifying_column.py` stands at 593 lines. After
+the audit (A-60, the survey's labels, the exercises): `tests/phase7/test_deviations.py`, `tests/docs` and `test_layering`,
+100 passed.

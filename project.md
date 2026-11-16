@@ -25,7 +25,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A none, Section B five (B-118 with B-120 folded in, B-125, B-126, B-136 and
+* **Open.** `handoff.md`: Section A one (A-60), Section B five (B-118 with B-120 folded in, B-125, B-126, B-136 and
   B-156), Section C none, 9 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
 * **Session 124** (Part CXXXV; decisions 241, 242). B-156's third unit: LI-323501 reads between LT-323501's taps
@@ -75,7 +75,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 | Session | 125 (124 taken by B-156's third unit and data gaps 2 and 8, 2026-11-16) | `docs/history/session-log.md` |
 | Decision | 243 (241 and 242 taken by session 124; 233 to 235, 239 and 240 by session 123) | `docs/decisions.md` |
 | As-Built Part | CXXXVI (CXXXV taken by session 124) | the As-Built reference, appended at its end |
-| Handoff Section A | A-60 | `handoff.md` |
+| Handoff Section A | A-61 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers

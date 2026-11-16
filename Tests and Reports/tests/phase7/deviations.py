@@ -364,13 +364,13 @@ DEVIATIONS = (
         900.0),
     Deviation(
         "S2-4.2a", "Scenarios2.md §4.2", "Rectifying column high level",
-        "LIC-323501 60 -> 90 %",
+        "LIC-323501 40 -> 90 %",
         (_sp("LIC-323501", 90.0),),
         (E("RECIRC_323.C003.LI_323501", +1, "the level rises"),),
         900.0, ("boil-over of urea into the overhead (no entrainment model)",)),
     Deviation(
         "S2-4.2b", "Scenarios2.md §4.2", "Rectifying column low level (loss of seal)",
-        "LIC-323501 60 -> 2 %",
+        "LIC-323501 40 -> 2 %",
         (_sp("LIC-323501", 2.0),),
         (E("RECIRC_323.C003.LI_323501", -1, "the level falls"),
          E("RECIRC_323.C003.blow501_th", +1, "LP gas blows through", "peak"),

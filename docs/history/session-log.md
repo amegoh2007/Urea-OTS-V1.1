@@ -5174,5 +5174,6 @@ LI-323501 reads between LT-323501's taps on 323C003: R.L. at EL +15.703 m off th
 cone and the shell off Glatt's drawing and Uhde's sketch, the sheet's 2000 mm (the isometric's 2073 mm logged); three
 design readings measured on the whole plant, the plant's 40 % chosen, LV-323501's seal moved to N5's lower edge
 (29.21 %), saves restated on load (decision 241). The seed's flows part 4.86e-5 by 600 s, 324E001's boil-off 1.58e-2,
-the bound restated for the unit; decision 233's boil-off bound restated to 4.3e-3 on the same terms. Twenty-nine
-pins moved and restated; B-104 is asserted on its period-two ring's two-tick mean. Data gaps 2 and 8 signed off on their stand-ins (decision 242). Part CXXXV; register row 355.
+the bound restated for the unit; decision 233's boil-off bound restated to 4.3e-3 on the same terms. Thirty-five
+pins moved and restated; B-104's take rings with a period of two ticks, now asserted on the two-tick mean (A-60).
+Data gaps 2 and 8 signed off on their stand-ins (decision 242). Part CXXXV; register row 355.
