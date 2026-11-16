@@ -223,8 +223,10 @@ D011_M_TAU_S = 600.0
 #: Design holdup [kg], 1187.2: the design draw over the residence time.
 D011_M_DES_KG = D011_M718_DES_KGH / 3600.0 * D011_M_TAU_S
 
-#: LT-323503's level at the design holdup [%]: the OEM "maintains the flash tank condenser level
-#: tank at 50% capacity" (`References/328E021 328E007 328P003 328P006.md`).
+#: V1's reading of 323D011 at the design holdup [%], M / M_des x 50: LIC-323503's set point on V1's
+#: law (``taps=False``); the OEM "maintains the flash tank condenser level tank at 50% capacity"
+#: (`References/328E021 328E007 328P003 328P006.md`). Between LT-323503's taps the design holdup
+#: reads `LT_323503_DES_PCT` (decision 233).
 D011_LVL_SP_PCT = 50.0
 
 #: 323D011's nominal volume [m3], 3.15 (Uhde's datasheet UD-AU-323-EC-0006 rev 00; NSF's as-built

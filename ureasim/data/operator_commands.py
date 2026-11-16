@@ -132,7 +132,8 @@ TRIP_21_HAND_SWITCHES = ("321634", "323604", "322606", "321603", "321604")
 #: HV-335602's on 35.4; HS-335620 releases 335P002A / B's interlock 35.3.
 TRIP_35_HAND_SWITCHES = ("335201A", "335201B", "335602", "335620")
 
-#: The ammonia-to-CO2 ratio set point's limits [-]. Source: V1 ``ratio_set``.
+#: The ammonia-to-CO2 ratio set point's limits [-], on FY-321404's DCS basis, the one the console
+#: shows (decision 235). Source: V1 ``ratio_set``.
 RATIO_SP_MIN, RATIO_SP_MAX = 2.0, 5.0
 
 #: The steam headers' set points' ceiling [bar a]. Source: V1 ``pic329204_set`` and its siblings.

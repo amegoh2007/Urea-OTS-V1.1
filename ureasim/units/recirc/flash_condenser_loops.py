@@ -46,7 +46,7 @@ __all__ = ["pic_323203", "lic_323503", "fic_323418"]
 
 
 # ======================================================================================
-# The three controllers, seeded exactly as V1 seeds them
+# The three controllers, seeded on their design points; LIC-323503 on its tap reading (decision 233)
 # ======================================================================================
 
 def pic_323203(op_des_pct: float = PV_323203_TRIM[0]) -> ProcessLoop:

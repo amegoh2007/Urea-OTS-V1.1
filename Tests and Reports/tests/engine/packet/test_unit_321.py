@@ -28,6 +28,8 @@ def test_the_station_at_design(design):
     # Decision 235: FY-321404 on the DCS's formula, the engine's ratio times 1.0317 (2.023 before).
     assert p["ratio"]["SP"] == p["ratio"]["PV"] == p["ratio"]["bal"] == pytest.approx(2.087)
     assert p["ratio"]["PV"] == round(RATIO_SP_DES * FY_321404_DCS_FACTOR, 3)
+    # V1's side: V1 publishes the engine's own ratio, 2.023, which the station still holds.
+    assert round(st.ratio_pv, 3) == round(st.ratio_sp, 3) == 2.023
     assert set(p["controllers"]) == {"SIC_321950", "SIC_321951"}
     assert p["controllers"]["SIC_321951"]["mode"] == "CAS"
     assert p["ext_override"] is False

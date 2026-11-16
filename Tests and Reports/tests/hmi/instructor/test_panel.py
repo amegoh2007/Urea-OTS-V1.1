@@ -3,7 +3,7 @@
 Pinned: each control sends one command — the pacing, FREEZE / RUN, RESET only once confirmed,
 each malfunction armed and cleared, 322E002's tube leak with the rate its box holds (B-90), the CO2
 demand on 320K002 within V1's 0 to 120 % of the design feed, 322P002's field-set delivery
-within none to the design (decision 212), an exercise saved and, once confirmed, restored; the
+within none to FI-322402's 40 m3/h (decisions 212, 234), an exercise saved and, once confirmed, restored; the
 pacing, the CO2 demand and 322P002's delivery shown are the packet's; every answer is shown
 with its reason; and every command is one the engine session takes. The single console (decision
 149) has no roster and no unit assignment.
