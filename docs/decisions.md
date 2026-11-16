@@ -1188,3 +1188,16 @@ decision on an item.
      and scratch are ignored by git. The instructor's saved exercises default to the folder's `exercises`, ignored by
      git, in place of `~/ureasim-exercises` (amends decision 171; `UREASIM_EXERCISES` still overrides it).
      `CLAUDE.md` §6 holds the table of sub-folders. As-Built §CXXX.1.
+228. **Trips 35.1, 35.3 and 35.4 are built as AC4 PC35 draws them** (2026-11-15, the process engineer's choice on
+     handoff B-146: D2, D3, D5 and D6 of session 115's Track B). `control/granulation_trips.py`, a step at the
+     tick's end (`335-TRIPS`, after SYN-TRIPS): TRIP_35_1_FLAG1 while either 335P001 runs; TRIP_35_4_FLAG1 while
+     35.1 holds, both 335P002 are not stopped for ten minutes (PC35.5.2's TD "10:0", read as an on-delay, data gap
+     5) and LV-324501A is off its closed limit (LVSL-324501A at 0 % of stroke, a stand-in, data gap 14); 335P002's
+     IC2, trip 35.3, on both flags. Each flag is a live AND with no latch (decision 39's class). The actions are the
+     de-energised solenoids — LV-324501A shut, LV-324501B and HV-335602 open — and the controllers' CLAMP:
+     LIC-324501 at 100 % on 35.1 (UD-MR-324-FF-0002), PIC-335201 at 0 % on either flag (a stand-in, data gap 5).
+     Four overrides on 324-1b, HS-335201A, HS-335201B, HS-335602 and HS-335620, released at the seed
+     (`data.operator_commands.TRIP_35_HAND_SWITCHES`). Held healthy and named in the module: PSLL-335202,
+     HS-335621, 335K001 and trips 35.16 / 35.18; TIC-335015's action is not built. The seed's packet leaves are
+     unchanged to the bit; eight are added. Saves migrate (`retired_state.ADDED_UNITS`, `ADDED_OPERATOR`). A
+     decided divergence: V1 has none of the three. As-Built §CXXX.2, §CXXX.3.

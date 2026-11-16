@@ -25870,3 +25870,213 @@ pass. The seed is identical to HEAD (§CXXIX.1). The whole suite, in 15 parallel
 Added after it: 335P001's both-sides test (§CXXIX.1) and decision 217's class in `docs/decided-classes.md`, from
 the advisor's audit; from the code review, each stop's switch in place of its stored limit, with the restore test
 (§CXXIX.1). Their files were rerun and pass, and the seed is again identical to HEAD.
+
+---
+
+# Part CXXX — Session 120: the folder layout; trips 35.1, 35.3 and 35.4 built; B-127, B-128 and B-135 researched (2026-11-16)
+
+Decisions 218 and 228. Scratch: `Tests and Reports/scratch/session-120` (`b146/`, `b128/`, `runs/`). Research report:
+`Tests and Reports\reports\Session 120 research B-127 B-128 B-135.md`.
+
+## CXXX.1 The folder layout (decision 218)
+
+Every file the simulator uses now lies inside `D:\Work\Urea Simulator V1.1`.
+
+* **The suite** moved to `Tests and Reports/tests`, keeping its package name `tests`. `pytest.ini` names the path
+  (`testpaths`) and puts the folder and `Tests and Reports` on the import path (`pythonpath`). These followed the
+  move: the repository-root lookups, the Phase 7 runner's child import path, the two tools' V1 source, and
+  `.gitattributes`' `-text` rule for `v1_reference`. The V1 reference files are 100 % renames.
+* **Reports and scratch.** Reports (formerly `D:\Work\reports`) moved to `Tests and Reports/reports`, and session
+  scratch to `Tests and Reports/scratch`. Git ignores both (`.gitignore`: `/Tests and Reports/*`,
+  `!/Tests and Reports/tests/`).
+* **Saved exercises.** The instructor's saved exercises now default to the folder's `exercises`, which git ignores,
+  in place of `~/ureasim-exercises`. `UREASIM_EXERCISES` still overrides it (decision 171 amended).
+* **Window geometry.** Qt's `QSettings` keeps the console's window geometry. On Windows it writes the registry,
+  not a file.
+
+Collection stayed at 8 359 tests. The path-sensitive files, the docs tests and the layering test passed. A traced
+engine run opened no file outside the folder. Commit 05e6d32.
+
+## CXXX.2 AC4 PC35 as read, and as built (decision 228, handoff B-146)
+
+**Sheets read**, all on their page images:
+
+* UD-MR-G00-FF-0004 rev 01: PC35.5.1 (PDF page 282) and PC35.5.2 (page 283);
+* 335P002A / B's MOTCON blocks (pages 232 and 233, §CXIX.2);
+* UD-MR-324-FF-0002 page 2, for LIC-324501's and PIC-335201's CLAMP inputs;
+* the trip schedule UAN 01-3042 sheets 335/1+ and 335/2+ (`References/trip_and_interlock_schedule.md` §5.1, §5.2),
+  for the actions.
+
+The logic as drawn:
+
+    TRIP_35_1_FLAG1 = (35P1AM1RS or 35P1BM1RS) and not (PT-335202 < L2)
+    TRIP_35_4_FLAG1 = not T600(not 35P2AM1RS and not 35P2BM1RS) and TRIP_35_1_FLAG1 and HS-335621
+                      and 35K1M1RS and TRIP_35_16_FLAG1 and TRIP_35_18_FLAG1 and not LVSL-324501A
+    LVY-324501B = TRIP_35_1_FLAG1 or HS-335201B         LVY-324501A = TRIP_35_4_FLAG1 or HS-335201A
+    HVY-335602  = TRIP_35_4_FLAG1 or HS-335602          335P002 IC2 = (35.1 and 35.4) or HS-335620
+    PIC-335201 CLAMP = (not 35.1 or not 35.4) and not HS-335201A
+    LIC-324501 CLAMP = not 35.1 and not HS-335201B
+
+* **The action is a de-energised solenoid.** LV-324501A shuts; LV-324501B and HV-335602 fail open.
+* **Order of execution.** PC35.5.1 runs before PC35.5.2, so 35.4 reads 35.1's flag from the same scan.
+* **No latch.** Neither sheet draws a latch or a reset (decision 39's class).
+* **The timer.** T600's TD prints "10:0". The AC4 printout writes a setting in minutes as M:S ("5:0", "15:0",
+  "10:0") and one in seconds as a plain number ("10"); PC21.5.1 (page 20) prints .2 "D=5:0-2" and .4 "D=15:0-2" on the
+  pumps and .16 "D=5-2" on FY-322403, where the engine reads 5, 15 and 5 s (A-58). "10:0" agrees with the trip schedule's "10 min." for 335P002
+  (sheet 335/2+, row 2). The scan does not resolve T600's symbol, so it is read as an on-delay of both pumps stopped
+  (data gap 5).
+
+**Built.**
+
+* **The unit.** `control/granulation_trips.Unit35Trips` (137 lines) holds two `DcsTripFlag`s and an
+  `OnDelayTimer(600 s)` that starts at zero. `Unit35Actions` carries the three solenoids, each controller's clamp
+  reference while it is clamped (`None` when free) and 335P002's permit.
+* **The clamp.** `ProcessLoop.step(..., hold=)` is AC4's CLAMP. It sets the output to the reference and observes
+  the PV, so the release is bumpless from the reference.
+* **The engine step.** `335-TRIPS` (section 335, 34) runs after SYN-TRIPS. It reads:
+  * 335P001's command and its low-level stop;
+  * 335P002's command and the permit it gave the tick before;
+  * LV-324501A's position against `LVSL_324501A_PCT`;
+  * the four overrides.
+
+  324E003's step reads the actions as a declared one-tick tear. This adds two tears: 36 steps, 80 tears.
+* **The actions on the header.**
+  * The melt header shuts LV-324501A, so its forward flow is 0.
+  * It holds LV-324501B at 100 % and drives HV-335602 to 100 % on its stroke.
+  * LIC-324501 is clamped at 100 % (`LIC_324501_CLAMPREF_PCT`).
+  * PIC-335201 is clamped at 0 % (`PIC_335201_CLAMPREF_PCT`). This is a stand-in: the sheet's CLAMPREF is a
+    database reference.
+* **The UF85 pumps** stop when the permit is withheld. The status packet shows 335P002 as held, as it does for the
+  low-level stops (`_HELD`).
+* **Packet and screen.** The packet carries `trip_latched` 35_1 and 35_4, and the four overrides in
+  `HAND_SWITCHES`. Screen 324-1b shows the four overrides at x 1 200, y 540 to 630 (`tools/overlay_decisions.py`;
+  `data/screen_layout.py`, regenerated identical).
+
+**Held healthy**, and named in the module:
+
+* PSLL-335202 (the sprayer air);
+* HS-335621 (the emergency off);
+* 335K001 running;
+* trips 35.16 (335K002) and 35.18 (335K004).
+
+TIC-335015's action on 35.4 (125 C, manual) is not built, because the granulator is not simulated.
+
+**Stand-ins.** T600's mode and PIC-335201's CLAMPREF (data gap 5); LVSL-324501A at 0 % of stroke (data gap 14).
+
+## CXXX.3 Measured (decision 228)
+
+* **D6, the seed.** The build's packet was compared with HEAD 05e6d32's (`git archive` into scratch, LF, the thermo
+  stores included; `seed_probe.py`). The 775 leaves both carry are identical to the bit at ticks 1, 100 and 6 000.
+  Eight leaves are added: 35_1, 35_4, the four overrides, 335P002's held flag and its pump record's `on` path.
+* **The shipped exercises.** All six load and run with no trip and with the actions healthy (`scenario_check.py`).
+* **B-62 / B-63.** On a lost feed, stage 2 holds 346.043 kg of melt at 175.3256 C with a seal fraction of 0.98644,
+  as before. The seal belongs to the low-level stop (§CXXIX.1). The trips add LIC-324501 at 100 %, LV-324501A at 0
+  and HV-335602 at 100.
+* **The arm** (`trip_arm.py`, from the seed):
+  * Both 335P001 stopped lose 35.1 and 35.4 at the tick's end. From the next tick the header is shut and drained,
+    and 335P002 is held.
+  * 335P001A restarted: 35.1 heals and LIC-324501 resumes from its 100 % clamp, but 35.4 stays lost on
+    LVSL-324501A.
+  * HS-335201A turned: PIC-335201 opens LV-324501A, 35.4 heals and 335P002 runs.
+  * HS-335201A released: the forward flow returns to about 78.9 t/h.
+  * **After the restart, LV-324501B passes up to 184 t/h** because its clamp left it wide open. That is about 2.4
+    times the design drain, and it lasts until LIC-324501 integrates down.
+* **Past ten minutes**, 35.3 withholds 335P002's permit, so the pumps' run feedback is lost and the UF85 timer holds
+  35.4 lost too. HS-335201A alone no longer heals 35.4: HS-335620 must first let the pumps run (pinned in
+  `test_granulation_trips.py`).
+* **The cold start, port side** (`cold_probe.py`): Phase 7's `cold_loop` initial state, 30 s samples, the build
+  against HEAD. Neither run reached 16 000 s.
+  * In both trees 324F003 has fallen to 5.19 % and 335P001 is stopped at the 1 080 s sample.
+  * **The build.** 35.1 and 35.4 are lost from that sample, and LV-324501A is shut. At the restart (7 %),
+    LIC-324501 comes back from its clamp at 100 %. The recycle is 216 t/h at the 1 710 s sample, the level is
+    drawn back under 5 %, and 335P001 cycles on its stop. 35.4 stays lost on LVSL-324501A to the run's end at
+    2 640 s.
+  * **HEAD.** LV-324501A stands at 100 % with no flow. The level falls back to 5.11 % by the 2 100 s sample, so
+    335P001 restarted between samples [I]. The run was stopped at 2 130 s.
+  * The synthesis side was not compared.
+  * The cycle is PC35 as drawn, with no operator acting. The procedure's HS-335201B and HS-335201A moves are not in
+    Phase 7's driver, and adding them is the process engineer's decision.
+
+## CXXX.4 B-128: FFIC-321404's ratio as the DCS computes it
+
+UD-MR-321-FF-0002 rev 00, sheet FY-321404 / FY-322403 (PDF page 4, scanned, read at 220 dpi):
+
+    FY-322403  = FT-322403 (0 below 427 Nm3/h) x SQR[((P + 1.013) / K) / (0.0019201 (T + 273.15)
+                 + (P + 1.013)(0.0012472 - 0.81721 / (T + 273.15) - 0.00033054 / (T + 273.15)^3))],
+                 K = 260.7, P = PT-322203, T = TT-322017
+    FYM-322403 = MAX(FY-322403 x 0.001929 - FT-320402 x 0.001277, 0)          [t/h CO2 to synthesis]
+    FY-321404  = FT-321401 / FYM-322403 x 44 / 17                              [NH3 / CO2 ratio]
+
+Sheets 2 and 3 take FY-321404 as the MV of FFIC-321404A and of FFIC-321404B.
+
+**Checked on plant data.** Book2 (`References/DCS Trends/Book2.xlsx`, 5 280 rows from 7 July 2023, 59 to 112 %
+load) logs every term.
+
+| Check | Median residual | p5 | p95 |
+|---|---|---|---|
+| FYM-322403 against the formula | 0.002 t/h | 0.001 | 0.003 |
+| FFIC-321404B against FY-321401 / FYM-322403 x 44 / 17 | -0.0001 | -0.0064 | +0.0066 |
+
+FIC-320402 runs 1 102 to 1 391 Nm3/h, which at the median is 2.91 % of the gas mass. **[I]** FT-320402 is the
+passivation air. PFD 104's 56.72 kmol/h is 1 271 Nm3/h, and its molar weight of 28.45 gives 1.2693 kg/Nm3 against
+the sheet's 1.277.
+
+**The display against the engine's basis.** On the PFD's design rows (107 at 0.001929 t/Nm3, 104 at 0.001277),
+FYM-322403 is 53.028 t/h. The display then stands **1.0317** times the engine's basis (§XCIII.3):
+
+* 1.0016 of it comes from 44/17 against 44.009/17.031;
+* the rest comes from the air, 2.97 % of the gas mass.
+
+Book2's median of FFIC-321404B over the engine-basis ratio is 1.0315. The floor of 2.0 on the display is 1.9386 on
+the engine's basis; §CXII.8's 1.9397 used the molar factor 1.0311.
+
+**Load.** The plant's engine-basis ratio is flat: 2.036 / 2.051 / 2.065 (p5 / median / p95). The display rises at
+low load because the air flow is held: its median is 2.142 at 55-75 % load and 2.116 at 105-115 %.
+
+**Displayed at design.**
+
+| Source | Display |
+|---|---|
+| PFD 116 (both PFD cases) | 1.989 |
+| PFD 113 | 2.003 |
+| The engine's motive (`EJ_MOTIVE_NH3_DES`) | 2.087 |
+| The plant (p5 / median / p95) | 2.100 / 2.116 / 2.130 |
+
+**Limits.** The set point's limits are PIDCON database references (PC21.2.1 .14, PC21.2.2 .3). The faceplate photos
+of 10 July 2026 (`321-1 faceplates/20260710_213914.jpg`, `_213928.jpg`, the plant down) show SP 4.000 and no Limits
+tab. The 2.0 floor still has no plant source.
+
+## CXXX.5 B-135: the CO2 line over the loop on the plant
+
+**The offset.** Book2, PIC-322203 less PT-329201:
+
+* median 5.13 bar; 4.76 at 60-75 % load; 5.05 to 5.14 from 85 to 112 %;
+* least squares on the flow: 4.98 + 0.104 (FY-322403 / 28 331)^2 bar, over 0.61 to 1.12 of the design flow.
+
+The offset is static or instrumental, not friction. The PFD carries 3.5 bar between 107 and 204. PT-329201 is in
+bar g (loop summary 329). Book2 prints no unit for PIC-322203; if it is bar a, the static part is 3.97 bar.
+
+**Which relief lifts first [I].** When the loop rises as a whole, SV32064 (160 bar g, on the line) reaches its set
+before SV32251 / SV32252 (159 bar g, on 322R001). This holds on the plant as in the engine, as long as 320K002
+delivers.
+
+**What can bound the line first** is PIC-322203 on PV-322203, the bypass to the LP safe header, at its DCS set
+point. That set point is logged nowhere. In the 29 June 2025 trend PV-322203 stays shut with PIC-322203 up to 145.7.
+The engine runs V1's 168.01 bar a (decision 79).
+
+## CXXX.6 Corrections to the record
+
+* **§XCIII.3.** The plant's FFIC-321404B does not compute the true molar ratio. It computes FT-321401 over the feed
+  gas's mass less FT-320402's, times 44/17 (§CXXX.4). The numbers of §XCIII.3 stand, because the true molar factor
+  (1.0311) and the DCS's (1.0317 at design) differ by only 0.06 %.
+* **Handoff B-128's "plant's 2.086 molar".** 2.086 is the engine's design 2.0231 on the molar factor. On the DCS's
+  formula it displays 2.087.
+
+## CXXX.7 The checks
+
+* Every module touched is at or below 600 lines: `second_evaporator.py` 600, `melt_header.py` 501,
+  `granulation_trips.py` 137, `engine/plant/evaporation.py` 254.
+* The PyQt6 grep prints nothing.
+* The whole suite, run serially on the build with the past-ten-minutes test: 8 380 passed and 1 failed in 72 min.
+  The failure was the router's pinned count, 10 keyswitch faceplates against 6: decision 228's four overrides.
+  The count was updated and its file rerun, and it passes.

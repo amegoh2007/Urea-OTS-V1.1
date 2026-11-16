@@ -36,11 +36,12 @@ def test_every_element_opens_v1s_faceplate(bridge):
     # retires LV-324501's route switch, LV-324501A and B opening their indicators, and adds 324-1b's
     # GRANULATION HEADERS panel, whose body opens the count's indicator. Decision 227 gives each pump
     # pair of `RUN_STATE_PAIRS` after 322P002 its two icons' START / STOP faceplate.
+    # Decision 228 adds 324-1b's four PC35 overrides, HS-335201A / B, HS-335602 and HS-335620.
     assert opened == {
         None: 67 + 0 + 9, "StreamInspector": 2 + 12,
         "IndicatorFaceplate": 139 + 1 + 1 + 1 + 2 + 1, "ControllerFaceplate": 81,
         "HandValveFaceplate": 22 + 2, "BlockValveFaceplate": 10, "PumpFaceplate": 4 + 6 + 16,
-        "SpeedFaceplate": 8, "MasterSetpointFaceplate": 5, "KeyswitchFaceplate": 1 + 5,
+        "SpeedFaceplate": 8, "MasterSetpointFaceplate": 5, "KeyswitchFaceplate": 1 + 5 + 4,
     }
 
 
