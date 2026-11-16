@@ -170,10 +170,11 @@ class OnDelayTimer:
 
     Process utility
     ---------------
-    A healthy signal a trip flag only accepts once it has stood for its delay — a pump running
-    5 s, CO2 flowing 5 s. The scans draw the element's mode as a symbol they do not resolve; the
-    on-delay is the process engineer's reading (2026-10-09). Seeded settled, the plant at its seed
-    having held every input for longer than any delay.
+    A healthy signal a trip flag only accepts once it has stood for its delay — an HP ammonia pump
+    running 5 min, CO2 flowing 5 s. The on-delay is the process engineer's reading (2026-10-09); in
+    PC21 it is the only one that works for PC21.1.1 / .2's start-up override of XV-322901, which
+    draws the same symbol, I /--/ O (pages 5 and 7, handoff A-58). Seeded settled, the plant at its
+    seed having held every input for longer than any delay.
     """
 
     td_s: float
@@ -261,18 +262,21 @@ class Unit21Trips:
     Logic (UD-MR-G00-FF-0004)
     -------------------------
     TRIP_21_2_FLAG1 (PC21.5.1, page 20) = AND of
-        T5(321P002A running or 321P002B running or HS-321634),
-        T15(323P001A running or 323P001B running or HS-323604),
+        T5:0(321P002A running or 321P002B running or HS-321634),
+        T15:0(323P001A running or 323P001B running or HS-323604),
         XVSH-322902 or HS-322606,
         [T5(not FY-322403 < L2) or HS-322606] and TRIP_84_8_FLAG1,
         not HS-321603, not HS-321604;
     TRIP_21_8_FLAG1 (PC21.1.1, page 5) = AND of
         TRIP_21_2_FLAG1, not PT-321211 < L2, not ST-321952 > H2, not XVSL-321901,
         not PDY-321203 < L2,
-        [not T5(321P002A running) or XVSH-322901] and not MONO10(not 321P002A running);
+        [not T5:0(321P002A running) or XVSH-322901] and not MONO10(not 321P002A running),
+        its T run on 5 s until the process engineer decides it (handoff A-58);
     TRIP_21_10_FLAG1 (PC21.1.2, page 7) the same on 321P002B, PT-321221, ST-321953 and
         PDY-321204.
-    Each T an on-delay of TD seconds, MONO a retriggerable pulse of TP seconds.
+    Each T an on-delay of its TD, T5:0 five minutes and T5 five seconds as the printout writes them
+    (decision 229), MONO a retriggerable pulse of TP seconds. So 21.2 is lost at once when the pumps
+    stop, and its bypass keys act only after their delay.
     """
 
     td_pumps_s: float

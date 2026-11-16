@@ -334,6 +334,20 @@ def test_every_shipped_exercise_loads_and_holds_no_retired_state(path):
 
 
 @pytest.mark.parametrize("path", sorted(SCENARIOS.glob("*.json")), ids=lambda p: p.stem)
+def test_every_shipped_exercise_runs_trip_21_2_on_the_sheets_timers(path):
+    """Decision 229: a save carries its timers, so the six shipped exercises were moved onto PC21.5.1's
+    5:0 and 15:0 with the seed; each restores them settled and holds 21.2's flag on its first tick."""
+    from ureasim.data.unit_322_loop import TRIP_21_2_P001_TD_S, TRIP_21_2_PUMPS_TD_S
+    back = snapshot.load(str(path), build_plant()[1])
+    u = back.units["SYN-TRIPS"].unit21
+    assert (TRIP_21_2_PUMPS_TD_S, TRIP_21_2_P001_TD_S) == (300.0, 900.0)
+    assert ((u.td_pumps_s, u.t_pumps.td_s, u.t_pumps.elapsed_s, u.td_p001_s, u.t_p001.td_s,
+             u.t_p001.elapsed_s) == (300.0,) * 3 + (900.0,) * 3)
+    Scheduler(build_plant()[0], back).tick()
+    assert not back.units["SYN-TRIPS"].trip_21_2
+
+
+@pytest.mark.parametrize("path", sorted(SCENARIOS.glob("*.json")), ids=lambda p: p.stem)
 def test_every_shipped_exercise_opens_on_the_header_it_restores(path):
     """Decision 238: each shipped exercise, saved before decision 224, opens LV-324501A at the stroke
     that passes its drain at the header it adopts, and the first tick's header stands on that header

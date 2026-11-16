@@ -36,18 +36,16 @@ cycles on the plant. Acceptance: the cause named on a per-tick trace; then the p
 keeping it as built and a change, the design pin held to the bit either way. Next step: trace the holdup's mass and
 composition and the tear's inputs over one cycle (`ring_trace_implicit.py` in `Tests and Reports\reports\Session_119_build`).
 
-### A-58 — PC21's timers may be minutes where the engine reads seconds
+### A-58 — 21.8 / 21.10's start-up override may be 5 min where the engine reads 5 s
 
-*Raised 2026-11-16, session 120 (As-Built §CXXX.2).* `data/unit_322_loop.py` reads AC4 PC21's timers as seconds:
-TRIP_21_2_FLAG1's 5 s on the HP ammonia pumps and 15 s on 323P001A / B running, 21.8's 5 s from a pump's start to
-XV-322901 open. The trip schedule UAN 01-3042 prints "321P002A/B not running (time delay 5 min.)", "323P001A/B not
-running (time delayed for 15 min.)" and XV-322901's "automatic start up override 5 min." (`References/
-trip_and_interlock_schedule.md`). The AC4 printout writes minutes as M:S ("5:0", "15:0") and seconds as a plain
-number ("10"); PC35.5.2's "10:0" is the schedule's 10 min for 335P002 (decision 228). Page 20 (PC21.5.1) re-read in
-session 120: .2 prints "D=5:0-2" and .4 "D=15:0-2" on the pumps, .16 "D=5-2" on FY-322403; pages 5 and 7 (21.8) not
-re-read. Acceptance: each timer's unit fixed on its sheet and the schedule,
-then the process engineer's choice; the seed is unaffected (every pump runs). Next step: pages 5 and 7; checklist row
-24.
+*Raised 2026-11-16, session 120 (As-Built §CXXX.2, §CXXXII).* Trip 21.2's pump timers run the sheet's 5:0 and 15:0
+(decision 229). Open: PC21.1.1 / .2 (pages 5 and 7) print T .2 "D=5:0-2" on the pump running, XV-322901's start-up
+override, as the trip schedule's "automatic start up override 5 min."; the engine's ``TRIP_21_8_RUN_TD_S`` is 5 s,
+so a pump started with XV-322901 shut loses its flag after 5 s, not 5 min (§CXXXII.4). The MONO's 10 s ("D=10-3")
+agrees. Residual: the schedule reads 21.2's 5 and 15 min as a delayed trip, the sheet on its on-delay as a delayed
+return (§CXXXII.2); the T element's type is checklist row 24. Acceptance: ``TRIP_21_8_RUN_TD_S`` on the process
+engineer's choice, the shipped exercises' ``t_run_a`` / ``t_run_b`` moved with it, a test through the default
+factory. Next step: the process engineer's choice.
 
 ### A-59 — Phase 7's cold start makes no move on trips 35.1 and 35.4
 

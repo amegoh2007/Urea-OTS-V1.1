@@ -1216,3 +1216,9 @@ decision on an item.
      for this unit and B-156's six after it, put to them on the packet's leaves; measured unrounded, the state and
      flows move by up to 5.7e-5 by 600 s, and that bound is theirs to restate (B-156). A decided divergence: V1 reads
      the holdup over the drum's. As-Built §CXXXI.
+229. **Trip 21.2's pump timers run the sheet's minutes** (2026-11-16, the process engineer's choice on handoff
+     A-58). AC4 PC21.5.1 prints .2 "D=5:0-2" and .4 "D=15:0-2": ``TRIP_21_2_PUMPS_TD_S`` is 300 s and
+     ``TRIP_21_2_P001_TD_S`` 900 s, the trip schedule's 5 and 15 min. The on-delay is kept (the 2026-10-09 reading;
+     pages 5 and 7's start-up override draws the same element and works only as one), so 21.2 is still lost at
+     once and its bypasses act after their delay. The six shipped exercises carry the new timers; an older save
+     keeps its own. 21.8 / 21.10's run timer stays 5 s (A-58). As-Built §CXXXII.

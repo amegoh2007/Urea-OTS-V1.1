@@ -1553,7 +1553,7 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 253 | AI-329701 reads a 322E002 tube leak; the malfunction's rate (handoff B-90, decision 89) | none (V1 has no analyser) | `units/steam/condensate_analyser.py`; `engine/plant/steam` ``329-USERS``; `engine/packet/steam.analysers` (port block ``ANALYSERS``); `engine/command._tube_leak`; `data/faceplates.MALFUNCTIONS`; `hmi/instructor/panel.py` | **`[DECIDED DIVERGENCE]`** 2026-10-09: kappa = 0.055 + (73.5 + 44.5) . c . 1000 uS/cm on the leak's bicarbonate in the LP users' condensate, 0-10 uS/cm with an over-range flag; ``rate`` / ``value`` in t/h, 10 t/h on a bare trigger (§LXV.3) |
 | 254 | LIC-329505 without its deadband (handoff B-28, decision 93) | `main.py` LIC-329505 ``Dz=2.0`` | `data.unit_324` ``LIC_329505_DZ_PCT = 0.0`` | **`[DECIDED DIVERGENCE]`** 2026-10-09: no loop carries the DCS table's deadband; a 1 % set-point step: V1 50.0 %, the port 51.0003 % after ten minutes; both ways in `test_first_evaporator_equivalence.py` (switch ``B-28``) (§LXV.4) |
 | 255 | PT-329201 on the loop's vapour inventory (handoff B-77 (b), decision 95) | `main.py` 10345-10445: one lumped 1500 kg/bar, the backlog's G_ph . m_vap,net | `units/synthesis/loop_pressure.py` (``liquor_buffering_per_bar``, ``loop_liquid``, ``liquid_growth``, ``vapour_capacity_kg_per_bar``); the holdups' ``dm_liq_kgh`` / ``dm_kgh`` | **`[DECIDED DIVERGENCE]`** 2026-10-09: (C_vap + C_buf) dP/dt on the boundary less the liquid's gain and the vapour it displaces; 241.7 m3 less the liquid, Z_des 0.7627, b_207 0.015364 kg/(kg.bar), 2 160 kg/bar at design; HV-322605 to 45 % for two minutes: V1 141.2423, the port 140.6904 bar a; a 10 t/h tube leak holds the loop (140.709) where V1's node falls; both ways in `test_synthesis_loop_decided_equivalence.py` (switch ``B-77``) (§LXV.5) |
-| 256 | Trips 21.2, 21.8 and 21.10 as AC4 executes them (handoff A-12, decision 96) | `main.py` 10086-10133: 21.2 on 321D003 or the sub-cooling, 21.4 on the CO2, 21.8 / 21.10 on a pump's fault, latched | `control/interlocks.py` (``Unit21Trips``, ``DcsTripFlag``, ``OnDelayTimer``, ``Monoflop``); `engine/plant/synthesis_loop.SynthesisTrips`; `engine/plant/synthesis._321`; `engine/command` | **`[DECIDED DIVERGENCE]`** 2026-10-09: live flags, no latch or reset; 21.2 resets XV-321901 / XV-322901, each pump's flag stops its machine; 321P002B's fault or the CO2 cut: V1 latches 21.10 / 21.4, AC4 loses 21.2 with both pumps' flags and shuts both valves; V1's 21.4 gone, 22.2 V1's; both ways in `test_synthesis_loop_decided_equivalence.py` (switch ``A-12``) (§LXV.6) |
+| 256 | Trips 21.2, 21.8 and 21.10 as AC4 executes them (handoff A-12, decision 96) | `main.py` 10086-10133: 21.2 on 321D003 or the sub-cooling, 21.4 on the CO2, 21.8 / 21.10 on a pump's fault, latched | `control/interlocks.py` (``Unit21Trips``, ``DcsTripFlag``, ``OnDelayTimer``, ``Monoflop``); `engine/plant/synthesis_loop.SynthesisTrips`; `engine/plant/synthesis._321`; `engine/command` | **`[DECIDED DIVERGENCE]`** 2026-10-09: live flags, no latch or reset; 21.2 resets XV-321901 / XV-322901, each pump's flag stops its machine; 321P002B's fault or the CO2 cut: V1 latches 21.10 / 21.4, AC4 loses 21.2 with both pumps' flags and shuts both valves; V1's 21.4 gone, 22.2 V1's; both ways in `test_synthesis_loop_decided_equivalence.py` (switch ``A-12``) (§LXV.6); decision 229 (2026-11-16): the T on the pumps 300 s and on 323P001 900 s, as PC21.5.1 prints them (§CXXXII) |
 | 257 | FAST pacing (handoff A-18, decision 88) | V1's FAST | `engine/simulator.py` | **`[PORTED]`**, decided 2026-10-09: as fast as the machine allows, whole 0.1 s steps; no approximation for a pacing target (§LXV.4) |
 | 258 | Trip 22.1 on TI-322015 at V1's 57 / 55 C (handoff B-84, decision 90); 323D002 forms no biuret (B-25, decision 94) | `main.py` 57 / 55 C; ``solution_tank`` blender | `data.unit_322c001`; `units/recirc/solution_tank.py` | **`[PORTED]`**, decided 2026-10-09: kept as V1, the rupture's cascade into 22.1 emergent (the 57 / 55 C superseded by the plant DCS's 110 C, row 266); the biuret omission recorded (§LXV.4) |
 | 259 | The loop's liquor saturation (handoff B-91 option (a), decision 97) | — (V1 condenses its design fractions at any loop pressure) | `units/synthesis/liquor_saturation.saturation_fraction`; `carbamate_condenser.step(sat_frac=)`; `loop_pressure.step(sat_frac=)`; `engine/plant/synthesis_loop` (322E003's ``cool``); `condenser_holdup.p_bub_prev_bara` | **`[DECIDED DIVERGENCE]`** 2026-10-10: f = max(1 - b_207 . d, 0) on the deficit of PT-329201 below PI-322E002 less the 3.5 bar design head, exactly 1 at design; the loop started at 130.7 bar a: f 0.8464 on the first tick, the port 130.4372 bar a after two minutes, V1 130.4017; both ways in `test_synthesis_loop_decided_equivalence.py` (switch ``B-91``) (§LXVI.1) |
@@ -26265,3 +26265,79 @@ measures against it.
 ## CXXXI.8 Register
 
 Row 352: LI-323502 between LT-323502's taps (decision 219).
+
+---
+
+# Part CXXXII — Session 120, continued: trip 21.2's pump timers on the sheet's minutes (handoff A-58, 2026-11-16)
+
+Decision 229. Scratch: `Tests and Reports/scratch/session-120/a58` (`a58_timing.py`, `edit_scenarios.py`,
+`state_probe.py`, the packet probe `../b146/seed_probe.py`; page 7's render).
+
+## CXXXII.1 What the sheets print
+
+* **PC21.5.1** (UD-MR-G00-FF-0004, PDF page 20): T .2 "D=5:0-2" on 321P002A / B running or HS-321634; T .4
+  "D=15:0-2" on 323P001A / B running or HS-323604; T .16 "D=5-2" on FY-322403 < L2, its input inverted.
+* **PC21.1.1 and PC21.1.2** (pages 5 and 7, read 2026-11-16): T .2 "D=5:0-2" on 321P002A (B) running, its output
+  inverted into OR .3 with XVSH-322901; MONO .4 "D=10-3" on the pump not running; T .23 "D=10-2" on the speed
+  deviation (SDSH-321950 / 951).
+* **The suffix after the dash is the element's pin.** MONO's RTG is "D=1-1" and its TP "D=10-3"; COMP-R's HHYS, H1,
+  LHYS and L1 are "-10", "-11", "-30" and "-31". So "5:0" is the setting, 5 min 0 s, and "10" is 10 s.
+* **The trip schedule** UAN 01-3042 prints "321P002A/B not running (time delay 5 min.)", "323P001A/B not running
+  (time delayed for 15 min.)" and XV-322901's "automatic start up override 5 min."
+  (`References/trip_and_interlock_schedule.md`).
+
+## CXXXII.2 The timer's mode
+
+Every T in PC21 draws the same symbol, I /--/ O. On pages 5 and 7 it is XV-322901's start-up override: the valve need
+not be open until the pump has run TD. That holds only for an on-delay; an off-delay would demand XV-322901 open on
+the first tick of a start. The on-delay is the process engineer's reading of 2026-10-09, and pages 5 and 7 support it
+for PC21. The finding is not extended to PC35's T600 (data gap 5).
+
+**Residual conflict.** The schedule's "not running (time delay 5 min.)" reads as a delayed trip. The sheet, read as an
+on-delay of running, loses 21.2 at once and delays the flag's return. The sheet is built, being the software the DCS
+executes; the T element's type is the DCS readback checklist's row 24.
+
+## CXXXII.3 Built (decision 229)
+
+* `data/unit_322_loop.py`: ``TRIP_21_2_PUMPS_TD_S`` 5 to 300 s and ``TRIP_21_2_P001_TD_S`` 15 to 900 s.
+  ``TRIP_21_2_FY_TD_S`` (5 s) and ``TRIP_21_8_STOP_TP_S`` (10 s) agree with the sheets. ``TRIP_21_8_RUN_TD_S`` stays
+  5 s against the sheets' 5:0 (handoff A-58).
+* `engine/command`: the refusal of a 321P002 start names the bypasses' delay, formatted from the constants.
+* `control/interlocks.py`: the docstrings of ``OnDelayTimer`` and ``Unit21Trips`` write the sheet's settings.
+* **The six shipped exercises.** A save carries its timers in its state, the setting and the elapsed count. Six
+  leaves a file were moved: ``td_pumps_s``, ``td_p001_s``, and each timer's ``td_s`` with its settled ``elapsed_s``.
+  Every other leaf is unchanged. A save made before decision 229 keeps the timers it holds, as a save keeps its
+  tunings; no migration hook was added.
+
+## CXXXII.4 Measured
+
+* **The fresh seed's saved state:** 2 383 leaves; the same six moved, every other identical to HEAD.
+* **The published packet** at ticks 1, 100 and 6 000: 783 leaves at each tick, identical to HEAD's to the byte (the timers are not published, and every pump runs at the seed).
+* **``Unit21Trips`` alone,** 0.1 s steps (scratch `session-120/a58/a58_timing.py`):
+
+  | Case | 5 s / 15 s | 300 s / 900 s |
+  |---|---|---|
+  | 321P002 stopped at 10 s | 21.2 and 21.8 lost at 10.0 s | the same |
+  | then HS-321634 turned at 70 s | flag back at 74.9 s | flag back at 369.9 s |
+  | 323P001 stopped at 10 s, HS-323604 at 70 s | back at 84.9 s | back at 969.9 s |
+  | a pump started at 400 s, XV-322901 shut | 21.8 lost at 404.9 s | the same (699.9 s on the sheets' 5:0) |
+
+* **Consequence in the engine.** A 321P002 start is refused while 21.8 / 21.10 is lost, and both carry 21.2. After a
+  synthesis trip the operator turns HS-321634 and waits 5 min before a pump can start; 15 min on HS-323604 if
+  323P001 stopped too.
+
+## CXXXII.5 Corrections to the record
+
+* **§LXV.6.** Its logic writes T5 and T15 on the pumps and T5 on 21.8's start; the sheets print 5:0 and 15:0, minutes.
+* **§CXX.3.** The 323P001 arm's "T15 ... 15 s, already timed out" and its note that the engine's TD is 15.0 s: the
+  engine runs 900 s since decision 229, and 21.2 is still lost on the same tick.
+* **§CXXX.2.** "Where the engine reads 5, 15 and 5 s": it reads 300, 900 and 5 s.
+
+## CXXXII.6 The checks
+
+* Modules touched: `engine/command.py` 550 lines, `control/interlocks.py` 411, `data/unit_322_loop.py` 179.
+* The PyQt6 grep prints nothing.
+* The whole suite, run serially: 8 387 passed in 86 min, on a working tree that also held session 121's edits in
+  progress. On this change alone (0da6e3a with these files), the 16 test files that drive trip 21.2, the snapshot
+  and the exercises: 321 passed. On the combined tree after session 121's commits, `test_snapshot.py` and
+  `test_interlocks.py`: 159 passed.
