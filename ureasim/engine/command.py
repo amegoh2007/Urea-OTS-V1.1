@@ -66,7 +66,6 @@ from ureasim.data.unit_321 import CO2_DES_KGH, PUMP_RATED_RPM
 from ureasim.data.unit_322c001 import C001_CPL_DES_KGH
 from ureasim.data.unit_322e002 import LEAK_DEFAULT_TH
 from ureasim.data.unit_322e003 import CCW_KGH_DES, CCW_T_OUT_DES_C
-from ureasim.data.unit_322_loop import TRIP_21_2_P001_TD_S, TRIP_21_2_PUMPS_TD_S
 from ureasim.data.unit_335 import HEADER_VALVES_MAX
 from ureasim.engine.command_payload import _Refused, _clamp, _needs, _num, _trip, _trip_name, _want
 from ureasim.engine.command_steam import (
@@ -100,6 +99,11 @@ class CommandResult:
 # Unit 321 and the synthesis trips
 # ======================================================================================
 
+def _duration(seconds: float) -> str:
+    """A trip timer's delay as the operator reads it: minutes from one minute up, else seconds."""
+    return f"{seconds / 60:g} min" if seconds >= 60 else f"{seconds:g} s"
+
+
 def _pump_toggle(plant: PlantState, cmd: Mapping, _r) -> str:
     """321P002 A/B, start / stop, and 329P006A/B, the tempered-water pumps.
 
@@ -122,10 +126,12 @@ def _pump_toggle(plant: PlantState, cmd: Mapping, _r) -> str:
     acked = []
     if starting:
         if _trip(plant, own).latched:
-            why = (f"trip 21.2's flag is lost — no HP ammonia pump running "
-                   f"{TRIP_21_2_PUMPS_TD_S / 60:g} min (HS-321634 bypasses it that long after it "
-                   f"is turned), no 323P001 running {TRIP_21_2_P001_TD_S / 60:g} min (HS-323604, "
-                   "the same), no CO2 to the stripper (HS-322606) or a trip hand switch turned"
+            u21 = plant.units["SYN-TRIPS"].unit21      # the plant's own timers: a save keeps its own
+            pumps, p001 = _duration(u21.td_pumps_s), _duration(u21.td_p001_s)
+            why = (f"trip 21.2's flag is lost — no HP ammonia pump running {pumps} (HS-321634 "
+                   f"bypasses it {pumps} after it is turned), no 323P001 running {p001} "
+                   f"(HS-323604, {p001} after it is turned), no CO2 to the stripper (HS-322606) "
+                   "or a trip hand switch turned"
                    if _trip(plant, "21_2").latched else
                    "XV-321901 shut, its suction's sub-cooling below PDY's L2, or within 10 s of "
                    "its stop")

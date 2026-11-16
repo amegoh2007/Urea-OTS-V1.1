@@ -26291,7 +26291,7 @@ Decision 229. Scratch: `Tests and Reports/scratch/session-120/a58` (`a58_timing.
 
 ## CXXXII.2 The timer's mode
 
-Every T in PC21 draws the same symbol, I /--/ O. On pages 5 and 7 it is XV-322901's start-up override: the valve need
+The T elements on pages 5, 7 and 20 draw the same symbol, I /--/ O. On pages 5 and 7 it is XV-322901's start-up override: the valve need
 not be open until the pump has run TD. That holds only for an on-delay; an off-delay would demand XV-322901 open on
 the first tick of a start. The on-delay is the process engineer's reading of 2026-10-09, and pages 5 and 7 support it
 for PC21. The finding is not extended to PC35's T600 (data gap 5).
@@ -26305,7 +26305,8 @@ executes; the T element's type is the DCS readback checklist's row 24.
 * `data/unit_322_loop.py`: ``TRIP_21_2_PUMPS_TD_S`` 5 to 300 s and ``TRIP_21_2_P001_TD_S`` 15 to 900 s.
   ``TRIP_21_2_FY_TD_S`` (5 s) and ``TRIP_21_8_STOP_TP_S`` (10 s) agree with the sheets. ``TRIP_21_8_RUN_TD_S`` stays
   5 s against the sheets' 5:0 (handoff A-58).
-* `engine/command`: the refusal of a 321P002 start names the bypasses' delay, formatted from the constants.
+* `engine/command`: the refusal of a 321P002 start names the bypasses' delay, read from the plant's own timers, so
+  a save made before decision 229 is told its own 5 s and 15 s.
 * `control/interlocks.py`: the docstrings of ``OnDelayTimer`` and ``Unit21Trips`` write the sheet's settings.
 * **The six shipped exercises.** A save carries its timers in its state, the setting and the elapsed count. Six
   leaves a file were moved: ``td_pumps_s``, ``td_p001_s``, and each timer's ``td_s`` with its settled ``elapsed_s``.
@@ -26325,9 +26326,19 @@ executes; the T element's type is the DCS readback checklist's row 24.
   | 323P001 stopped at 10 s, HS-323604 at 70 s | back at 84.9 s | back at 969.9 s |
   | a pump started at 400 s, XV-322901 shut | 21.8 lost at 404.9 s | the same (699.9 s on the sheets' 5:0) |
 
-* **Consequence in the engine.** A 321P002 start is refused while 21.8 / 21.10 is lost, and both carry 21.2. After a
-  synthesis trip the operator turns HS-321634 and waits 5 min before a pump can start; 15 min on HS-323604 if
-  323P001 stopped too.
+* **The restart in the whole engine** (the seed; scratch `session-120/a58/recovery.py`). 321P002B, the running
+  machine, is stopped at 10 s; at 40 s the keys are turned; from 40 s, every 5 s, XV-321901 is opened once 21.2's
+  flag is back and the start is tried; on the start XV-322901 is opened.
+
+  | Keys | 5 s / 15 s | 300 s / 900 s |
+  |---|---|---|
+  | HS-321634 only | 21.2 never back by 1 500 s: the trip shut XV-322902 and zeroed the CO2 (FY-322403 below L2) | the same |
+  | HS-321634 and HS-322606 | 21.2 back at 45 s; XV-321901 opened at 45 s; start accepted at 50 s | 21.2 back at 340 s; XV-321901 opened at 340 s; start accepted at 345 s |
+
+  On both arms every flag is healthy 60 s after the start. A 321P002 start is refused while 21.8 / 21.10 is lost,
+  and both carry 21.2: after a synthesis trip the operator needs HS-321634 and HS-322606, then 5 min, then
+  XV-321901 open, before a pump starts (HS-323604 and 15 min if 323P001 stopped too). The need for HS-322606 is
+  the trip's own, not decision 229's.
 
 ## CXXXII.5 Corrections to the record
 
@@ -26338,7 +26349,7 @@ executes; the T element's type is the DCS readback checklist's row 24.
 
 ## CXXXII.6 The checks
 
-* Modules touched: `engine/command.py` 550 lines, `control/interlocks.py` 411, `data/unit_322_loop.py` 179.
+* Modules touched: `engine/command.py` 556 lines, `control/interlocks.py` 411, `data/unit_322_loop.py` 179.
 * The PyQt6 grep prints nothing.
 * The whole suite, run serially: 8 387 passed in 86 min, on a working tree that also held session 121's edits in
   progress. On this change alone (0da6e3a with these files), the 16 test files that drive trip 21.2, the snapshot

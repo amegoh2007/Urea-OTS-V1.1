@@ -341,6 +341,9 @@ def test_every_shipped_exercise_runs_trip_21_2_on_the_sheets_timers(path):
     back = snapshot.load(str(path), build_plant()[1])
     u = back.units["SYN-TRIPS"].unit21
     assert (TRIP_21_2_PUMPS_TD_S, TRIP_21_2_P001_TD_S) == (300.0, 900.0)
+    seed = build_plant()[1].units["SYN-TRIPS"].unit21
+    assert ((seed.td_pumps_s, seed.t_pumps.td_s, seed.td_p001_s, seed.t_p001.td_s)
+            == (300.0, 300.0, 900.0, 900.0))
     assert ((u.td_pumps_s, u.t_pumps.td_s, u.t_pumps.elapsed_s, u.td_p001_s, u.t_p001.td_s,
              u.t_p001.elapsed_s) == (300.0,) * 3 + (900.0,) * 3)
     Scheduler(build_plant()[0], back).tick()
