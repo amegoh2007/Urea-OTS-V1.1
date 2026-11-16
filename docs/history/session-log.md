@@ -5145,3 +5145,13 @@ datasheet's 11.10 m3, on which the design holdup reads 50 % to the bit, and acce
 test and LT-323502's sheet row; two PFD 734 pins moved. The seed: tick 1 identical; unrounded, up to 5.7e-5 by 600 s,
 more than the 1e-5 first put to the process engineer, who then accepted the measured 6e-5 (decision 230, pinned). Nothing in decision 217 changes; LT-323503's
 move will carry 323P008's stop. Part CXXXI; decision 219; register row 352.
+
+### Session 122 — handoff A-57 closed as built: 322E002's sawtooth below N/C 3.0 traced (2026-11-16)
+
+Traced A-57's 5 s cycle per tick on the harness and on the whole engine, which cycles alike (38 returns in 200 s). The
+cause: a relaxation cycle of the synthesis recycle on B-106's rise. The fraction runs to 0 through 322R001's overflow
+and 322E001's top gas; at the bound PT-329201's jump cuts the CO2 tie-in's flow to 322E001, whose top-gas CO2 carries
+95 % of the N/C's turn. Nine arms: the fraction held, B-106 off or the CO2 into 322E001 held remove the cycle; the boil
+ceiling held, the overflow lagged, the stripper's pressure or ratios held do not. No AY-322701 record below 3.02;
+Operating Manual III sections 1 and 5 OCR'd, no cycle described. The process engineer kept it as built; a held melt on
+322E002, measured, moves the decided means. Nothing built; the docs and layering tests run. Part CXXXIII; decision 232.

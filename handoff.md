@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-16, session 120.
+**Last updated:** 2026-11-16, session 122.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -20,21 +20,7 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 # Section A — Rewrite issues
 
-A-57 was raised by session 119 (Part CXXIX), A-59 by session 120 (Part CXXX).
-
-### A-57 — 322E002's condensation cycles every 5 s below N/C 3.0
-
-*Raised 2026-11-15, session 119 (As-Built §CXXIX.4).* On the azeotrope test's scenario (the CO2 boundary +20 % with
-321P002B held) the engine's 322E002, on B-106's branch and A-21's fraction solved on the tick (both its defaults),
-condenses in a sawtooth from 10 s on: in each cycle the melt's N/C falls from about 2.48 to 2.22, its bubble pressure
-rises toward the azeotrope and the saturated fraction falls to nothing; then condensation returns, up to 43.5 t/h in a
-tick. The cycle is 41 to 60 ticks (5.0 s on average), between nothing and 131 t/h; V1's condenses 181 to 205 t/h. The
-harness's tick-late fraction, V1's transcription, adds a tick-to-tick alternation and lengthens the cycle to 6.6 s.
-Window means are steady across trees (A-50's test asserts them). Not measured: what returns the condensation at the
-foot of each cycle (the holdup's composition, its level law or 322R001's tear), and whether a melt at N/C 2.2 to 2.5
-cycles on the plant. Acceptance: the cause named on a per-tick trace; then the process engineer's choice between
-keeping it as built and a change, the design pin held to the bit either way. Next step: trace the holdup's mass and
-composition and the tear's inputs over one cycle (`ring_trace_implicit.py` in `Tests and Reports\reports\Session_119_build`).
+A-59 was raised by session 120 (Part CXXX).
 
 ### A-59 — Phase 7's cold start makes no move on trips 35.1 and 35.4
 
@@ -158,8 +144,10 @@ reaction produced (§CXII.9, §CXIII.2). The loop's 153 t of liquor holds no spe
 CXIV): (b), the holdup's species in twelve compartments, closes to 6e-14 kmol a tick; the 74.4 % hump falls 3.649 to
 3.197, the latch goes at 74.4, 69.3 and 68.9 %, and 92.3 and 90.5 % fall onto the cold branch (322E001's `g_hc`,
 §CXV.6a); 849 seed leaves differ. Its low holds rest on 322E001's feed-deficit rise and the 69.3 % one boils
-(§CXVII.2, §CXVII.6): not a build candidate as measured. Options: (a) keep as built; (b) the bundle with the change that
-holds 322R001 (B-118), a seed criterion restated first; (c) C2's second half; (d) the loop's other holdups (H5).
+(§CXVII.2, §CXVII.6): not a build candidate as measured. The 5 s cycle below N/C 3.0 (A-57, kept as built, decision
+232) runs on this path's missing holdup; a 60 s lag on the overflow slows it (§CXXXIII.4-5). Options: (a) keep as
+built; (b) the bundle with the change that holds 322R001 (B-118), a seed criterion restated first; (c) C2's second
+half; (d) the loop's other holdups (H5).
 
 ### B-127 — The loop's design boundary does not close, and the reactor's tear follows the CO2 load
 

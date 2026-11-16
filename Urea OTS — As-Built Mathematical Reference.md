@@ -26372,3 +26372,126 @@ The process engineer's choice on handoff A-58 (2026-11-16, "Yes, 5 min"). It sup
   settled ``elapsed_s``), every other identical to HEAD.
 * **The published packet** at ticks 1, 100 and 6 000: 783 leaves at each tick, identical to HEAD's to the byte.
 * **Tests:** the 16 test files that drive PC21's trips, the snapshot and the exercises: 321 passed, on a tree holding only this change.
+
+---
+
+# Part CXXXIII — Session 122: handoff A-57 closed as built, 322E002's sawtooth below N/C 3.0 traced (2026-11-16)
+
+Decision 232. Nothing under `ureasim/` or `Tests and Reports/tests/` changed; the design pin and the seed are HEAD's
+(394c2cb) to the bit. Scratch and runs: `Tests and Reports\reports\Session_122_a57` (`a57_trace.py` per tick,
+`a57_arms.py` and `a57_strip.py` the arms, `a57_foot.py` the foot's terms; `om\` the OCR of Operating Manual III
+sections 1 and 5).
+
+## CXXXIII.1 The scenario on two plants
+
+§CXXIX.4's scenario: SIC-321951 (321P002B) in MAN at tick 0, the CO2 boundary +20 % at tick 5, 200 s. It was run on
+the synthesis harness's plant with B-106's branch and A-21's solve on (A-57's case), and on the whole engine as
+`build_plant` makes it, every decided switch as built. Both cycle alike:
+
+| Ticks 101 to 2 000 | harness, B-106 + A-21 | the whole engine |
+|---|---|---|
+| condensation's returns from below 1 t/h | 38 | 38 |
+| cycle, ticks (mean) | 43 to 60 (49.8) | 43 to 58 (48.9) |
+| sign changes of the liquid's step above 1 t/h | 36 | 37 |
+| condensation, t/h; largest step in a tick | 0.01 to 130.74; 43.54 | 0.01 to 131.33; 42.35 |
+| 322E002's feed N/C | 2.216 to 2.481 | 2.222 to 2.479 |
+| condensation, mean over ticks 501 to 1 500, t/h | 65.271 | 65.504 |
+| PT-329201, mean over ticks 901 to 1 100, bar a | 147.4842 | 147.4444 |
+
+The harness's means are §CXXIX.4's to the digit. The rest of this Part reads the whole engine. After 225 s the CO2
+reaching 322E001 runs down (1 005 kmol/h at tick 2 258, 772 at tick 2 288) with no trip latched, and the feed N/C
+reaches its 6.146 clamp at tick 2 288; windows after tick 2 001 are left out, their cause not traced.
+
+## CXXXIII.2 One cycle per tick: the fast loop
+
+The melt's N/C that PI-322E002 reads is the tick's feed ratio, 322E001's top gas plus 322F001's discharge
+(`carbamate_condenser`, step 5); the condensation is the solved fraction times 198.6 to 203.8 t/h on every tick. Ticks
+636 to 698 (`e_full2.json`):
+
+* **The fall** (ticks 670 to 690). The fraction falls 0.445 to 0.034 while the N/C falls 2.402 to 2.300, about 4.0
+  of fraction per unit N/C on B-106's rise; PI-322E002 rises 184.6 to 211.4 bar a. The CO2 left uncondensed goes on
+  to 322R001, whose carbamate extent rises 1 571 to 2 544 kmol/h and whose overflow's CO2 rises 1 013 to 1 104
+  kmol/h. 322E001 reads that overflow on the next tick (the synthesis recycle's tear); its top gas's CO2 rises 2 146
+  to 2 210 kmol/h and lowers the N/C again. The loop is positive and runs the fraction to its bound at 0 in some 20
+  ticks, faster as it goes (0.04 a tick at its end).
+* **The bound** (ticks 641 to 643). Nothing condenses. PT-329201 rises 0.05 bar a a tick, against 0.004 while the
+  fraction stands near 0.3 (ticks 650 to 660). 322R001's boil stops (from up to 23 800 kg/h): its ceiling rides
+  PT-329201 at 0.75 K a bar and passes its nodes.
+* **The return** (ticks 644 to 668). Condensation returns at tick 644 (4.7 t/h, 24.7 at 645) and the positive loop
+  runs the other way to a fraction of 0.45. 322R001's nodes reach their ceiling again at tick 660, the boil returns
+  (14 700 to 23 800 kg/h), and the slow drift turns the N/C down to the next fall.
+
+What the operator sees over a cycle: PI-322E002 184 to 220 bar a and TT-322010 144.4 to 151.0 C, every 5 s;
+PT-329201 rising smoothly beneath.
+
+## CXXXIII.3 The foot: what returns the condensation
+
+The feed N/C's turn at each foot, from its minimum to the tick condensation exceeds 20 t/h, split into its four
+terms, d ln(N/C) = (d top NH3 + d ejector NH3) / NH3 - (d top CO2 + d ejector CO2) / CO2, summed over the 38 feet of
+ticks 101 to 2 000: 322E001's top-gas CO2 falling carries 94.8 %; its NH3 10.8 %; the ejector's NH3 -5.5 % and CO2
+-0.2 %.
+
+The top gas's CO2 is the CO2 feed to 322E001 plus what it strips. Over foot - 4 to foot + 1, the mean of the 20 feet
+of ticks 501 to 1 500 (`strip_base.json`): the top CO2 falls 34.9 kmol/h, of which the feed 27.1 and the stripped CO2
+8.6, while the overflow CO2 the stripper reads rises 14.9. At one foot (ticks 638 to 646) the CO2 into 322E001 falls
+1 338.3 to 1 309.2 kmol/h (58.90 to 57.62 t/h, 2.2 %): the CO2 line stands at 148.70 to 148.77 bar a, and its
+tie-in's differential to PT-329201 closes from 4.05 to 3.88 bar as the loop jumps. The return is PT-329201's jump at
+the bound, read by the CO2 tie-in, which cuts the CO2 322E001 strips with, so its top gas leans and the N/C rises.
+
+## CXXXIII.4 The arms
+
+Each arm runs the whole engine on the scenario; the change acts from tick 500 unless stated.
+
+| Arm | What is held | Result |
+|---|---|---|
+| base | nothing | 10, 10 and 11 returns in ticks 501-1 000, 1 000-1 500, 1 500-2 000; the boil 0 to 84 490 kg/h |
+| F | 322E002's fraction at 0.30 | no cycle: condensation 61.96 to 65.32 t/h over ticks 1 500 to 2 000; the N/C on its 1.536 clamp |
+| N | V1's K_N line below N/C 3.0 (B-106 off), from tick 0 | no cycle: condensation 156.7 to 194.5 t/h, falling window by window; the N/C walks to its 1.536 clamp |
+| C | the CO2 into 322E001 at tick 500's, 1 313.0 kmol/h | no return after tick 500: condensation decays from 123.5 t/h (tick 520) to 25.9 (tick 1 320), stands below 1 t/h from tick 1 347 to the end; PT-329201 159.6 bar a at tick 1 840 |
+| T | 322R001's boil ceiling at tick 500's PT-329201 | the cycle stays and grows: 5, 9 and 7 returns, condensation 0 to 214.8 t/h; the boil never stops after tick 1 000 (13 380 to 135 240 kg/h); its feet turn on the top gas's NH3 (64.4 %), not traced further |
+| L | 322R001's overflow to 322E001 through a 60 s lag | slower and smaller: 5 returns in ticks 1 500 to 2 000, the boil's period 70.3 ticks against 44.4, condensation 0 to 67.8 t/h |
+| P | 322E001's tube pressure | unchanged: 10, 10 and 11 returns |
+| Q | 322E001's penalty ratios (322R001's l_feed, w_feed) | 8, 9 and 9 returns |
+| M, M60 | PI-322E002 on the feed N/C and H/C lagged 180 s (the NLL holdup over the design make) or 60 s, from tick 0 | no 5 s cycle; the means move: condensation 100.6 t/h over ticks 501 to 1 500 (M), PT-329201 141.31 bar a over ticks 901 to 1 100, 155 bar a never reached by 200 s. A slower swing of the feed N/C (1.6 to 3.3) shows in 50-tick samples, not established as sustained. Stand-ins only: their PI-322E002 differs from HEAD's at tick 1 (144.19727 against 144.19867 bar a) |
+
+F and N stand on the N/C's lower clamp, so their pressures and means are not comparable with base's.
+
+## CXXXIII.5 The cause, named
+
+A relaxation cycle of the synthesis recycle on B-106's branch and A-21's solve, both as built. The fast loop is
+positive: below N/C 3.0 322E002's fraction falls as the N/C falls; what it does not condense 322R001 absorbs and
+322E001 returns in its top gas a tick later, lowering the N/C; the fraction runs to 0 (§CXXXIII.2). The restoring
+term is PT-329201's jump with nothing condensing, which the CO2 tie-in reads as a smaller differential and passes on
+as less CO2 into 322E001 (§CXXXIII.3; arm C removes it, and the condensation then locks off). The cycle needs B-106's
+rise (arm N) and the fraction's feedback (arm F). 322R001's boil switches with each cycle and is not its clock (arm
+T). The period is set by composition paths that carry no holdup: 322R001's overflow is the tick's product scaled to
+its outflow (B-126), and a lag on it slows the cycle (arm L).
+
+Ruled out: LT-322E002's level law (the level falls 40.57 to 39.65 % through ticks 636 to 698, monotonically, and
+feeds neither the split nor PI-322E002); 322E002's film (its CO2 split stands at 0.170 to 0.173 over the cycle);
+A-21's tear (solved on the tick; the harness's tick-late tear only lengthens the cycle, §CXXIX.4).
+
+## CXXXIII.6 The plant and the archive
+
+* **No plant record below N/C 3.0.** AY-322701 on `References/DCS Trends/Book2.xlsx`: 5 280 samples, 3.1124 to 3.7044
+  (median 3.2511). The start-up of 28 June 2025: 3.020 to 3.770. Normal operation of 29 June 2025: 3.190 to 3.340.
+  The planned shutdown runs at a feed N/C of 2.0 (Operating Manual III page 6-3, read in session 88); no trend of
+  one is in `References\`.
+* **Operating Manual III** (UD-VT-G00-DC-0003 rev. 00, sections 1 and 5, `_002` and `_006`, 154 pages, OCR'd). Page
+  5-6: the reactor outlet's N/C runs normally between 2.90 and 3.10; outside that range the reactor top runs below
+  its maximum temperature, conversion falls, and the stripper's steam consumption and the carbamate recycle rise.
+  Page 5-7: a wrong N/C lowers the reactor top below 180 to 183 C. Neither section describes a cycle of the
+  synthesis. The manual's "oscillation of the recycle flows" (section 1, PDF page 107; page 5-32) is the
+  granulation's nuclei equilibrium. Sections 0, 2 to 4 and 6 to 8 were not OCR'd in this session.
+* `References/scenarios/Scenarios5.md` describes the pressure rising either side of the azeotrope's trough; it is a
+  generic note, not plant data.
+
+## CXXXIII.7 Decided (decision 232) and the checks
+
+The process engineer's choice of 2026-11-16 on the options put in the session: keep as built. The sawtooth is the
+engine's way of carrying B-106's excursion; its window means are what `test_the_melts_bubble_pressure_rises_below_
+its_azeotrope_decided_divergence` asserts (A-50). A held melt on 322E002 (arms M, M60) was offered and not taken:
+it moves the decided window means. The composition holdups stay with B-126's options. Handoff A-57 is closed.
+
+Checks: the documentation and layering tests, and the PyQt6 grep (§CXXXIII's commit); the suite was not run, no
+module or test having changed.

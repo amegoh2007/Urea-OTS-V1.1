@@ -4,7 +4,7 @@
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-16, session 121
+**Last updated:** 2026-11-16, session 122
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -24,9 +24,12 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A two (A-57, A-59), Section B eight (B-118 with B-120 folded in, B-125 to B-128,
+* **Open.** `handoff.md`: Section A one (A-59), Section B eight (B-118 with B-120 folded in, B-125 to B-128,
   B-135, B-136 and B-156), Section C none, 12 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
+* **Session 122** (Part CXXXIII; decision 232). A-57 closed as built: below N/C 3.0 the synthesis recycle runs a
+  5 s relaxation cycle on B-106's rise, the CO2 tie-in's response to PT-329201 returning the condensation; nothing
+  built. Scratch: `Tests and Reports\reports\Session_122_a57`.
 * **Session 121** (Part CXXXI; decision 219). B-156's first unit: LI-323502 reads between LT-323502's taps on
   323D001's datasheet 11.10 m3, the design holdup 50 % to the bit, V1's ratio on a switch for the harnesses. The
   seed is identical at tick 1 and drifts after it (B-94), by at most 6e-5 by 600 s (decision 230, pinned).
@@ -45,11 +48,8 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   AC4's low-level stops of 328P002, 328P006, 328P007 and 335P001 are built on the process engineer's 5 % L2 with
   2 % hysteresis (decision 217, A-41); 328P007's service is kept as built (decision 215); the bad-sample test is
   restated on decision 186 (decision 216, A-40); A-38's run flags have tests; the azeotrope test asserts B-106 on
-  window means three trees agree on (A-50); the engine's own sawtooth there is raised as A-57. The seed is unchanged to the bit. The
+  window means three trees agree on (A-50); the engine's own sawtooth there, A-57, is closed by session 122. The seed is unchanged to the bit. The
   suite: 8 355 tests, all passing (the whole suite, 8 353, before the review's fix and 335P001's test; their files rerun after). Scratch: `Tests and Reports\reports\Session_119_build`.
-* **Session 116 built A-51's choice** (Part CXXVI; decisions 236 to 238): LV-324501A on a 1 s positioner lag inside
-  the header solve (data gap 12) and its sheet's 6.9 bar a inlet; one header valve steps the header as the plant did
-  on 5 November 2026; a restore opens LV-324501A on its drain. Scratch: `Tests and Reports\reports\Session_116_header`.
 * **B-118 in scratch, sessions 99 to 112** (As-Built Parts CX to CXIX and CXXII). Session 99 ran the gap
   resolution plan (decisions 182 to 188). On bundle A 92.3 % passes decision 180's test and the low holds latch;
   B-126 (b)'s species holdup removes the low holds' latch and loses 92.3 % on the cold branch (session 103).
@@ -72,9 +72,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 122 (121 taken by B-156's first unit, 2026-11-16) | `docs/history/session-log.md` |
-| Decision | 232 (219 and 230 taken by session 121, 229 and 231 by session 120's A-58; 220 to 228 already taken) | `docs/decisions.md` |
-| As-Built Part | CXXXIII (CXXXI taken by session 121, CXXXII by session 120's A-58) | the As-Built reference, appended at its end |
+| Session | 123 (122 taken by A-57, 2026-11-16) | `docs/history/session-log.md` |
+| Decision | 233 (232 taken by session 122's A-57; 219 and 230 by session 121, 229 and 231 by session 120's A-58) | `docs/decisions.md` |
+| As-Built Part | CXXXIV (CXXXIII taken by session 122's A-57) | the As-Built reference, appended at its end |
 | Handoff Section A | A-60 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |
 
