@@ -1239,7 +1239,7 @@ decision on an item.
      A-57, closed). On B-106's branch and A-21's solve the synthesis recycle runs a relaxation cycle of about 5 s:
      322E002's fraction falls with the N/C, what it does not condense 322R001 absorbs and 322E001 returns in its top
      gas a tick later, so the fraction runs to 0; PT-329201's jump at the bound cuts the CO2 the tie-in passes to
-     322E001, its top gas leans, and condensation returns. No plant record lies below N/C 3.02 and Operating Manual
-     III describes no such cycle. Nothing is changed; the window means stay what A-50's test asserts. A held melt on
+     322E001, its top gas leans, and condensation returns. No plant record lies below N/C 3.02, and Operating Manual
+     III's sections 1 and 5, the two read, describe no such cycle. Nothing is changed; the window means stay what A-50's test asserts. A held melt on
      322E002 was measured and not taken, since it moves those means; the loop's composition holdups stay with B-126.
      As-Built Part CXXXIII.

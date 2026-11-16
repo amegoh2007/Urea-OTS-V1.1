@@ -26398,9 +26398,13 @@ the synthesis harness's plant with B-106's branch and A-21's solve on (A-57's ca
 | condensation, mean over ticks 501 to 1 500, t/h | 65.271 | 65.504 |
 | PT-329201, mean over ticks 901 to 1 100, bar a | 147.4842 | 147.4444 |
 
-The harness's means are §CXXIX.4's to the digit. The rest of this Part reads the whole engine. After 225 s the CO2
-reaching 322E001 runs down (1 005 kmol/h at tick 2 258, 772 at tick 2 288) with no trip latched, and the feed N/C
-reaches its 6.146 clamp at tick 2 288; windows after tick 2 001 are left out, their cause not traced.
+The harness's means are §CXXIX.4's to the digit. The rest of this Part reads the whole engine. From tick 2 225 the
+CO2 reaching 322E001 runs down (1 005 kmol/h at tick 2 258, 772 at tick 2 288) with no trip latched, and the feed N/C
+reaches its 6.146 clamp at tick 2 288; windows after tick 2 001 are left out. The run-down is SV32064 (B-135): the
+CO2 line passes its set, 161.013 bar a, on tick 2 224 (161.016 bar a) and the valve lifts on tick 2 225, venting
+59.6 t/h, 58.0 t/h by tick 3 000. With PT-329201 at 157.3 to 156.4 bar a the line, falling to 156.57 bar a, never
+reaches the 145.013 bar a reseat, so the valve stays lifted and the tie-in passes 8.4 t/h by tick 3 000; no trip
+latches by then (`strip3_base.json`, the probe run on to 300 s).
 
 ## CXXXIII.2 One cycle per tick: the fast loop
 

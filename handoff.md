@@ -190,7 +190,9 @@ on it; the sets 1 bar apart are the design's (§CXVII.4); no trip bounds the lin
 the plant PIC-322203 stands 4.98 bar over PT-329201 at every flow (Book2; 3.97 if it reads bar a), static, not
 friction, against the engine seed's 3.5 bar on the same pair, so SV32064 lifts first on the plant too while 320K002 delivers
 [I]. What bounds the line before it is PIC-322203 venting through PV-322203 to the LP safe header, at a set point
-logged nowhere; the engine runs V1's 168.01 bar a (decision 79). Acceptance: the process engineer names what bounds
+logged nowhere; the engine runs V1's 168.01 bar a (decision 79). On §CXXIX.4's scenario (321P002B in MAN, CO2
++20 %) it lifts at 222.5 s with the loop at 157.3 bar a and never reseats; by 300 s the tie-in passes 8.4 t/h and no
+trip has latched (§CXXXIII.1). Acceptance: the process engineer names what bounds
 the CO2 discharge at a loop of 158-160 bar a. Options: (a) keep as built (session 120's recommendation); (d)
 PIC-322203's set point from the readback, decision 79 reopened on its option (b) if it lies below 161.013 bar a; (c) a
 discharge bound on the machine, which decision 73 excludes. Next step: checklist row 21.
