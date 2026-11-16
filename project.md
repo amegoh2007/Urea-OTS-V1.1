@@ -72,8 +72,8 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 | Series | Next | Where it is written |
 |---|---|---|
 | Session | 122 (121 taken by B-156's first unit, 2026-11-16) | `docs/history/session-log.md` |
-| Decision | 229 (219 taken by session 121; 220 to 228 already taken) | `docs/decisions.md` |
-| As-Built Part | CXXXII (CXXXI taken by session 121) | the As-Built reference, appended at its end |
+| Decision | 230 (219 taken by session 121, 229 by session 120's A-58; 220 to 228 already taken) | `docs/decisions.md` |
+| As-Built Part | CXXXIII (CXXXI taken by session 121, CXXXII by session 120's A-58) | the As-Built reference, appended at its end |
 | Handoff Section A | A-60 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |
 
