@@ -62,7 +62,7 @@ from ureasim.data.faceplates import (
     P002_DELIVERY_TAG,
 )
 from ureasim.data.console_packet import RHO_755_KGM3
-from ureasim.data.unit_321 import CO2_DES_KGH, PUMP_RATED_RPM
+from ureasim.data.unit_321 import CO2_DES_KGH, FY_321404_DCS_FACTOR, PUMP_RATED_RPM
 from ureasim.data.unit_322c001 import C001_CPL_DES_KGH
 from ureasim.data.unit_322e002 import LEAK_DEFAULT_TH
 from ureasim.data.unit_322e003 import CCW_KGH_DES, CCW_T_OUT_DES_C
@@ -189,7 +189,7 @@ def _controller_set(plant: PlantState, cmd: Mapping, _r) -> str:
     values = {k: _num(cmd, k) for k in ("op", "sp", "sp_rpm", "nc") if k in cmd}
     ctrl.set_mode(mode)
     if mode == "CAS" and "mode" in cmd:
-        st.ratio_sp = round(st.ratio_pv, 3)
+        st.ratio_sp = round(st.ratio_pv * FY_321404_DCS_FACTOR, 3) / FY_321404_DCS_FACTOR
     if "op" in values:
         ctrl.set_op(values["op"])
     if "sp_rpm" in values:
@@ -202,9 +202,12 @@ def _controller_set(plant: PlantState, cmd: Mapping, _r) -> str:
 
 
 def _ratio_set(plant: PlantState, cmd: Mapping, _r) -> str:
+    """FFIC-321404's set point, taken on FY-321404's DCS formula within its limits and held on the
+    engine's ratio (decision 235)."""
     st = plant.units["321"]
-    st.ratio_sp = _num(cmd, "sp", RATIO_SP_MIN, RATIO_SP_MAX)
-    return f"FFIC-321404 set point {st.ratio_sp:g}"
+    sp = _num(cmd, "sp", RATIO_SP_MIN, RATIO_SP_MAX)
+    st.ratio_sp = sp / FY_321404_DCS_FACTOR
+    return f"FFIC-321404 set point {sp:g}"
 
 
 # ======================================================================================

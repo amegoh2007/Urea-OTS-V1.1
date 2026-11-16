@@ -10,6 +10,7 @@ from __future__ import annotations
 import pytest
 
 from tests.engine.packet.conftest import run
+from ureasim.data.unit_321 import FY_321404_DCS_FACTOR, RATIO_SP_DES
 
 
 def test_the_station_at_design(design):
@@ -24,7 +25,9 @@ def test_the_station_at_design(design):
     assert p["pumpA"] == {"on": False, "speed": 0.0, "current": round(st.pump_a.current, 1),
                           "mode": st.pump_a.mode_letter}
     assert p["pumpB"]["on"] is True and p["XV_321901"] is True
-    assert p["ratio"]["SP"] == p["ratio"]["PV"] == p["ratio"]["bal"] == pytest.approx(2.023)
+    # Decision 235: FY-321404 on the DCS's formula, the engine's ratio times 1.0317 (2.023 before).
+    assert p["ratio"]["SP"] == p["ratio"]["PV"] == p["ratio"]["bal"] == pytest.approx(2.087)
+    assert p["ratio"]["PV"] == round(RATIO_SP_DES * FY_321404_DCS_FACTOR, 3)
     assert set(p["controllers"]) == {"SIC_321950", "SIC_321951"}
     assert p["controllers"]["SIC_321951"]["mode"] == "CAS"
     assert p["ext_override"] is False

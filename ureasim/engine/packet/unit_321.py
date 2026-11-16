@@ -20,6 +20,7 @@ from ureasim.data.console_packet import (
     TT_321002_STRAT_K,
 )
 from ureasim.data.operator_commands import EXT_OVERRIDE_TAG
+from ureasim.data.unit_321 import FY_321404_DCS_FACTOR
 from ureasim.engine.packet._common import Tick
 
 __all__ = ["flat_keys", "ratio", "controllers", "ext_override"]
@@ -76,11 +77,12 @@ def flat_keys(t: Tick) -> dict:
 
 def ratio(t: Tick) -> dict:
     """FFIC-321404, the N/C ratio block: its set point, the published PV, V1's balance (the PV,
-    held while the measurement is bad) and each machine's share."""
-    st, res = t.units["321"], t.r("321")
-    return {"SP": round(st.ratio_sp, 3), "PV": round(st.ratio_pv, 3),
-            "bal": round(st.ratio_pv, 3), "NC_A": round(res.ratio_nc_a, 3),
-            "NC_B": round(res.ratio_nc_b, 3)}
+    held while the measurement is bad) and each machine's share, all on FY-321404's DCS formula,
+    the engine's ratio times `FY_321404_DCS_FACTOR` (decision 235)."""
+    st, res, f = t.units["321"], t.r("321"), FY_321404_DCS_FACTOR
+    return {"SP": round(st.ratio_sp * f, 3), "PV": round(st.ratio_pv * f, 3),
+            "bal": round(st.ratio_pv * f, 3), "NC_A": round(res.ratio_nc_a * f, 3),
+            "NC_B": round(res.ratio_nc_b * f, 3)}
 
 
 def controllers(t: Tick) -> dict:

@@ -261,6 +261,17 @@ PUMP_OPEN_DES_PCT = ((EJ_MOTIVE_NH3_DES / NH3_RHO)
 #: per cent of it.
 FY_321404_SPAN = 4.0
 
+#: FY-321404 on the DCS's formula over the engine's ratio [-], 1.0317 at design: the DCS divides FT-321401
+#: by the feed gas less the passivation air, x 44 / 17 (Uhde's functional diagram UD-MR-321-FF-0002 rev 00,
+#: PDF page 4; closes on `References/DCS Trends/Book2.xlsx` to a median of 0.0001), where the engine's
+#: ratio is molar on the CO2 alone; the air is 2.97 % of the gas mass and 44 / 17 against 44.009 / 17.031
+#: is 1.0016 (As-Built §CXXX.4 and §CXXX.6; `Tests and Reports/reports/Session 120 research B-127 B-128
+#: B-135.md`). The engine publishes FFIC-321404 times it and takes its set point divided by it, so the
+#: trainee reads the plant's number. Decided 2026-11-16 (decision 235, handoff B-128 (b)).
+#: shortcut: a fixed design factor, about 1.4 % low at 70 % load where the plant's constant air inflates
+#: its display; modelling the air needs FIC-320402 at the boundary, which decision 73 keeps out of scope.
+FY_321404_DCS_FACTOR = 1.0317
+
 #: FFIC-321404A / B, the N/C ratio controllers, one per machine, on the plant DCS's tuning table
 #: (`References/Master_PID_Tuning_Constants.md`, "FFIC FOR 321P002A / B"): 1.00 and 100 s, 1.00 and
 #: 90 s, Td -1 (off, written 0 here), filter 0 s; the table's 2 % deadband is not modelled (B-28,
@@ -281,7 +292,7 @@ __all__ = [
     "PUMP_RATED_RPM", "PUMP_MIN_RPM", "PUMP_NORMAL_RPM", "PUMP_RATED_I", "PUMP_IDLE_I",
     "PUMP_SCOOP_TAU_S", "SI_321950_SPAN_RPM", "SIC_321950_KC_TABLE", "SIC_321950_TI_S",
     "SIC_321951_KC_TABLE", "SIC_321951_TI_S", "SIC_TD_S", "SIC_321950_KC", "SIC_321951_KC",
-    "ETA_PUMP_HYD", "PUMP_OPEN_DES_PCT", "FY_321404_SPAN", "FFIC_321404A_KC",
+    "ETA_PUMP_HYD", "PUMP_OPEN_DES_PCT", "FY_321404_SPAN", "FY_321404_DCS_FACTOR", "FFIC_321404A_KC",
     "FFIC_321404A_TI_S", "FFIC_321404B_KC", "FFIC_321404B_TI_S",
     "TANK_ID", "TANK_H", "TANK_VOL", "TANK_LEVEL_SP_FRAC", "TANK_LIC_KP_TH",
     "TANK_BL_MAX_TH", "TANK_P_TOP_DES_BARG", "SUCTION_LOSS_BAR", "TANK_LEVEL_MIN_FRAC",

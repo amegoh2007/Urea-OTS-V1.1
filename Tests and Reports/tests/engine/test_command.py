@@ -16,6 +16,7 @@ import pytest
 
 from tests.equivalence.v1_loader import V1_BACKEND, v1_available
 from ureasim.data.operator_commands import RUN_STATE_PAIRS
+from ureasim.data.unit_321 import FY_321404_DCS_FACTOR
 from ureasim.engine.command import PLANT_COMMANDS, SIMULATOR_COMMANDS, apply_command
 from ureasim.engine.plant import build_plant
 from ureasim.engine.scheduler import Scheduler
@@ -340,9 +341,14 @@ def test_the_speed_controllers_and_the_ratio(plant):
     _refused(plant, "AUTO only", type="controller_set", id="SIC_321951", sp=50.0)
     st.ratio_pv = 3.14159
     _ok(plant, type="controller_set", id="SIC_321951", mode="CAS")
-    assert st.ratio_sp == 3.142
+    # Decision 235: the set point is taken on FY-321404's DCS basis, the engine's times 1.0317.
+    assert st.ratio_sp == round(3.14159 * FY_321404_DCS_FACTOR, 3) / FY_321404_DCS_FACTOR
     _ok(plant, type="ratio_set", sp=9.0)
-    assert st.ratio_sp == 5.0
+    assert st.ratio_sp == 5.0 / FY_321404_DCS_FACTOR
+    _ok(plant, type="ratio_set", sp=1.0)
+    assert st.ratio_sp == 2.0 / FY_321404_DCS_FACTOR
+    _ok(plant, type="ratio_set", sp=2.087)
+    assert st.ratio_sp * FY_321404_DCS_FACTOR == pytest.approx(2.087, abs=1e-12)
 
 
 def test_simulator_and_unknown_commands_are_not_the_plants(plant):

@@ -142,9 +142,9 @@ COUPLED = (
          C("1", SCR_LEVEL, +1, "W2", "the scrubber settles slightly higher"))),
     Coupled(
         "S5-2", "Scenarios5.md §2", "High N/C excursion above the azeotrope",
-        "more motive NH3 to 322F001: FFIC-321404's ratio 2.023 -> 2.124 (+5 %), the reactor feed's "
+        "more motive NH3 to 322F001: FFIC-321404's ratio 2.087 -> 2.192 (+5 %), the reactor feed's "
         "N/C from 3.07 to about 3.2",
-        ({"type": "ratio_set", "sp": 2.124},),
+        ({"type": "ratio_set", "sp": 2.192},),
         (C("0", R_NC, +1, "W1", "the reactor N/C rises above 3.1"),
          C("2", SCR_LEVEL, -1, "W1", "the scrubber level drops at once"),
          C("2", EJ_T, -1, "W1", "the ejector discharge cools"),
