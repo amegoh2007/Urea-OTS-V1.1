@@ -26206,7 +26206,8 @@ recorded here, not changed.
 ## CXXXI.6 Built (decision 219)
 
 The process engineer chose (a), the datasheet's 11.10 m3, and accepted the restated seed criterion as it was put to them,
-"identical at tick 1, within 1e-5 by 600 s", for this unit and B-156's six after it; §CXXXI.7 gives what the build
+"identical at tick 1, within 1e-5 by 600 s", for this unit and B-156's six after it, and, shown the measured
+figures, replaced the 1e-5 with 6e-5 (decision 230); §CXXXI.7 gives what the build
 measures against it.
 
 * `data/unit_323e003.py`: ``D001_AREA_M2`` (pi/4 x 2.178^2), ``LT_323502_SPAN_M`` (1.910), ``LT_323502_MID_PCT`` (50),
@@ -26258,7 +26259,9 @@ measures against it.
   `test_synthesis_loop_decided_equivalence.py` (22) and the harness's other users (185) pass. The fifteenth,
   `test_dynamic_audit.py`'s 322E001 sump loss, moved from 316.590 to 316.584 kg and is re-pinned.
   `tests/engine/plant/test_recirc.py` is added: the seed's first tick, its packet and results, the same to the bit on
-  either law. The 600 s bound is not pinned: it waits on the process engineer (B-156). `tests/docs` and
+  either law; and the 600 s bound the process engineer then chose, the measured 6e-5 on every state and flow above 1
+  in magnitude with the near-zero names left out and 2e-3 on the two boil-off flows (decision 230), pinned on both
+  plants after 6 000 ticks (121 s): 5.69e-5, and 323D001's holdup 0.0240 kg higher. `tests/docs` and
   `test_layering.py` pass, and the PyQt6 grep prints nothing.
 * The run series is archived in `Tests and Reports/reports/Session_121_b156`.
 

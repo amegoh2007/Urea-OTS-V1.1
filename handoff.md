@@ -239,10 +239,10 @@ level transmitter's nozzle distance. Seven modelled levels read between their ta
 (`Tests and Reports/tests/data/test_level_transmitter_sheets.py`). Six still read V1's holdup ratio: LT-323501 (323C003, 2 000 mm),
 LT-323503 (323D011, 1 310 mm), LT-328503 (328C002, 1 200 mm), LT-328504 (328C003, 1 000 mm), LT-328505 (328C004, 1
 000 mm) and LT-329501 (322E003's sump, 10 000 mm). Acceptance: each reads between its sheet's nozzles on its vessel's
-datasheet geometry, its design level reproduced; the seed identical to HEAD at tick 1 and, by 600 s, within the bound the process engineer restates (accepted on
-2026-11-16 as 1e-5, put to them on the packet's leaves; measured unrounded on 323D001, the state and flows move by
-up to 5.7e-5, since the seed is not a fixed point, B-94, and a reading between taps reads its drift at a higher gain,
-§CXXXI.7); both sides in an equivalence test.
+datasheet geometry, its design level reproduced; the seed identical to HEAD at tick 1 and, by 600 s, within decision 230's bound: 6e-5 relative on
+every unrounded state and flow above 1 in magnitude, near-zero rates and residuals left out, 2e-3 on the two
+boil-off flows (the seed is not a fixed point, B-94, and a reading between taps reads its drift at a higher gain;
+§CXXXI.7, `tests/engine/plant/test_recirc.py`); both sides in an equivalence test.
 Established: the set ranges are 0.99 to 1.08 times the head over the nozzle distance (93 to 101 % at the upper
 nozzle); LT-329504 and LT-329505 are set at 100 mbar per metre, 1.11 times; LT-329502's 92 mbar is 0.742 times, its
 range ending 1.113 m above the lower nozzle of the modelled 1.500 m. Decided (decision 214): decision 33's class
@@ -251,8 +251,7 @@ reaches them unit by unit, one a session, each measured on both sides before it 
 at the taps' mid-point, so the design reads V1's 50 % to the bit, with V1's law on a switch for the harnesses
 (``V1_TANK``). Each move takes the stops on its level with it: decision 217's on LT-328503 (328P006) and LT-328505
 (328P007), and 323P008's 5 % / 7 % on LT-323503 (B-93). Ruled out for 323D001 and not added on the others without
-the process engineer: a ceiling or overflow V1 has none of (§CXXXI.5). Next step: the process engineer restates the 600 s bound, and it is pinned on 323D001's seed beside
-`tests/engine/plant/test_recirc.py`'s tick 1; then the second unit, its vessel's
+the process engineer: a ceiling or overflow V1 has none of (§CXXXI.5). Next step: the second unit, its vessel's
 geometry read from its datasheet (323D011's is not in `References\`: the vendor archive first) and both sides measured.
 
 ---

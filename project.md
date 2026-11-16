@@ -29,7 +29,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
 * **Session 121** (Part CXXXI; decision 219). B-156's first unit: LI-323502 reads between LT-323502's taps on
   323D001's datasheet 11.10 m3, the design holdup 50 % to the bit, V1's ratio on a switch for the harnesses. The
-  seed is identical at tick 1 and drifts after it (B-94); the 600 s bound goes back to the process engineer (B-156).
+  seed is identical at tick 1 and drifts after it (B-94), by at most 6e-5 by 600 s (decision 230, pinned).
   Scratch: `Tests and Reports\reports\Session_121_b156`.
 * **Session 120** (Part CXXX; decisions 218 and 228). Every file the simulator uses lives in its folder; the suite,
   the reports and the scratch live in `Tests and Reports` sub-folders, and saved exercises in the git-ignored

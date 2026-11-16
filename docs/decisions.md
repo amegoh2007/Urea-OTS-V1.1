@@ -1214,7 +1214,7 @@ decision on an item.
      it fills the switch (`ADDED_ATTRIBUTES`). The seed is identical to HEAD at tick 1 and drifts after it, because
      the seed is not a fixed point (B-94); the process engineer accepted "identical at tick 1, within 1e-5 by 600 s"
      for this unit and B-156's six after it, put to them on the packet's leaves; measured unrounded, the state and
-     flows move by up to 5.7e-5 by 600 s, and that bound is theirs to restate (B-156). A decided divergence: V1 reads
+     flows move by up to 5.7e-5 by 600 s, and the bound is decision 230. A decided divergence: V1 reads
      the holdup over the drum's. As-Built §CXXXI.
 229. **Trip 21.2's pump timers run the sheet's minutes** (2026-11-16, the process engineer's choice on handoff
      A-58). AC4 PC21.5.1 prints .2 "D=5:0-2" and .4 "D=15:0-2": ``TRIP_21_2_PUMPS_TD_S`` is 300 s and
@@ -1222,3 +1222,11 @@ decision on an item.
      pages 5 and 7's start-up override draws the same element and works only as one), so 21.2 is still lost at
      once and its bypasses act after their delay. The six shipped exercises carry the new timers; an older save
      keeps its own. 21.8 / 21.10's run timer stays 5 s (A-58). As-Built §CXXXII.
+230. **B-156's seed bound is 6e-5 by 600 s, as measured** (2026-11-16, the process engineer's choice, session 121).
+     A level moved between its taps leaves the plant's seed identical to the bit at tick 1; after it the seed's own
+     drift (B-94) reads at the new law's gain. By 600 s the plant may part from V1's law by 6e-5 relative on every
+     unrounded state and flow above 1 in magnitude, with the names that carry a rate of change, a residual, a
+     relaxation, a lag, a controller's memory or a closure left out, and by 2e-3 on the two boil-off flows of a few
+     kg/h (324E001's and 322R001's), their measured ceiling. LT-323502 measures 5.69e-5 (323F004's holdup and its 319)
+     and 1.9e-3 (324E001's boil-off). Replaces the 1e-5 first accepted on the packet's rounded leaves. It holds for
+     B-156's six other units; each pins it beside `tests/engine/plant/test_recirc.py`. As-Built §CXXXI.7.

@@ -5143,5 +5143,5 @@ scratch on an export of HEAD: the unit's four arms, the seed and the six shipped
 datasheet's 11.10 m3, on which the design holdup reads 50 % to the bit, and accepted a restated seed criterion. Built
 ``lt_323502_pct`` and the condenser's ``taps`` switch (``V1_TANK`` V1's), a decided-divergence equivalence test, the law's
 test and LT-323502's sheet row; two PFD 734 pins moved. The seed: tick 1 identical; unrounded, up to 5.7e-5 by 600 s,
-more than the 1e-5 put to the process engineer, so the bound goes back to them. Nothing in decision 217 changes; LT-323503's
+more than the 1e-5 first put to the process engineer, who then accepted the measured 6e-5 (decision 230, pinned). Nothing in decision 217 changes; LT-323503's
 move will carry 323P008's stop. Part CXXXI; decision 219; register row 352.
