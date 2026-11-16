@@ -5155,3 +5155,14 @@ and 322E001's top gas; at the bound PT-329201's jump cuts the CO2 tie-in's flow 
 ceiling held, the overflow lagged, the stripper's pressure or ratios held do not. No AY-322701 record below 3.02;
 Operating Manual III sections 1 and 5 OCR'd, no cycle described. The process engineer kept it as built; a held melt on
 322E002, measured, moves the decided means. Nothing built; the docs and layering tests run. Part CXXXIII; decision 232.
+
+### Session 123 — B-156's second unit, 322P002's field ceiling, FY-321404 on the DCS's formula, four items closed (2026-11-16)
+
+Researched every open gap, then closed them one at a time. Data gap 13: FI-322402's 0-40 m3/h (Uhde's loop summary)
+inside 322P002A / B's 6-60 m3/h (KSB's sheet) is the field delivery's ceiling (decision 234). LI-323503 reads between
+LT-323503's taps on 323D011 (EC-0006's sketch, 1 310 mm, 3.15 m3), the design 26.77 %, LIC-323503 seeded there, saves
+restated on load, the three loop factories split to `flash_condenser_loops`; the seed parts 3.2e-4 by 600 s, decision
+230's bound restated for the unit (decision 233); seven unit pins moved and restated. FY-321404 is published x 1.0317
+and set / 1.0317 on the DCS's formula, the floor 2.0 on the display (decision 235, B-128 (b)); B-127 (a), A-59 (a) and
+B-135 (a) closed as built (decisions 235, 239, 240; A-59's (a) the session's call). `/research-deep` not run: it fans
+out to agents (§3). Part CXXXIV; register rows 353 and 354.

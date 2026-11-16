@@ -1650,6 +1650,8 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 350 | AC4's low-level stops of 328P002A / B, 328P006A / B, 328P007A / B and 335P001A / B (decision 217) | — (V1 none: its pumps run to the heel, decision 11's floor) | `control/interlocks` ``low_level_stop``; `data/low_level_stops` ``L2_PCT``, ``L2_HYST_PCT``; each unit's ``l2_stop`` and ``p002_stopped``, ``p006_stopped``, ``p007_stopped``, ``p001_stopped`` | **`[DECIDED DIVERGENCE]`** 2026-11-15: each pair stops below 5 % on its level and runs again at 7 %, the process engineer's stand-in (data gap 8); ``l2_stop = False``, V1's, on the harnesses; both sides in the three desorption decided tests and, on AC4's header against V1's selector, which throttles and has no stop, in `test_second_evaporator_decided_equivalence.py`; the seed identical to HEAD (§CXXIX.1) |
 | 351 | AC4 PC35's trips 35.1, 35.3 and 35.4 on the melt header (decision 228) | — (V1 none: its header has no trip) | `control/granulation_trips` ``Unit35Trips``, ``HEALTHY_35``; `control/process_loop` ``step(hold=)``; `engine/plant/evaporation` ``_trips_35``; `data/unit_335` ``TRIP_35_4_P002_TD_S``, ``LVSL_324501A_PCT``, ``LIC_324501_CLAMPREF_PCT``, ``PIC_335201_CLAMPREF_PCT`` | **`[DECIDED DIVERGENCE]`** 2026-11-15: the flags as PC35 draws them, no latch; stand-ins in data gaps 5 and 14; V1's side is ``HEALTHY_35``, the default every harness and equivalence test runs, pinned bit-identical in `test_melt_header.py`; the trips in `test_granulation_trips.py`, `test_melt_header.py`, `test_second_evaporator.py` and `test_evaporation.py`; the seed's leaves identical to HEAD (§CXXX.3) |
 | 352 | LI-323502 between LT-323502's taps on 323D001 (decision 219) | LI = M / M_full x 100 and LIC-323502's PV M / M_des x 50, the holdup over the 11.10 m3 drum's | `data/unit_323e003` ``lt_323502_pct``, ``D001_AREA_M2``, ``LT_323502_SPAN_M``, ``D001_M_HALF_KG``; `units/recirc/lp_carbamate_condenser` ``taps``, ``V1_TANK``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-16: the reading between the taps, 1 910 mm on the cylinder, 50 % at half the 11.10 m3, V1's design holdup to the bit; ``taps = False``, V1's, on the harnesses; both sides in `test_li_323502_between_its_taps_decided_divergence`; the seed identical at tick 1 and up to 5.7e-5 relative by 600 s (§CXXXI.7) |
+| 353 | LI-323503 between LT-323503's taps on 323D011 (decision 233) | LI = M / M_des x 50, LIC-323503's PV the same | `data/unit_323e011` ``lt_323503_pct``, ``LT_323503_DES_PCT``, ``D011_M_LO_KG``, ``LT_323503_SPAN_KG``; `units/recirc/flash_condenser` ``taps``, ``V1_CONDENSER``; `units/recirc/flash_condenser_loops` ``lic_323503(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-16: the reading between N2B and N2A, 1 310 mm on the cylinder, 26.77 % at V1's design holdup, LIC-323503 seeded and set there; ``taps = False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_323503_between_its_taps_decided_divergence`; the seed identical at tick 1 and up to 3.15e-4 relative by 600 s (§CXXXIV.4) |
+| 354 | FY-321404 on the DCS's formula at the packet and the command (decision 235) | the packet's ratio block and ``ratio_set`` on the engine's molar ratio | `data/unit_321` ``FY_321404_DCS_FACTOR``; `engine/packet/unit_321` ``ratio``; `engine/command` ``_ratio_set``, ``_controller_set`` (CAS) | **`[DECIDED DIVERGENCE]`** 2026-11-16: published x 1.0317 and taken / 1.0317 after the 2.0-5.0 limits; the loop on the engine's ratio unchanged, so no harness moves; `test_the_speed_controllers_and_the_ratio`, `test_the_station_at_design` (§CXXXIV.6) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -26499,3 +26501,110 @@ it moves the decided window means. The composition holdups stay with B-126's opt
 
 Checks: the documentation and layering tests, and the PyQt6 grep (§CXXXIII's commit); the suite was not run, no
 module or test having changed.
+
+
+# Part CXXXIV — Session 123: LI-323503 between its taps, 322P002's field ceiling, FY-321404 on the DCS's formula, four items closed (2026-11-16)
+
+Decisions 233, 234, 235, 239 and 240. Handoffs B-127, B-128, A-59, B-135 and data gap 13 closed; B-156 down to five
+units. Scratch and runs: `Tests and Reports\reports\Session_123_gaps` (`proto_d011.py` the unit alone on four laws and
+five arms, `proto_seed_d011.py` and `score230.py` the whole plant's seed, `build\remeasure.py` and `build\settle.py`
+the moved pins; the page renders of the sources read).
+
+## CXXXIV.1 323D011 and LT-323503, as read
+
+Uhde's datasheet UD-AU-323-EC-0006 rev 00, principle sketch p. 5 (read on the page image): O.D. 1 350 mm (inside
+diameter 1 334), 1 800 mm between tangent lines, heads 500 mm each; N2B 220 mm above the bottom tangent line, N2A
+270 mm below the top one; L.L.L. 300, N.L.L. 775, H.L.L. 1 250 mm above the bottom tangent line. Nominal volume
+3.15 m3 (the datasheet; NSF's as-built drawing UD-AU-323-DZ-0006-005 rev 02 prints 3.277 m3), decision 219's basis.
+LT-323503's sheet (UD-MR-G00-EC-0134 p. 4): nozzle distance 1 310 mm, 1 065 kg/m3, 0 to 135.28 mbar (rho g L =
+136.8 mbar, 0.989).
+
+    A = pi/4 x 1.334^2 = 1.3977 m2        V_head = (3.15 - A x 1.800) / 2 = 0.3171 m3
+    M_lo = 1065 (V_head + 0.220 A) = 665.19 kg        K = 1065 A x 1.310 = 1 949.95 kg per 100 %
+
+## CXXXIV.2 The law (decision 233)
+
+    LI-323503 = clamp( LI_des + (M - M_des) / K x 100, 0, 100 ),   LI_des = (M_des - M_lo) / K x 100 = 26.7688 %
+
+M_des = 1 187.2 kg, V1's 600 s of PFD 718. The design holdup stands 571 mm above the bottom tangent line, inside the
+sketch's L.L.L. (6.1 %) and H.L.L. (78.6 %). V1 reads M / M_des x 50: 28.0 % where the taps read 0 (665 kg), and per
+kilogram the taps move 1.218 times as far. AC4's L2 at 5 % now stands at 762.7 kg (V1's reading's: 118.7 kg), the
+restart at 7 % at 801.7 kg; LIC-323503's set point is LI_des, so the design point holds to the bit.
+
+## CXXXIV.3 Measured first (the unit alone, 1 s, four hours; `ureasim/` untouched)
+
+Laws: v1; id (an identity wrapper, the same-engine control, identical to v1 on every arm); a (the taps, the set
+point restated to LI_des); b (the taps, V1's 50 % kept).
+
+| Arm | v1 | a | b |
+|---|---|---|---|
+| none (the seed) | held | held, 26.769 % | climbs to 1 640 kg, 60.7 % peak at 1 859 s, settles 3 304 s |
+| cut (inlets -25 % at 2 s) | trough 23.51 % (tap scale) at 260 s, within 0.5 % in 3 691 s | trough 23.80 % at 239 s, 2 900 s | settles 8 678 s at 1 640 kg |
+| rise (+20 %) | peak 28.70 % at 185 s, 848 s | peak 28.50 % at 165 s, 739 s | peak 61.6 % |
+| fill (LIC in MAN, 70 %) | 100 % at 2 407 s, overflowing | the same | the same |
+| drain (MAN, 130 %) | the stop at 118.7 kg | the stop at 762.7 kg | as a |
+
+Law b was put aside: it moves the plant off its seed by 453 kg. A saved V1 50 % taken as a tap reading would do the
+same, hence the adopter (§CXXXIV.4).
+
+## CXXXIV.4 Built and checked
+
+`data.unit_323e011`: ``D011_NOMINAL_M3``, ``D011_AREA_M2``, ``D011_HEAD_M3``, ``LT_323503_LO_M``, ``LT_323503_SPAN_M``,
+``LT_323503_RHO_KGM3``, ``D011_M_LO_KG``, ``LT_323503_SPAN_KG``, ``LT_323503_DES_PCT``, ``lt_323503_pct``. The three
+controller factories moved verbatim to `units/recirc/flash_condenser_loops` (`flash_condenser` re-exports them; it
+stood at 599 lines); ``lic_323503(taps=True)`` seeds sp = pv = pv1 = pv2 = LI_des, ``taps=False`` V1's 50.
+`FlashCondenser.taps` (``V1_CONDENSER`` False) sets the loop's PV, the published level and the L2 stop's reading. A
+save made before the switch fills ``taps`` from the present model, and `engine.plant.recirc.adopt_tap_reading`
+restates LIC-323503's sp, pv, pv1 and pv2 as r_taps = `lt_323503_pct`(r_v1 / 50 x M_des); the six shipped exercises
+(sp 50, pv 49.996-50.006) take this path.
+
+Measured on the build:
+
+* The seed: tick 1 identical on every unit state and result but the tank's two readings. By 600 s, scored as
+  decision 230: 3.153e-4 (323E011's 718A), 4.16e-3 (324E001's boil-off), the holdup 0.0595 kg below V1's law; within
+  decision 233's restated 3.2e-4 and 4.2e-3. 323D001's own pin, both sides now on 323D011's taps: 4.72e-5 (323F010's
+  line dead time), 1.09e-3 (322R001's boil-off), +0.0181 kg (5.69e-5, 1.9e-3 and 0.0240 before).
+* V1's side (``V1_CONDENSER``, ``lic_323503(taps=False)``) ``==`` V1's stage 9 on every tick of every harness (97 and
+  297 tests). Both sides, the 791 wash halved at 1 s, 0.5 s ticks: parted at tick 3; V1's dip 48.787 % at 236.5 s,
+  the taps' 25.444 % at 212.5 s (V1's dip holdup reads 25.292 % between the taps): 25.8 kg below the design, not 28.8.
+* The unit's pins (`test_flash_condenser.py`): the flash lost, no trip: the heel at 1 917 s (1 993 before); with the
+  trip: 323P008 stops at 616 s at 763 kg (1 755 s at 118.6 kg), restarts 46 s later (55), 79 stops in four hours (48),
+  the band 4.993-7.010 % (4.995-7.017); on the live flag 6 336 relays (5 808), 4.948-5.045 %. SV32357 lifts at 110.4,
+  135.6 and 160.9 s (110.3, 135.4, 160.7), every 25.2-25.4 s, the peak 6.0144 bar a (6.0125), 36.57 kg vented. The
+  dew-point settlings at 50 % stroke and on the 10 % cut now run an hour: LIC-323503 still trims the tank's vapour
+  space at 30 minutes (gen - vent 0.051 and 0.023 kg/h on the taps, 0.010 and 0.011 on V1's; 0.004 and 0.001 at an
+  hour), the settled pressures unchanged to 1e-5.
+* The dynamic audit's L2 stop, injected at 3 % between the taps: the pumps run again 39.5 s on (48.1 s at V1's 3 %).
+* The decided synthesis loop's B-104 scenario (LV-322501 at 10 %, ten minutes): the reactor's discharge 26 286.1 kg/h
+  (26 284.6), the loops 146.6699 and 140.0064 bar a (146.6702, 140.0065); V1's side moves through the port's 308 and
+  steam pressures, which the harness feeds it. With 323D011 on V1's law the old pins pass (`plug1tank123.py`).
+
+## CXXXIV.5 322P002's field-set delivery up to FI-322402's range (decision 234, data gap 13)
+
+Uhde's loop summary UD-MR-322-EC-0001 rev 01, F 322402, PDF p. 30: FI-322402 0 to 40 m3/h, flow 20 / 29.7 / 35 m3/h
+min / normal / max. 322P002A / B (Uhde's data sheet UD-AU-322-EC-0015 rev 01 p. 6, KSB CPKC1 50-315): rated 45 m3/h
+plus Qmin 6, allowable 6 to 60 m3/h; KSB's installation plan UD-AU-322-DZ-0015-001 prints 51 m3/h at 105.5 m (the
+TOC's DZ-0023-002 is a chain hoist). ``P002_DELIVERY_MAX_M3H`` = 40.0; the instructor's box opens on PFD 744 over
+FT-322402's 1 005 kg/m3, 31.3226 m3/h at four places, within 0.01 kg/h of the design.
+
+## CXXXIV.6 FY-321404 on the DCS's formula (decision 235; B-128 (b), B-127 (a))
+
+    published = engine x 1.0317     engine set point = clamp(sp, 2.0, 5.0) / 1.0317     CAS: round(PV x 1.0317, 3) / 1.0317
+
+The factor is §CXXX.4's, the DCS's formula over the engine's molar ratio at design. The design display reads 2.087
+(the engine's 2.0231 x 1.0317), PFD 116 1.989, the plant 2.116; the floor 2.0 on the display is 1.9386 on the engine's
+ratio, 4.2 % of downward authority from the design display against the plant's 5.4 %. Nothing in the loop moves, so
+no harness or save changes. Phase 7's S5-2 sends 2.192 (+5 % on the display; 2.124 before). B-127's tear and row 116
+stay as built.
+
+## CXXXIV.7 Closed as built (decisions 239 and 240)
+
+A-59, option (a): Phase 7's cold start makes no move on trips 35.1 and 35.4 (§CXXX.3). The process engineer's answer
+was "do the most recommended"; no recommendation was on record, and the session took (a), the run unchanged. B-135,
+option (a), session 120's recommendation (§CXXX.5): SV32064 lifts before SV32251 / SV32252 on the boundary feed, as on
+the plant's 4.98 bar static offset.
+
+## CXXXIV.8 Checks
+
+The full suite in nine parallel groups, 8 400 tests: 8 399 passed and the B-104 scenario failed on its three moved pins
+(§CXXXIV.4), re-pinned and rerun. `tests/docs` and `test_layering` (18) pass; the PyQt6 grep printed nothing.

@@ -1243,3 +1243,33 @@ decision on an item.
      III's sections 1 and 5, the two read, describe no such cycle. Nothing is changed; the window means stay what A-50's test asserts. A held melt on
      322E002 was measured and not taken, since it moves those means; the loop's composition holdups stay with B-126.
      As-Built Part CXXXIII.
+233. **LI-323503 reads between LT-323503's taps on 323D011** (2026-11-16, the process engineer's choice, session 123;
+     B-156's second unit). N2B 220 mm above the bottom tangent line and N2A 1310 mm above N2B (Uhde's datasheet
+     UD-AU-323-EC-0006 p. 5; UD-MR-G00-EC-0134 p. 4), the nominal 3.15 m3 (decision 219's basis), the sheet's
+     1065 kg/m3: `data.unit_323e011.lt_323503_pct`, written as the departure from V1's design holdup, which reads
+     26.77 %. LIC-323503's set point and history are seeded there; a save made on V1's reading is restated as the
+     tap reading of the holdup it held (`engine.plant.recirc.adopt_tap_reading`). AC4's L2 stop reads it, so
+     323P008A / B stop at 763 kg, not 119 kg. ``taps=False`` is V1's on the harnesses. The seed is identical at tick
+     1; decision 230's bound is restated for this unit at its measured values, 3.2e-4 (323E011's 718A) and 4.2e-3
+     (324E001's boil-off) by 600 s. As-Built §CXXXIV.1-4.
+234. **322P002's field-set delivery reaches FI-322402's 40 m3/h** (2026-11-16, the process engineer's choice, data
+     gap 13 closed). The instructor's ``p002_delivery_set`` takes none to 40 m3/h, FI-322402's range (Uhde's loop
+     summary UD-MR-322-EC-0001 p. 30), inside 322P002A / B's 6 to 60 m3/h (UD-AU-322-EC-0015 p. 6, KSB CPKC1
+     50-315); the panel opens on the design delivery, PFD 744 on FT-322402's density. Replaces decision 212's
+     ceiling at the design. As-Built §CXXXIV.5.
+235. **FY-321404 is published and set on the DCS's formula; the loop's boundary is kept** (2026-11-16, the process
+     engineer's choice on B-128 (b) and B-127 (a), both closed). The engine publishes FFIC-321404's PV, balance,
+     set point and the machines' shares as its ratio times 1.0317, the DCS formula's factor at design
+     (UD-MR-321-FF-0002 p. 4; As-Built §CXXX.4), and divides a ``ratio_set`` by it after the 2.0 to 5.0 limits, so
+     the floor stands at 2.0 on the display, 1.9386 on the engine's basis; CAS takes the set point on the display's
+     three places. The loop, its gain, the saves and the scenarios are as built. A fixed factor: exact at design,
+     about 1.4 % low at 70 % load. B-127's tear and row 116 are kept: the engine's motive now displays 2.087 where
+     the plant shows 2.116. As-Built §CXXXIV.6.
+239. **Phase 7's cold start keeps its driver** (2026-11-16, handoff A-59 closed on option (a); session 123's call on
+     the process engineer's "do the most recommended", no recommendation having been on record). The cold start
+     makes no operator move on trips 35.1 and 35.4: the cycle at 335P001's restarts is PC35's with no operator. As-Built
+     §CXXXIV.7.
+240. **SV32064 lifting before the loop's reliefs is kept as built** (2026-11-16, handoff B-135 closed on option (a),
+     session 120's recommendation). The boundary feed delivers at the line's pressure (decision 73); PIC-322203 keeps
+     V1's 168.01 bar a (decision 79), and the plant's own 4.98 bar static offset puts SV32064 first there too.
+     As-Built §CXXXIV.7.

@@ -4,7 +4,7 @@
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-16, session 122
+**Last updated:** 2026-11-16, session 123
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -19,21 +19,22 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   (decision 149). Every module under `ureasim/` is at or below 600 lines (decision 152). Trip 22.2 is removed
   (decision 189). The 335 melt header is computed on AC4 PC35.2 (decision 224), LV-324501A on a 1 s positioner lag
   and its sheet's 6.9 bar a inlet (decisions 236, 237); a restore opens it on the save's drain (decision 238).
-  Trips 35.1, 35.3 and 35.4 act on the header as AC4 PC35 draws them (decision 228). LI-323502 reads between
-  LT-323502's taps (decision 219), the first of B-156's seven. PC21's timers run AC4's minutes (decisions 229, 231).
+  Trips 35.1, 35.3 and 35.4 act on the header as AC4 PC35 draws them (decision 228). LI-323502 and LI-323503 read
+  between their taps (decisions 219, 233), two of B-156's seven. PC21's timers run AC4's minutes (decisions 229, 231).
+  FY-321404 is shown and set on the DCS's formula (decision 235).
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A one (A-59), Section B eight (B-118 with B-120 folded in, B-125 to B-128,
-  B-135, B-136 and B-156), Section C none, 12 open data gaps. Every data gap
+* **Open.** `handoff.md`: Section A none, Section B five (B-118 with B-120 folded in, B-125, B-126, B-136 and
+  B-156), Section C none, 11 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
-* **Session 122** (Part CXXXIII; decision 232). A-57 closed as built: below N/C 3.0 the synthesis recycle runs a
-  5 s relaxation cycle on B-106's rise, the CO2 tie-in's response to PT-329201 returning the condensation; nothing
-  built. Scratch: `Tests and Reports\reports\Session_122_a57`.
-* **Session 121** (Part CXXXI; decision 219). B-156's first unit: LI-323502 reads between LT-323502's taps on
-  323D001's datasheet 11.10 m3, the design holdup 50 % to the bit, V1's ratio on a switch for the harnesses. The
-  seed is identical at tick 1 and drifts after it (B-94), by at most 6e-5 by 600 s (decision 230, pinned).
-  Scratch: `Tests and Reports\reports\Session_121_b156`.
+* **Session 123** (Part CXXXIV; decisions 233 to 235, 239, 240). B-156's second unit: LI-323503 reads between
+  LT-323503's taps on 323D011, the design 26.77 %, LIC-323503 seeded there and saves restated; the seed parts by
+  3.2e-4 by 600 s, decision 230's bound restated for the unit. 322P002's field delivery reaches FI-322402's 40 m3/h
+  (data gap 13 closed). FY-321404 published x 1.0317 and set / 1.0317 (B-128 (b)); B-127, A-59 and B-135 closed as
+  built. Scratch and the research report: `Tests and Reports\reports\Session_123_gaps`.
+* **Sessions 121 and 122** (Parts CXXXI, CXXXIII; decisions 219, 230, 232). LI-323502 between its taps on 323D001,
+  the design 50 % to the bit, the seed within 6e-5 by 600 s; A-57 closed as built (the 5 s cycle below N/C 3.0).
 * **Session 120** (Part CXXX; decisions 218 and 228). Every file the simulator uses lives in its folder; the suite,
   the reports and the scratch live in `Tests and Reports` sub-folders, and saved exercises in the git-ignored
   `exercises` (decision 218). Trips 35.1, 35.3 and 35.4 are built with four overrides on 324-1b; the seed's leaves
@@ -65,16 +66,15 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   valves (the GRANULATION HEADERS panel on 324-1b), LV-324501A on 335P001's curve, LV-324501B and HV-335602, with
   PIC-335201 inside the solve and LIC-324501's X setting its set point (decisions 224 to 226; saves migrate), and
   a run state on the eight pump pairs that had none (decision 227), one commit each; its open items were closed
-  by sessions 119 and 120.
-  Scratch: `Tests and Reports\reports\Session_110_console`, `Session_111_console`.
+  by sessions 119 and 120. Scratch: `Tests and Reports\reports\Session_110_console`, `Session_111_console`.
 
 ## Next free numbers
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 123 (122 taken by A-57, 2026-11-16) | `docs/history/session-log.md` |
-| Decision | 233 (232 taken by session 122's A-57; 219 and 230 by session 121, 229 and 231 by session 120's A-58) | `docs/decisions.md` |
-| As-Built Part | CXXXIV (CXXXIII taken by session 122's A-57) | the As-Built reference, appended at its end |
+| Session | 124 (123 taken by B-156's second unit and four closures, 2026-11-16) | `docs/history/session-log.md` |
+| Decision | 241 (233 to 235, 239 and 240 taken by session 123; 236 to 238 by session 116) | `docs/decisions.md` |
+| As-Built Part | CXXXV (CXXXIV taken by session 123) | the As-Built reference, appended at its end |
 | Handoff Section A | A-60 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |
 
