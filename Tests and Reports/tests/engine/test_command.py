@@ -230,8 +230,8 @@ def test_hic_335602_sets_its_hand_station(plant):
 
 def test_322p002s_delivery_is_set_in_the_field(plant):
     """Decision 212 (B-133): the instructor's field action takes 322P002's delivery in FI-322402's
-    m3/h and stores it in kg/h on FT-322402's own density, from none to the design delivery; the
-    seed is the PFD's 744 to the bit."""
+    m3/h and stores it in kg/h on FT-322402's own density, from none to the indicator's 40 m3/h
+    range (decision 234), above the design delivery; the seed is the PFD's 744 to the bit."""
     from ureasim.data.console_packet import RHO_755_KGM3
     from ureasim.data.faceplates import P002_DELIVERY_COMMAND, P002_DELIVERY_TAG
     from ureasim.data.unit_328d003 import M744_DES_KGH
@@ -240,8 +240,10 @@ def test_322p002s_delivery_is_set_in_the_field(plant):
     r = _ok(plant, type=P002_DELIVERY_COMMAND, value=15.0)
     assert plant.operator[P002_DELIVERY_TAG] == 15.0 * RHO_755_KGM3
     assert r.text == "322P002 delivery 15 m3/h on FI-322402 (field)"
+    _ok(plant, type=P002_DELIVERY_COMMAND, value=35.0)
+    assert plant.operator[P002_DELIVERY_TAG] == 35.0 * RHO_755_KGM3
     _ok(plant, type=P002_DELIVERY_COMMAND, value=60.0)
-    assert plant.operator[P002_DELIVERY_TAG] == M744_DES_KGH
+    assert plant.operator[P002_DELIVERY_TAG] == 40.0 * RHO_755_KGM3 > M744_DES_KGH
     _ok(plant, type=P002_DELIVERY_COMMAND, value=-5.0)
     assert plant.operator[P002_DELIVERY_TAG] == 0.0
     _refused(plant, r"'value' must be a number", type=P002_DELIVERY_COMMAND, value="a lot")

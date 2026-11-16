@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from ureasim.data.faceplates import P002_DELIVERY_MAX_M3H
+from ureasim.data.faceplates import P002_DELIVERY_DES_M3H, P002_DELIVERY_MAX_M3H
 from ureasim.data.unit_321 import CO2_DES_KGH
 from ureasim.engine.session import EngineSession
 from ureasim.hmi.instructor import InstructorPanel
@@ -49,7 +49,8 @@ def test_the_exercise_controls(bridge, packet, tmp_path):
     panel.co2_demand.setValue(60.08)
     panel.co2()
     assert panel.p002_now.text() == "set 31.32, FI-322402 31.32 m3/h"
-    assert panel.p002_delivery.maximum() == pytest.approx(P002_DELIVERY_MAX_M3H, abs=5e-3)
+    assert panel.p002_delivery.maximum() == P002_DELIVERY_MAX_M3H == 40.0
+    assert panel.p002_delivery.value() == pytest.approx(P002_DELIVERY_DES_M3H, abs=5e-5)
     panel.p002_delivery.setValue(15.0)
     panel.p002()
     panel.name_field.setText("shift-a")
@@ -76,21 +77,26 @@ def test_the_exercise_controls(bridge, packet, tmp_path):
     panel.close()
 
 
-def test_the_field_boxs_top_sends_the_design_delivery(bridge):
-    """Decision 212: SET at the Field box's maximum returns 322P002's delivery to the PFD's 744 to
-    the bit, so the console can always restore the design."""
+def test_the_field_boxs_start_value_sends_the_design_delivery(bridge):
+    """Decisions 212 and 234: SET at the Field box's start value returns 322P002's delivery to the
+    PFD's 744 within 0.01 kg/h, so the console can always restore the design; its top sends
+    FI-322402's 40 m3/h."""
+    from ureasim.data.console_packet import RHO_755_KGM3
     from ureasim.data.faceplates import P002_DELIVERY_TAG
     from ureasim.data.unit_328d003 import M744_DES_KGH
     from ureasim.engine.command import apply_command
     from ureasim.engine.plant import build_plant
 
     panel, _ = _panel(bridge)
-    panel.p002_delivery.setValue(panel.p002_delivery.maximum())
     panel.p002()
     plant = build_plant()[1]
     plant.operator[P002_DELIVERY_TAG] = 0.0
     assert apply_command(plant, bridge.sent[-1]).ok
-    assert plant.operator[P002_DELIVERY_TAG] == M744_DES_KGH
+    assert plant.operator[P002_DELIVERY_TAG] == pytest.approx(M744_DES_KGH, abs=0.01)
+    panel.p002_delivery.setValue(panel.p002_delivery.maximum())
+    panel.p002()
+    assert apply_command(plant, bridge.sent[-1]).ok
+    assert plant.operator[P002_DELIVERY_TAG] == 40.0 * RHO_755_KGM3
     panel.close()
 
 

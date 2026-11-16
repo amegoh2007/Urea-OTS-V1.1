@@ -15,7 +15,7 @@ screens so they stay true to the DCS (`project.md` decision 149):
   (`ureasim.data.faceplates.CO2_DEMAND_MAX_FRAC`);
 * **Field** — 322P002's delivery to the LP absorber, which the plant's field operator sets by
   hand and reads on FI-322402 (decision 212): no DCS move exists, so it is the instructor's, from
-  none to the design delivery (`ureasim.data.faceplates.P002_DELIVERY_MAX_M3H`);
+  none to the indicator's range (`ureasim.data.faceplates.P002_DELIVERY_MAX_M3H`, decision 234);
 * **Exercises** — save the plant under a name with a note, and restore a saved one after a
   confirmation, from the list the engine's side holds.
 
@@ -51,6 +51,7 @@ from ureasim.data.faceplates import (
     CO2_DEMAND_MAX_FRAC,
     MALFUNCTIONS,
     P002_DELIVERY_COMMAND,
+    P002_DELIVERY_DES_M3H,
     P002_DELIVERY_MAX_M3H,
 )
 from ureasim.data.unit_321 import CO2_DES_KGH
@@ -153,12 +154,12 @@ class InstructorPanel(QWidget):
         row = QHBoxLayout(box)
         row.addWidget(QLabel("322P002 delivery, hand valve (FI-322402)", box))
         self.p002_delivery = QDoubleSpinBox(box)
-        # Four places round the box's top up into the engine's clamp, so its maximum sends the
-        # design delivery itself (two would send 31.32 m3/h, 1.4 kg/h short of PFD 744).
+        # Four places hold the start value to PFD 744 within 0.01 kg/h (two would send 31.32
+        # m3/h, 1.4 kg/h short of it).
         self.p002_delivery.setDecimals(4)
         self.p002_delivery.setRange(0.0, P002_DELIVERY_MAX_M3H)
         self.p002_delivery.setSuffix(" m3/h")
-        self.p002_delivery.setValue(P002_DELIVERY_MAX_M3H)
+        self.p002_delivery.setValue(P002_DELIVERY_DES_M3H)
         row.addWidget(self.p002_delivery)
         row.addWidget(self._button("SET", self.p002, box))
         self.p002_now = QLabel("", box)

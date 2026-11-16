@@ -378,8 +378,8 @@ def _p002_delivery_set(plant: PlantState, cmd: Mapping, _r) -> str:
     The ammonia water that wets the LP absorber's lower bed. The plant has no controller on it:
     the field operator throttles 322P002's delivery until FI-322402 reads the flow the procedure
     asks (Operating Manual III, pp. 1-58, 4-8, 4-14, 4-19; step L10 lowers it; decision 212). The
-    value is taken in FI-322402's m3/h, on its own density, from none to the design delivery, and
-    322P002 delivers it while either machine runs.
+    value is taken in FI-322402's m3/h, on its own density, from none to the indicator's 40 m3/h
+    range (decision 234), and 322P002 delivers it while either machine runs.
     """
     m3h = _num(cmd, "value", 0.0, P002_DELIVERY_MAX_M3H)
     plant.operator[P002_DELIVERY_TAG] = m3h * RHO_755_KGM3

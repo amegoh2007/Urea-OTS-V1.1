@@ -43,7 +43,8 @@ __all__ = [
     "Malfunction", "MALFUNCTIONS", "CO2_DEMAND_MAX_FRAC", "CO2_DEMAND_STEP_FRAC",
     "CO2_STEP_COMMAND", "CO2_STEP_FIELD", "CO2_DEMAND_PCT_DECIMALS", "CO2_DEMAND_TH_DECIMALS",
     "GRANULATION_HEADERS_TAG", "GRANULATION_STEP_COMMAND", "GRANULATION_STEP_FIELD", "StepPanel",
-    "STEP_PANELS", "loop_command", "P002_DELIVERY_TAG", "P002_DELIVERY_COMMAND", "P002_DELIVERY_MAX_M3H",
+    "STEP_PANELS", "loop_command", "P002_DELIVERY_TAG", "P002_DELIVERY_COMMAND",
+    "P002_DELIVERY_DES_M3H", "P002_DELIVERY_MAX_M3H",
 ]
 
 
@@ -258,11 +259,19 @@ CO2_DEMAND_PCT_DECIMALS, CO2_DEMAND_TH_DECIMALS = 1, 3
 #: P&ID 102 draws no control valve on the delivery, so the move is a field operator's, sent from
 #: the instructor's panel. The operator entry holds the delivery in kg/h, seeded at the PFD's 744;
 #: the command takes it in m3/h on FT-322402's own density (`console_packet.RHO_755_KGM3`), so
-#: the value set is the value FI-322402 reads, from none to the design delivery. The hand valve's
-#: Cv and the line's resistance are on no sheet, so the delivery is set, not a stroke.
+#: the value set is the value FI-322402 reads. The hand valve's Cv and the line's resistance are
+#: on no sheet, so the delivery is set, not a stroke.
 P002_DELIVERY_TAG = "322P002-DELIVERY"
 P002_DELIVERY_COMMAND = "p002_delivery_set"
-P002_DELIVERY_MAX_M3H = M744_DES_KGH / RHO_755_KGM3
+#: The design delivery [m3/h], PFD 744 on FT-322402's density: the panel's start value.
+P002_DELIVERY_DES_M3H = M744_DES_KGH / RHO_755_KGM3
+#: The most the field operator can set [m3/h]: FI-322402's range, 0 to 40 m3/h (Uhde's loop summary
+#: UD-MR-322-EC-0001 rev 01, F 322402, PDF page 30; flow 20 / 29.7 / 35 m3/h min / normal / max), so
+#: every delivery set is readable on the plant's indicator. It lies inside 322P002A / B's rating,
+#: 45 + Qmin 6 m3/h, allowable 6 to 60 m3/h (Uhde's data sheet UD-AU-322-EC-0015 rev 01, page 6,
+#: KSB CPKC1 50-315; KSB's installation plan UD-AU-322-DZ-0015-001 prints 51 m3/h at 105.5 m).
+#: Decided 2026-11-16 (decision 234, data gap 13 closed).
+P002_DELIVERY_MAX_M3H = 40.0
 
 
 # ======================================================================================
