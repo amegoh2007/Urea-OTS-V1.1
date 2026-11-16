@@ -647,8 +647,8 @@ def test_the_column_rides_the_lpcc_node(v1):
     column reads the node of the tick before, and the node takes the column's overhead and its
     two sources on the tick."""
     s = _v1_state(v1)
-    col = rc.RectifyingColumn(chest=rc.V1_CHEST)
-    loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
+    col = rc.RectifyingColumn(**rc.V1_COLUMN)
+    loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
     lpcc, loops8 = lp.LpCarbamateCondenser(**lp.V1_TANK), _loops()
     for k in range(1500):
         drain = FEED_DES * (0.85 if k >= 20 else 1.0)
@@ -697,8 +697,8 @@ def test_the_recirculation_end_to_end_through_a_stripper_feed_cut(v1):
     the column rides the LPCC, the drum rides 323E011, 321 crosses on the tick and 718B on the
     next."""
     s = _v1_state(v1)
-    col = rc.RectifyingColumn(chest=rc.V1_CHEST)
-    loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
+    col = rc.RectifyingColumn(**rc.V1_COLUMN)
+    loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
     drum, lic5 = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
     sep, tic, pic = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False, own_head_leg=False), pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
     tank, lic, fic = st.SolutionTank(backward_species=False), st.lic_323507(), st.fic_324401()

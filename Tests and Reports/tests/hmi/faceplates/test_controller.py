@@ -33,8 +33,9 @@ def _open(bridge, element):
 
 def test_the_block_is_shown_and_man_sends_the_output_the_engine_takes(bridge):
     face = _open(bridge, LIC)
-    assert face.pv_field.text() == "60.0 %"
-    assert (face.sp_field.text(), face.op_field.text()) == ("60.000", "56.600")
+    # LI-323501 between its taps: the design holdup reads the plant's 40 % (decision 241).
+    assert face.pv_field.text() == "40.0 %"
+    assert (face.sp_field.text(), face.op_field.text()) == ("40.000", "56.600")
     assert face.mode_chip.text() == "AUTO" and face.sp_field.isReadOnly() is False
     face.mode_buttons["MAN"].click()
     assert face.op_field.isReadOnly() is False and face.sp_field.isReadOnly()
@@ -51,10 +52,10 @@ def test_auto_from_man_takes_the_pv_as_set_point(bridge, packet):
     face.mode_buttons["MAN"].click()
     face.sp_field.setText("1.0")
     face.mode_buttons["AUTO"].click()
-    assert face.sp_field.text() == "60.000"
+    assert face.sp_field.text() == "40.000"
     face.set_button.click()
     assert bridge.sent[-1] == {"type": "r323_ctrl_set", "id": "LIC-323501", "mode": "AUTO",
-                               "sp": 60.0}
+                               "sp": 40.0}
     face.close()
 
 
@@ -90,7 +91,7 @@ def test_the_typed_field_is_kept_and_the_answer_is_shown(bridge, packet):
     face.op_field.setText("12.5")
     bridge.publish(packet)
     assert face.op_field.text() == "12.5"                  # the operator's, left as typed
-    assert face.sp_field.text() == "60.000"                # the plant's, following
+    assert face.sp_field.text() == "40.000"                # the plant's, following
     face.set_button.click()
     bridge.command_result.emit(len(bridge.sent), False, "LIC-323501 offers MAN, AUTO, not X")
     assert face.message.text() == "REFUSED: LIC-323501 offers MAN, AUTO, not X"

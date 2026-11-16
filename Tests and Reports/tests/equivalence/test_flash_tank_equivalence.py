@@ -459,8 +459,8 @@ def _run_coupled(v1, script, ticks: int, dt: float = DT, before=None):
     """V1's stage 1 feeds V1's stage 2; the ported 323C003 feeds the ported 323F004. Stage 1
     reads the drum pressure as it stood at the top of the tick, as V1 does."""
     s = _v1_state(v1)
-    col = rc.RectifyingColumn(chest=rc.V1_CHEST)
-    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
+    col = rc.RectifyingColumn(**rc.V1_COLUMN)
+    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
     tank = ft.FlashTank(**ft.V1_DRUM)
     lic = ft.lic_323505()
     if before:

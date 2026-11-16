@@ -130,6 +130,91 @@ C003_M_FLOOR_KG = 1.0
 RHO_S314 = 1106.0
 
 
+# --- LT-323501, read between its taps (decision 241, handoff B-156's third unit) -----------
+#
+# Heights are taken from R.L., the girth flange between 323C003 and 323E002 (EL +15.703 m: the
+# as-built isometrics' N4 at EL +18.429 m, UD-RL-100-MB-0137, and N5 at EL +16.147 m,
+# UD-RL-100-MB-0148, against Glatt's arrangement drawing UD-AU-323-DZ-0001-001 rev 01).
+
+#: The column's bottom [m]: a neck of 323E002's bore, 1160 mm, from R.L. to 185 mm, then a cone
+#: at 75 degrees to the horizontal to the 1600 mm shell (Uhde's DDS UD-AU-323-EC-0001 p. 2, line
+#: 27) at 1005 mm (DZ-0001-001: 185 + 820 mm; 820 tan 15 deg = 220 mm a side). Below R.L. stand
+#: 323E002's 1520 tubes, 19 x 2 mm (UD-AU-323-EC-0007 p. 2, lines 34 and 36).
+C003_NECK_D_M, C003_NECK_TOP_M = 1.160, 0.185
+C003_SHELL_D_M, C003_CONE_TOP_M = 1.600, 1.005
+E002_TUBES_AREA_M2 = 1520 * math.pi * 0.25 * 0.015 ** 2
+C003_NECK_AREA_M2 = math.pi * 0.25 * C003_NECK_D_M ** 2
+C003_SHELL_AREA_M2 = math.pi * 0.25 * C003_SHELL_D_M ** 2
+#: The cone's diameter gain per metre of height [-] and the volumes of the neck and the cone [m3].
+C003_CONE_K = (C003_SHELL_D_M - C003_NECK_D_M) / (C003_CONE_TOP_M - C003_NECK_TOP_M)
+C003_NECK_M3 = C003_NECK_AREA_M2 * C003_NECK_TOP_M
+C003_CONE_M3 = math.pi / (12.0 * C003_CONE_K) * (C003_SHELL_D_M ** 3 - C003_NECK_D_M ** 3)
+
+#: LT-323501, a DP cell between N8 on the shell, 1750 mm above R.L. (Uhde's principle sketch,
+#: EC-0001 p. 5; DZ-0001-001), and a seal on the outlet line 400-US14-323266 (P&ID 103/1;
+#: MB-0148, the pad flange Z_2304Z): 2000 mm apart, 1106 kg/m3, 0 to 230 mbar (Uhde's
+#: UD-MR-G00-EC-0134, sheet p. 4) [m]. The isometric puts the line seal at EL +15.380 m, 2.07 m
+#: below N8; the sheet's nozzle distance is taken (As-Built §CXXXV.1).
+LT_323501_LO_M = -0.250
+LT_323501_SPAN_M = 2.000
+LT_323501_RHO_KGM3 = RHO_S314
+
+#: LIC-323501's reading at the design holdup [%]: the plant's, LIC-323501's PV over Book2's two
+#: months, 40.0 (38.8 to 40.4, 5279 samples; `References/DCS Trends/Book2.xlsx`). Decided
+#: 2026-11-16 (decision 241): V1's 3531 kg reads it, where V1 reads 60 % of M_full. Its height
+#: above R.L. [m], 0.550, its diameter on the cone [m] and the volume below it to R.L. [m3].
+LT_323501_DES_PCT = 40.0
+LT_323501_DES_H_M = LT_323501_LO_M + LT_323501_DES_PCT / 100.0 * LT_323501_SPAN_M
+LT_323501_DES_D_M = C003_NECK_D_M + C003_CONE_K * (LT_323501_DES_H_M - C003_NECK_TOP_M)
+C003_V_DES_M3 = C003_NECK_M3 + math.pi / (12.0 * C003_CONE_K) * (LT_323501_DES_D_M ** 3
+                                                                  - C003_NECK_D_M ** 3)
+
+
+def lt_323501_pct(m_kg: float) -> float:
+    """LI-323501 [%]: the height of 323C003's liquid between LT-323501's taps (decision 241).
+
+    Process utility
+    ---------------
+    What the board shows, LIC-323501 holds by LV-323501's drain, and the seal on N5 reads. A DP
+    cell reads only between its taps: V1's design holdup reads the plant's 40 % with 0.55 m over
+    R.L. on the cone, 0 % with 2737 kg still in the column and heater, 100 % at 6053 kg; on the
+    cone a kilogram moves it 1.84 times as far as V1's M / M_full at the design.
+
+    Equation
+    --------
+        V = V_des + (M - M_des) / rho          the liquid above R.L. [m3]
+        cone:   D = D_des (1 + 12 k (V - V_des) / (pi D_des^3))^(1/3),  h = h_des + (D - D_des) / k
+        below the cone, the neck's or the tubes' bore; above it, the shell's
+        LI = clamp( LI_des + (h - h_des) / L . 100, 0, 100 )
+
+    written as the departure from the design holdup, so it reads its set point exactly. Below
+    N5's bore the line drains and the plant's reading follows the line; the vessel's own bore is
+    carried on (shortcut: the column's level never stands there with LV-323501 sealed). Source:
+    As-Built §CXXXV.
+    """
+    v = C003_V_DES_M3 + (m_kg - C003_M_DES_KG) / LT_323501_RHO_KGM3
+    if v < 0.0:
+        h = v / E002_TUBES_AREA_M2
+    elif v < C003_NECK_M3:
+        h = v / C003_NECK_AREA_M2
+    elif v < C003_NECK_M3 + C003_CONE_M3:
+        d = LT_323501_DES_D_M * (1.0 + 12.0 * C003_CONE_K * (v - C003_V_DES_M3)
+                                 / (math.pi * LT_323501_DES_D_M ** 3)) ** (1.0 / 3.0)
+        h = LT_323501_DES_H_M + (d - LT_323501_DES_D_M) / C003_CONE_K
+    else:
+        h = C003_CONE_TOP_M + (v - C003_NECK_M3 - C003_CONE_M3) / C003_SHELL_AREA_M2
+    return min(max(LT_323501_DES_PCT + (h - LT_323501_DES_H_M) / LT_323501_SPAN_M * 100.0, 0.0),
+               100.0)
+
+
+#: The reading at which LV-323501's seal is fully lost [%], 29.21: N5's bottom edge. N5, DN 400
+#: (406.4 x 5.6 pipe, MB-0148), stands normal to the cone, its axis meeting the wall 525 mm over
+#: R.L. (DZ-0001-001), so its bore spans 0.3952 cos 15 deg = 0.382 m of height. Decided 2026-11-16
+#: (decision 241, decision 138's class): V1's seal sits at the bottom of the span.
+LT_323501_SEAL_PCT = ((0.525 - 0.5 * 0.3952 * math.cos(math.radians(15.0)) - LT_323501_LO_M)
+                      / LT_323501_SPAN_M * 100.0)
+
+
 # --- 323E002, the rectifying heater ---------------------------------------------------
 
 #: Design heater duty [kW]. Source: `References/323C003 323E002.md` (5858 kW on 535 m2).
@@ -295,7 +380,11 @@ __all__ = [
     "S208_MASS_PCT", "W_S208", "W_S314_TAB", "W_S314", "C003_P_BARA", "C003_T_SP_C",
     "C003_M_TAU_S", "M305_DES_KGH", "C003_M_DES_KG", "FEED_DES_T_C", "C003_T313_C",
     "C003_LVL_SP_PCT", "LV501_OP_DES_PCT", "LV501_CHAR", "LV501_FL", "C003_M_FULL_KG",
-    "C003_M_FLOOR_KG", "RHO_S314", "E002_Q_DES_KW", "E002_PCHEST_DES_BARA", "E002_OP_DES_PCT",
+    "C003_M_FLOOR_KG", "RHO_S314", "C003_NECK_D_M", "C003_NECK_TOP_M", "C003_SHELL_D_M",
+    "C003_CONE_TOP_M", "E002_TUBES_AREA_M2", "C003_NECK_AREA_M2", "C003_SHELL_AREA_M2",
+    "C003_CONE_K", "C003_NECK_M3", "C003_CONE_M3", "LT_323501_LO_M", "LT_323501_SPAN_M",
+    "LT_323501_RHO_KGM3", "LT_323501_DES_PCT", "LT_323501_DES_H_M", "LT_323501_DES_D_M",
+    "C003_V_DES_M3", "lt_323501_pct", "LT_323501_SEAL_PCT", "E002_Q_DES_KW", "E002_PCHEST_DES_BARA", "E002_OP_DES_PCT",
     "PV_329202_OP_DES_PCT", "PV_329202_XT", "E002_UA_KW", "Q_FLASH_DES_KW", "Q305_DES_KW",
     "LAMBDA_305_KJKG", "M_FLASH_GAS_DES_KGH", "M_POOL_VAP_DES_KGH", "CP_S208_DES", "CP_C003_DES",
     "RHO_C003_DES", "Q301_DES_M3H", "Q302_DES_M3H", "E003_P_DES_BARA",

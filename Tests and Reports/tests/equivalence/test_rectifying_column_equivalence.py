@@ -58,6 +58,7 @@ import pytest
 
 from ureasim.data import control_valves as cvd
 from ureasim.data import unit_323 as d
+from ureasim.data import unit_323c003 as c003
 from ureasim.data.design_point import R323_FEED_DES_KGH as FEED_DES
 from ureasim.data.unit_329 import P_LP_BARA
 from ureasim.units.recirc import rectifying_column as rc
@@ -345,8 +346,8 @@ def _assert_tick(a: dict, b: rc.RectifyingColumnResult, s, col, loops, label):
 def _run(v1, script, ticks: int, dt: float = DT, before=None):
     """Drive both through `script(k)`, comparing everything every tick."""
     s = _v1_state(v1)
-    col = rc.RectifyingColumn(chest=rc.V1_CHEST)
-    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
+    col = rc.RectifyingColumn(**rc.V1_COLUMN)
+    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
     if before:
         before(s, col, loops)
     for k in range(ticks):
@@ -510,8 +511,8 @@ def test_the_column_reads_the_live_stripper_bottom_and_v1_does_not(v1, tt_322004
     the port's moves with it, and at 172.0 the two are the same float.
     """
     s = _v1_state(v1)
-    col = rc.RectifyingColumn(chest=rc.V1_CHEST)
-    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
+    col = rc.RectifyingColumn(**rc.V1_COLUMN)
+    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
     x = _design()
     a = _v1_stage1(v1, s, x["drain"], x["tt323001"], x["pct"], DT)
     b = col.step(*loops, x["drain"], x["tt323001"], x["pct"], tt_322004, x["p_lp"],
@@ -535,8 +536,8 @@ def test_a_sagging_header_saturates_v1s_steam_valve_and_not_the_ports(v1):
     V1 verbatim and the port run side by side; the design duty is the same on both anchors.
     """
     s = _v1_state(v1, chest_decided=False)
-    col = rc.RectifyingColumn(chest=rc.V1_CHEST)
-    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
+    col = rc.RectifyingColumn(**rc.V1_COLUMN)
+    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
     v1_op, port_op = [], []
     for k in range(9000):
         x = _design(p_lp=(4.6 if k >= 10 else P_LP_BARA))
@@ -559,8 +560,8 @@ def test_a_set_point_step_moves_the_ports_column_more_slowly(v1):
     """TIC-323007 to 137 C. V1's 2.0 bar/K master drives the chest to 4.16 bar a in 20 minutes;
     the table's 2.00 on span, 0.075 bar/K, to 4.04. Both are heading for 137 C."""
     s = _v1_state(v1, chest_decided=False)
-    col = rc.RectifyingColumn(chest=rc.V1_CHEST)
-    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
+    col = rc.RectifyingColumn(**rc.V1_COLUMN)
+    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
     s.TIC_323007["sp"] = 137.0
     loops[0].sp = 137.0
     for _ in range(12000):
@@ -582,8 +583,8 @@ def test_v1s_closed_loop_limit_cycle_and_the_ports_settled_column(v1, v1_verbati
     its overhead never above the cap. Run at dt = 1 s (the second hour on)."""
     s = _v1_state(v1_verbatim, chest_decided=False)
     sc = _v1_state(v1, chest_decided=False)
-    col = rc.RectifyingColumn(chest=rc.V1_CHEST)
-    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
+    col = rc.RectifyingColumn(**rc.V1_COLUMN)
+    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
     x = _design()
     v1_t, v1_pv, v1_m305, t, m305, tc, pvc = [], [], [], [], [], [], []
     for k in range(1, 10801):
@@ -620,8 +621,8 @@ def test_the_vendor_valve_decided_divergence(v1):
     design drain sits at V1's 50 % and at the port's 56.65 %, so 75 % passes 1.50 times PFD 314
     in V1 and 1.32 times in the port."""
     s = _v1_state(v1, chest_decided=False, valves_decided=False)
-    col = rc.RectifyingColumn(chest=rc.V1_CHEST)
-    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
+    col = rc.RectifyingColumn(**rc.V1_COLUMN)
+    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
     assert (s.LIC_323501["op"], loops[2].op) == (50.0, DECIDED_LV501_OP)
     s.LIC_323501.update(mode="MAN", op=75.0)
     loops[2].set_mode("MAN")
@@ -672,8 +673,8 @@ def test_the_column_takes_the_stripper_blowthrough_and_v1_does_not(v1):
     the port's column is V1's but for its pressure: the gas's own volume loads the line, and the
     target rises from V1's 4.1 bar a."""
     s = _v1_state(v1)
-    col = rc.RectifyingColumn(chest=rc.V1_CHEST)
-    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
+    col = rc.RectifyingColumn(**rc.V1_COLUMN)
+    loops = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
     x = _design()
     a = _v1_stage1(v1, s, x["drain"], x["tt323001"], x["pct"], DT)
     b = col.step(*loops, x["drain"], x["tt323001"], x["pct"], 172.0, x["p_lp"], x["p_f004"],
@@ -688,3 +689,73 @@ def test_the_column_takes_the_stripper_blowthrough_and_v1_does_not(v1):
                                                              b.heater_gas_ratio, x["p_d001"],
                                                              blow_m3h)
     assert b.p_target_bara > a["ptgt"] + 2.0 and not b.relief_lifted
+
+
+# --------------------------------------------------------------------------------------
+# The decided divergence: LI-323501 between LT-323501's taps (decision 241, handoff B-156)
+# --------------------------------------------------------------------------------------
+
+def _taps_against_v1(v1, script, ticks: int, dt: float, before=None):
+    """V1's stage 1, V1's column on every tick (``V1_COLUMN``), and the port's column between its
+    taps on the same boundaries; returns, by tick, V1's result and the port's, with the port's
+    holdup before its step."""
+    s = _v1_state(v1)
+    old = rc.RectifyingColumn(**rc.V1_COLUMN)
+    loops_old = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
+    new = rc.RectifyingColumn(chest=rc.V1_CHEST)
+    loops_new = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
+    if before:
+        before(s, loops_old, loops_new)
+    out = []
+    for k in range(ticks):
+        x = script(k)
+        s.steam.P_LP, s.r323_f004_P, s.r3232_d001_P = x["p_lp"], x["p_f004"], x["p_d001"]
+        args = (x["drain"], x["tt323001"], x["pct"], 172.0, x["p_lp"], x["p_f004"], x["p_d001"], dt)
+        a = _v1_stage1(v1, s, x["drain"], x["tt323001"], x["pct"], dt)
+        m_pre = new.m_kg
+        b, c = old.step(*loops_old, *args), new.step(*loops_new, *args)
+        _assert_tick(a, b, s, old, loops_old, f"V1's column, tick {k}")
+        assert c.level_pct == c003.lt_323501_pct(m_pre), k
+        out.append((a, c, m_pre, s.r323_c003_M))
+    return out
+
+
+def test_li_323501_between_its_taps_decided_divergence(v1):
+    """Decision 241, 2026-11-16 (handoff B-156): V1 reads 323C003's level as its holdup over a full
+    holdup, x 100, and holds it at 60 %; the port reads it between LT-323501's taps, 2000 mm apart
+    across the neck, the cone and the shell, and holds the design holdup's tap reading, the plant's
+    40 %. On V1's switch the port is V1's on every tick. Between the taps the first two ticks are
+    V1's, and LIC-323501 parts once the level moves: a kilogram moves the reading 1.84 times as far,
+    so a 25 % cut of the bottoms at 10 s dips the holdup 199 kg (to 3331.6 kg at 86 s) where V1's
+    dips 325 kg (3205.6 kg at 127 s). At dt = 0.5 s."""
+    out = _taps_against_v1(v1, lambda k: _design(drain=FEED_DES * (0.75 if k >= 20 else 1.0)),
+                           600, 0.5)
+    parted = next(k for k, (a, c, _, _) in enumerate(out) if (c.lv501_op_pct, c.m_314_kgh) != (
+        a["lv"], a["m314"]))
+    assert parted == 2
+    assert all((a["lvl"], c.level_pct) == (60.0, 40.0) for a, c, _, _ in out[:2])
+    lo_v1 = min((m_v1, k) for k, (_, _, _, m_v1) in enumerate(out))
+    lo_taps = min((m, k) for k, (_, _, m, _) in enumerate(out))
+    assert (lo_v1[0], lo_v1[1]) == (pytest.approx(3205.580, abs=1e-3), 253)
+    assert (lo_taps[0], lo_taps[1]) == (pytest.approx(3331.591, abs=1e-3), 173)
+    assert (out[254][0]["lvl"], out[173][1].level_pct) == (pytest.approx(54.4761, abs=1e-4),
+                                                           pytest.approx(33.4325, abs=1e-4))
+
+
+def test_lv_323501s_seal_is_lost_at_n5_decided_divergence(v1):
+    """Decision 241: with LV-323501 forced wide open, V1's seal goes at the bottom of its span, at
+    3 % of its full holdup: tick 297, 162.6 kg left in the column. The port's goes 3 % of span above
+    N5's lower edge on the tap reading, 32.21 %: tick 21, at 3294.2 kg, 236 kg below the design,
+    where the drain leaves the column for 323F004. At dt = 0.5 s."""
+    def wide(s, loops_old, loops_new):
+        s.LIC_323501["mode"] = "MAN"; s.LIC_323501["op"] = 100.0
+        for loops in (loops_old, loops_new):
+            loops[2].set_mode("MAN"); loops[2].op = 100.0
+    out = _taps_against_v1(v1, lambda k: _design(), 300, 0.5, before=wide)
+    k_v1 = next(k for k, (a, _, _, _) in enumerate(out) if a["seal"] < 1.0)
+    k_taps = next(k for k, (_, c, _, _) in enumerate(out) if c.seal_fraction < 1.0)
+    assert (k_v1, k_taps) == (297, 21)
+    assert out[k_v1][0]["lvl"] == pytest.approx(2.9470, abs=1e-4)
+    assert (out[k_taps][2], out[k_taps][1].level_pct) == (pytest.approx(3294.221, abs=1e-3),
+                                                          pytest.approx(32.1161, abs=1e-4))
+    assert d.C003_M_DES_KG - out[k_taps][2] == pytest.approx(236.4, abs=0.1)

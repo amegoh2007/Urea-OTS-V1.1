@@ -97,7 +97,9 @@ def test_the_liquor_train_through_the_scheduler_is_v1s_chain(v1):
     # V1's barometric leg, the separator's pressure in its drive: the drain on the separator's own
     # head (B-119 (b)) has its own tests.
     units["323F010"].own_head_leg = False
-    loops["323C003"] = (loops["323C003"][0], rc.pic_329202(rc.V1_CHEST), loops["323C003"][2])
+    # V1's level law on 323C003: LI-323501 between its taps (decision 241) has its own tests.
+    units["323C003"].taps = False
+    loops["323C003"] = (loops["323C003"][0], rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
     loops["323F010"] = (loops["323F010"][0], pe.pic_329208(pe.V1_CHEST))
     boundary = dict(drain=FEED_DES, tt_323001=119.0, tt_322004=172.0,
                     bottoms=dict(stage1.BOTTOMS_PCT), blow=0.0, blow_mw=30.0)

@@ -16,7 +16,8 @@ import pytest
 
 from ureasim.data import unit_323 as d
 from ureasim.data.design_point import R323_FEED_DES_KGH, R323_M314_DES
-from ureasim.data.unit_323c003 import SV32351_RESEAT_BARA
+from ureasim.data.unit_323c003 import (C003_M_DES_KG, C003_M_FULL_KG, LV501_OP_DES_PCT,
+                                       SV32351_RESEAT_BARA, lt_323501_pct)
 from ureasim.data.unit_329 import P_LP_BARA
 from ureasim.units.recirc import rectifying_column as rc
 
@@ -79,11 +80,12 @@ def test_the_sources_are_weighted_by_the_pfds_own_volumes():
     assert f(1.0, 1.2, 3.2) == pytest.approx(4.2186, abs=1e-4)
 
 
-@pytest.mark.parametrize("tt_322004, p_bara", [(160.0, 3.96453), (172.0, 4.10000),
-                                               (180.0, 4.18171)])
+@pytest.mark.parametrize("tt_322004, p_bara", [(160.0, 3.96450), (172.0, 4.10000),
+                                               (180.0, 4.18176)])
 def test_a_hotter_stripper_raises_the_column_pressure(tt_322004, p_bara):
     """Decided 2026-09-26 (As-Built §XXVIII.6): the flash source reads the LIVE TT-322004. V1's store-key typo
-    read 172.0 for ever, and its column could not see the stripper at all."""
+    read 172.0 for ever, and its column could not see the stripper at all. LI-323501 between its taps
+    (decision 241) moves the two off-design pressures 3e-5 and 5e-5 bar (3.96453 and 4.18171 before)."""
     r = _run(60.0, tt_322004=tt_322004)
     assert r.flash_gas_ratio == pytest.approx((tt_322004 - 119.0) / (172.0 - 119.0), rel=1e-12)
     assert r.p_bara == pytest.approx(p_bara, abs=1e-5)
@@ -102,17 +104,43 @@ def test_with_the_steam_shut_the_stripper_still_charges_the_column():
     # solve on that branch closes to 1e-10 kW. LV-323501 on its vendor stroke and FL (B-44),
     # choking on the liquor's bubble pressure (B-46; unchoked: 0.0285 and 3.6058 bar a). On the
     # closed PFD 314 (B-20): 0.0282 and 115.55 C, where the table's row gave 0.0281 and 115.56.
+    # LI-323501 between its taps (decision 241): 0.0270, 3.6050 bar a and 115.50 C (0.0282, 3.6056
+    # and 115.55 before).
     assert r.q_e002_kw == pytest.approx(0.0, abs=1e-9)
     assert r.flash_gas_ratio == 1.0
-    assert r.heater_gas_ratio == pytest.approx(0.0282, abs=1e-4)
-    assert r.p_bara == pytest.approx(3.6056, abs=1e-4)
-    assert r.t_c == pytest.approx(115.55, abs=0.01)
+    assert r.heater_gas_ratio == pytest.approx(0.0270, abs=1e-4)
+    assert r.p_bara == pytest.approx(3.6050, abs=1e-4)
+    assert r.t_c == pytest.approx(115.50, abs=0.01)
 
 
 def test_with_no_bottoms_the_column_falls_to_its_discharge_node():
+    """LI-323501 between its taps (decision 241): LV-323501 drains the column to N5's lower edge,
+    3214.5 kg, in 9.8 s, its seal is lost and column gas blows through to 323F004, 1.24 t/h at two
+    minutes, so the column stands at 3.2073 bar a; on V1's law it drains on to 2055 kg, sealed, at
+    3.2031."""
     r = _run(120.0, drain=0.0)
     assert r.flash_gas_ratio == 0.0 and r.m_305_kgh == 0.0
-    assert r.p_bara == pytest.approx(3.2031, abs=1e-4)
+    assert r.p_bara == pytest.approx(3.2073, abs=1e-4)
+
+
+def test_li_323501_reads_between_its_taps_and_v1s_law_reads_the_holdup_ratio():
+    """Decision 241: LI-323501 reads the liquid between LT-323501's taps, 40 % at the design
+    holdup; ``V1_COLUMN`` with its loop is V1's M / M_full x 100, 60 %. At the design holdup each
+    law reads its own set point, so LIC-323501 moves nothing on its first tick; off it, each loop
+    takes its own law's reading, and the seal is lost at each law's own nozzle."""
+    v1_law = lambda m: min(max(m / C003_M_FULL_KG * 100.0, 0.0), 100.0)  # noqa: E731
+    for column, taps, read in (({}, True, lt_323501_pct), (rc.V1_COLUMN, False, v1_law)):
+        for m in (C003_M_DES_KG, 3000.0):
+            col = rc.RectifyingColumn(**column)
+            tic, pic, lic = rc.tic_323007(), rc.pic_329202(col.chest), rc.lic_323501(taps=taps)
+            col.m_kg = m
+            r = col.step(tic, pic, lic, R323_FEED_DES_KGH, 119.0, BOTTOMS_PCT, 172.0, P_LP_BARA,
+                         d.F004_P_BARA, d.E003_P_DES_BARA, 0.1)
+            assert r.level_pct == read(m) and lic.sp == read(C003_M_DES_KG), (taps, m)
+            assert r.seal_fraction == (1.0 if taps is False or m == C003_M_DES_KG else 0.0)
+            if m == C003_M_DES_KG:
+                assert r.lv501_op_pct == LV501_OP_DES_PCT and r.m_314_kgh == R323_M314_DES, taps
+    assert (lt_323501_pct(C003_M_DES_KG), v1_law(C003_M_DES_KG)) == (40.0, 60.0)
 
 
 def test_a_hotter_set_point_opens_the_steam_valve():
@@ -196,7 +224,8 @@ def test_the_blowthrough_loads_the_column_by_its_own_volume():
     assert first.p_target_bara == rc.column_pressure_target_bara(
         first.flash_gas_ratio, first.heater_gas_ratio, d.E003_P_DES_BARA, blow_m3h)
     last = _blown(30.0)[-1]
-    assert last.p_bara == pytest.approx(5.4486, abs=1e-4) and not last.relief_lifted
+    # 5.4486 bar a before decision 241 (LI-323501 between its taps).
+    assert last.p_bara == pytest.approx(5.4431, abs=1e-4) and not last.relief_lifted
 
 
 def test_sv32351_pops_at_set_and_reseats_on_its_blowdown():

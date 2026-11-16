@@ -68,6 +68,12 @@ law reads only the gas left after the relief, and what is left leaves overhead t
 every overhead flow is carried on `RectifyingColumnResult.overhead_frac`, exactly 1.0 when the
 valves are shut.
 
+LI-323501 reads the holdup **between LT-323501's taps**, N8 and the outlet line 2000 mm below it,
+on the column's neck, cone and shell (`data.unit_323c003.lt_323501_pct`; decision 241, handoff
+B-156): V1's design holdup reads the plant's 40 %, LIC-323501's set point, and LV-323501's seal is
+lost at N5's bottom edge, 29.21 %. ``V1_COLUMN`` and ``lic_323501(taps=False)`` are V1's
+M / M_full with the seal at the bottom of the span.
+
 Source
 ------
 V1 ``backend/main.py`` step_sim, "Stage 1: Rectifying Column 323C003 + Recirc Heater 323E002"
@@ -116,6 +122,7 @@ from ureasim.core.stream import MW_COMP
 from ureasim.core.units_of_measure import ABSOLUTE_ZERO_C
 from ureasim.data.design_point import R323_M314_DES, R323_PHI_V305
 from ureasim.data.control_valves import PV_329202
+from ureasim.data.unit_323c003 import LT_323501_DES_PCT, LT_323501_SEAL_PCT, lt_323501_pct
 from ureasim.data.unit_323 import (
     C003_LIQUOR,
     C003_LVL_SP_PCT,
@@ -217,6 +224,8 @@ def tic_323007() -> ProcessLoop:
 #: 2026-10-15), and as V1 runs it, linear from V1's stroke — which the equivalence harness keeps.
 PV_329202_CHEST = ChestValve(PV_329202_OP_DES_PCT, PV_329202.characteristic, PV_329202_XT)
 V1_CHEST = ChestValve(E002_OP_DES_PCT)
+#: The column as V1 builds it, for the equivalence harnesses: V1's chest and its level law.
+V1_COLUMN = {"chest": V1_CHEST, "taps": False}
 
 
 def pic_329202(valve: ChestValve = PV_329202_CHEST) -> ProcessLoop:
@@ -230,12 +239,14 @@ def pic_329202(valve: ChestValve = PV_329202_CHEST) -> ProcessLoop:
         op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=P_LP_BARA)
 
 
-def lic_323501() -> ProcessLoop:
-    """LIC-323501, the column level. DIRECT acting: a level above set point opens LV-323501."""
+def lic_323501(taps: bool = True) -> ProcessLoop:
+    """LIC-323501, the column level. DIRECT acting: a level above set point opens LV-323501.
+    Seeded on LT-323501 between its taps, the design holdup's 40 % (decision 241); ``taps=False``
+    is V1's 60 %."""
+    r = LT_323501_DES_PCT if taps else C003_LVL_SP_PCT
     return ProcessLoop(
         tag="LIC-323501", Kc=LIC_323501_KC, Ti=LIC_323501_TI_S, Td=0.0, act=-1.0,
-        op=LV501_OP_DES_PCT, sp=C003_LVL_SP_PCT,
-        pv=C003_LVL_SP_PCT, pv1=C003_LVL_SP_PCT, pv2=C003_LVL_SP_PCT,
+        op=LV501_OP_DES_PCT, sp=r, pv=r, pv1=r, pv2=r,
         op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=100.0)
 
 
@@ -433,6 +444,8 @@ class RectifyingColumn:
     lag_state: dict = field(default_factory=dict)
     #: SV32351 and SV32352 (handoff A-16).
     sv_32351: GasReliefValve = field(default_factory=sv_32351)
+    #: LT-323501 between its taps (decided 2026-11-16, decision 241); False is V1's M / M_full.
+    taps: bool = True
 
     def step(self, tic: ProcessLoop, pic: ProcessLoop, lic: ProcessLoop,
              drain_kgh: float, tt_323001_c: float, bottoms_mass_pct: dict,
@@ -504,13 +517,14 @@ class RectifyingColumn:
         q305_avail = q_flash + q_e002
 
         # ----- LIC-323501 -> LV-323501, and the seal on its nozzle --------------------
-        level = clamp(self.m_kg / C003_M_FULL_KG * 100.0, 0.0, 100.0)
+        level = (lt_323501_pct(self.m_kg) if self.taps
+                 else clamp(self.m_kg / C003_M_FULL_KG * 100.0, 0.0, 100.0))
         lv501_op = lic.step(level, dt)
         m_314 = letdown_kgh(lv501_op, self.p_bara, p_f004_bara, self.w.get("Urea", 0.0), self.t_c,
                             stage_bubble_p(C003_LIQUOR, self.w, self.t_c, self.p_bara))
         # 4.1 -> 1.13 bar a is past the choke, so an uncovered trim passes column gas at a
         # flow the column's own pressure sets. Sealed, the gas is exactly 0.0.
-        seal = seal_fraction(level)
+        seal = seal_fraction(level, LT_323501_SEAL_PCT if self.taps else 0.0)
         m_314 *= seal
         blow = 0.0
         if seal < 1.0:
@@ -573,7 +587,7 @@ class RectifyingColumn:
 __all__ = [
     "FEED_ROUTE", "P_LP_LAG_KEY",
     "HEAT_CAPACITY_FLOOR_KJK", "GAS_RATE_FLOOR_KGH", "MOLAR_SUM_FLOOR",
-    "tic_323007", "pic_329202", "lic_323501", "sv_32351",
+    "V1_COLUMN", "tic_323007", "pic_329202", "lic_323501", "sv_32351",
     "column_pressure_target_bara", "letdown_kgh", "head_space_relief_kgh",
     "RectifyingColumnResult", "RectifyingColumn",
 ]

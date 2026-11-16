@@ -302,9 +302,9 @@ def adopt_added_state(plant: PlantState, reference: PlantState) -> None:
     Each added operator entry and unit is seeded and each added attribute filled from
     ``reference``, a plant the present model builds, at the same path; a retired boundary value is dropped and
     handed to the engine's adopter, a header saved before LV-324501A had a positioner opens the
-    valve at the stroke that passes the save's drain (decisions 236 and 238), and LIC-323503 saved
-    on V1's reading is restated between LT-323503's taps (decision 233). A save holding all of it
-    is left as it is.
+    valve at the stroke that passes the save's drain (decisions 236 and 238), and LIC-323503 and
+    LIC-323501 saved on V1's reading are restated between their taps (decisions 233 and 241). A save
+    holding all of it is left as it is.
     """
     retired = {k: plant.boundary.pop(k) for k in RETIRED_BOUNDARY if k in plant.boundary}
     for key in ADDED_OPERATOR:
@@ -316,12 +316,12 @@ def adopt_added_state(plant: PlantState, reference: PlantState) -> None:
     unit = plant.units.get("324E003")
     header = _attributes(unit).get("header") if unit is not None else None
     lacks_position = header is not None and "lv_a_position_pct" not in _attributes(header)
-    e011 = plant.units.get("323E011")
-    lacks_taps = e011 is not None and "taps" not in _attributes(e011)
+    lacks_taps = tuple(u for u in ("323E011", "323C003")
+                       if u in plant.units and "taps" not in _attributes(plant.units[u]))
     _fill_added(plant, reference, set())
     if lacks_taps:
         from ureasim.engine.plant.recirc import adopt_tap_reading
-        adopt_tap_reading(plant)
+        adopt_tap_reading(plant, lacks_taps)
     if lacks_position:
         from ureasim.engine.plant.evaporation import adopt_header_position
         adopt_header_position(plant)

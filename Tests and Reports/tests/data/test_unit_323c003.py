@@ -48,10 +48,43 @@ def test_the_valves_and_controllers():
     assert c003.PIC_329202_KC == pytest.approx(10.8333, abs=1e-4)
 
 
+def test_lt_323501_reads_between_its_taps():
+    """Decision 241: LI-323501 reads 323C003's liquid over the 2000 mm between its taps, the lower
+    250 mm below the R.L. at EL +15.703, and V1's design holdup reads the plant's 40 % exactly. The
+    neck, the 15-degree cone and the shell join without a step (12.5, 21.75 and 62.75 %); the reading
+    rises with the holdup, 0.031311 %/kg at the design where V1's M / M_full x 100 moves 0.016994; it
+    clamps at the taps, 2737.4 and 6052.6 kg; and LV-323501's seal is lost at N5's lower edge,
+    29.21 %, 3214.5 kg."""
+    f = c003.lt_323501_pct
+    assert f(c003.C003_M_DES_KG) == c003.LT_323501_DES_PCT == 40.0
+    assert c003.LT_323501_DES_H_M == pytest.approx(0.55, abs=1e-12)
+    assert c003.C003_V_DES_M3 == pytest.approx(0.650052, abs=1e-6)
+    v0 = c003.C003_M_DES_KG - c003.C003_V_DES_M3 * c003.LT_323501_RHO_KGM3
+    assert f(v0) == pytest.approx(12.5, abs=1e-12)
+    for m, pct in ((2811.6704, 12.5), (3027.9088, 21.75), (4395.8918, 62.75)):
+        assert f(m) == pytest.approx(pct, abs=1e-5)
+        assert f(m + 1e-6) - f(m - 1e-6) == pytest.approx(0.0, abs=1e-6)
+    ms = [2700.0 + 10.0 * k for k in range(340)]
+    assert all(f(a) <= f(b) for a, b in zip(ms, ms[1:]))
+    assert f(c003.C003_M_DES_KG + 0.5) - f(c003.C003_M_DES_KG - 0.5) == pytest.approx(0.031311,
+                                                                                     abs=1e-6)
+    assert 100.0 / c003.C003_M_FULL_KG == pytest.approx(0.016994, abs=1e-6)
+    assert (f(2737.0), f(2738.0)) == (0.0, pytest.approx(0.1008, abs=1e-4))
+    assert (f(6052.0), f(6053.0)) == (pytest.approx(99.9869, abs=1e-4), 100.0)
+    assert c003.LT_323501_SEAL_PCT == pytest.approx(29.2067, abs=1e-4)
+    assert f(3214.5255) == pytest.approx(c003.LT_323501_SEAL_PCT, abs=1e-6)
+
+
 def test_unit_323_re_exports_the_stage():
-    """Every stage-1 name is `unit_323`'s too, the same object; the relief's names stay here."""
+    """Every stage-1 name is `unit_323`'s too, the same object; the relief's names and LT-323501's
+    geometry (decision 241) stay here."""
     relief = {n for n in c003.__all__ if n.startswith("SV32351_")} | {"MW_305"}
     assert len(relief) == 10
+    taps = {n for n in c003.__all__ if n.startswith(("LT_323501_", "C003_NECK", "C003_CONE",
+                                                      "C003_SHELL"))}
+    taps |= {"E002_TUBES_AREA_M2", "C003_V_DES_M3", "lt_323501_pct"}
+    assert len(taps) == 19
+    relief |= taps
     for name in set(c003.__all__) - relief:
         assert getattr(unit_323, name) is getattr(c003, name), name
         assert name in unit_323.__all__, name

@@ -34,6 +34,7 @@ Source: V1 ``backend/main.py`` ``step_sim`` 8183-8664, 9513-9664, 10081; the uni
 
 from __future__ import annotations
 
+from ureasim.data import unit_323c003 as c003
 from ureasim.data import unit_323e011 as e011
 from ureasim.engine.schedule import DeclaredTear, Operator, Result, State, Step, Tear
 from ureasim.units.recirc import flash_condenser as fc
@@ -62,22 +63,33 @@ def units() -> tuple[dict, dict]:
              "SIC-323902": (lpcc.sic_323902(),)})
 
 
-def adopt_tap_reading(plant) -> None:
-    """Restate LIC-323503 between LT-323503's taps on a save made on V1's reading (decision 233).
+#: Each level whose controller a save made on V1's reading restates, by its unit: the loop's place
+#: in the unit's loops and the holdup a V1 reading stands for [kg per %] (decisions 233 and 241).
+_TAP_READINGS = {
+    "323E011": (1, e011.D011_M_DES_KG / e011.D011_LVL_SP_PCT, e011.lt_323503_pct),
+    "323C003": (2, c003.C003_M_FULL_KG / 100.0, c003.lt_323501_pct),
+}
+
+
+def adopt_tap_reading(plant, units: tuple[str, ...] = ("323E011",)) -> None:
+    """Restate LIC-323503 and LIC-323501 between their taps on a save made on V1's reading
+    (decisions 233 and 241).
 
     Process utility
     ---------------
-    An exercise saved before decision 233 holds LIC-323503's set point and PV history as V1's
-    reading, M / M_des x 50. Taken as tap readings they would ask for 453 kg more in 323D011 and
-    kick the loop on its first tick. Each is restated as the tap reading of the holdup it stood
-    for, so the tank holds the level it was saved at and the first tick moves nothing.
+    An exercise saved before a level read between its taps holds its controller's set point and PV
+    history as V1's reading: M / M_des x 50 for LIC-323503, M / M_full x 100 for LIC-323501. Taken
+    as tap readings they would ask for 453 kg more in 323D011, or 745 kg more in 323C003, and kick
+    the loop on its first tick. Each is restated as the tap reading of the holdup it stood for, so
+    the vessel holds the level it was saved at and the first tick moves nothing.
 
-    Equation: r_taps = `lt_323503_pct`(r_v1 / 50 . M_des).
+    Equation: r_taps = `lt_pct`(r_v1 . kg_per_pct), for each unit in ``units``.
     """
-    lic = plant.loops["323E011"][1]
-    for name in ("sp", "pv", "pv1", "pv2"):
-        setattr(lic, name, e011.lt_323503_pct(getattr(lic, name) / e011.D011_LVL_SP_PCT
-                                              * e011.D011_M_DES_KG))
+    for unit in units:
+        index, kg_per_pct, lt_pct = _TAP_READINGS[unit]
+        lic = plant.loops[unit][index]
+        for name in ("sp", "pv", "pv1", "pv2"):
+            setattr(lic, name, lt_pct(getattr(lic, name) * kg_per_pct))
 
 
 def _323c003(plant, a, dt):

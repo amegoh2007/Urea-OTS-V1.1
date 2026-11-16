@@ -762,8 +762,8 @@ def test_all_three_stages_coupled_through_a_stripper_feed_cut(v1):
     """V1's stages 1 to 3 against the ported 323C003 -> 323F004 -> 323F010, each reading its
     downstream neighbour's pressure as it stood at the top of the tick."""
     s = _v1_state(v1)
-    col = rc.RectifyingColumn(chest=rc.V1_CHEST)
-    loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501())
+    col = rc.RectifyingColumn(**rc.V1_COLUMN)
+    loops1 = (rc.tic_323007(), rc.pic_329202(rc.V1_CHEST), rc.lic_323501(taps=False))
     tank, lic = ft.FlashTank(**ft.V1_DRUM), ft.lic_323505()
     sep = pe.PreEvaporator(chest=pe.V1_CHEST, vent=pe.V1_VENT, live_bubble=False, own_head_leg=False)
     tic, pic = pe.tic_323012(), pe.pic_329208(pe.V1_CHEST)
