@@ -115,4 +115,4 @@ one line, with its decision number.
 - a trip no plant logic draws kept as the simulator's own protection, named so wherever the console names it, its logic and set points V1's (decision 174; superseded by decision 189, 2026-11-12: a trip no plant document draws is removed)
 - no approximation of the physics bought for a pacing target (decision 88)
 - a pump pair the console opens holds a run state, true while either machine runs, and its unit multiplies the flow the pair delivers by it, exactly 1.0 at the seed; a stop on a process limit built only when that limit is sourced (decision 227)
-- a pump pair's AC4 low-level stop (its IC2 below L2) built in the unit that holds the level and the flow, no latch, running again two units above L2 (decision 111); where neither archive gives the L2, the process engineer's stand-in, LT-323503's 5 %, logged in data gap 8 (decision 217)
+- a pump pair's AC4 low-level stop (its IC2 below L2) built in the unit that holds the level and the flow, no latch, running again two units above L2 (decision 111); where neither archive gives the L2, the process engineer's stand-in, LT-323503's 5 %, signed off as built (decisions 217, 242)

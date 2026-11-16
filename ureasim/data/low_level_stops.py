@@ -10,11 +10,12 @@ images; As-Built §CXIX.2) wires each of these pairs' process interlock IC2 to a
     328P007A / B   process condensate pump  LT-328505 < L2   (pages 109 / 110)
     335P001A / B   urea feed pump           LY-324501 < L2   (pages 230 / 231)
 
-The L2 values are DCS database entries that neither archive holds (data gap 8). The values below are
+The L2 values are DCS database entries that neither archive holds. The values below are
 the process engineer's stand-in of 2026-11-15 (decision 217): every limit is LT-323503's L2, 5 %, the
 one such limit read back from the plant DCS (decision 103), with the 2-unit hysteresis decision 111's
 class gives an analogue limit whose hysteresis the archive does not give (323P008's B-96 stand-in).
-The readback (checklist rows 17 to 20) replaces them.
+The process engineer signed them off as built on 2026-11-16 (decision 242); a readback (checklist rows
+17 to 20) would replace them.
 
 Process utility
 ---------------
@@ -28,7 +29,7 @@ from types import MappingProxyType
 
 #: L2 [% of the transmitter's span] below which AC4 stops the pair the tag protects. source = the
 #: process engineer's stand-in of 2026-11-15 (decision 217): LT-323503's DCS L2, 5 %, read back on
-#: 2026-10-13 (decision 103); logged in data gap 8 until the readback.
+#: 2026-10-13 (decision 103); signed off as built (decision 242).
 L2_PCT = MappingProxyType({
     "LT-328501": 5.0,
     "LT-328503": 5.0,

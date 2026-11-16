@@ -290,7 +290,7 @@ LT_323503_L2_PCT = 5.0
 #: The L2 limit's hysteresis [% of span]: the pumps stopped below 5 % run again at 7 %. A STATED
 #: STAND-IN — the limit's hysteresis is a DCS database value the archive does not hold — the
 #: 2-unit convention TT-322015's H2 keeps (V1's 2 K), decided by the process engineer on
-#: 2026-10-15 (handoff B-96, logged in Open data gaps).
+#: 2026-10-15 (handoff B-96; signed off as built, decision 242).
 LT_323503_L2_HYST_PCT = 2.0
 
 #: LV-323503 and FV-323418 strokes at design [%], and their trims. DECIDED 2026-09-30 (handoff

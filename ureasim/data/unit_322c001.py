@@ -156,7 +156,7 @@ C001_SV_PURGE_STEAM_KGH = FO_329459_KGH
 #: unit is the PV's). AC4's PC22.5.1 reads the limit as TT-322015's H2 flag. V1 sets it above 57 C
 #: and clears it below 55 C (``main.py`` 10142-10146, no source; kept under decision 90 until the
 #: database's value was found). The flag's hysteresis is still a database entry nobody has read:
-#: V1's 2 K band is kept below the plant's limit, cleared below 108 C (handoff Open data gaps). V1
+#: V1's 2 K band is kept below the plant's limit, cleared below 108 C (signed off as built, decision 242). V1
 #: reads the liquor; the rewrite reads TI-322015 on the vent line (B-55).
 TRIP_22_1_HIGH_C = 110.0
 TRIP_22_1_CLEAR_C = 108.0

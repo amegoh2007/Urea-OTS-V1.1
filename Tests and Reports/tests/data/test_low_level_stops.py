@@ -1,4 +1,4 @@
-"""The four low-level stops' stand-in limits (decision 217, data gap 8)."""
+"""The four low-level stops' stand-in limits (decision 217, signed off as built by decision 242)."""
 
 from __future__ import annotations
 
