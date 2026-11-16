@@ -1230,3 +1230,8 @@ decision on an item.
      kg/h (324E001's and 322R001's), their measured ceiling. LT-323502 measures 5.69e-5 (323F004's holdup and its 319)
      and 1.9e-3 (324E001's boil-off). Replaces the 1e-5 first accepted on the packet's rounded leaves. It holds for
      B-156's six other units; each pins it beside `tests/engine/plant/test_recirc.py`. As-Built §CXXXI.7.
+231. **Each 321P002's start-up override runs the sheets' 5 min** (2026-11-16, the process engineer's choice on
+     handoff A-58, closed). AC4 PC21.1.1 / .2 print T .2 "D=5:0-2" on the pump running, the trip schedule's
+     "automatic start up override 5 min.": ``TRIP_21_8_RUN_TD_S`` is 300 s, so a pump started with XV-322901 shut
+     keeps 21.8 / 21.10 for 5 min. The six shipped exercises carry it; an older save keeps its 5 s. As-Built
+     §CXXXII.7.

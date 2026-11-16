@@ -161,12 +161,13 @@ def trip_label(key: str) -> str:
 #: number, each followed by "-" and its pin): TRIP_21_2_FLAG1's 5 min on the HP ammonia pumps running
 #: (.2 "D=5:0-2"), 15 min on 323P001A / B running (.4 "D=15:0-2") and 5 s on FY-322403 above its L2
 #: (.16 "D=5-2"; page 20), as the trip schedule UAN 01-3042's "time delay 5 min." and "15 min."
-#: (decision 229); each pump's flag's 5 s from its start to XV-322901 open (pages 5 and 7 print
-#: "D=5:0-2", handoff A-58) and 10 s after it stops (MONO "D=10-3").
+#: (decision 229); each pump's flag's 5 min from its start to XV-322901 open (pages 5 and 7, .2
+#: "D=5:0-2"), the schedule's "automatic start up override 5 min." (decision 231), and 10 s after it
+#: stops (MONO "D=10-3").
 TRIP_21_2_PUMPS_TD_S = 300.0
 TRIP_21_2_P001_TD_S = 900.0
 TRIP_21_2_FY_TD_S = 5.0
-TRIP_21_8_RUN_TD_S = 5.0
+TRIP_21_8_RUN_TD_S = 300.0
 TRIP_21_8_STOP_TP_S = 10.0
 
 #: PDY-321203 / 204's L2 [bar], the sub-cooling margin that trips its pump (21.8 / 21.10): the

@@ -270,8 +270,7 @@ class Unit21Trips:
     TRIP_21_8_FLAG1 (PC21.1.1, page 5) = AND of
         TRIP_21_2_FLAG1, not PT-321211 < L2, not ST-321952 > H2, not XVSL-321901,
         not PDY-321203 < L2,
-        [not T5:0(321P002A running) or XVSH-322901] and not MONO10(not 321P002A running),
-        its T run on 5 s until the process engineer decides it (handoff A-58);
+        [not T5:0(321P002A running) or XVSH-322901] and not MONO10(not 321P002A running);
     TRIP_21_10_FLAG1 (PC21.1.2, page 7) the same on 321P002B, PT-321221, ST-321953 and
         PDY-321204.
     Each T an on-delay of its TD, T5:0 five minutes and T5 five seconds as the printout writes them

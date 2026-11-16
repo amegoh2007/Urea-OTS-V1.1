@@ -5131,8 +5131,8 @@ on Track B's D2, D3, D5 and D6 (decision 228). Built: the layout, saved exercise
 unchanged; the restart through HS-335201A recovers about 78.9 t/h, LV-324501B passing up to 184 t/h; in the cold start
 335P001 cycles on its stop with 35.4 held. Researched: the DCS's FY-321404 formula sourced (UD-MR-321-FF-0002 p. 4)
 and checked on Book2; the CO2 line 4.98 bar over PT-329201 on the plant. A-58 and A-59 raised. Then, on the
-process engineer's yes, 21.2's pump timers moved to the sheet's 5 and 15 min, pages 5 and 7 read (21.8's left).
-Suite: 8 387 passed (shared tree), 321 (this change), 159 (combined). Parts CXXX, CXXXII; decisions 218, 228, 229.
+process engineer's yes, 21.2's pump timers moved to the sheet's 5 and 15 min and 21.8's to 5 min; A-58 closed.
+Suite: 8 387 passed (shared tree), 321 (this change), 159 (combined). Parts CXXX, CXXXII; decisions 218, 228, 229, 231.
 
 ### Session 121 — B-156's first unit: LI-323502 between LT-323502's taps on 323D001 (2026-11-16)
 

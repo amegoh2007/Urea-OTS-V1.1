@@ -122,7 +122,7 @@ class SynthesisTrips:
     (AC4 PC21, `control.interlocks.Unit21Trips`; decided 2026-10-09, handoff A-12): 21.2 while no
     HP ammonia pump, no carbamate pump or no CO2 reaches the stripper, unless its bypass is turned,
     or a trip hand switch is; each pump's flag on 21.2, its suction's sub-cooling, XV-321901 shut,
-    and XV-322901 not open 5 s after it starts. V1's 21.2 (321D003 below 5 % or a sub-cooling
+    and XV-322901 not open 5 min after it starts (decision 231). V1's 21.2 (321D003 below 5 % or a sub-cooling
     margin), 21.4 (the CO2 lost while synthesis runs; no flag in AC4) and 21.8 / 21.10 (a pump's
     equipment fault) are gone, and so is V1's 22.2, the loop's high-high pressure, which no plant
     document draws (decision 189). What each trip stops is the units'.

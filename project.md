@@ -20,11 +20,11 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   (decision 189). The 335 melt header is computed on AC4 PC35.2 (decision 224), LV-324501A on a 1 s positioner lag
   and its sheet's 6.9 bar a inlet (decisions 236, 237); a restore opens it on the save's drain (decision 238).
   Trips 35.1, 35.3 and 35.4 act on the header as AC4 PC35 draws them (decision 228). LI-323502 reads between
-  LT-323502's taps (decision 219), the first of B-156's seven. 21.2's pump timers run AC4's minutes (decision 229).
+  LT-323502's taps (decision 219), the first of B-156's seven. PC21's timers run AC4's minutes (decisions 229, 231).
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A three (A-57 to A-59), Section B eight (B-118 with B-120 folded in, B-125 to B-128,
+* **Open.** `handoff.md`: Section A two (A-57, A-59), Section B eight (B-118 with B-120 folded in, B-125 to B-128,
   B-135, B-136 and B-156), Section C none, 12 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
 * **Session 121** (Part CXXXI; decision 219). B-156's first unit: LI-323502 reads between LT-323502's taps on
@@ -36,7 +36,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   `exercises` (decision 218). Trips 35.1, 35.3 and 35.4 are built with four overrides on 324-1b; the seed's leaves
   are unchanged to the bit (decision 228, B-146 closed; stand-ins in data gaps 5 and 14). Researched, nothing built:
   the DCS's FFIC-321404 formula is sourced and checked on Book2 (B-128), the CO2 line stands 5 bar over the loop on
-  the plant (B-135); A-58 and A-59 raised; then 21.2's pump timers moved to AC4's minutes (Part CXXXII).
+  the plant (B-135); A-58 and A-59 raised; then PC21's timers moved to AC4's minutes, A-58 closed (Part CXXXII).
 * **Sessions 117 and 118** (Parts CXXVII, CXXVIII; decisions 210 to 214). V1.1 runs and tests without V1 (decision
   210, A-33 closed); the trend window has a CLEAR button; the archive was searched for the open gaps; 322P002's
   delivery is set by hand in the field (decision 212); B-145 closed as built (decision 213); the seven levels on V1's
@@ -73,7 +73,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 | Series | Next | Where it is written |
 |---|---|---|
 | Session | 122 (121 taken by B-156's first unit, 2026-11-16) | `docs/history/session-log.md` |
-| Decision | 231 (219 and 230 taken by session 121, 229 by session 120's A-58; 220 to 228 already taken) | `docs/decisions.md` |
+| Decision | 232 (219 and 230 taken by session 121, 229 and 231 by session 120's A-58; 220 to 228 already taken) | `docs/decisions.md` |
 | As-Built Part | CXXXIII (CXXXI taken by session 121, CXXXII by session 120's A-58) | the As-Built reference, appended at its end |
 | Handoff Section A | A-60 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |
