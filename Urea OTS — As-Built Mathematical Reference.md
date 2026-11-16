@@ -1652,6 +1652,7 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 352 | LI-323502 between LT-323502's taps on 323D001 (decision 219) | LI = M / M_full x 100 and LIC-323502's PV M / M_des x 50, the holdup over the 11.10 m3 drum's | `data/unit_323e003` ``lt_323502_pct``, ``D001_AREA_M2``, ``LT_323502_SPAN_M``, ``D001_M_HALF_KG``; `units/recirc/lp_carbamate_condenser` ``taps``, ``V1_TANK``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-16: the reading between the taps, 1 910 mm on the cylinder, 50 % at half the 11.10 m3, V1's design holdup to the bit; ``taps = False``, V1's, on the harnesses; both sides in `test_li_323502_between_its_taps_decided_divergence`; the seed identical at tick 1 and up to 5.7e-5 relative by 600 s (§CXXXI.7) |
 | 353 | LI-323503 between LT-323503's taps on 323D011 (decision 233) | LI = M / M_des x 50, LIC-323503's PV the same | `data/unit_323e011` ``lt_323503_pct``, ``LT_323503_DES_PCT``, ``D011_M_LO_KG``, ``LT_323503_SPAN_KG``; `units/recirc/flash_condenser` ``taps``, ``V1_CONDENSER``; `units/recirc/flash_condenser_loops` ``lic_323503(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-16: the reading between N2B and N2A, 1 310 mm on the cylinder, 26.77 % at V1's design holdup, LIC-323503 seeded and set there; ``taps = False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_323503_between_its_taps_decided_divergence`; the seed identical at tick 1 and up to 3.15e-4 relative by 600 s (§CXXXIV.4) |
 | 354 | FY-321404 on the DCS's formula at the packet and the command (decision 235) | the packet's ratio block and ``ratio_set`` on the engine's molar ratio | `data/unit_321` ``FY_321404_DCS_FACTOR``; `engine/packet/unit_321` ``ratio``; `engine/command` ``_ratio_set``, ``_controller_set`` (CAS) | **`[DECIDED DIVERGENCE]`** 2026-11-16: published x 1.0317 and taken / 1.0317 after the 2.0-5.0 limits; the loop on the engine's ratio unchanged, so no harness moves; both sides in `test_the_station_at_design` (V1's published 2.023, the port's 2.087) and `test_the_speed_controllers_and_the_ratio` (§CXXXIV.6) |
+| 355 | LI-323501 between LT-323501's taps on 323C003 (decision 241) | LI = M / M_full x 100, LIC-323501's PV the same, held at 60 %; LV-323501's seal at the bottom of the span | `data/unit_323c003` ``lt_323501_pct``, ``LT_323501_DES_PCT``, ``LT_323501_SEAL_PCT``, the bottom's geometry; `units/recirc/rectifying_column` ``taps``, ``V1_COLUMN``, ``lic_323501(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-16: the reading between N8 and the line seal, 2 000 mm over the neck, the cone and the shell, the plant's 40 % at V1's design holdup, LIC-323501 seeded and set there; the seal lost at N5's lower edge, 29.21 %; ``V1_COLUMN``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_323501_between_its_taps_decided_divergence` and `test_lv_323501s_seal_is_lost_at_n5_decided_divergence`; the seed identical at tick 1 but for the reading, its flows within 4.86e-5 by 600 s, 324E001's boil-off 1.58e-2 (§CXXXV.4) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -26608,3 +26609,123 @@ the plant's 4.98 bar static offset.
 
 The full suite in nine parallel groups, 8 400 tests: 8 399 passed and the B-104 scenario failed on its three moved pins
 (§CXXXIV.4), re-pinned and rerun. `tests/docs` and `test_layering` (18) pass; the PyQt6 grep printed nothing.
+
+# Part CXXXV — Session 124: LI-323501 between its taps, data gaps 2 and 8 signed off (2026-11-16)
+
+Decisions 241 and 242. B-156 down to four units; data gaps 2 and 8 closed. Scratch and runs:
+`Tests and Reports\reports\Session_124_b156` (`geom.py` the geometry, `proto_seed_c003.py` and `score230.py` the
+whole plant's seed on three design readings, `probe_divergence.py` stage 1 against V1, `measure_bound.py` the
+built seed; the page renders of the sources read).
+
+## CXXXV.1 323C003 and LT-323501, as read
+
+Heights are taken from R.L., the girth flange between 323C003 and 323E002, at EL +15.703 m: the as-built
+isometrics put N4 at EL +18.429 m (UD-RL-100-MB-0137) and N5 at EL +16.147 m (UD-RL-100-MB-0148), against Glatt's
+arrangement drawing UD-AU-323-DZ-0001-001 rev 01.
+
+* The bottom (Uhde's DDS UD-AU-323-EC-0001 p. 2, line 27; DZ-0001-001): a neck of 323E002's 1 160 mm bore from R.L.
+  to 185 mm, a cone at 75 degrees to the horizontal (820 tan 15 deg = 220 mm a side, 15.02 deg on the dimensions)
+  to the 1 600 mm shell at 1 005 mm. Below R.L. stand 323E002's 1 520 tubes, 19 x 2 mm (UD-AU-323-EC-0007 p. 2,
+  lines 34 and 36), 0.26861 m2 of bore.
+* LT-323501 (Uhde's UD-MR-G00-EC-0134, sheet p. 4): nozzle distance 2 000 mm, 1 106 kg/m3, 0 to 230 mbar (rho g L =
+  217 mbar, 0.94). The upper tap is N8 on the shell, 1 750 mm above R.L. (Uhde's principle sketch EC-0001 p. 5;
+  DZ-0001-001); the lower a seal on the outlet line 400-US14-323266 (P&ID 103/1; the pad flange Z_2304Z on MB-0148).
+  The isometric puts that seal at EL +15.380 m, 2 073 mm below N8: 73 mm off the sheet. The sheet's distance is
+  taken, as for every built level (§CXXVIII.5); the 73 mm is logged, not resolved.
+* N5, LV-323501's drain, DN 400 (406.4 x 5.6 pipe, MB-0148), normal to the cone, its axis meeting the wall 525 mm
+  above R.L. (DZ-0001-001); its bore spans 0.3952 cos 15 deg = 0.382 m of height, its lower edge 0.334 m above R.L.
+* The plant's reading (`References/DCS Trends/Book2.xlsx`): LIC-323501's PV 40.0 % over the two months, 38.8 to
+  40.4 % (5 279 samples).
+
+## CXXXV.2 The law (decision 241)
+
+    V  = V_des + (M - M_des) / rho                                    the liquid above R.L. [m3]
+    cone:  D = D_des (1 + 12 k (V - V_des) / (pi D_des^3))^(1/3),   h = h_des + (D - D_des) / k
+    below the cone the neck's or the tubes' bore, above it the shell's
+    LI-323501 = clamp( 40 + (h - h_des) / 2.000 x 100, 0, 100 )
+
+k = (1.600 - 1.160) / (1.005 - 0.185) = 0.53659 m/m; h_des = -0.250 + 0.40 x 2.000 = 0.550 m, D_des = 1.35585 m,
+V_des = 0.65005 m3 (the neck 0.19551, the whole cone 1.23687). M_des = 3 530.63 kg, V1's 60 % of M_full. Written as
+the departure from the design holdup, the law reads 40.0 there exactly. The neck, the cone and the shell meet at
+12.5, 21.75 and 62.75 % without a step; 0 % holds 2 737.4 kg (in the column's neck and 323E002's tubes), 100 %
+6 052.6 kg. A kilogram moves the reading 0.031311 % at the design, V1's M / M_full x 100 0.016994: 1.842 times. Below
+R.L. the tubes' bore is carried on, a shortcut: the column never stands there with LV-323501 sealed.
+
+The seal (decision 138's class): ``seal_fraction(LI, 29.2067, 3)``, lost from N5's lower edge, 29.21 % (3 214.5 kg),
+fully covered 3 % of span above it, 32.21 % (3 296.8 kg). V1's seal sits at the bottom of its span, 0 to 3 % of M_full (0 to
+176.5 kg). LIC-323501's set point and history are seeded on 40 %; ``lic_323501(taps=False)`` keeps V1's 60.
+
+## CXXXV.3 Measured first (the whole plant's seed, 600 s; `ureasim/` untouched)
+
+Three readings of the design holdup, each the stage's only change, scored on decision 230's terms against HEAD (the
+unrounded state and flows above 1, near-zero names out; the boil-offs apart). Tick 1: ten raw values differ on each
+(the column's reading and its loop), the holdup to the bit.
+
+| Design reads | Rule | Worst flow by 600 s | 324E001's boil-off (1.2964 kg/h) | 322R001's |
+|---|---|---|---|---|
+| a: V1's 60 % (h 0.950 m, 1.373 x V1's gain) | the taps on V1's set point | 3.443e-5 (323E011's 702) | 9.55e-3 | 1.46e-4 |
+| b: the plant's 40 % (h 0.550 m, 1.842 x) | Book2's PV | 4.864e-5 (the same) | 1.58e-2 | 2.04e-4 |
+| c: V1's holdup stacked on 323E002's 2.06 m3 tube side, 54.88 % | the heater full below R.L. | 3.849e-5 | 1.17e-2 | 1.69e-4 |
+
+Every flow stays inside decision 230's 6e-5; 324E001's boil-off, a few hundredths of a kilogram an hour, does not on
+any reading. The process engineer chose b, the plant's 40 %, the seal moved to N5 and the bound restated for the unit
+at its measured values (decision 241).
+
+## CXXXV.4 Built and checked
+
+`data.unit_323c003`: ``C003_NECK_D_M``, ``C003_NECK_TOP_M``, ``C003_SHELL_D_M``, ``C003_CONE_TOP_M``,
+``E002_TUBES_AREA_M2``, the neck's, the shell's and the cone's areas and volumes, ``C003_CONE_K``, ``LT_323501_LO_M``,
+``LT_323501_SPAN_M``, ``LT_323501_RHO_KGM3``, ``LT_323501_DES_PCT`` and its height, diameter and volume, ``lt_323501_pct``
+and ``LT_323501_SEAL_PCT``; they stay out of `unit_323`'s re-export, as the relief's names do. `units/recirc/
+rectifying_column`: ``RectifyingColumn.taps`` (``V1_COLUMN`` is V1's chest and ``taps=False``) sets the loop's PV, the
+published level and the seal; ``lic_323501(taps=True)`` seeds sp = pv = pv1 = pv2 = 40, ``taps=False`` V1's 60. A save
+made before the switch fills ``taps`` from the present model, and `engine.plant.recirc.adopt_tap_reading` restates
+LIC-323501's four as r_taps = `lt_323501_pct`(r_v1 / 100 x M_full), now for 323E011 and 323C003 alike. The harnesses
+(stages 1 to 4, the scheduler, the flash tank, the LPCC, the pre-evaporator, the solution tank) run ``V1_COLUMN``.
+
+Measured on the build:
+
+* The seed: tick 1 identical on every unit state and result but the column's reading, the holdup to the bit. By 600 s,
+  scored as decision 230 with the reading left out: 4.864e-5 (323E011's 702), 1.579e-2 (324E001's boil-off, 1.2964 to
+  1.2760 kg/h), the holdup 0.0337 kg below V1's law; within decision 241's 6e-5 and 1.6e-2.
+* The earlier units, both sides now on 323C003's taps: 323D001's part 4.93e-5 and +0.0185 kg (4.72e-5 and 0.0181);
+  323D011's 3.01e-4, 4.24e-3 (324E001's boil-off) and the holdup 0.0600 kg below V1's law (3.15e-4, 4.16e-3,
+  0.0595): past decision 233's 4.2e-3, so that bound is restated on its own terms at the measured value, 4.3e-3
+  (decision 241).
+* Stage 1 on V1's switch ``==`` V1's on every tick of every harness. Both sides, 0.5 s ticks:
+  - the bottoms cut 25 % at 10 s: parted at tick 2; V1's holdup dips 325 kg, to 3 205.58 kg at 126.5 s (54.476 % on its
+    reading), the taps' 199 kg, to 3 331.59 kg at 86.5 s (33.432 %);
+  - LV-323501 forced wide open: V1's seal goes at tick 297, 162.6 kg left (2.947 %); the taps' at tick 21, at
+    3 294.2 kg (32.116 %), 236.4 kg below the design.
+* Stage 1 alone on the decided column (`test_rectifying_column.py`): with no bottoms LV-323501 drains the column to N5's
+  edge, 3 214.5 kg, in 9.8 s, the seal is lost and 1.24 t/h of column gas blows through to 323F004; the column stands at
+  3.2073 bar a (3.2031: V1's law drains on to 2 055 kg, sealed). TT-322004 at 160 and 180 C: 3.96450 and 4.18176 bar a
+  (3.96453, 4.18171). The steam shut, five minutes: the heater's ratio 0.0270, 3.6050 bar a, 115.50 C (0.0282, 3.6056,
+  115.55). 30 t/h blowing through: 5.4431 bar a (5.4486).
+* The console: LIC-323501's faceplate shows 40.0 % and sets 40.000 at the design (60).
+* The decided synthesis loop, V1's side moving through the port's 308 and steam pressures, which `run_both` feeds it:
+  B-76's V1 sump 3 649.34 kg (3 649.25); B-91 (a)'s melt bubble 122.553 bar a (122.562); A-21's condensation 227 353.1,
+  131 846.1 and 131 859.5 kg/h (227 352.6, 131 846.0, 131 859.3); B-103's held 2 223.44 kg, the loops 141.9953 and
+  141.0395 bar a (2 223.71, 141.9946, 141.0387); B-104 capped at tick 2 180 (2 181), the tubes holding 8 402.8 kg, the loops 146.6711 and 140.0067 bar a (146.6699, 140.0064). Its take and discharge
+  ring with a period of two ticks, 20.5 and 32.8 t/h and 26.3 and 37.8 t/h, on either law: the taps move the ring's
+  phase by a tick, so tick 6 000 read 37.8 t/h where V1's column reads 26.3. The test now asserts the last two ticks'
+  mean, 26.6 and 32.0 t/h, the same to 5 kg/h on either law (`probe_b104.py`); the 37.7 and 32.7 t/h the test
+  quoted "before decision 170" match the ring's high half; B-106's window mean
+  71.63 t/h (71.49); B-105's conversion 0.53948 (0.53947).
+
+## CXXXV.5 Data gaps 2 and 8 signed off (decision 242)
+
+The process engineer's answer was "Choose the recommended choice"; no option was marked, and the session took the
+sign-off, the ledger's own fallback for both rows ("else the stand-in(s) signed off"). Row 2: TT-322015's H2 clears 2 K
+below its 110 C, V1's band (`data.unit_322c001` ``TRIP_22_1_CLEAR_C``). Row 8: LT-323503's L2 hysteresis 2 % (B-96, §LXVIII.2), and the
+L2 of LT-328501, LT-328503, LT-328505 and LY-324501 at LT-323503's 5 % with 2 % (decision 217, §CXXIX.1). Nothing in
+the model moves; the comments citing the rows now cite decision 242. A readback (checklist rows 1, 2 and 17 to 20)
+would still replace them. The ledger holds nine rows.
+
+## CXXXV.6 Checks
+
+The full suite in nine parallel groups with an approx recorder (`plug\rec124.py`): 8 400 tests, the moved pins
+logged, seven failures (the B-104 tick, 323D011's boil-off bound, the faceplate's three 60 % pins, and two of the
+recorder's own: a ``!=`` against approx and a test file edited after collection). A second recorder pass on
+`test_recirc.py` and B-104 took the pins the first failures hid. After the re-pins, the full suite clean, nine groups:
+8 408 collected, 8 408 passed. The PyQt6 grep printed nothing; `rectifying_column.py` stands at 593 lines.

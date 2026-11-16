@@ -1273,3 +1273,21 @@ decision on an item.
      session 120's recommendation). The boundary feed delivers at the line's pressure (decision 73); PIC-322203 keeps
      V1's 168.01 bar a (decision 79), and the plant's own 4.98 bar static offset puts SV32064 first there too.
      As-Built §CXXXIV.7.
+241. **LI-323501 reads between LT-323501's taps on 323C003** (2026-11-16, the process engineer's choice, session 124;
+     B-156's third unit). N8 1750 mm above R.L. (EL +15.703 m) and the seal on line 400-US14-323266 2000 mm below it
+     (Uhde's sketch UD-AU-323-EC-0001 p. 5 and Glatt's UD-AU-323-DZ-0001-001; UD-MR-G00-EC-0134 p. 4), 1106 kg/m3,
+     over the neck of 323E002's 1160 mm bore, the 15-degree cone and the 1600 mm shell (EC-0001 p. 2), 323E002's
+     tubes below R.L.: `data.unit_323c003.lt_323501_pct`, written as the departure from V1's design holdup, which
+     reads the plant's 40 % (Book2's LIC-323501). LIC-323501's set point and history are seeded there; a save made
+     on V1's reading is restated as the tap reading of the holdup it held. LV-323501's seal is lost at N5's lower
+     edge, 29.21 % (decision 138's class), not at the bottom of V1's span. ``V1_COLUMN`` and
+     ``lic_323501(taps=False)`` are V1's on the harnesses. The seed is identical at tick 1 but for the column's
+     reading; by 600 s its flows stay within decision 230's 6e-5 (4.86e-5), and the boil-off bound is restated for
+     the unit at its measured value, 1.6e-2 (324E001's, 1.58e-2 of 1.30 kg/h). With 323C003 between its taps on
+     both sides, decision 233's own boil-off part measures 4.24e-3, and its bound is restated on the same terms,
+     4.3e-3 (session 124's restatement at the measured value). As-Built §CXXXV.1-4.
+242. **Data gaps 2 and 8 close on their stand-ins, signed off as built** (2026-11-16, session 124's call on the process
+     engineer's "Choose the recommended choice", no option having been marked). TT-322015's H2 clears 2 K below its
+     110 C (V1's band); LT-323503's L2 hysteresis stays 2 % (B-96); the L2 of LT-328501, LT-328503, LT-328505 and
+     LY-324501 stays LT-323503's 5 % with the same 2 % (decision 217). Nothing in the model moves. A DCS readback
+     (checklist rows 1, 2 and 17 to 20) would still replace them. As-Built §CXXXV.5.
