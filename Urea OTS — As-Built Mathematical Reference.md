@@ -1648,6 +1648,7 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 348 | Trip 22.2 named as the simulator's own on the console (decision 174) | V1's faceplate and refusals: "TRIP 22.2", "trip 22.2" | `data/unit_322_loop` ``TRIP_LABELS``, ``trip_label``; `engine/command_payload` ``_trip_name``; `hmi/faceplates/pump` ``interlock_text`` | **`[DECIDED DIVERGENCE]`** 2026-11-06: "22.2 (simulator)" wherever the console names the trip; the trip's logic and set points V1's (§CIII.3) |
 | 349 | The nine conventional Neldiscs on Valmet's L-series Cv rows through their sheets' printed points (decision 178) | the chord between the printed points and from the last to wide open (decisions 108, 153) | `data/control_valves_metso` ``L_SERIES_CV``, ``_l_series``, ``_through_table``; each unit's design stroke through ``design_stroke_pct`` | **`[DECIDED DIVERGENCE]`** 2026-11-07: every printed point and the rated capacity kept; design strokes +0 to +0.54 stroke-%; both sides pinned in `tests/data/test_control_valves_metso.py` (§CIII.10) |
 | 350 | AC4's low-level stops of 328P002A / B, 328P006A / B, 328P007A / B and 335P001A / B (decision 217) | — (V1 none: its pumps run to the heel, decision 11's floor) | `control/interlocks` ``low_level_stop``; `data/low_level_stops` ``L2_PCT``, ``L2_HYST_PCT``; each unit's ``l2_stop`` and ``p002_stopped``, ``p006_stopped``, ``p007_stopped``, ``p001_stopped`` | **`[DECIDED DIVERGENCE]`** 2026-11-15: each pair stops below 5 % on its level and runs again at 7 %, the process engineer's stand-in (data gap 8); ``l2_stop = False``, V1's, on the harnesses; both sides in the three desorption decided tests and, on AC4's header against V1's selector, which throttles and has no stop, in `test_second_evaporator_decided_equivalence.py`; the seed identical to HEAD (§CXXIX.1) |
+| 351 | AC4 PC35's trips 35.1, 35.3 and 35.4 on the melt header (decision 228) | — (V1 none: its header has no trip) | `control/granulation_trips` ``Unit35Trips``, ``HEALTHY_35``; `control/process_loop` ``step(hold=)``; `engine/plant/evaporation` ``_trips_35``; `data/unit_335` ``TRIP_35_4_P002_TD_S``, ``LVSL_324501A_PCT``, ``LIC_324501_CLAMPREF_PCT``, ``PIC_335201_CLAMPREF_PCT`` | **`[DECIDED DIVERGENCE]`** 2026-11-15: the flags as PC35 draws them, no latch; stand-ins in data gaps 5 and 14; V1's side is ``HEALTHY_35``, the default every harness and equivalence test runs, pinned bit-identical in `test_melt_header.py`; the trips in `test_granulation_trips.py`, `test_melt_header.py`, `test_second_evaporator.py` and `test_evaporation.py`; the seed's leaves identical to HEAD (§CXXX.3) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -25891,8 +25892,9 @@ Every file the simulator uses now lies inside `D:\Work\Urea Simulator V1.1`.
   `!/Tests and Reports/tests/`).
 * **Saved exercises.** The instructor's saved exercises now default to the folder's `exercises`, which git ignores,
   in place of `~/ureasim-exercises`. `UREASIM_EXERCISES` still overrides it (decision 171 amended).
-* **Window geometry.** Qt's `QSettings` keeps the console's window geometry. On Windows it writes the registry,
-  not a file.
+* **Layout and trend settings.** Qt's `QSettings` keeps the overlay positions an operator drags in edit-layout
+  mode (per screen and element key, `hmi/main_window.py`) and the trend window's view (`hmi/trend/window.py`). On
+  Windows it writes the registry, not a file.
 
 Collection stayed at 8 359 tests. The path-sensitive files, the docs tests and the layering test passed. A traced
 engine run opened no file outside the folder. Commit 05e6d32.
@@ -25967,7 +25969,7 @@ TIC-335015's action on 35.4 (125 C, manual) is not built, because the granulator
 
 * **D6, the seed.** The build's packet was compared with HEAD 05e6d32's (`git archive` into scratch, LF, the thermo
   stores included; `seed_probe.py`). The 775 leaves both carry are identical to the bit at ticks 1, 100 and 6 000.
-  Eight leaves are added: 35_1, 35_4, the four overrides, 335P002's held flag and its pump record's `on` path.
+  Eight leaves are added: `trips` and `trip_latched` 35_1 and 35_4, and the four overrides in `HAND_SWITCHES`.
 * **The shipped exercises.** All six load and run with no trip and with the actions healthy (`scenario_check.py`).
 * **B-62 / B-63.** On a lost feed, stage 2 holds 346.043 kg of melt at 175.3256 C with a seal fraction of 0.98644,
   as before. The seal belongs to the low-level stop (§CXXIX.1). The trips add LIC-324501 at 100 %, LV-324501A at 0
@@ -25995,7 +25997,7 @@ TIC-335015's action on 35.4 (125 C, manual) is not built, because the granulator
     335P001 restarted between samples [I]. The run was stopped at 2 130 s.
   * The synthesis side was not compared.
   * The cycle is PC35 as drawn, with no operator acting. The procedure's HS-335201B and HS-335201A moves are not in
-    Phase 7's driver, and adding them is the process engineer's decision.
+    Phase 7's driver, and adding them is the process engineer's decision (A-59).
 
 ## CXXX.4 B-128: FFIC-321404's ratio as the DCS computes it
 
@@ -26053,7 +26055,8 @@ tab. The 2.0 floor still has no plant source.
 * median 5.13 bar; 4.76 at 60-75 % load; 5.05 to 5.14 from 85 to 112 %;
 * least squares on the flow: 4.98 + 0.104 (FY-322403 / 28 331)^2 bar, over 0.61 to 1.12 of the design flow.
 
-The offset is static or instrumental, not friction. The PFD carries 3.5 bar between 107 and 204. PT-329201 is in
+The offset is static or instrumental, not friction. The PFD carries 3.5 bar between 107 and 204, and the engine's
+seed 3.5 bar on the same pair (PIC-322203 144.2 less PI-329201 140.7 bar a). PT-329201 is in
 bar g (loop summary 329). Book2 prints no unit for PIC-322203; if it is bar a, the static part is 3.97 bar.
 
 **Which relief lifts first [I].** When the loop rises as a whole, SV32064 (160 bar g, on the line) reaches its set
@@ -26061,8 +26064,9 @@ before SV32251 / SV32252 (159 bar g, on 322R001). This holds on the plant as in 
 delivers.
 
 **What can bound the line first** is PIC-322203 on PV-322203, the bypass to the LP safe header, at its DCS set
-point. That set point is logged nowhere. In the 29 June 2025 trend PV-322203 stays shut with PIC-322203 up to 145.7.
-The engine runs V1's 168.01 bar a (decision 79).
+point. That set point is logged nowhere. The 29 June 2025 normal-operation table shows PV-322203 shut with
+PIC-322203 up to 145.7, but its sheet is labelled "30s Interpolated (SYNTHETIC)", so it bounds nothing. The engine
+runs V1's 168.01 bar a (decision 79).
 
 ## CXXX.6 Corrections to the record
 

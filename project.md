@@ -23,7 +23,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A two (A-57, A-58), Section B eight (B-118 with B-120 folded in, B-125 to B-128,
+* **Open.** `handoff.md`: Section A three (A-57 to A-59), Section B eight (B-118 with B-120 folded in, B-125 to B-128,
   B-135, B-136 and B-156), Section C none, 12 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
 * **Session 120** (Part CXXX; decisions 218 and 228). Every file the simulator uses lives in its folder; the suite,
@@ -31,7 +31,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   `exercises` (decision 218). Trips 35.1, 35.3 and 35.4 are built with four overrides on 324-1b; the seed's leaves
   are unchanged to the bit (decision 228, B-146 closed; stand-ins in data gaps 5 and 14). Researched, nothing built:
   the DCS's FFIC-321404 formula is sourced and checked on Book2 (B-128), the CO2 line stands 5 bar over the loop on
-  the plant (B-135); A-58 raised. Report: `Tests and Reports\reports\Session 120 research B-127 B-128 B-135.md`.
+  the plant (B-135); A-58 and A-59 raised. Report: `Tests and Reports\reports\Session 120 research B-127 B-128 B-135.md`.
 * **Sessions 117 and 118** (Parts CXXVII, CXXVIII; decisions 210 to 214). V1.1 runs and tests without V1: the 38 V1
   files the suite reads are copied byte for byte into `Tests and Reports/tests/equivalence/v1_reference` with a SHA-256 manifest (A-33
   closed). The trend window has a CLEAR button; A-38's sixteen modules have unit tests. Session 118 searched the
@@ -74,7 +74,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 | Session | 121 | `docs/history/session-log.md` |
 | Decision | 219 | `docs/decisions.md` |
 | As-Built Part | CXXXI | the As-Built reference, appended at its end |
-| Handoff Section A | A-59 | `handoff.md` |
+| Handoff Section A | A-60 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers

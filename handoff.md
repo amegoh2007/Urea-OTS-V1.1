@@ -20,7 +20,7 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 # Section A — Rewrite issues
 
-A-57 was raised by session 119 (Part CXXIX), A-58 by session 120 (Part CXXX).
+A-57 was raised by session 119 (Part CXXIX), A-58 and A-59 by session 120 (Part CXXX).
 
 ### A-57 — 322E002's condensation cycles every 5 s below N/C 3.0
 
@@ -48,6 +48,17 @@ session 120: .2 prints "D=5:0-2" and .4 "D=15:0-2" on the pumps, .16 "D=5-2" on 
 re-read. Acceptance: each timer's unit fixed on its sheet and the schedule,
 then the process engineer's choice; the seed is unaffected (every pump runs). Next step: pages 5 and 7; checklist row
 24.
+
+### A-59 — Phase 7's cold start makes no move on trips 35.1 and 35.4
+
+*Raised 2026-11-16, session 120 (As-Built §CXXX.3).* On the cold start (port side, 30 s samples) 324F003 falls to
+5.19 % and 335P001 stops at 1 080 s, as in HEAD. With decision 228, 35.1 and 35.4 are lost with it; at each restart
+LIC-324501 returns from its 100 % clamp, the recycle pulses to 216 t/h and draws the level back under 5 %, and 35.4
+stays held on LVSL-324501A to the run's end (2 640 s). The stage-2 feed runs 14.9 t/h against HEAD's 1.6 t/h at the
+same time. HEAD's forward flow is also 0 through 2 130 s. Not established: any change in the melt delivered or on
+the synthesis side; neither run reached 16 000 s. Options: (a) keep the driver as it is, the cycle PC35's with no
+operator; (b) the driver makes the procedure's moves (HS-335201B, then HS-335201A) at a stated time. Next step: the
+process engineer's choice.
 
 ---
 
@@ -187,8 +198,9 @@ feed gas less the passivation air [I], checked on Book2 to a median residual of 
 PIDCON's limits are database references (checklist row 15). Measured (§CXI.2, §CXII.8): on the 74.4 % ramp the set
 point sits on the floor from 900 to 1 680 s; at 1.9397 the hump moves by 0.002, the collapse by 10 s; the floor does
 not decide B-118 on this trim. Options: (a) keep as built (the process engineer's, for now); (b) the engine publishes
-FY-321404 and takes its set point on the DCS formula, a fixed design factor 1.0317 (exact at design, about 1.4 % low
-at 70 % load, where the plant's constant air flow inflates its display), so the trainee reads the plant's number;
+FY-321404 and takes its set point on the DCS formula, by a fixed design factor 1.0317 at the packet and the command,
+the loop as built (exact at design, about 1.4 % low at 70 % load, where the plant's constant air flow inflates its
+display), so the trainee reads the plant's number;
 (c) the floor at 1.9386. Session 120 recommends (b) (`Tests and Reports\reports\Session 120 research B-127 B-128
 B-135.md`). Next step: the process engineer's choice.
 
@@ -201,7 +213,7 @@ B-135.md`). Next step: the process engineer's choice.
 3 426.6 s and latches 21.2, 21.8 and 21.10 at 3 525.5 s; bundle A at 74.4 % at 4 833.7 s. Decision 196 fails a hold
 on it; the sets 1 bar apart are the design's (§CXVII.4); no trip bounds the line (§CXIX.5). Session 120 (§CXXX.5): on
 the plant PIC-322203 stands 4.98 bar over PT-329201 at every flow (Book2; 3.97 if it reads bar a), static, not
-friction, and more than the engine's 1.6 to 2.9 bar, so SV32064 lifts first on the plant too while 320K002 delivers
+friction, against the engine seed's 3.5 bar on the same pair, so SV32064 lifts first on the plant too while 320K002 delivers
 [I]. What bounds the line before it is PIC-322203 venting through PV-322203 to the LP safe header, at a set point
 logged nowhere; the engine runs V1's 168.01 bar a (decision 79). Acceptance: the process engineer names what bounds
 the CO2 discharge at a loop of 158-160 bar a. Options: (a) keep as built (session 120's recommendation); (d)
