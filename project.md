@@ -4,7 +4,7 @@
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-16, session 120
+**Last updated:** 2026-11-16, session 121
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -19,27 +19,28 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   (decision 149). Every module under `ureasim/` is at or below 600 lines (decision 152). Trip 22.2 is removed
   (decision 189). The 335 melt header is computed on AC4 PC35.2 (decision 224), LV-324501A on a 1 s positioner lag
   and its sheet's 6.9 bar a inlet (decisions 236, 237); a restore opens it on the save's drain (decision 238).
-  Trips 35.1, 35.3 and 35.4 act on the header as AC4 PC35 draws them (decision 228).
+  Trips 35.1, 35.3 and 35.4 act on the header as AC4 PC35 draws them (decision 228). LI-323502 reads between
+  LT-323502's taps (decision 219), the first of B-156's seven.
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
 * **Open.** `handoff.md`: Section A three (A-57 to A-59), Section B eight (B-118 with B-120 folded in, B-125 to B-128,
   B-135, B-136 and B-156), Section C none, 12 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
+* **Session 121** (Part CXXXI; decision 219). B-156's first unit: LI-323502 reads between LT-323502's taps on
+  323D001's datasheet 11.10 m3, the design holdup 50 % to the bit, V1's ratio on a switch for the harnesses. The
+  seed is identical at tick 1 and drifts after it (B-94); the 600 s bound goes back to the process engineer (B-156).
+  Scratch: `Tests and Reports\reports\Session_121_b156`.
 * **Session 120** (Part CXXX; decisions 218 and 228). Every file the simulator uses lives in its folder; the suite,
   the reports and the scratch live in `Tests and Reports` sub-folders, and saved exercises in the git-ignored
   `exercises` (decision 218). Trips 35.1, 35.3 and 35.4 are built with four overrides on 324-1b; the seed's leaves
   are unchanged to the bit (decision 228, B-146 closed; stand-ins in data gaps 5 and 14). Researched, nothing built:
   the DCS's FFIC-321404 formula is sourced and checked on Book2 (B-128), the CO2 line stands 5 bar over the loop on
   the plant (B-135); A-58 and A-59 raised. Report: `Tests and Reports\reports\Session 120 research B-127 B-128 B-135.md`.
-* **Sessions 117 and 118** (Parts CXXVII, CXXVIII; decisions 210 to 214). V1.1 runs and tests without V1: the 38 V1
-  files the suite reads are copied byte for byte into `Tests and Reports/tests/equivalence/v1_reference` with a SHA-256 manifest (A-33
-  closed). The trend window has a CLEAR button; A-38's sixteen modules have unit tests. Session 118 searched the
-  archive for the open gaps (no set-point list, no KSB test, no positioner response time) and took the process
-  engineer's three choices: 322P002's delivery is set by hand in the field from the instructor's panel, as Operating
-  Manual III sets it at FI-322402 (decision 212, B-133 closed); B-145 is closed as built, LV-324501B's floor being its
-  sheet's 50:1 (decision 213); the seven levels still on V1's holdup ratio move to their sheets' nozzles unit by unit
-  (decision 214, B-156). Research: `Tests and Reports\reports\Session_118_research`.
+* **Sessions 117 and 118** (Parts CXXVII, CXXVIII; decisions 210 to 214). V1.1 runs and tests without V1 (decision
+  210, A-33 closed); the trend window has a CLEAR button; the archive was searched for the open gaps; 322P002's
+  delivery is set by hand in the field (decision 212); B-145 closed as built (decision 213); the seven levels on V1's
+  holdup ratio move to their nozzles unit by unit (decision 214, B-156). Research: `Tests and Reports\reports\Session_118_research`.
 * **Session 119 closed A-38, A-40, A-41 and A-50** (Part CXXIX; decisions 215 to 217). `master` is pushed to its own repository.
   AC4's low-level stops of 328P002, 328P006, 328P007 and 335P001 are built on the process engineer's 5 % L2 with
   2 % hysteresis (decision 217, A-41); 328P007's service is kept as built (decision 215); the bad-sample test is

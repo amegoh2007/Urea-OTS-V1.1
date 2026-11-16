@@ -5132,3 +5132,15 @@ unchanged; the restart through HS-335201A recovers about 78.9 t/h, LV-324501B pa
 335P001 cycles on its stop with 35.4 held. Researched: the DCS's FY-321404 formula sourced (UD-MR-321-FF-0002 p. 4)
 and checked on Book2; the CO2 line 4.98 bar over PT-329201 on the plant. A-58 and A-59 raised. Suite: 8 381 tests, all
 passing (the router's count updated after the whole run). Part CXXX; decisions 218 and 228.
+
+### Session 121 — B-156's first unit: LI-323502 between LT-323502's taps on 323D001 (2026-11-16)
+
+Started by session 120 on decision 214. Chose 323D001: its datasheet is in `References\`, its as-built drawing in the
+archive, both taps on the cylinder. Read 2 178 mm by 2 350 mm, taps 1 910 mm apart symmetric about the mid-plane
+(EC-0005, DZ-0005-005, EC-0134); the volume conflict 11.10 / 11.46 / 11.83 m3 explained. Measured both sides in
+scratch on an export of HEAD: the unit's four arms, the seed and the six shipped saves. The process engineer chose the
+datasheet's 11.10 m3, on which the design holdup reads 50 % to the bit, and accepted a restated seed criterion. Built
+``lt_323502_pct`` and the condenser's ``taps`` switch (``V1_TANK`` V1's), a decided-divergence equivalence test, the law's
+test and LT-323502's sheet row; two PFD 734 pins moved. The seed: tick 1 identical; unrounded, up to 5.7e-5 by 600 s,
+more than the 1e-5 put to the process engineer, so the bound goes back to them. Nothing in decision 217 changes; LT-323503's
+move will carry 323P008's stop. Part CXXXI; decision 219; register row 352.

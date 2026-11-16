@@ -1201,3 +1201,18 @@ decision on an item.
      HS-335621, 335K001 and trips 35.16 / 35.18; TIC-335015's action is not built. The seed's packet leaves are
      unchanged to the bit; eight are added. Saves migrate (`retired_state.ADDED_UNITS`, `ADDED_OPERATOR`). A
      decided divergence: V1 has none of the three. As-Built §CXXX.2, §CXXX.3.
+219. **LI-323502 reads between LT-323502's taps on 323D001's 11.10 m3** (2026-11-16, the process engineer's choices on
+     handoff B-156's first unit, decision 214's class). 323D001 is vertical, 2 178 mm inside, 2 350 mm between
+     tangent lines (UD-AU-323-EC-0005; the as-built drawing UD-AU-323-DZ-0005-005 rev 03); LT-323502's taps stand
+     220 mm inside each tangent line, 1 910 mm apart, the nozzle distance of UD-MR-G00-EC-0134 sheet 3. Symmetric
+     about the shell's mid-plane, they read 50 % at half the vessel: on the datasheet's nominal 11.10 m3, choice (a)
+     (the drawing's 2:1 heads give 11.46 m3; the calculation's 11.83 m3 counts the straight flanges twice), that is
+     V1's design holdup, 6 759.9 kg. LI-323502 = clamp(50 + (M - M_half) / (rho A 1.910 m) x 100, 0, 100), written as
+     its departure from M_half so that the design reads 50.0 to the bit; a kilogram moves it 1.56 times as far as V1's
+     M / M_full. LIC-323502 keeps V1's 50 % set point and the plant DCS's tuning; the 245 mbar set range is not applied
+     and no ceiling or overflow is added. ``taps = False``, V1's, is ``V1_TANK`` on the harnesses; a save made before
+     it fills the switch (`ADDED_ATTRIBUTES`). The seed is identical to HEAD at tick 1 and drifts after it, because
+     the seed is not a fixed point (B-94); the process engineer accepted "identical at tick 1, within 1e-5 by 600 s"
+     for this unit and B-156's six after it, put to them on the packet's leaves; measured unrounded, the state and
+     flows move by up to 5.7e-5 by 600 s, and that bound is theirs to restate (B-156). A decided divergence: V1 reads
+     the holdup over the drum's. As-Built §CXXXI.

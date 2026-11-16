@@ -1649,6 +1649,7 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 349 | The nine conventional Neldiscs on Valmet's L-series Cv rows through their sheets' printed points (decision 178) | the chord between the printed points and from the last to wide open (decisions 108, 153) | `data/control_valves_metso` ``L_SERIES_CV``, ``_l_series``, ``_through_table``; each unit's design stroke through ``design_stroke_pct`` | **`[DECIDED DIVERGENCE]`** 2026-11-07: every printed point and the rated capacity kept; design strokes +0 to +0.54 stroke-%; both sides pinned in `tests/data/test_control_valves_metso.py` (§CIII.10) |
 | 350 | AC4's low-level stops of 328P002A / B, 328P006A / B, 328P007A / B and 335P001A / B (decision 217) | — (V1 none: its pumps run to the heel, decision 11's floor) | `control/interlocks` ``low_level_stop``; `data/low_level_stops` ``L2_PCT``, ``L2_HYST_PCT``; each unit's ``l2_stop`` and ``p002_stopped``, ``p006_stopped``, ``p007_stopped``, ``p001_stopped`` | **`[DECIDED DIVERGENCE]`** 2026-11-15: each pair stops below 5 % on its level and runs again at 7 %, the process engineer's stand-in (data gap 8); ``l2_stop = False``, V1's, on the harnesses; both sides in the three desorption decided tests and, on AC4's header against V1's selector, which throttles and has no stop, in `test_second_evaporator_decided_equivalence.py`; the seed identical to HEAD (§CXXIX.1) |
 | 351 | AC4 PC35's trips 35.1, 35.3 and 35.4 on the melt header (decision 228) | — (V1 none: its header has no trip) | `control/granulation_trips` ``Unit35Trips``, ``HEALTHY_35``; `control/process_loop` ``step(hold=)``; `engine/plant/evaporation` ``_trips_35``; `data/unit_335` ``TRIP_35_4_P002_TD_S``, ``LVSL_324501A_PCT``, ``LIC_324501_CLAMPREF_PCT``, ``PIC_335201_CLAMPREF_PCT`` | **`[DECIDED DIVERGENCE]`** 2026-11-15: the flags as PC35 draws them, no latch; stand-ins in data gaps 5 and 14; V1's side is ``HEALTHY_35``, the default every harness and equivalence test runs, pinned bit-identical in `test_melt_header.py`; the trips in `test_granulation_trips.py`, `test_melt_header.py`, `test_second_evaporator.py` and `test_evaporation.py`; the seed's leaves identical to HEAD (§CXXX.3) |
+| 352 | LI-323502 between LT-323502's taps on 323D001 (decision 219) | LI = M / M_full x 100 and LIC-323502's PV M / M_des x 50, the holdup over the 11.10 m3 drum's | `data/unit_323e003` ``lt_323502_pct``, ``D001_AREA_M2``, ``LT_323502_SPAN_M``, ``D001_M_HALF_KG``; `units/recirc/lp_carbamate_condenser` ``taps``, ``V1_TANK``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-16: the reading between the taps, 1 910 mm on the cylinder, 50 % at half the 11.10 m3, V1's design holdup to the bit; ``taps = False``, V1's, on the harnesses; both sides in `test_li_323502_between_its_taps_decided_divergence`; the seed identical at tick 1 and up to 5.7e-5 relative by 600 s (§CXXXI.7) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -26084,3 +26085,183 @@ runs V1's 168.01 bar a (decision 79).
 * The whole suite, run serially on the build with the past-ten-minutes test: 8 380 passed and 1 failed in 72 min.
   The failure was the router's pinned count, 10 keyswitch faceplates against 6: decision 228's four overrides.
   The count was updated and its file rerun, and it passes.
+
+---
+
+# Part CXXXI — Session 121: B-156's first unit, LT-323502 on 323D001 between its taps (2026-11-16)
+
+Decision 219. Scratch: `Tests and Reports/scratch/session-121` (`numbers.py`, `proto_unit.py`, `proto_seed.py`,
+`proto_scen.py`, `runs/`; page renders in `d001/`). Every probe ran on a `git archive` export of HEAD, with the thermo
+sources copied byte for byte so that the node stores' keys match.
+
+## CXXXI.1 Why 323D001 first
+
+Of B-156's seven levels, 323D001 is the one whose datasheet is in `References\Datasheets`, whose as-built drawing is
+in the vendor archive, and whose two taps both lie on the cylinder. The reading between taps on the cylinder does not
+depend on the head shape. 323C003, 328C002 and 328C004 carry their holdup on trays or in a column bottom that the
+model does not place. 328C003 runs 12.55 m of liquid at design. LT-329501 is coupled to 322F001's suction (B-118).
+323D011 has no datasheet in `References\`.
+
+## CXXXI.2 The vessel and its transmitter, as read
+
+* **Uhde's datasheet**, `References/Datasheets/323D001 Datasheet.pdf` (UD-AU-323-EC-0005 rev 00, 11 pages, a scan):
+  * Page 2: vertical; ID 2178 mm; shell (cylindrical) 2350 mm; nominal volume 11.10 m3; liquid 1218.36 kg/m3;
+    3.2 bar a and 74 C. The weights are "as built SUEZ I: to be verified by vendor": 2 950 kg delivered and
+    14 050 kg water-filled, a difference of 11 100 kg.
+  * Page 3, the nozzle table: N6A/B is LT 323502 and N7A/B is LT 323506, each DN 80 PN 40 with a pad flange.
+  * Page 5, the principle sketch: N6A and N7A stand 220 mm below the top tangent line, and N6B and N7B 220 mm above
+    the bottom one, so the taps are 1 910 mm apart. LLL is about 396 mm, NLL 1 096 mm and HLL 1 796 mm above the
+    bottom tangent line. The bottom tangent line is at EL +14 500.
+* **Uhde's transmitter sheet**, UD-MR-G00-EC-0134 rev 2, sheet 3 / 6: LT 323502 on 323D001, ammonium carbamate
+  against carbamate gas, 1 218 kg/m3, set range 0 to 245 mbar, nozzle distance 1 910 mm (§CXXVIII.5 re-read).
+* **The as-built drawing**, UD-AU-323-DZ-0005-005 rev 03 (NSF, stamped "as built"; vendor `...\Soft copy\12\`):
+  * The dimensions and taps agree with the datasheet.
+  * The parts list gives a shell plate of inside diameter 2178, H = 2 250 mm, and two "ELLIP HEAD 2:1" of inside
+    diameter 2178 with a 50 mm straight flange. The flanges therefore lie inside the 2 350 mm between tangents.
+  * Its design table prints "capacity 11.83 m3", an empty weight of 2 143 kg and a hydrostatic test weight of
+    14 028 kg.
+* **The mechanical calculation**, UD-AU-323-DZ-0005-007 (COMPRESS, 2 December 2004):
+  * Its thickness summary models a 2 350 mm cylinder plus two 50 mm straight flanges plus two 551.5 mm heads.
+  * Its weight summary gives 11 885 kg of test liquid and a vessel capacity of 11 833 l. That is 2 x (1.3524 +
+    0.1863) + 8.7553 m3: each straight flange is counted twice.
+
+The vessel's volume:
+
+| Basis | Volume m3 |
+|---|---|
+| Cylinder, 2 350 mm x pi/4 x 2.178^2 | 8.7553 |
+| + two 2:1 ellipsoidal heads, pi Di^3 / 24 = 1.3524 each (the as-built drawing) | 11.4602 |
+| The datasheet's nominal volume | 11.10 (heads of 1.1723 each) |
+| The calculation's capacity (the flanges counted twice) | 11.833 |
+
+## CXXXI.3 The law between the taps
+
+The taps stand symmetric about the shell's mid-plane, 220 mm inside each tangent line, so a liquid at the mid-plane
+holds half the vessel and reads 50 % between them, whatever the heads hold. On the cylinder:
+
+    LI-323502 = clamp( 50 + (M - M_half) / (rho A L) x 100, 0, 100 )
+    A = pi/4 x 2.178^2 = 3.72568 m2,   L = 1.910 m,   rho = 1218 kg/m3,   rho A L = 8 667.3 kg
+
+V1 reads LI = M / M_full x 100, with M_full = 11.10 x 1218 = 13 519.8 kg. Between the taps a kilogram moves the
+reading 1.5599 times as far (0.011538 against 0.007397 % per kg).
+
+| Volume | M_half = M at 50 % | 0 % at or below | 100 % at or above | V1's 6 759.9 kg reads |
+|---|---|---|---|---|
+| (a) 11.10 m3, the datasheet | 6 759.9 kg, V1's design holdup to the bit | 2 426.2 kg | 11 093.5 kg | 50.000 % |
+| (b) 11.46 m3, the drawing's heads | 6 979.3 kg | 2 645.6 kg | 11 312.9 kg | 47.469 % |
+| (c) 11.83 m3, the calculation | 7 204.5 kg | 2 870.8 kg | 11 538.1 kg | 44.871 % |
+
+The drawing's normal liquid level, 1 096 mm, reads 45.86 % between the taps, its LLL 9.21 % and its HLL 82.51 %. V1's
+set point of 50 % is kept, as 328D001's and 323F004's were. The 245 mbar range is not applied (§CXXVIII.5, finding 3).
+The plant's LIC-323502 (Book2, 5 280 samples) has a median of 49.2 % and runs 32 to 70 % from p5 to p95.
+
+## CXXXI.4 Measured first (scratch; `ureasim/` untouched)
+
+The prototype wraps LIC-323502's `step` so that its PV, V1's M / M_des x 50, is read back as the holdup and put
+between the taps. An identity wrapper is the same-engine control.
+
+**323D001 alone** (`proto_unit.py`, design boundaries, 0.1 s, 4 h). The table gives the tap reading, the plant's,
+on every law:
+
+| Arm | V1's law | Between the taps, (a) |
+|---|---|---|
+| The condenser's inlets -25 % at 2 s | minimum 43.15 % at 481 s; overshoot to 51.59 %; inside 0.5 % from 2 502 s | minimum 44.82 % at 359 s; overshoot to 50.69 %; inside 0.5 % from 1 766 s |
+| The inlets +20 % | maximum 55.33 % at 468 s; undershoot to 48.23 %; inside 0.5 % from 2 383 s | maximum 54.06 % at 355 s; undershoot to 48.94 %; inside 0.5 % from 1 821 s |
+| SIC-323901 in MAN at 70 % of design speed | 100 % between the taps at 1 411.9 s (11 093.9 kg), where V1 reads 82.06 %; 13 520 kg (the 11.10 m3 vessel full) at 2 202 s; the holdup runs on to 50 962 kg at 4 h, and V1 reads 377 % | the reading holds at 100 % |
+| SIC-323901 in MAN at 130 % | 0 % between the taps at 1 411.9 s (2 425.9 kg), where V1 reads 17.94 %; suction lost at the 1 kg heel at 2 202 s | the same |
+
+On (b) the responses between the taps are the same as on (a), offset by the 219.4 kg. The identity wrapper equals
+V1's law bit for bit on every arm. On a linear PI-on-integrator estimate, the loop's damping ratio rises from 0.47 to
+0.585 and its period falls from 3 035 s to 2 648 s. No arm rings.
+
+**The seed** (`proto_seed.py`; the plant from its design seed; 783 packet leaves at ticks 1, 100 and 6 000, against
+plain HEAD). The identity wrapper differs on 0 leaves.
+
+* (a): tick 1 is identical on every leaf.
+* At tick 100, 11 leaves differ: 323C005's closure, six steam-system residuals (LP vapour's by 0.47 % of a value near
+  zero) and SIC-321951's four values, these by at most 7e-11 relative.
+* At tick 6 000, 24 leaves differ. 322F001's suction is 0.4 kg/h lower in 57 602 and 322E003's overhead 0.04 kmol/h
+  lower in 2 519.68 (1.6e-5 relative, four counts of the leaf). Six rounded leaves flip by one count, up to 9.9e-5
+  relative (323F004's 319 drain, 101.51 against 101.52 t/h); 322E001's steam is one of them, 1 kg/h in 66 913. The
+  two PFD-rounding diagnostics of 328D003 move by 0.02 to 0.04 kg/h (0.4 to 0.6 % of values near zero), and the
+  steam system's residuals by up to 18 % of values near zero.
+* The cause: the seed is not a fixed point (B-94), so 323D001's holdup drifts by up to 0.16 kg on its own in 600 s,
+  and LIC-323502 now reads that drift 1.56 times as large. No reading between the taps can hold the seed to the bit
+  past tick 1.
+* (b) gives the same, and its holdup state differs by 219.4 kg.
+
+**The shipped scenarios** (`proto_scen.py`, 600 s each): each of the six loads and runs with no trip latched on either law.
+323D001's saved holdups lie between 6 758.2 and 6 765.2 kg, which read 49.98 to 50.06 % between the taps, where V1 reads
+49.99 to 50.04 %; no save needs a migration. Over the 600 s the reading between the taps stays between 49.98 and
+50.08 % on (a) and between 49.98 and 50.10 % on V1's law, and the ends of 323P001's 600 s ranges differ between the
+two laws by at most 8 kg/h (load105_conversion).
+
+## CXXXI.5 What V1's law hid
+
+V1's reading goes on past both taps: 17.9 % with the liquid at the lower tap, 82.1 % at the upper, 100 % with the
+nominal vessel full, and 377 % at four hours on the fill arm. 323D001 has no ceiling and no overflow, in V1 or as
+built. A ceiling would be a new mechanism, so none is added; the fill arm's holdup above the vessel's volume is
+recorded here, not changed.
+
+## CXXXI.6 Built (decision 219)
+
+The process engineer chose (a), the datasheet's 11.10 m3, and accepted the restated seed criterion as it was put to them,
+"identical at tick 1, within 1e-5 by 600 s", for this unit and B-156's six after it; §CXXXI.7 gives what the build
+measures against it.
+
+* `data/unit_323e003.py`: ``D001_AREA_M2`` (pi/4 x 2.178^2), ``LT_323502_SPAN_M`` (1.910), ``LT_323502_MID_PCT`` (50),
+  ``D001_M_HALF_KG`` (half of ``D001_M_FULL_KG``, which is ``D001_M_DES_KG`` to the bit) and ``lt_323502_pct(m)``, the
+  law of §CXXXI.3 written as its departure from ``D001_M_HALF_KG``, so that the design holdup reads exactly 50.0
+  (the geometric form gives 50.000000000000014).
+* `units/recirc/lp_carbamate_condenser.py`: ``taps: bool = True``. LIC-323502's PV and the published ``level_pct`` are
+  ``lt_323502_pct(m_kg)``; ``taps = False`` (``V1_TANK``) is V1's: the PV M / M_des x 50 and the level M / M_full x 100.
+  The module is at 600 lines.
+* `data/retired_state.py`: ``ADDED_ATTRIBUTES`` fills ``taps`` into a save made before it.
+* LIC-323502 keeps V1's 50 % set point and the plant DCS's tuning (1.74 rpm per per cent, 400 s). No ceiling or
+  overflow is added (§CXXXI.5).
+
+## CXXXI.7 Checks
+
+* `test_li_323502_between_its_taps_decided_divergence` (equivalence; V1's stage 8 against both switches, the gas 25 %
+  down at 2 s, an hour at 1 s): on ``V1_TANK`` the port is V1's on every tick; between the taps the first two ticks
+  read V1's 50.0 % and LIC-323502 parts on tick 3; V1's level bottoms at 46.9203 % at 472 s (a holdup the taps read
+  45.196 %), the taps' at 46.3182 % at 362 s; an hour on, V1 reads 49.9435 % and the taps 50.0477 %.
+* `test_li_323502_reads_between_its_taps` (unit): 50.0 at the design holdup to the bit; 0 % and 100 % half the band,
+  8 667.3 kg, either side of it, clamped beyond; the gain ratio 1.5599; both switches' PV and level.
+* `test_level_transmitter_sheets.py`: LT-323502's row, 1 910 mm against EC-0134 p. 4.
+* Re-pinned in `tests/units/recirc/test_lp_carbamate_condenser.py` (PFD 734 at 2 000 kg/h): the level at 600 s
+  50.249 to 50.239 %, and 308's water at 600 s 35.691 to 35.716 %.
+* Every identity scenario of `test_lp_carbamate_condenser_equivalence.py` runs on ``V1_TANK``, unchanged.
+* The seed on the build (`proto_seed.py` and `probe_raw.py` on an export of HEAD with this session's files, against
+  HEAD): tick 1 identical on all 783 packet leaves and on all 2 095 unrounded values of the units' state and results.
+  The packet at ticks 100 and 6 000 is the prototype's (a) of §CXXXI.4, 0 leaves apart at tick 100 and at most
+  3e-12 apart at 6 000. Unrounded (every value above 1 in magnitude; rates of change, residuals, relaxations and lags left out), by
+  600 s the units' state moves by at most 5.7e-5 relative (323F004's holdup
+  0.08 kg higher in 1 836 kg, and its line's dead time), the flows by at most 5.7e-5 (323F004's 319, 5.8 kg/h in
+  101 514), small flows more (up to 1.9e-3: 324E001's boil 1.30 kg/h, 322R001's 0.057 kg/h in 38), and rates of change and residuals near
+  zero more still. 323D001's holdup is 0.024 kg higher and 323P001's return 0.75 kg/h lower. The process engineer
+  accepted the criterion "identical at tick 1, within 1e-5 by 600 s" on the packet's 1e-5, read before the rounded
+  leaves' flips and the unrounded state were measured; the bound for B-156's six other units is put back to them.
+* The packet publishes the tap reading (`engine/packet/recirculation.py` rounds the result's ``level_pct``): with
+  323D001's holdup set to 5 000 kg for one tick, LI-323502 is 29.7 % on the build and 37.0 % on HEAD.
+* The shipped saves (`scen_restore.py`, `proto_scen.py` with the identity law on the build): all six load, ``taps``
+  filled to True. LIC-323502's ``pv1`` and ``pv2`` were saved on V1's reading, so its first tick on the tap reading
+  steps its output by at most 0.038 rpm (load105_conversion; 3e-5 on HEAD). A save far from 50 % steps it further,
+  by about Kc x the difference between the two readings on one tick (an estimate, not run: some 20 rpm at
+  4 000 kg). Recorded, not migrated. Over 600 s each save runs on the build as on the prototype (a) of §CXXXI.4 to the printed tap and 308 ranges,
+  no trip latched, 323D001's holdup within 2.1e-5 kg at 600 s. The packets are not bit-identical: the prototype read
+  the holdup back from V1's PV, a different rounding, and where a save is not steady the difference grows (load090_steam:
+  324E002's vent 70.3 against 70.9 kg/h, the PFD-rounding diagnostic of 328D003 4 446.7 against 4 415.3 kg/h).
+* The suite on HEAD 0da6e3a with this session's files, an export that leaves session 120's uncommitted A-58 edits
+  out: 8 369 passed and 15 failed. Fourteen failures were the synthesis loop's V1 harness, which ran the condenser on
+  the taps; `harness_plant` now sets ``taps = False``, V1's, and `test_synthesis_loop_equivalence.py` (23),
+  `test_synthesis_loop_decided_equivalence.py` (22) and the harness's other users (185) pass. The fifteenth,
+  `test_dynamic_audit.py`'s 322E001 sump loss, moved from 316.590 to 316.584 kg and is re-pinned.
+  `tests/engine/plant/test_recirc.py` is added: the seed's first tick, its packet and results, the same to the bit on
+  either law. The 600 s bound is not pinned: it waits on the process engineer (B-156). `tests/docs` and
+  `test_layering.py` pass, and the PyQt6 grep prints nothing.
+* The run series is archived in `Tests and Reports/reports/Session_121_b156`.
+
+## CXXXI.8 Register
+
+Row 352: LI-323502 between LT-323502's taps (decision 219).
