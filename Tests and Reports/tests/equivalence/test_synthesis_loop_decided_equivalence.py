@@ -328,7 +328,8 @@ def test_the_saturation_fraction_solved_on_the_tick_decided_divergence(v1):
     """A-21, decided 2026-10-17: 322E002's saturation fraction solved with its own melt's bubble
     pressure on the tick, against V1's lines with B-91's fraction read a tick late (the
     transcription). HV-322605 60 -> 100 % at 0.5 s. On the tear the fraction rings with a period
-    of two ticks — 322E002 condenses 3.7 then 227.4 t/h (227.3 before decision 243), its melt at 171 then 220 bar a — and the
+    of two ticks — 322E002 condenses 3.7 then 227.4 t/h (227.3 before decision 243; 227 355.8 kg/h with LI-328505
+    between its taps, decision 244, 227 355.5 before), its melt at 171 then 220 bar a — and the
     gas it passes builds the loop to 152.52 bar a in 30 s; solved on the tick it condenses a
     steady 131.8 t/h at a fraction of 0.514, its melt at 176.5 bar a, and the loop stands at
     141.357 bar a. Before the step the two differ by the seed's own drift (the tear's fraction
@@ -343,7 +344,7 @@ def test_the_saturation_fraction_solved_on_the_tick_decided_divergence(v1):
     assert res["322E002"].holdup.condenser.liq_kgh == pytest.approx(out.hpcc["liq_kgh"], rel=1e-4)
     (a, ra, _), (b, rb, p_v1) = hist[299], hist[300]
     assert (a.hpcc["liq_kgh"], b.hpcc["liq_kgh"]) == (pytest.approx(3742.7, abs=0.1),
-                                                     pytest.approx(227355.5, abs=0.1))
+                                                     pytest.approx(227355.8, abs=0.1))
     assert (a.hpcc["P_bub"], b.hpcc["P_bub"]) == (pytest.approx(171.29, abs=0.01),
                                                  pytest.approx(220.29, abs=0.01))
     assert p_v1 == pytest.approx(152.5155, abs=1e-4)
@@ -432,7 +433,9 @@ def test_322e001s_full_sump_holds_its_excess_back_decided_divergence(v1):
     140.2 s on both sides. V1 clamps the level at 100 % and deletes what runs in after — and
     PT-329201's vapour balance, which books the sump's gain as liquid, counts the deleted liquor as
     gas: 80 s on, its loop stands at 141.995 (141.997 before decision 170) bar a. The port holds 2 223 kg back in the tubes, books
-    it as liquid, and its loop stands at 141.039 (141.041 before decision 243). Without the tubes' ceiling and their submergence
+    it as liquid, and its loop stands at 141.039 (141.041 before decision 243). LI-328505 between its
+    taps (decision 244) moves the held liquor 2 223.45 to 2 223.44 kg and V1's loop, fed the port's
+    308 and steam pressures, 141.9952 to 141.9953 bar a. Without the tubes' ceiling and their submergence
     (B-104, its own test)."""
     def act(k, plant, s):
         if k == 0:
@@ -447,8 +450,8 @@ def test_322e001s_full_sump_holds_its_excess_back_decided_divergence(v1):
     out, res, p_v1 = hist[2200]
     sp = res["322E001"].sump
     assert (out.sump.level_pct, out.sump.held_kg) == (100.0, 0.0)
-    assert (sp.level_pct, sp.held_kg) == (100.0, pytest.approx(2223.45, abs=0.01))
-    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(141.9952, abs=1e-4),
+    assert (sp.level_pct, sp.held_kg) == (100.0, pytest.approx(2223.44, abs=0.01))
+    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(141.9953, abs=1e-4),
                                                    pytest.approx(141.0394, abs=1e-4))
 
 
@@ -474,7 +477,11 @@ def test_322e001s_tubes_standing_full_hold_the_liquor_back_in_the_reactor_decide
     32.0 t/h, the tubes holding 8 402.8 kg. LI-323501 between its taps (decision 241) moves the ring's phase by a tick,
     the cap at tick 2 180 (2 181), and the loops to 146.6711 and 140.0067 bar a (LI-328503 between its taps, decision
     243, V1's side to 146.6710); on V1's column the pair's means are
-    the same to 5 kg/h, and its single tick reads the 26 286.1 kg/h above."""
+    the same to 5 kg/h, and its single tick reads the 26 286.1 kg/h above. LI-328505 between its taps
+    (decision 244) moves the means to 26.6 and 32.0 t/h (26 606.1 and 32 036.1 kg/h; 26 610.9 and
+    32 045.6 before), the tubes to 8 403.0 kg and V1's side to 146.6709. The ring is 322E001's bottoms
+    on the edge of the bubble-point surface, refused on one tick and 907 bar on the next (A-60, closed
+    as built by decision 245, As-Built §CXXXVII.5)."""
     def act(k, plant, s):
         if k == 0:
             plant.units["322E001"].hold_full = True
@@ -494,14 +501,14 @@ def test_322e001s_tubes_standing_full_hold_the_liquor_back_in_the_reactor_decide
     held, take, m_out = (sum(f(r) for r in pair) / 2.0 for f in (
         lambda r: r["322E001"].sump.held_kg, lambda r: r["322E001"].sump.take_kgh,
         lambda r: r["322R001"].m_out_kgh))
-    assert (out.sump.held_kg, held) == (0.0, pytest.approx(8402.8, abs=0.1))
+    assert (out.sump.held_kg, held) == (0.0, pytest.approx(8403.0, abs=0.1))
     assert st.submerged_frac == pytest.approx(0.9671, abs=1e-4)
-    assert (take, m_out) == (pytest.approx(26610.9, abs=1.0), pytest.approx(32045.6, abs=1.0))
+    assert (take, m_out) == (pytest.approx(26606.1, abs=1.0), pytest.approx(32036.1, abs=1.0))
     assert (s.react_level_pct, rr.level_pct) == (pytest.approx(80.336, abs=1e-3),
                                                  pytest.approx(85.943, abs=1e-3))
     assert (out.sump.tt_322004_c, sp.tt_322004_c) == (pytest.approx(165.61, abs=0.01),
                                                       pytest.approx(141.57, abs=0.01))
-    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(146.6710, abs=1e-4),
+    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(146.6709, abs=1e-4),
                                                    pytest.approx(140.0067, abs=1e-4))
 
 

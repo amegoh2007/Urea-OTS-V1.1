@@ -61,8 +61,8 @@ ADDED_UNITS = ("335-TRIPS",)
 #: decision 236 (LV-324501A's positioner, 2026-11-15; the engine then opens the valve at the stroke
 #: that passes the save's drain, decision 238), decision 217 (the four low-level stops, 2026-11-15)
 #: and decision 219 (LI-323502 between its taps, 2026-11-16) and decisions 233 and 241 (LI-323503 and
-#: LI-323501 between their taps, 2026-11-16, and decision 243, LI-328503, 2026-11-17; the engine
-#: then restates each controller on the tap reading).
+#: LI-323501 between their taps, 2026-11-16, decision 243, LI-328503, 2026-11-17, and decision
+#: 244, LI-328505, 2026-11-17; the engine then restates each controller on the tap reading).
 ADDED_ATTRIBUTES = MappingProxyType({
     "ureasim.units.evaporation.second_evaporator:SecondEvaporatorLoops": ("header",),
     "ureasim.units.evaporation.second_evaporator:SecondEvaporator": ("ac4_header", "header",
@@ -70,7 +70,7 @@ ADDED_ATTRIBUTES = MappingProxyType({
     "ureasim.units.finishing.melt_header:MeltHeader": ("lv_a_position_pct",),
     "ureasim.units.desorption.reflux_drum:RefluxDrum": ("l2_stop", "p002_stopped"),
     "ureasim.units.desorption.first_desorber:FirstDesorber": ("l2_stop", "p006_stopped", "taps"),
-    "ureasim.units.desorption.second_desorber:SecondDesorber": ("l2_stop", "p007_stopped"),
+    "ureasim.units.desorption.second_desorber:SecondDesorber": ("l2_stop", "p007_stopped", "taps"),
     "ureasim.units.recirc.lp_carbamate_condenser:LpCarbamateCondenser": ("taps",),
     "ureasim.units.recirc.flash_condenser:FlashCondenser": ("taps",),
     "ureasim.units.recirc.rectifying_column:RectifyingColumn": ("taps",),

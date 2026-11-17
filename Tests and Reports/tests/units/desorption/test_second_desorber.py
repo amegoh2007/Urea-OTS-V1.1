@@ -64,7 +64,7 @@ def test_the_design_point_is_the_pfds():
     r = out[0]
     assert (r.m_931_kgh, r.m_739_kgh, r.m_750_kgh, r.gen_kgh) == (
         t.C004_M931_DES_KGH, t.C004_M739_DES_KGH, t.C004_M750_DES_KGH, t.C004_M750_DES_KGH)
-    assert (r.p_bara, r.level_pct, r.lic_op_pct) == (3.7, 50.0, c.LV505_OP_DES_PCT)
+    assert (r.p_bara, r.level_pct, r.lic_op_pct) == (3.7, c.LT_328505_DES_PCT, c.LV505_OP_DES_PCT)
     assert r.t_c == pytest.approx(143.0, abs=1e-12) and r.t_top_c == r.t_c - 3.0
     assert r.ffic_pv == c.FFIC_329401_RATIO_DES and r.q_kw == c.C004_Q_DES_KW
     assert r.ai_328701_us_cm == pytest.approx(6.933, abs=1e-3)
@@ -92,45 +92,48 @@ def test_the_steam_follows_the_desorbers_feed():
 def test_lic_328505_on_fic_328406_recycles_the_bottoms():
     """B-50, decided. FIC-328406 put in cascade at the design point: LV-328505 is switched shut
     and LIC-328505 sets FIC-328406 across FT-328406's 60 m3/h — 54.0 m3/h on the switch — so the
-    whole bottoms go back to 328D003 as 741. The level swings 30.7-77.2 % in the first quarter
-    hour and is within 0.3 % of 50 % in two hours, LIC-328505 near 57.5 %, the books closed."""
+    whole bottoms go back to 328D003 as 741. LT-328505 between its taps (decision 244) swings
+    48.4-100 % in the first quarter hour, its upper tap covered for a while (V1's reading swung
+    30.7-77.2 %), and is within 0.3 % of 71 % in two hours, LIC-328505 near 56.7 % (57.5 on V1's
+    reading), the books closed."""
     col, out, made = _run(14400, cas=("fic_328406",))
     assert all((r.lv_op_pct, r.m_export_kgh, r.m_739_kgh) == (0.0, 0.0, r.m_741_kgh)
                for r in out)
     levels = [r.level_pct for r in out[:1800]]
-    assert (min(levels), max(levels)) == (pytest.approx(30.66, abs=0.01),
-                                          pytest.approx(77.16, abs=0.01))
+    assert (min(levels), max(levels)) == (pytest.approx(48.45, abs=0.01), 100.0)
     r = out[-1]
-    assert r.level_pct == pytest.approx(50.0, abs=0.3)
+    assert r.level_pct == pytest.approx(c.LT_328505_DES_PCT, abs=0.3)
     assert r.m_741_kgh == pytest.approx(t.C004_M739_DES_KGH, rel=0.01)
-    assert r.lic_op_pct == pytest.approx(57.47, abs=0.01)
+    assert r.lic_op_pct == pytest.approx(56.70, abs=0.01)
     assert abs(made) < 1e-6
 
 
 def test_fv_328406_by_hand_draws_ahead_of_lv_328505():
     """FV-328406 at 50 % by hand takes its trim's 17 256 kg/h out of the bottoms from the first
     tick, and LIC-328505 takes LV-328505 back to 66.1 % over the hour: the export 16 468 kg/h,
-    the bottoms the PFD's 33 724 again, the level at 50 %."""
+    the bottoms the PFD's 33 724 again, the level at its design reading, 71 % between LT-328505's
+    taps (decision 244)."""
     col, out, made = _run(7200, man={"fic_328406": 50.0})
     assert all(r.m_741_kgh == pytest.approx(17255.617, abs=1e-3)
                and r.m_739_kgh == r.m_export_kgh + r.m_741_kgh for r in out)
     r = out[-1]
     assert (r.m_export_kgh, r.m_739_kgh, r.lic_op_pct, r.level_pct) == (
-        pytest.approx(16468.44, abs=0.01), pytest.approx(t.C004_M739_DES_KGH, abs=0.1),
-        pytest.approx(66.14, abs=0.01), pytest.approx(50.0, abs=1e-4))
+        pytest.approx(16468.38, abs=0.01), pytest.approx(t.C004_M739_DES_KGH, abs=0.1),
+        pytest.approx(66.14, abs=0.01), pytest.approx(c.LT_328505_DES_PCT, abs=1e-4))
     assert abs(made) < 1e-6
 
 
 def test_a_cold_feed_with_the_steam_lost_condenses_the_column():
     """Decision 15. The LP steam lost and 749 at 130 C: the duty goes negative and condenses the
     column's vapour; its pressure and bubble point fall until the duty balances — 2.470 bar a and
-    the feed's 130 C ten minutes on — and the condensate lifts the level to 53.8 %."""
+    the feed's 130 C ten minutes on — and the condensate lifts LT-328505's reading to 74.8 %
+    (decision 244; 53.8 % on V1's reading)."""
     col, out, made = _run(1200, man={"ffic_329401": 0.0, "fic_329401": 0.0},
                           over=dict(t749=130.0))
     r = out[-1]
     assert r.m_931_kgh == 0.0 and abs(r.q_kw) < 0.1
-    assert (r.p_bara, r.t_c) == (pytest.approx(2.4699, abs=1e-4), pytest.approx(129.998, abs=1e-3))
-    assert r.level_pct == pytest.approx(53.81, abs=0.01)
+    assert (r.p_bara, r.t_c) == (pytest.approx(2.4700, abs=1e-4), pytest.approx(129.998, abs=1e-3))
+    assert r.level_pct == pytest.approx(74.80, abs=0.01)
     assert abs(made) < 1e-6
 
 
@@ -149,13 +152,14 @@ def test_lv_328505_at_the_heel_passes_what_arrives():
 
 def test_a_full_desorber_overflows():
     """Decision 11. LV-328505 shut: the column is full at 1422.5 s; from then on it holds
-    14 763 kg — LI-328505 at 514 % — and the excess leaves as the overflow, the books closed. Its
+    14 763 kg — LI-328505 at 100 %, LT-328505's upper tap long covered (V1's reading 514 %) —
+    and the excess leaves as the overflow, the books closed. Its
     pressure takes the backward step as the head space closes (B-51)."""
     col, out, made = _run(4000, man={"lic_328505": 0.0})
     first = next(k for k, r in enumerate(out) if r.m_overflow_kgh > 0.0)
     assert first * DT == pytest.approx(1422.5, abs=1e-9)
     assert col.m_kg == c.C004_FULL_KG == pytest.approx(14763.45, abs=0.01)
-    assert out[-1].level_pct == pytest.approx(513.88, abs=0.01)
+    assert out[-1].level_pct == 100.0
     assert abs(made) < 1e-6
 
 
@@ -224,13 +228,14 @@ def test_328p007s_run_flag_true_is_the_default_call_and_false_shuts_lv_328505():
 def test_328p007_stops_below_lt_328505s_l2_and_runs_again_past_its_hysteresis():
     """Decision 217: AC4 stops 328P007A / B on LT-328505 below L2 (the stand-in 5 %, 2 %
     hysteresis), which shuts LV-328505's letdown as built (decision 215). LV-328505 wide open:
-    LI-328505 passes below 5 % at 414.0 s and the letdown stops; the column refills and it runs
-    again at 420.5 s past 7 %. The column never reaches its heel, and its books close."""
+    LI-328505, between LT-328505's taps (decision 244), passes below 5 % at 235.5 s, 693 kg in the
+    column, and the letdown stops; the column refills and it runs again at 238.0 s past 7 % (414.0
+    and 420.5 s on V1's reading). The column never reaches its heel, and its books close."""
     col, out, made = _run(2400, man={"lic_328505": 100.0})
     stopped = [r.m_export_kgh == 0.0 for r in out]
     first = stopped.index(True)
     back = stopped.index(False, first)
-    assert (first * DT, back * DT) == (414.0, 420.5)
+    assert (first * DT, back * DT) == (235.5, 238.0)
     assert out[first].lic_pv_pct < 5.0 <= out[first - 1].lic_pv_pct
     assert out[back].lic_pv_pct >= 7.0 > out[back - 1].lic_pv_pct
     assert not any(r.drain_lost for r in out) and abs(made) < 1e-9

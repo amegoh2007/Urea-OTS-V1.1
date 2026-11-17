@@ -43,7 +43,7 @@ drops the pressure and the bottoms with it, and collapses the stripping (V1 AUDI
 **The holdup** is the liquid's: dM/dt = m_749 + m_931 - gen - m_739, m_739 = m_LV + m_741
 (decision 24).
 
-**The level** is M / M_des x 50. LIC-328505 strokes LV-328505 on the IEC 60534 liquid law from
+**The level** is LT-328505's reading between its taps (below). LIC-328505 strokes LV-328505 on the IEC 60534 liquid law from
 the live column plus its live head to the 1.0 bar a boundary datum. While FIC-328406 is in
 cascade a switch shuts LV-328505 and LIC-328505's output sets FIC-328406's set point instead,
 OUTP / 100 x 60 m3/h (FT-328406's span), so the column's level is held on the recycle:
@@ -116,6 +116,12 @@ Classes decided on other units, applied here under §5 rule 7:
     machines stopped (decisions 215, 227; the limits the stand-in of `data.low_level_stops`).
   * **FIC-329401 on the table's gain per cent of FT-329401's 0-12 000 kg/h** (decision 10):
     0.0025 %/(kg/h), where V1 applies the table's 0.30 per kg/h.
+  * **LI-328505 reads between LT-328505's taps** (decision 244, decision 33's class by decision
+    214): N11B and N11A, 210 and 1 210 mm above the bottom tangent line
+    (`data.unit_328c004.lt_328505_pct`): 71.00 % at V1's design holdup, LIC-328505's set point,
+    2.54 times V1's reading per kilogram, 0 and 100 % at the taps. AC4's L2 stop reads it too, so
+    328P007A / B stop at 689 kg, not V1's reading's 144 kg. V1 reads M / M_des x 50;
+    ``taps=False`` and ``lic_328505(taps=False)`` are V1's.
 
 The functional diagram also blocks LIC-328505's integration for 3 s after FIC-328406 changes
 over (a monoflop onto EINTBLK); the block's semantics are not documented, and it is not
@@ -186,6 +192,7 @@ from ureasim.data.unit_328c004 import (
     C004_RHO_KGM3,
     C004_STAGE,
     C004_VOL_M3,
+    LT_328505_DES_PCT,
     FFIC_329401_FACTOR,
     FFIC_329401_OP_HI_KGH,
     FFIC_329401_RATIO_DES,
@@ -209,6 +216,7 @@ from ureasim.data.unit_328c004 import (
     LV505_P2_BARA,
     LV505_PV_DES_BARA,
     RHO_735_KGM3,
+    lt_328505_pct,
 )
 from ureasim.data.unit_328d003 import (
     FIC_328406_KC,
@@ -298,13 +306,15 @@ def fic_329401(valve: ChestValve = FV_329401_TRIM) -> FlowLoop:
                     tau_s=FT_329401_TAU_S, characteristic=valve.characteristic)
 
 
-def lic_328505() -> ProcessLoop:
+def lic_328505(taps: bool = True) -> ProcessLoop:
     """LIC-328505, the bottoms level. DIRECT acting: a level above set point opens LV-328505,
-    seeded at its vendor design stroke (decision 23)."""
+    seeded at its vendor design stroke (decision 23). Seeded on LT-328505 between its taps, the
+    design holdup's 71.00 %; ``taps=False`` is V1's 50 %."""
+    r = LT_328505_DES_PCT if taps else LIC_328505_SP_PCT
     return ProcessLoop(
         tag="LIC-328505", Kc=LIC_328505_KC, Ti=LIC_328505_TI_S, Td=0.0, act=-1.0,
-        op=LV505_OP_DES_PCT, sp=LIC_328505_SP_PCT, pv=LIC_328505_SP_PCT, pv1=LIC_328505_SP_PCT,
-        pv2=LIC_328505_SP_PCT, op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=100.0)
+        op=LV505_OP_DES_PCT, sp=r, pv=r, pv1=r, pv2=r,
+        op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=100.0)
 
 
 def fic_328406() -> FlowLoop:
@@ -402,6 +412,13 @@ class SecondDesorber:
     #: carries this switch and never the stand-in; False, V1's, is no stop.
     l2_stop: bool = True
     p007_stopped: bool = False
+    #: LT-328505 between its taps (handoff B-156's fifth unit); False is V1's M / M_des x 50.
+    taps: bool = True
+
+    def level_pct(self) -> float:
+        """LI-328505 [%] on the present holdup: between LT-328505's taps, or V1's ratio."""
+        return (lt_328505_pct(self.m_kg) if self.taps
+                else self.m_kg / C004_M_DES_KG * C004_LEVEL_DES_PCT)
 
     def step(self, loops: SecondDesorberLoops, m_749_kgh: float, t_749_c: float, w_749: dict,
              m_735_kgh: float, p_c002_bara: float, t_740_c: float,
@@ -454,7 +471,7 @@ class SecondDesorber:
         gen = C004_M750_DES_KGH * (q / C004_Q_DES_KW)
 
         # ----- LIC-328505 -> LV-328505 on its vendor trim (decision 23), or -> FIC-328406 ------
-        level = self.m_kg / C004_M_DES_KG * C004_LEVEL_DES_PCT
+        level = self.level_pct()
         lic_op = loops.lic_328505.step(level, dt)
         l2 = L2_PCT["LT-328505"] if self.l2_stop else None
         self.p007_stopped = low_level_stop(self.p007_stopped, level, l2, L2_HYST_PCT)
@@ -551,7 +568,7 @@ class SecondDesorber:
             m_export_kgh=m_export, m_741_kgh=m_741, drain_lost=drain_lost,
             q_kw=q, gen_kgh=gen, m_750_kgh=m_750, m_overflow_kgh=m_overflow,
             p_bara=self.p_bara, t_c=self.t_c, t_top_c=self.t_c - C004_DT_DES_K, m_kg=self.m_kg,
-            level_pct=self.m_kg / C004_M_DES_KG * C004_LEVEL_DES_PCT,
+            level_pct=self.level_pct(),
             w=dict(self.w), y_750=dict(self.y_750), vle_domain=domain, ai_328701_us_cm=ai,
             pressure_backward=backward,
         )

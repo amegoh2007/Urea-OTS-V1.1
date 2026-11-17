@@ -152,7 +152,8 @@ def test_the_backward_pressure_step_decided_divergence(v1):
     every tick, 62 ringing windows in 2000 s — and swings 2.09 to 4.76 bar a once the shell is
     full; the port takes the backward step from 1333.2 s, where dt . df/dP passes -1, and holds
     3.6997 to 3.6998 bar a without a ringing window."""
-    s, col, loops = _v1_state(v1, ALL - {"B-51"}), sd.SecondDesorber(fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
+    s, col, loops = _v1_state(v1, ALL - {"B-51"}), sd.SecondDesorber(taps=False, fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401),
+                                         lic_328505=sd.lic_328505(taps=False))
     _manual("LIC_328505", "lic_328505", 0.0)(s, col, loops)
     parted, first_backward, p_v1, p_port = None, None, [], []
     for k in range(20000):
@@ -251,7 +252,8 @@ def test_the_liquid_pays_what_boils_decided_divergence(v1, name, script, before,
     side keeps its explicit pressure step: the backward step's 750 at the settled pressure
     presupposes this decision's books (B-51)."""
     dt = 0.5
-    s, col, loops = _v1_state(v1), sd.SecondDesorber(fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
+    s, col, loops = _v1_state(v1), sd.SecondDesorber(taps=False, fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401),
+                                         lic_328505=sd.lic_328505(taps=False))
     if before:
         before(s, col, loops)
     made_v1 = made = held_back = 0.0
@@ -293,3 +295,34 @@ def test_fv_329401_on_the_live_lp_header_decided_divergence(v1):
                                           pytest.approx(143.0, abs=1e-9))
     assert sd.fv_329401_pressure_ratio(4.1, c.FV_329401_P2_DES_BARA) == pytest.approx(0.3927,
                                                                                       abs=1e-4)
+
+
+def test_li_328505_between_its_taps_decided_divergence(v1):
+    """Decision 244 (handoff B-156's fifth unit), both sides. V1 reads LI-328505 as M / M_des x 50
+    and holds 50 %; the port reads LT-328505 between N11B and N11A, 210 and 1 210 mm above the
+    bottom tangent line (Uhde UD-AU-328-EC-0001 p. 6; EC-0134 p. 7), and holds the design holdup's
+    71.00 %. The design tick is V1's in everything but the reading; 749 cut 25 % at 1 s, each side
+    reads its own law on its own holdup every tick, and each brings its holdup back to the
+    design's, the port's stiffer loop dipping less."""
+    s = _v1_state(v1)
+    col = sd.SecondDesorber(fv_329401=sd.V1_FV_329401, l2_stop=False)
+    loops = sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
+    dips = [col.m_kg, s.a328_c004_M]
+    for k in range(18000):
+        x = _design(m749=0.75 * t.C004_M749_DES_KGH) if k >= 10 else _design()
+        _feed(s, x)
+        m_v1 = s.a328_c004_M
+        a = _v1_c004(v1, s, x["m749"], x["t749"], DT, ALL)
+        b = _port(col, loops, x, DT)
+        assert a["lvl"] == m_v1 / c.C004_M_DES_KG * 50.0, f"tick {k}"
+        assert b.level_pct == c.lt_328505_pct(col.m_kg), f"tick {k}"
+        if k == 0:
+            assert (a["in"], a["739"], a["gen"], a["750"], a["q"]) == (
+                b.in_kgh, b.m_739_kgh, b.gen_kgh, b.m_750_kgh, b.q_kw)
+            assert (s.a328_c004_M, s.a328_c004_P, s.a328_c004_T) == (col.m_kg, col.p_bara, col.t_c)
+            assert (a["lvl"], b.lic_pv_pct) == (50.0, c.LT_328505_DES_PCT)
+        dips = [min(dips[0], col.m_kg), min(dips[1], s.a328_c004_M)]
+    assert b.level_pct == pytest.approx(c.LT_328505_DES_PCT, abs=0.01)
+    assert a["lvl"] == pytest.approx(50.0, abs=0.01)
+    assert c.C004_M_DES_KG - dips[0] == pytest.approx(57.1, abs=0.5)
+    assert c.C004_M_DES_KG - dips[1] == pytest.approx(122.1, abs=0.5)

@@ -60,7 +60,8 @@ def _ticks(v1, script, ticks, act, v1_decided):
     loops)` moves the controllers of both V1 states and the port's before tick k. Yields the
     tick, V1's tick, the port's result, V1's state, the column and its loops."""
     s, s_all = c004_eq._v1_state(v1, v1_decided), c004_eq._v1_state(v1)
-    col, loops = sd.SecondDesorber(fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
+    col, loops = sd.SecondDesorber(taps=False, fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401),
+                                         lic_328505=sd.lic_328505(taps=False))
     for k in range(ticks):
         act(k, (s, s_all), loops)
         x = script(k)
@@ -267,7 +268,7 @@ def test_the_recycle_at_the_heel(v1):
     not boil, FT-328406 reads it (decision 11), LV-328505 is closed by its level loop and passes
     nothing — and the column's books close."""
     act = _mode("FIC_328406", "fic_328406", "MAN", 0, op=100.0)
-    first, made, pre = None, 0.0, sd.SecondDesorber(fv_329401=sd.V1_FV_329401, l2_stop=False).m_kg
+    first, made, pre = None, 0.0, sd.SecondDesorber(taps=False, fv_329401=sd.V1_FV_329401, l2_stop=False).m_kg
     for k, a, b, s, col, loops in _ticks(v1, lambda k: c004_eq._design(), 2400, act, ALL):
         if b.drain_lost and first is None:
             first = k

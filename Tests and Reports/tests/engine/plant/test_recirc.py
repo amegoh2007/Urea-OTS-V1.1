@@ -36,11 +36,13 @@ from ureasim.data.unit_323e003 import D001_M_DES_KG
 from ureasim.data.unit_323c003 import C003_M_DES_KG, LT_323501_DES_PCT
 from ureasim.data.unit_323e011 import D011_M_DES_KG, LT_323503_DES_PCT
 from ureasim.data.unit_328c002 import C002_M_DES_KG, LT_328503_DES_PCT
+from ureasim.data.unit_328c004 import C004_M_DES_KG, LT_328505_DES_PCT
 from ureasim.engine.historian import flatten
 from ureasim.engine.packet import build_packet
 from ureasim.engine.plant import build_plant
 from ureasim.engine.scheduler import Scheduler
 from ureasim.units.desorption.first_desorber import lic_328503
+from ureasim.units.desorption.second_desorber import lic_328505
 from ureasim.units.recirc.flash_condenser import lic_323503
 from ureasim.units.recirc.rectifying_column import lic_323501
 
@@ -258,8 +260,9 @@ def test_328c002s_first_tick_is_the_same_on_either_law():
 def test_328c002_parts_from_v1s_law_by_decision_230s_bound_in_ten_minutes():
     """Process utility: the seed's own drift (B-94) moves 328C002's holdup, LIC-328503 reads it 2.34
     times as large between the taps, and the bottoms it sets reach 328C003 and 328C004. Decision 243
-    keeps decision 230's bound at 600 s, 328C002's two readings left out. Measured: 1.958e-5
-    (AI-328701's conductivity), 6.63e-5 (324E001's boil-off), the holdup 0.0023 kg below V1's law."""
+    keeps decision 230's bound at 600 s, 328C002's two readings left out. Measured with 328C004 between
+    its taps on both sides: 1.688e-5 (AI-328701's conductivity), 6.44e-5 (324E001's boil-off), the
+    holdup 0.0023 kg below V1's law (1.958e-5 and 6.63e-5 before decision 244)."""
     taps, v1 = Scheduler(*build_plant()), _v1_desorber(Scheduler(*build_plant()))
     for _ in range(6000):
         taps.tick()
@@ -272,7 +275,52 @@ def test_328c002_parts_from_v1s_law_by_decision_230s_bound_in_ten_minutes():
     boils = {k: r for k, r in rel.items() if BOIL.search(k)}
     assert max(flows.values()) <= SEED_BOUND_600S, max(flows, key=flows.get)
     assert max(boils.values()) <= SEED_BOUND_BOIL_600S, max(boils, key=boils.get)
-    assert max(flows.values()) == pytest.approx(1.958e-5, abs=0.001e-5)
-    assert max(boils.values()) == pytest.approx(6.63e-5, abs=0.01e-5)
+    assert max(flows.values()) == pytest.approx(1.688e-5, abs=0.001e-5)
+    assert max(boils.values()) == pytest.approx(6.44e-5, abs=0.01e-5)
     m_taps, m_v1 = taps.plant.units["328C002"].m_kg, v1.plant.units["328C002"].m_kg
     assert m_taps - m_v1 == pytest.approx(-0.0023, abs=1e-4)
+
+
+def _v1_second_desorber(s: Scheduler) -> Scheduler:
+    """328C004 on V1's reading: the unit's law and LIC-328505 seeded on V1's 50 %."""
+    s.plant.units["328C004"].taps = False
+    s.plant.loops["328C004"][0].lic_328505 = lic_328505(taps=False)
+    return s
+
+
+def test_328c004s_first_tick_is_the_same_on_either_law():
+    """Process utility: LIC-328505's set point is V1's design holdup read between LT-328505's taps,
+    71.00 %, and its history is seeded there, so a trainee who starts from the seed sees the same first
+    tick whichever law LI-328505 reads by; only 328C004's reading and its loop's differ."""
+    taps, v1 = Scheduler(*build_plant()), _v1_second_desorber(Scheduler(*build_plant()))
+    taps.tick()
+    v1.tick()
+    assert taps.plant.units["328C004"].m_kg == v1.plant.units["328C004"].m_kg == C004_M_DES_KG
+    assert (taps.results["328C004"].level_pct, v1.results["328C004"].level_pct) == (
+        pytest.approx(LT_328505_DES_PCT, abs=1e-9), pytest.approx(50.0, abs=1e-9))
+    mine, theirs = _state(taps), _state(v1)
+    assert {k for k in mine if mine[k] != theirs.get(k)} == {
+        "result.328C004.level_pct", "result.328C004.lic_pv_pct"}
+
+
+def test_328c004_parts_from_v1s_law_by_decision_230s_bound_in_ten_minutes():
+    """Process utility: the seed's own drift (B-94) moves 328C004's holdup, LIC-328505 reads it 2.54
+    times as large between the taps, and the bottoms it lets down reach 328E007. Decision 244 keeps
+    decision 230's bound at 600 s, 328C004's two readings left out. Measured: 2.357e-5 (AI-328701's
+    conductivity), 5.13e-7 (324E001's boil-off), the holdup 0.0005 kg below V1's law."""
+    taps, v1 = Scheduler(*build_plant()), _v1_second_desorber(Scheduler(*build_plant()))
+    for _ in range(6000):
+        taps.tick()
+        v1.tick()
+    a, b = _state(taps), _state(v1)
+    own = ("result.328C004.level_pct", "result.328C004.lic_pv_pct")
+    rel = {k: abs(a[k] - b[k]) / abs(b[k]) for k in a
+           if k in b and abs(b[k]) > 1.0 and not NEAR_ZERO.search(k) and k not in own}
+    flows = {k: r for k, r in rel.items() if not BOIL.search(k)}
+    boils = {k: r for k, r in rel.items() if BOIL.search(k)}
+    assert max(flows.values()) <= SEED_BOUND_600S, max(flows, key=flows.get)
+    assert max(boils.values()) <= SEED_BOUND_BOIL_600S, max(boils, key=boils.get)
+    assert max(flows.values()) == pytest.approx(2.357e-5, abs=0.001e-5)
+    assert max(boils.values()) == pytest.approx(5.13e-7, abs=0.01e-7)
+    m_taps, m_v1 = taps.plant.units["328C004"].m_kg, v1.plant.units["328C004"].m_kg
+    assert m_taps - m_v1 == pytest.approx(-0.0005, abs=1e-4)

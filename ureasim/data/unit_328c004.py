@@ -107,6 +107,48 @@ C004_M_FLOOR_KG = 1.0
 #: (decision 11, applied as a standing rule).
 C004_FULL_KG = C004_VOL_M3 * C004_RHO_KGM3
 
+#: LT-328505's taps (handoff B-156's fifth unit). Uhde's datasheet UD-AU-328-EC-0001
+#: (`References/Datasheets/328C002 328C004 Datasheet.pdf`, scanned, read from the page images):
+#: N11B and N11A, the transmitter's pads, at EL 210 and 1 210 mm in the nozzle table of the
+#: principle sketch (p. 6), above 328C004's bottom tangent line, the sketch's datum. The span is
+#: 1 000 mm, as Uhde's level sheet UD-MR-G00-EC-0134 p. 7 prints it (set range 0-96.5 mbar on
+#: 923 kg/m3, 1.066 times the head). The tray arrangement (p. 7) draws L.L.L. 100 mm, N.L.L. 510 mm
+#: and H.L.L. 920 mm above the tangent line; V1's 0.920 m "normal" sump level is the drawing's
+#: H.L.L., kept as the design holdup.
+LT_328505_TAP_LO_M = 0.210
+LT_328505_SPAN_M = 1.000
+LT_328505_RHO_KGM3 = 923.0
+
+#: The liquid one span of LT-328505 holds [kg], 1 133: the shell's bore between the taps at the
+#: sheet's density.
+LT_328505_SPAN_KG = LT_328505_RHO_KGM3 * math.pi * 0.25 * C004_ID_M ** 2 * LT_328505_SPAN_M
+
+#: LT-328505's reading at the design holdup [%], 71.00: the sump's 0.920 m less the lower tap's
+#: 0.210 m, over the span. LIC-328505's set point between the taps.
+LT_328505_DES_PCT = (C004_H_NLL_M - LT_328505_TAP_LO_M) / LT_328505_SPAN_M * 100.0
+
+
+def lt_328505_pct(m_kg: float) -> float:
+    """LI-328505 [%]: the height of 328C004's sump liquid between LT-328505's taps.
+
+    Process utility
+    ---------------
+    What the board shows, what LIC-328505 holds by LV-328505 (or FIC-328406 in cascade) and what
+    AC4's L2 stop on 328P007A / B reads. A DP cell reads only between its taps: 0 % at 632 kg, the
+    sump 210 mm deep and the trays' froth still on them (V1 reads 22.0 % there), 100 % at the upper
+    pad; the reading moves 2.54 times as far per kilogram as V1's 50 % over the design holdup, which
+    counts the trays' froth. AC4's 5 % L2 stops 328P007A / B at 689 kg, not V1's reading's 144 kg.
+
+    Equation
+    --------
+        LI = clamp( LI_des + (M - M_des) / (rho A L) . 100, 0, 100 )
+
+    written as the departure from the design holdup, so the design holdup reads its set point
+    exactly; the trays' froth is the design's, held in M_des. Source: As-Built §CXXXVII.
+    """
+    return min(max(LT_328505_DES_PCT + (m_kg - C004_M_DES_KG) / LT_328505_SPAN_KG * 100.0, 0.0),
+               100.0)
+
 # ======================================================================================
 # The pressure and the bubble point
 # ======================================================================================
@@ -242,6 +284,8 @@ C004_STAGE = desorber_stage(DES_C004, C004_NTHEO, C004_M931_DES_KGH, C004_M739_D
 __all__ = [
     "C004_ID_M", "C004_SHELL_M", "C004_VOL_M3", "C004_H_NLL_M", "C004_RHO_KGM3",
     "C004_M_DES_KG", "C004_LEVEL_DES_PCT", "C004_M_FLOOR_KG", "C004_FULL_KG", "C004_DT_DES_K",
+    "LT_328505_TAP_LO_M", "LT_328505_SPAN_M", "LT_328505_RHO_KGM3", "LT_328505_SPAN_KG",
+    "LT_328505_DES_PCT", "lt_328505_pct",
     "C004_DP_COL_BAR", "C004_AREA_M2", "C004_M931_DH_KJKG", "C004_Q_DES_KW", "C004_MW750_DES",
     "LV505_P2_BARA", "C004_H_DES_M", "C004_HEAD_DES_BAR", "LV505_P1_DES_BARA", "LV505_CHAR",
     "FV_329401_P1_DES_BARA", "FV_329401_P2_DES_BARA",

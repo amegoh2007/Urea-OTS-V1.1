@@ -442,3 +442,30 @@ def test_a_save_made_on_v1s_lt_328503_reading_restates_lic_328503_between_the_ta
     op = loop.op
     Scheduler(build_plant()[0], back).tick()
     assert loop.op == op
+
+
+def test_a_save_made_on_v1s_lt_328505_reading_restates_lic_328505_between_the_taps():
+    """Decision 244: a save made before LI-328505 read between its taps lacks 328C004's ``taps`` and
+    holds LIC-328505 on V1's reading, its set point 50 % and its last PV 40 %. On load the unit reads
+    between the taps and each is restated as the tap reading of the holdup it stood for: the set point
+    the design holdup's 71.00 %, the PV 0.8 of it, 45.64 %; the first tick from the design holdup
+    moves nothing."""
+    from ureasim.data.unit_328c004 import C004_M_DES_KG, LT_328505_DES_PCT, lt_328505_pct
+    _, plant = build_plant()
+    doc = json.loads(snapshot.dumps(plant))
+    objects = _objects(doc["state"], {})
+    (unit,) = objects["ureasim.units.desorption.second_desorber:SecondDesorber"]
+    del unit["a"]["taps"]
+    (lic,) = [o for o in objects["ureasim.control.process_loop:ProcessLoop"]
+              if o["a"]["tag"] == "LIC-328505"]
+    lic["a"].update(sp=50.0, pv=40.0, pv1=50.0, pv2=50.0)
+    back = snapshot.loads(json.dumps(doc), build_plant()[1])
+    loop = back.loops["328C004"][0].lic_328505
+    assert back.units["328C004"].taps is True
+    assert (loop.sp, loop.pv1, loop.pv2) == (LT_328505_DES_PCT,) * 3
+    assert loop.pv == pytest.approx(lt_328505_pct(0.8 * C004_M_DES_KG), abs=1e-12)
+    assert loop.pv == pytest.approx(45.64, abs=1e-2)
+    loop.pv = loop.sp
+    op = loop.op
+    Scheduler(build_plant()[0], back).tick()
+    assert loop.op == op

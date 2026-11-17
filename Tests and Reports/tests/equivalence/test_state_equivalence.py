@@ -67,7 +67,7 @@ def test_the_two_tears_their_producers_hold_are_seeded_on_v1s_too(v1_seeds):
     """775 is 328D001's own top lag's input as well as 328C002's reflux; 931 is FFIC-329401's
     own PV: each producer reads it, so it is the producer's state."""
     assert rd.RefluxDrum().m_775_prev_kgh == v1_seeds["R328_C002_M775_DES"]
-    assert sd.SecondDesorber(fv_329401=sd.V1_FV_329401).m_931_prev_kgh == v1_seeds["R328_C004_M931_DES"]
+    assert sd.SecondDesorber(taps=False, fv_329401=sd.V1_FV_329401).m_931_prev_kgh == v1_seeds["R328_C004_M931_DES"]
 
 
 def test_the_desorbers_recycles_through_the_plant_state_are_v1s(v1):
@@ -77,7 +77,8 @@ def test_the_desorbers_recycles_through_the_plant_state_are_v1s(v1):
     state = PlantState()
     col2, lic2 = fd.FirstDesorber(taps=False), fd.lic_328503(taps=False)
     col3, loops3 = hy.Hydrolyser(), hy.HydrolyserLoops()
-    col4, loops4 = sd.SecondDesorber(fv_329401=sd.V1_FV_329401), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
+    col4, loops4 = sd.SecondDesorber(taps=False, fv_329401=sd.V1_FV_329401), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401),
+                                         lic_328505=sd.lic_328505(taps=False))
     moved = set()
     for k in range(3000):
         m738 = t.C002_M738_DES_KGH * (0.85 if k >= 10 else 1.0)
