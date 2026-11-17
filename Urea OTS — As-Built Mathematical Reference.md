@@ -27104,3 +27104,92 @@ rows 12 (`unit_335.LV_324501A_TAU_S` 1.0), 14 (`unit_335.LVSL_324501A_PCT` 0.0) 
 docstring names LT-329501 as data gap 15. `Tests and Reports/tests/data`, `Tests and Reports/tests/docs` and
 `test_layering.py`: 432 passed. The PyQt6 grep of CLAUDE.md rule 3 prints nothing. The full suite was not run: no
 file under `ureasim/` changed.
+
+# Part CXL — Session 129: the open gaps researched in the archive; transmitter records, hook-ups and AC4's UF85 loops (2026-11-18)
+
+Asked: deep research for solutions to the open gaps, then plan, execute and commit. `/research-deep`'s fan-out of one
+agent per item was not run (`CLAUDE.md` §3, session 123's precedent); the research ran inline with `/soft-copy-search`.
+No datum closes a row or a Section B item. Nothing under `ureasim/` changed; no decision taken. Scratch and page
+renders: `Tests and Reports\reports\Session_129_gaps`. Rows 1, 3 and 5 and Section B were not searched again: their
+routes are Körting, the plant readback, and B-118's scratch tracks (session 114's plan prompt).
+
+## CXL.1 Rosemount's factory records of the level transmitters
+
+Rosemount order 49106094 (Uhde order 34041489) is UD-MR-G00-DZ-0012, never cited before. Its "List of Transmitter"
+(-006, Rosemount's TCA WORKSET print, 7 pages, read on the image pp. 2 and 3) gives every unit's serial, model code,
+tag, calibrated zero and range and Uhde's customer ID; its "Test Certificates" (-002, 261 pages) hold each unit's test
+protocol. Read on the image:
+
+| Tag | Model, serial | Factory range | Source | Uhde's sheet |
+|---|---|---|---|---|
+| LT 329501 | 1151HP5S22C2R2M4B7D4I1L4P1Q4Q8Q31T3895, 8063392, UHDE 042 | 0 to 1 200.00 mbar, 4-20 mA linear, tested 01.09.2005 | -002 p. 42; -006 p. 2 | EC-0133 p. 3: 0-1 200 mbar |
+| LT 329505 | 1151DP4S22C2R2M4B7D4I1L4P1W6Q4Q8Q31T3793, 8063396, UHDE 046 | 0 to 300.00 mbar, tested 01.09.2005 | -002 p. 46; -006 p. 3 | EC-0133 p. 4: 0-300 mbar |
+| "LT 329505" | 1151DP4S22SBC2R2M4B7I1L4P1Q4Q8Q31T3894, 8063404, UHDE 054; seals 990.35 DN 80 PN 10/100, capillary 3 x 0.5, 5 m, KN 3.2 | 0 to 326 mbar, calibrated 02.12.2005 | -002 p. 54; -006 p. 3 | see below |
+| LT 324501 | 1151DP5S22SCC2R2M4I1L4P1W6Q4Q8Q31, 8064075, UHDE 076; one seal 990.29 DN 80 PN 40, "Direktanbau", KN 3.2 | -700 to 900 mbar, calibrated 02.12.2005 | -002 p. 76; -006 p. 3 | EC-0136 p. 3: -700 to 900 mbar |
+
+The second "LT 329505" is read as a mis-keyed tag: its customer ID UHDE 054 sits between LT 323503 (053) and LT 323506
+(055), and its 326 mbar is LT 323505's set range on Uhde's EC-0134 (p. 5, read on the image: 323F004, 2 900 mm,
+1 130 kg/m3, 326 mbar), a capillary-seal sheet, where LT 329505 is on the plain-DP sheet EC-0133. "Relativdruck" is printed on two-seal capillary
+units as well: it is the protocol's template word, not evidence of an atmospheric reference.
+
+**Cross-check of B-156's built units** (the -006 list against the sheets the builds used): LT 323501 0-230, LT 323502
+0-245, LT 323503 0-135.28, LT 328504 0-96.15 and LT 328505 0-96.5 mbar agree. LT 328503 does not: the list gives
+0-326 mbar (SO line 34, unit 2, serial 8063405, UHDE 057; its protocol, -002 p. 55 on the image, the same 990.35
+seals and position 34 as serial 8063404), Uhde's EC-0134 p. 6 (rev 2, 21.04.08, no revision mark on
+the line) 0-110.51 mbar over 1 200 mm, the range decision 243 built on. The factory range is the shipment's, the sheet
+the later specification; the configured range is a readback (checklist row 26). Book2 logs no LI-328503 (§CXXXVII.1), so no plant reading
+tests either range. Decision 243's build stands.
+
+## CXL.2 Uhde's installation arrangements (UD-MR-G00-LD-0001, rev 1, 30.04.08)
+
+An unopened lead of §CI.2, read on the image:
+
+* **K3V91, LT 329501** (p. 79), "Prior arrangement for steam service dP-measurement (HP)", "differential pressure
+  measurement below tapping points": the transmitter below both taps, "liquid head 10.000 mm" between them; each
+  impulse line is purged through a check valve, from FI 329421 and FI 329422 (installation K6G91); PT 329201 (K4413)
+  is on the upper line. Both legs are drawn purged full of condensate. The hook-ups are design drawings ("quantities
+  and lengths ... to be adapted to the local conditions"), so the legs as built stay checklist row 25's question. The drawing's 10 m is the sheet's, against the isometric's 12 789 mm (§CXXXIX.2). The arithmetic of a
+  wet-leg reading on a zero-based 0-1 200 mbar range is §CXXXIX.2's and stays an inference until the configured LRV
+  and URV are read.
+* **K3V31, LT 329502 to 329505** (p. 76), "Prior arrangement for steam service dP-measurement": the transmitter below
+  the taps, a separator pot with a vent on the upper connection, so a condensate-filled reference leg; "LT 329505 (-)
+  3000 liquid head", the sheet's 3 000 mm, against the isometric's 4 478 mm (data gap 10).
+* **K1A42, LT 324501** (p. 19, with AT 335701 / 707 and LT 335508 / 509), "Direct mounted instrument with tubus",
+  "instrument at tapping point": the transmitter's other side carries item 3, a 0.2 m tube 12 x 1.5 mm drawn open. Read,
+  on the design drawing, as a gauge reading at the one tap with no reference leg, which matches the factory record's single seal and the
+  sheet's missing LP connection (§CXXVII.5).
+
+## CXL.3 AC4's UF85 loops (data gap 9)
+
+UD-MR-G00-FF-0004 (AC4, 02-Mar-2008), PC35.2.13, sheet 74.3, "Ratio control of urea formaldehyd" (PDF p. 266, read on
+the image): FIC-335405A is a PIDCON(1,0,0,1,1,0) with REVACT F=1, MV from PC35.2.13.10, OUTP to HV-335609 (AXR14.15)
+and back to its database element PIDCON85 as POUT; PARAM1 to PARAM8 are references to PIDCON85, so no tuning value is
+printed; SPEED1 / 4 0.1 and 10, CLAMPREF 0, EOHL 100. On OCR text only: p. 265 draws FFIC-335406 as a RATIOSTN2,
+p. 267 FIC-335405B as a second PIDCON (its output not read). The DCS therefore carries FFIC-335406 over FIC-335405A and FIC-335405B, as
+V1's screen draws them; session 128's "not settled" (row 9) is withdrawn. The tuning is still a readback of both
+faceplates. The model keeps V1's single FIC-335405.
+
+## CXL.4 LV-324501A's positioner and actuator (data gaps 12 and 14)
+
+Foxboro Eckardt PSS EVE0102 A-(en) (UD-MR-G00-DZ-0048-014 p. 3, read on the image): air consumption single-acting
+200 / 400 / 600 l_n/h at 1.4 / 3.0 / 6.0 bar; load effect -3 % at 2 350 l_n/h delivered and +3 % at 1 900 l_n/h
+exhausted; capacity at maximum deviation without booster 2 700 / 3 500 / 5 500 / 7 500 l_n/h at 1.4 / 2 / 4 / 6 bar,
+with booster LEXG-FN/GN 18 000 to 55 000. No positioning time is printed. Kämmer series 2 (UD-MR-G00-DZ-0048-021 p. 2,
+image): P4 diaphragm area 600 cm2, thrust 2 000 daN, stroke 10-60 mm.
+
+Calculated, not printed: on Flowserve's 40 mm stroke (§CXXVIII.3) the P4 sweeps 2.4 L; filled at the end of a full
+opening stroke to 1.7 bar g (2.713 bar a) it holds at least 6.4 l_n, so at 3 500 l_n/h (2.0 bar supply) a full opening
+stroke takes at least 6.6 s with no dead volume; on EC-0211's 6.0 bar supply (7 500 l_n/h), at least 3.1 s. Which
+supply the valve has is §CXXVIII.3's open conflict. Either figure is a large-step slew bound. It is no evidence against the 1 s
+small-signal lag fitted on the 5 November steps; a rate limit is a new mechanism and goes to the process engineer. Row
+12 stays open.
+
+The SGE985 limit-switch option (DZ-0048-014, -015): switching differential 1 %, switching-point repeatability 0.2 %,
+points adjustable. Row 14 stays open.
+
+## CXL.5 Checks
+
+Data-gap rows 4, 9, 10, 12, 14 and 15 gain the above; no row closes and none is added. The DCS readback checklist
+gains row 26 (LT-328503's configured range) and row 9 asks for both FIC-335405 faceplates. `Tests and Reports/tests/data`,
+`Tests and Reports/tests/docs` and `test_layering.py` pass; the PyQt6 grep prints nothing; the full suite was not run,
+no file under `ureasim/` having changed.

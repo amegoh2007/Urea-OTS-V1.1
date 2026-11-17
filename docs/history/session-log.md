@@ -5216,3 +5216,13 @@ not on the page. LT-329501's taps were found on line 322004 (piping list pp. 91-
 12 789 mm apart against the sheet's 10 000 mm, and p. 27's +16.65 m belongs to 322E003's bottom part: LT-329501 moved
 to the ledger as data gap 15, V1's ratio kept, B-156 closed on six units (decision 248). Rows 1, 9, 12 and 14 updated;
 the stale stand-ins test restated on the ledger. Nothing under `ureasim/` changed. Part CXXXIX.
+
+### Session 129 — the open gaps researched in the archive: transmitter records, hook-ups, AC4's UF85 loops (2026-11-18)
+
+Asked for deep research on the open gaps, then a plan, its execution and a commit. Run inline (no fan-out, §3). Three
+sources never cited before: Rosemount's factory list and test protocols of the level transmitters (UD-MR-G00-DZ-0012),
+Uhde's installation arrangements (UD-MR-G00-LD-0001) and AC4's PC35.2.13. LT-329501's legs are drawn purged full of
+condensate (K3V91); LT-324501 is read as a gauge reading at its one tap (K1A42); LT-329505 has a condensate reference leg
+(K3V31); the DCS carries FFIC-335406 over FIC-335405A and B; the SRI986's capacity bounds LV-324501A's full stroke at
+6.6 s or more on 2.0 bar g, 3.1 s on 6 bar (calculated). No row closes; rows 4, 9, 10, 12, 14 and 15 updated. LT-328503's factory 0-326 mbar against
+the 110.51 mbar built: checklist row 26. Nothing under `ureasim/` changed; no decision. Part CXL.
