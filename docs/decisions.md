@@ -1320,3 +1320,24 @@ decision on an item.
      `stripper_sump.bottoms_pv_bara` falls back to water's 3.5 bar; the drain flips 21.7 / 41.8 t/h and closes the loop
      through 322E001's one-tick read of 322R001's overflow. Not taken: the solve on the tick (b), not prototyped, whose map the two
      link-breaking arms suggest has no root across the jump, and a continuous fallback at the loop pressure (c), a new mechanism. As-Built §CXXXVII.5.
+246. **LI-328504 reads between LT-328504's taps on 328C003, V1's design holdup read as the drawing's N.L.L.**
+     (2026-11-17, the process engineer's instruction, session 127; B-156's sixth unit). Uhde's principle sketch
+     UD-AU-328-EC-0003 p. 5 puts N5A 475 mm and N5B 1 475 mm below the top tangent line (19.375 and 20.375 m above the
+     bottom one) and the N.L.L. 975 mm below it, at the span's mid-point; Uhde's level sheet UD-MR-G00-EC-0134 p. 6
+     (rev. 2) prints 1 000 mm and 0-96.15 mbar on 908 kg/m3. V1's design holdup, an hour of 747, stands 12.554 m deep,
+     6.8 m under N5B; it is kept, with the vapour space, the head and the thermal inertia it carries, and read as the
+     N.L.L.: `data.unit_328c003.lt_328504_pct`, the departure from it over the span's 2 712 kg, 50 % at design, V1's own
+     reading, so LIC-328504's seed is unchanged and a save is restated only off the design holdup. This does not place
+     the liquid at the taps' elevation; the reading moves 25.1 times as far per kilogram as V1's. The bound is restated
+     for the unit on its measured value (decisions 233 and 241's route): AI-328701's conductivity may part 2e-4 by
+     600 s (measured 1.87e-4); every other state keeps decision 230's 6e-5 and 2e-3. The move takes 323D011's part
+     (decision 233) to 4.330e-3 on 324E001's boil-off, and that bound is restated from 4.3e-3 to 4.4e-3; 323C003's
+     part stays inside decision 241's 1.6e-2 (1.587e-2). ``taps=False`` is V1's on the harnesses. As-Built
+     §CXXXVIII.2-4.
+247. **Data gap 11 closed: 335P001's head law kept on KSB's factory test** (2026-11-17, the process engineer's choice,
+     session 127). KSB's acceptance test protocols K 77746 and K 77747 (UD-AU-335-DZ-0026-012 pp. 25 and 29, ISO 9906
+     class 1, cold water) give the executed impeller, 213 mm, and six points each at 2 940 1/min: shut-off 68.68 and
+     68.96 m, a rise to 69.9-70.6 m at 42 m3/h, 66.91 and 66.79 m at the 82 m3/h guarantee. H = 71 - 5 (Q / 80)^2 m is
+     kept: its slope at the header's 62.2 m3/h, -0.097 m per m3/h, is the test's (-0.083 to -0.094); its shut-off stands
+     2.0-2.3 m above the test's, so `KAPPA` and the dead-head bracket carry about 0.28 bar more droop than the pump. A
+     refit, measured and not taken, would turn `KAPPA` negative (-0.03 to -0.07). As-Built §CXXXVIII.1.

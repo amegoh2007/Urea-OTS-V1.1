@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-17, session 126.
+**Last updated:** 2026-11-17, session 127.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -152,12 +152,12 @@ load, and all five holds are lost. Acceptance: the plant's TT-322004, the hydrol
 below, 323D001 at its set point, the 100 % pin to the bit. Options: (a) keep as built, L3 reported as not
 fulfilled; (b) the rise off with the change that holds 322R001 (B-118), never alone. Next step: B-118's.
 
-### B-156 — Two level transmitters read V1's holdup ratio, not their taps
+### B-156 — One level transmitter reads V1's holdup ratio, not its taps
 
 *Raised 2026-11-15, session 118 (As-Built §CXXVIII.5).* Uhde's data sheets (UD-MR-G00-EC-0133, EC-0134) print every
-level transmitter's nozzle distance. Eleven modelled levels read between their taps on those distances
-(`Tests and Reports/tests/data/test_level_transmitter_sheets.py`). Two still read V1's holdup ratio: LT-328504
-(328C003, 1 000 mm) and LT-329501 (322E003's sump, 10 000 mm). Acceptance: each reads between its sheet's nozzles on its vessel's datasheet geometry, its
+level transmitter's nozzle distance. Twelve modelled levels read between their taps on those distances
+(`Tests and Reports/tests/data/test_level_transmitter_sheets.py`). One still reads V1's holdup ratio: LT-329501
+(322E003's sump, 10 000 mm). Acceptance: each reads between its sheet's nozzles on its vessel's datasheet geometry, its
 design level reproduced; the seed identical to HEAD at tick 1 and, by 600 s, within decision 230's bound (6e-5 relative
 on every unrounded state and flow above 1, near-zero names left out, 2e-3 on the two boil-offs; the seed is not a fixed
 point, B-94) or a bound the process engineer restates for the unit on its measured values, as decisions 233 and 241
@@ -173,16 +173,19 @@ plant's 40 %, LV-323501's seal lost at N5's lower edge (29.21 %); LT-328503 on 3
 N7A 300 and 1 500 mm above the partition, V1's design holdup reading 70.83 % (V1's 1.150 m sump is the drawing's H.L.L.),
 the seed within decision 230's bound; LT-328505 on 328C004 (decision 244, §CXXXVII), N11B and N11A 210 and 1 210 mm
 above the bottom tangent line, V1's design holdup reading 71.00 % (V1's 0.920 m is the drawing's H.L.L.; its N.L.L.,
-510 mm, 30.00 %, measured and not taken), the seed within decision 230's bound. Each move takes the stops on its
+510 mm, 30.00 %, measured and not taken), the seed within decision 230's bound; LT-328504 on 328C003 (decision 246, §CXXXVIII), N5B and N5A 1 475 and 475 mm
+below the top tangent line, 6.8 m above V1's 12.554 m design depth, V1's holdup kept and read as the drawing's N.L.L.,
+mid-span, 50 %, AI-328701's part restated to 2e-4 and 323D011's boil-off part (decision 233) to 4.4e-3. Each move takes the stops on its
 level with it: 323P008's now stop at 763 kg, 328P006's at 693 kg, 328P007's at 689 kg. A design reading off V1's
 moved 324E001's boil-off past decision 230's 2e-3 on 323D011 and 323C003 (§CXXXIV.4, §CXXXV.3); on 328C002, a design
 reading off V1's too, it stayed at 6.6e-5 (§CXXXVI.3). A unit's move also moves the earlier units' parts, so their
 pins are re-measured with it (§CXXXV.4, §CXXXVI.4, §CXXXVII.4): 323C003's boil-off part is 1.582e-2 against decision 241's 1.6e-2, unmoved by
 the fifth unit. Ruled out without the process engineer: a ceiling or overflow V1 has none of (§CXXXI.5). Next step: the
-sixth unit, LT-328504 on 328C003 (UD-AU-328-EC-0003; a pasted plan puts N5A / N5B 1 000 mm apart above tray 1, at
-about 19.2 and 20.2 m, not yet read off the page images; V1's 34 062 kg design holdup stands 12.554 m deep
-(`C003_H_DES_M`), so if the taps are there the design reading is the process engineer's choice); both sides measured, 323C003's boil-off part first. LT-329501 last: it sets 322F001's
-suction (data gap 1).
+seventh unit, LT-329501, last: it sets 322F001's suction (data gap 1) and the plant reads 7-11 % where the engine holds
+50 % (B-118). Uhde's sheet UD-MR-G00-EC-0133 p. 3 (rev. 2, read off the page image, §CXXXVIII.5): taps L 329256 and
+U 329257, both sides liquid ("High Pressure Condensate"), 141 bar a and 99 C, 1 133 kg/m3, 0-1 200 mbar over 10 000 mm
+(1.080 times the head). The design reading on those taps is the process engineer's choice; UD-MR-329-EC-0001 p. 3 and
+isometric UD-RL-100-MB-0420 (15-CPZ-329262) are not yet read off the page images.
 
 ---
 
@@ -195,7 +198,7 @@ suction (data gap 1).
 # Open data gaps
 
 *`Claude.md` §4: a datum that `References\`, the vendor archive and the V1 source all fail to supply. The ledger was accepted by the process engineer on 2026-10-16 (decision 128); each row keeps its stand-in as built; every row's full search record is in `docs/history/handoff-record-to-session-95.md` (grep the tag before the archive is searched again).
-Rows 4, 5, 9, 10 and 14 close on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`); rows 1 and 3 on Körting's curves, row 11 on KSB's sheets, row 12 on the SRI986 positioner's response data or a plant step test. The checklist's row 14, TV-323013B's flow and differential, is decision 178's cross-check and no ledger row.*
+Rows 4, 5, 9, 10 and 14 close on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`); rows 1 and 3 on Körting's curves, row 12 on the SRI986 positioner's response data or a plant step test. The checklist's row 14, TV-323013B's flow and differential, is decision 178's cross-check and no ledger row.*
 
 | # | Datum | Needed by | As built | Found so far | Route to close |
 |---|---|---|---|---|---|
@@ -205,6 +208,5 @@ Rows 4, 5, 9, 10 and 14 close on one plant DCS readback session (`Tests and Repo
 | 5 | AC4 PC21's limits and elements: FY-322403's L2; PT-321211 / 221's L2; ST-321952 / 953's H2; the T elements' mode; the SR flip-flops' dominance; TRIP_84_8_FLAG1's L2. AC4 PC35's: PC35.5.2's T600 mode; PIC-335201's CLAMPREF | trips 21.2, 21.8 and 21.10 (§LXV.6); trip 35.4 and PIC-335201's clamp (decision 228) | FY-322403's L2 V1's 5 %; PDY's L2 0.1 bar; the T elements on-delays; reset dominant; PT-321211 / 221, ST-321952 / 953 and TRIP_84_8 taken healthy; T600 a 600 s on-delay of both 335P002 stopped; CLAMPREF 0 % | the limits are database entries; PC21's T draw I /--/ O, an on-delay by pages 5 and 7's start-up override, while the trip schedule's "time delay" reads 21.2's as a delayed trip (§CXXXII.2; PC35's T600, page 283, unresolved); TRIP_84_8 is the instrument air, two of PT-384207A / B / C below L2 (§LXXIII.2); no set-point list in the archive (§CXXVIII.1); PC35.5.2's TD prints "10:0", the schedule's 10 min; PIC-335201's CLAMPREF is a database reference (§CXXX.2) | checklist rows 3 to 8, 23 and 24, one readback session |
 | 9 | FIC-335405's row in the DCS tuning table | the loop on the plant's tuning (decisions 76, 77) | V1's 100 per t/h and 15 s | not in `References/Master_PID_Tuning_Constants.md`; not photographed; the trends log FT-335405 alone, its ratio to FT-335401 0.0046-0.0050 (§CV.7) | checklist row 9: the faceplate's tuning page, then decision 10's span conversion |
 | 10 | LT-329505's tap elevations | LI-329505 between its taps (decision 33's class) | V1's holdup ratio; LV-329505 on Flowserve's trim (§LXVIII.5) | upper tap 324E001 / N5 at EL +15129; lower tap on the DN700 condensate pot at EL +10651 (isometric UD-RL-100-MB-0312): 4 478 mm apart. The loop summary prints 3 000 mm. The conflict is logged, not resolved (§CIII.5). Uhde's data sheet UD-MR-G00-EC-0133 p. 4: nozzle distance 3 000 mm, set range 0 to 300 mbar on 922 kg/m3, so the 4 478 mm would over-range it (§CXXVII.5); the range is 100 mbar per metre of nozzle distance, 1.11 times the head of 922 kg/m3, as LT-329504's is (§CXXVIII.5) | checklist row 10: the transmitter's LRV and URV decide which span its 0-100 % covers |
-| 11 | 335P001A / B's impeller and head curve | `units/finishing/melt_header.py`: LV-324501A's inlet moves with the curve's droop | H = 71 - 5 (Q / 80)^2 m, read off the middle of three curves (`data/unit_335.py`) | KSB CPK 80-250, data sheet UD-AU-335-EC-0039: shut-off about 71 m, duty about 80 m3/h at 65 m; the impeller legend is unreadable on the scan (§CXIX.4). KSB's installation plan UD-AU-335-DZ-0026-001 (CPK-CHXYD 80-250): 82 m3/h at 65.2 m, 7.2 bar, 1221 kg/m3, 140 C; the law gives 65.75 m there. The parts list (-004, sheet 2) lists two impellers, 230 "260/115/17" and 230.02 "242-P03-250-D", not decoded (§CXXVII.4). No performance test in the archive: DZ-0026-007 is KSB's test description with no result, DZ-0007-049 is fan 335K007's (§CXXVIII.2) | a legible copy of the sheet, or the pump's nameplate |
 | 12 | LV-324501A's positioner response: its stroking time or time constant | `units/finishing/melt_header.py`: the header's step on a header valve (decision 236) | a first-order lag, tau 1 s (`data/unit_335.LV_324501A_TAU_S`), the process engineer's stand-in of 2026-11-15, the better of 1 and 2 s on the 5 November 2026 13:30 steps (§CXXIII.9, §CXXVI.1) | PIC-335201's filter 0.0 s (the tuning table); PT-335201's loop sheet prints no damping; AC4's cycle time is not in the archive; Flowserve (Pos. 148) gives the trip closure, under 3 s, not the positioner's response. The positioner is a Foxboro Eckardt SRI986-BIDS7EAANA-CL (Pos. 148; Uhde's UD-MR-G00-EC-0211); neither gives a response or stroking time (§CXXVIII.3) | the SRI986's response data from Foxboro Eckardt; else a plant step: PIC-335201 in MAN, its output stepped, LV-324501A's stroke feedback trended |
 | 14 | LVSL-324501A's setting: the stroke at which LV-324501A's closed limit switch makes | trip 35.4's input (`control/granulation_trips.py`, decision 228) | 0 % of stroke (`data/unit_335.LVSL_324501A_PCT`), the process engineer's stand-in of 2026-11-15 | PC35.5.2 draws `not LVSL-324501A` in 35.4's AND (page 283); neither archive gives the switch's setting (§CXXX.2) | checklist row 22; the valve's limit-switch data |

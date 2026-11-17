@@ -1655,6 +1655,7 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 355 | LI-323501 between LT-323501's taps on 323C003 (decision 241) | LI = M / M_full x 100, LIC-323501's PV the same, held at 60 %; LV-323501's seal at the bottom of the span | `data/unit_323c003` ``lt_323501_pct``, ``LT_323501_DES_PCT``, ``LT_323501_SEAL_PCT``, the bottom's geometry; `units/recirc/rectifying_column` ``taps``, ``V1_COLUMN``, ``lic_323501(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-16: the reading between N8 and the line seal, 2 000 mm over the neck, the cone and the shell, the plant's 40 % at V1's design holdup, LIC-323501 seeded and set there; the seal lost at N5's lower edge, 29.21 %; ``V1_COLUMN``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_323501_between_its_taps_decided_divergence` and `test_lv_323501s_seal_is_lost_at_n5_decided_divergence`; the seed identical at tick 1 but for the reading, its flows within 4.86e-5 by 600 s, 324E001's boil-off 1.58e-2 (§CXXXV.4) |
 | 356 | LI-328503 between LT-328503's taps on 328C002 (decision 243) | LI = M / M_des x 50, LIC-328503's PV the same, held at 50 % | `data/unit_328c002` ``lt_328503_pct``, ``LT_328503_DES_PCT``, the taps and span; `units/desorption/first_desorber` ``taps``, ``level_pct``, ``lic_328503(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-17: the reading between N7B and N7A, 1 200 mm on the shell above the partition, V1's design holdup at 70.83 %, LIC-328503 seeded and set there; ``taps=False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_328503_between_its_taps_decided_divergence`; the seed identical at tick 1 but for the reading, its flows within 1.96e-5 by 600 s, 324E001's boil-off 6.6e-5 (§CXXXVI.3) |
 | 357 | LI-328505 between LT-328505's taps on 328C004 (decision 244) | LI = M / M_des x 50, LIC-328505's PV the same, held at 50 % | `data/unit_328c004` ``lt_328505_pct``, ``LT_328505_DES_PCT``, the taps and span; `units/desorption/second_desorber` ``taps``, ``level_pct``, ``lic_328505(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-17: the reading between N11B and N11A, 1 000 mm on the shell above the bottom tangent line, V1's design holdup at 71.00 %, LIC-328505 seeded and set there; ``taps=False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_328505_between_its_taps_decided_divergence`; the seed identical at tick 1 but for the reading, its flows within 2.36e-5 by 600 s, 324E001's boil-off 5.1e-7 (§CXXXVII.3) |
+| 358 | LI-328504 between LT-328504's taps on 328C003 (decision 246) | LI = M / M_des x 50, LIC-328504's PV the same, held at 50 % | `data/unit_328c003` ``lt_328504_pct``, ``LT_328504_DES_PCT``, the taps and span; `units/desorption/hydrolyser` ``taps``, ``level_pct``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-17: the reading between N5B and N5A, 1 000 mm below the top tangent line, V1's design holdup read as the drawing's N.L.L. at mid-span, 50 %, V1's own reading, LIC-328504's seed unchanged; ``taps=False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_328504_between_its_taps_decided_divergence`; the seed identical at tick 1 but for the reading, AI-328701 within decision 246's 2e-4 by 600 s, every other flow within 6e-5, 324E001's boil-off 2.4e-4 (§CXXXVIII.3) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -26926,3 +26927,96 @@ Options put: (a) keep as built, the two-tick means asserted; (b) the solve on th
 135), not run: the two arms suggest its map has no root across the jump, so a bracket would land on the edge; (c) a continuous fallback, Pv at the loop
 pressure where the surface refuses the bottoms, a new mechanism touching every refused state. The process engineer
 chose (a): A-60 is closed, the ring the artefact of a far off-design state.
+
+# Part CXXXVIII — Session 127: LI-328504 between its taps; data gap 11 closed (2026-11-17)
+
+Asked (a pasted plan from another tool, its numbers taken as expectations to measure): close data gap 11 on KSB's
+test report, B-156's sixth unit (LT-328504 on 328C003) on its Option 1, and record LT-329501's sheet. Decisions 246 and
+247; register row 358. Scratch: `Tests and Reports\reports\Session_127_b156`.
+
+## CXXXVIII.1 Data gap 11: 335P001's factory test (decision 247)
+
+KSB's quality file UD-AU-335-DZ-0026-012 (scanned, 37 pages, read off the page images). The acceptance test protocols,
+"Abnahme-Prüfprotokoll" BP2, pp. 25 (335P001A, K 77746, order position 007900/1) and 29 (335P001B, K 77747, 007900/2):
+CPKCHXYD 80-250, ISO 9906 class 1, cold water, closed bed; guarantee Q 82.00 m3/h, H 65.20 m, eta 60 %, 2 940 1/min,
+P 29.40 kW at 1.22 kg/dm3, motor 37 kW; impeller 213 mm, remachining form A06; measuring bores 124.90 and 79.50 mm.
+Values at the guaranteed speed, as printed:
+
+| Point | A: Q m3/h | A: H m | A: P(1.22) kW / eta % | B: Q m3/h | B: H m | B: P(1.22) kW / eta % |
+|---|---|---|---|---|---|---|
+| 4 | 0.00 | 68.68 | 20.34 / 0.00 | 0.00 | 68.96 | 20.38 / 0.00 |
+| 3 | 41.73 | 69.93 | 24.97 / 38.87 | 41.49 | 70.58 | 25.11 / 38.79 |
+| 5 | 70.84 | 68.86 | 29.46 / 55.08 | 71.04 | 68.30 | 29.54 / 54.63 |
+| 1 | 82.75 | 66.91 | 31.14 / 59.14 | 81.84 | 66.79 | 31.09 / 58.47 |
+| 6 | 118.75 | 59.00 | 34.96 / 66.66 | 121.80 | 58.21 | 35.70 / 66.06 |
+| 2 | 157.43 | 45.87 | 38.29 / 62.72 | 158.85 | 45.90 | 39.14 / 61.96 |
+
+The parts list's two impellers (§CXXVII.4): the casting certificates (pp. 7, 10) give 230 as "LAUFRAD CPK 260-080-",
+pattern Z038108, 1.4306, the pump impeller, executed at 213 mm; and 230.02 as "LAUFRAD KWPK 242-P03", pattern Z041370,
+which the balancing certificate (p. 11) names "Hyd. Laufrad", the hydrodynamic shaft seal's impeller, not a second pump
+impeller. The operating manual's §4.3.3 (DZ-0026-008), cited by the plan, was not opened.
+
+The law H = 71 - 5 (Q / 80)^2 against the points: +2.0 to +2.3 m at shut-off, -0.3 to -0.9 m at 42 m3/h, -1.2 to
+-1.8 m at 71, -1.0 to -1.3 m at 82, +1.0 to +1.2 m at 119-122, +5.4 to +5.8 m at 157-159: the plan's "within 0.5-1.0 m"
+holds only near 42 m3/h. What the header takes from the curve is the droop from shut-off to its 62.19 m3/h,
+`KAPPA` = rho g droop / dP_A,des = 0.152 on the law's 3.02 m. A cubic through each pump's six points: H(0) 68.61 and
+68.97 m, H(62.19) 69.26 and 69.27 m, a droop of -0.65 and -0.31 m (a rising curve; `KAPPA` -0.03 to -0.07), and a slope
+at 62.19 m3/h of -0.083 and -0.094 m per m3/h against the law's -0.097. Kept (decision 247): the slope at design is the
+test's; the shut-off stands 2.0-2.3 m (about 0.28 bar on 1 221 kg/m3) above it, the dead-head bracket with it. No header
+step was run on the refit, which was not taken. Data gap 11 is closed.
+
+## CXXXVIII.2 328C003 and LT-328504, as read (decision 246)
+
+Uhde's UD-AU-328-EC-0003 rev. 01, principle sketch p. 5 (the page image at 400 dpi): from the top tangent line N5A
+475 mm down, N5B 1 000 mm below N5A, the N.L.L. 975 mm down, between them; tray 1 below N5B, N2 below tray 1; the shell
+20 850 mm between tangent lines, I.D. 1 950, 17 trays at 1 100 mm. N5B and N5A stand 19.375 and 20.375 m above the
+bottom tangent line, not the plan's 19.2-20.2 m. Uhde's level sheet UD-MR-G00-EC-0134 p. 6 (printed 5 / 6, rev. 2),
+LT 328504, loop L 328504: 328C003, ammonia water / carbamate gas, design 25.00 bar g and 230 C, 14.7 bar a and 190 C,
+908 kg/m3, 0-96.15 mbar, 1 000 mm, DN 80 PN 63: 1.080 times the head. The plan's 16.8 bar a, 200 C, 896.5 / 9.5 kg/m3
+and 0-90 mbar are not on the sheet.
+
+V1's design holdup, 34 062 kg, stands 12.554 m deep (`C003_H_DES_M`), 6.82 m under N5B: on the taps it reads 0 %.
+Built (Option 1): LI = clamp(LI_des + (M - M_des) / (rho A L) x 100, 0, 100), rho 908.0, A 2.98648 m2, L 1.000 m; the
+span holds 2 711.7 kg; LI_des = (0.475 + 1.000 - 0.975) / 1.000 = 50.00 %, V1's own reading, so LIC-328504's seed and
+set point are unchanged. The design holdup is read as the drawing's N.L.L.; the liquid's elevation is V1's. 25.12
+times V1's reading per kilogram; 0 and 100 % at 1 355.9 kg below and above M_des. No stop, alarm or range reads
+LI-328504 (an uncut grep): its consumers are the packet's ``LI_328504``, the faceplate, the bargraph and LIC-328504.
+
+## CXXXVIII.3 Measured on both sides
+
+* The unit alone at 0.1 s (`probe_c003.py`), 746 cut 25 %: the holdup dips 434.9 kg on the taps, the reading 33.96 to
+  55.26 %, two stroke reversals after 600 s, then monotone; V1's reading dips 3 144.8 kg in the hour, 2 566.0 kg in the
+  first 30 min. 746 up 20 %: +307.9 kg against +2 357.3, three reversals. The stiffer loop is damped; no ring.
+* The seed (`measure_c003.py`, decision 230's scoring, unrounded): tick 1 differs only in ``328C003.level_pct``. By
+  600 s: AI-328701 1.867e-4 (over 6e-5; restated to 2e-4 for the unit, decision 246); the next flows 2.56e-5 (747),
+  2.38e-5 (739); the boil-offs 2.42e-4 (324E001) and 8.1e-5 (322R001); the holdup 0.070 kg below V1's law.
+* The earlier units' parts with 328C003 on its taps on both sides: 323C003's boil-off 1.587e-2 (1.582e-2), inside
+  decision 241's 1.6e-2; 323D011's 4.330e-3 (4.24e-3), over decision 233's 4.3e-3, restated to 4.4e-3 by the process
+  engineer; the seed's own part 4.79e-5 (4.88e-5); 328C002's 2.270e-5 and 9.96e-5; 328C004's 1.815e-5 and 1.26e-7.
+* Both sides (`test_li_328504_between_its_taps_decided_divergence`): 746 cut 25 % for 30 min, the design tick ``==``
+  V1's in everything, each side reading its own law every tick. The V1 harnesses run ``taps=False``.
+* A save on V1's reading (`test_snapshot.py`): the set point stays 50 %, a 49.5 % PV is restated to 37.44 %, the first
+  tick unmoved. A save at the design holdup is unchanged by the restatement.
+
+## CXXXVIII.4 Pins moved, and the checks
+
+Recorded in one pass of the nine-group suite with the approx recorder (`plug\rec127.py`), restated by `repin246.py`, the
+old value in each docstring. `test_hydrolyser.py`: MP steam lost 185.975 C and 77.617 ppm (185.915, 77.645); 746 up a
+fifth 197.269 C and 7.946 ppm (197.383, 7.155); twice the urea 195.176 C and 9.956 ppm (195.161, 10.062); PV-328203 at
+20 % lifts SV32852 at 590.5 s and vents 509.01 kg (618.5, 481.97); PV-328203 shut, 23 lifts from 447.0 s every 142.0 s,
+27 134.17 kg/h, 738.43 kg (20, 459.0, 152.5, 27 141.85, 693.71); a full column reads 100 % (83.04). The stiffer loop
+holds more liquor under the head space, so the vapour space is smaller when the overhead throttles.
+`test_synthesis_loop_decided_equivalence.py`: 141.5019 (141.5020); A-21's ringing tick 227 356.3 kg/h, 131 847.3 and
+131 860.6 kg/h (227 355.8, 131 847.0, 131 860.3); B-103 2 223.46 kg, 141.9951 bar a; B-104 26 608.7 and 32 041.0 kg/h,
+8 402.9 kg; B-106's window mean 71.39 (71.29). `test_recirc.py` as §CXXXVIII.3, and 323D011's flow part 3.009e-4 (3.010e-4). The suite otherwise passed under
+the recorder; `test_intro_model3d.py`'s pipe test fails under the recorder only, as in session 126. Rerun after the
+restatement, without the recorder: `test_hydrolyser.py` and `test_recirc.py` (21), the synthesis loop's decided
+tests (22), the finishing, data, docs, snapshot, layering, simulator and hydrolyser-equivalence files (652).
+`grep -rn "PyQt6"` below `hmi` prints nothing; `units/desorption/hydrolyser.py` is 547 lines, `data/unit_328c003.py` 319.
+
+## CXXXVIII.5 LT-329501's sheet (B-156's seventh unit, not built)
+
+Uhde's UD-MR-G00-EC-0133 p. 3 (printed 2 / 5, rev. 2), LT 329501, loop L 329501: location "L:329256 U:329257", both
+sides "High Pressure Condensate", liquid; design 182 bar g and 130 C; 141 bar a, 99 C, 1 133 kg/m3; 0-1 200 mbar over
+10 000 mm, 1.080 times the head; Emerson 1151 DP, manifold PN 400. The plan's 211 C is 329D005's column. Not read:
+UD-MR-329-EC-0001 p. 3 and isometric UD-RL-100-MB-0420. The design reading is the process engineer's.

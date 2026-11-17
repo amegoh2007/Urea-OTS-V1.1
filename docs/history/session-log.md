@@ -5197,3 +5197,12 @@ and not taken; 328P007's L2 stop moves to 689 kg (decision 244). The seed parts 
 323C003's boil-off part stays 1.582e-2. A-60's ring is LV-322501's Pv jumping across the rigorous surface's edge
 (907 bar, then refused: water's 3.5 bar) through the one-tick overflow tear; closed as built (decision 245). Part
 CXXXVII; register row 357.
+
+### Session 127 — B-156's sixth unit, LI-328504 between its taps; data gap 11 closed (2026-11-17)
+
+Ran a pasted plan, its numbers checked on the page images: KSB's test tables are as pasted; LT-328504's sheet is not
+(rev. 2: 908 kg/m3, 0-96.15 mbar, 14.7 bar a, 190 C), nor are its tap heights (N5A / N5B 19.375 / 20.375 m above the
+bottom tangent line). The N.L.L. stands mid-span, so V1's design holdup, kept, reads 50 % on the taps: LI-328504 between
+them, 25.1 times V1's gain, the loop damped; AI-328701's seed part restated to 2e-4 (decision 246). Data gap 11 closed
+on KSB's K 77746 / 77747, the law kept, its slope at design the test's (decision 247). LT-329501's sheet read, not
+built. Part CXXXVIII; register row 358.

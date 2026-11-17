@@ -4,7 +4,7 @@
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-17, session 126
+**Last updated:** 2026-11-17, session 127
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -20,23 +20,23 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   (decision 189). The 335 melt header is computed on AC4 PC35.2 (decision 224), LV-324501A on a 1 s positioner lag
   and its sheet's 6.9 bar a inlet (decisions 236, 237); a restore opens it on the save's drain (decision 238).
   Trips 35.1, 35.3 and 35.4 act on the header as AC4 PC35 draws them (decision 228). LI-323502, LI-323503 and
-  LI-323501, LI-328503 and LI-328505 read between their taps (decisions 219, 233, 241, 243, 244), five of B-156's seven. PC21's timers run AC4's minutes (decisions 229, 231).
+  LI-323501, LI-328503, LI-328505 and LI-328504 read between their taps (decisions 219, 233, 241, 243, 244, 246), six of B-156's seven. PC21's timers run AC4's minutes (decisions 229, 231).
   FY-321404 is shown and set on the DCS's formula (decision 235).
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
 * **Open.** `handoff.md`: Section A none, Section B five (B-118 with B-120 folded in, B-125, B-126, B-136 and
-  B-156), Section C none, 9 open data gaps. Every data gap
+  B-156), Section C none, 8 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
+* **Session 127** (Part CXXXVIII; decisions 246, 247). B-156's sixth unit: LI-328504 reads between LT-328504's taps on
+  328C003, V1's design holdup read as the drawing's N.L.L. at mid-span (50 %, V1's reading), AI-328701's seed part
+  restated to 2e-4. Data gap 11 closed on KSB's factory test of 335P001A / B (213 mm impeller), the head law kept.
+  LT-329501 not built: its sheet read, the design reading the process engineer's (report: `Tests and Reports\reports\Session_127_b156`).
 * **Session 126** (Part CXXXVII; decisions 244, 245). B-156's fifth unit: LI-328505 reads between LT-328505's taps
   on 328C004, V1's design holdup kept at 71.00 % (the drawing's N.L.L., 30.00 %, measured and not taken), 328P007's
   L2 stop at 689 kg, the seed within decision 230's bound. A-60 traced to LV-322501's Pv jumping across the rigorous
   surface's edge and closed as built (report: `Tests and Reports\reports\Session_126_b156`).
-* **Session 125** (Part CXXXVI; decision 243). 'V1.1 Gap Closure.docx' read and checked: a generic blueprint that
-  closes no open item, its numbers not taken (report: `Tests and Reports\reports\Session_125_gaps`). B-156's fourth
-  unit: LI-328503 reads between LT-328503's taps on 328C002 (UD-AU-328-EC-0001), V1's design holdup kept at 70.83 %,
-  328P006's L2 stop now at 693 kg; the seed within decision 230's bound with no restatement.
-* **Sessions 121 to 124** (Parts CXXXI, CXXXIII to CXXXV; decisions 219, 230, 232 to 235, 239 to 242). LI-323502,
+* **Sessions 121 to 125** (Parts CXXXI, CXXXIII to CXXXVI; decisions 219, 230, 232 to 235, 239 to 243). LI-323502,
   LI-323503 and LI-323501 between their taps; data gaps 2 and 8 signed off; 322P002's field delivery to FI-322402's 40 m3/h; FY-321404 on the DCS's formula;
   A-57, B-127, A-59 and B-135 closed as built. The gap survey: `Tests and Reports\reports\Session_123_gaps`.
 * **Session 120** (Part CXXX; decisions 218 and 228). Every file the simulator uses lives in its folder; the suite,
@@ -70,9 +70,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 127 | `docs/history/session-log.md` |
-| Decision | 246 | `docs/decisions.md` |
-| As-Built Part | CXXXVIII | the As-Built reference, appended at its end |
+| Session | 128 | `docs/history/session-log.md` |
+| Decision | 248 | `docs/decisions.md` |
+| As-Built Part | CXXXIX | the As-Built reference, appended at its end |
 | Handoff Section A | A-61 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |
 
