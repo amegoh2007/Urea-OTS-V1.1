@@ -52,7 +52,7 @@ integral carries it (decision 24):
 
     dM/dt = m_738 + m_748 + m_750 + m_775 - gen - m_743
 
-**The level** is M / M_des x 50. LIC-328503 strokes LV-328503 on the IEC 60534 liquid law: its
+**The level** is LT-328503's reading between its taps (decision 243, below). LIC-328503 strokes LV-328503 on the IEC 60534 liquid law: its
 inlet is 328P006's discharge — the live column pressure, the live liquid head over the fixed
 11.73 m drop to the pump, and the pump's rated 19.7 bar — and its outlet the hydrolyser's live
 pressure; its choke the liquor's own bubble pressure at the bottoms' temperature (B-43).
@@ -119,6 +119,12 @@ Each is charged here as its departure from its producer's design,
 on the drum's, the hydrolyser's and 328C004's temperatures of the tick before (all three step
 after this unit). At the design seed each is V1's to the bit; ``live_inlets=False`` is V1's, which
 the plant-level harness keeps.
+
+An eighth, decided 2026-11-17 (decision 243, handoff B-156): **LI-328503 reads between LT-328503's
+taps**, N7B and N7A, 300 and 1500 mm above the partition (`data.unit_328c002.lt_328503_pct`):
+70.83 % at V1's design holdup, LIC-328503's set point, 2.34 times V1's reading per kilogram, 0 and
+100 % at the taps. AC4's L2 stop reads it too, so 328P006A / B stop at 693 kg, not V1's reading's
+159 kg. V1 reads M / M_des x 50; ``taps=False`` and ``lic_328503(taps=False)`` are V1's.
 
 A seventh, decided 2026-10-22 (decision 150, decision 23's class): **LV-328503 on Fisher's trim**
 (UD-MR-G00-DZ-0014, item 022) — equal percentage, rated Cv 82.2, FL 0.819, from 56.95 %, where its
@@ -192,6 +198,7 @@ from ureasim.data.unit_328c002 import (
     LIC_328503_KC,
     LIC_328503_SP_PCT,
     LIC_328503_TI_S,
+    LT_328503_DES_PCT,
     LV503_CHARACTERISTIC,
     LV503_FL,
     LV503_OP_DES_PCT,
@@ -208,6 +215,7 @@ from ureasim.data.unit_328c002 import (
     SV32850_SET_BARA,
     SV32850_T_REL_K,
     SV32850_Z_REL,
+    lt_328503_pct,
 )
 from ureasim.data.unit_328c003 import C003_T_C
 from ureasim.thermo import iapws
@@ -225,12 +233,14 @@ INV_MW_FLOOR = 1e-12
 DT_FLOOR_S = 1e-9
 
 
-def lic_328503() -> ProcessLoop:
-    """LIC-328503, the bottoms level. DIRECT acting: a level above set point opens LV-328503."""
+def lic_328503(taps: bool = True) -> ProcessLoop:
+    """LIC-328503, the bottoms level. DIRECT acting: a level above set point opens LV-328503.
+    Seeded on LT-328503 between its taps, the design holdup's 70.83 % (decision 243);
+    ``taps=False`` is V1's 50 %."""
+    r = LT_328503_DES_PCT if taps else LIC_328503_SP_PCT
     return ProcessLoop(
         tag="LIC-328503", Kc=LIC_328503_KC, Ti=LIC_328503_TI_S, Td=0.0, act=-1.0,
-        op=LV503_OP_DES_PCT, sp=LIC_328503_SP_PCT, pv=LIC_328503_SP_PCT,
-        pv1=LIC_328503_SP_PCT, pv2=LIC_328503_SP_PCT,
+        op=LV503_OP_DES_PCT, sp=r, pv=r, pv1=r, pv2=r,
         op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=100.0)
 
 
@@ -308,6 +318,13 @@ class FirstDesorber:
     #: carries this switch and never the stand-in; False, V1's, is no stop.
     l2_stop: bool = True
     p006_stopped: bool = False
+    #: LT-328503 between its taps (decided 2026-11-17, decision 243); False is V1's M / M_des x 50.
+    taps: bool = True
+
+    def level_pct(self) -> float:
+        """LI-328503 [%] on the present holdup: between LT-328503's taps, or V1's ratio."""
+        return (lt_328503_pct(self.m_kg) if self.taps
+                else self.m_kg / C002_M_DES_KG * C002_LEVEL_DES_PCT)
 
     def step(self, lic: ProcessLoop, m_738_kgh: float, t_738_c: float,
              m_748_kgh: float, y_748: dict, m_750_kgh: float, y_750: dict, m_775_kgh: float,
@@ -338,7 +355,7 @@ class FirstDesorber:
         t_pre = self.t_c
         cp = aqueous_cp(CP_DESORPTION, C002_T_BOT_C, t_pre)
         m_in = m_738_kgh + m_748_kgh + m_750_kgh + m_775_kgh
-        level = self.m_kg / C002_M_DES_KG * C002_LEVEL_DES_PCT
+        level = self.level_pct()
         # The overhead's live molar mass, off last tick's vapour: a tear, closed at the end.
         mw_737 = 1.0 / max(sum(self.y_737.get(k, 0.0) / MW[k] for k in SOLUTION_SPECIES),
                            INV_MW_FLOOR)
@@ -439,7 +456,7 @@ class FirstDesorber:
             m_overflow_kgh=m_overflow, m_relief_kgh=m_relief,
             relief_lifted=self.sv_32850.valve.lifted,
             p_bara=self.p_bara, t_c=self.t_c, t_top_c=self.t_c - C002_DT_TOP_K, m_kg=self.m_kg,
-            level_pct=self.m_kg / C002_M_DES_KG * C002_LEVEL_DES_PCT,
+            level_pct=self.level_pct(),
             w=dict(self.w), y_737=dict(self.y_737), vle_domain=domain,
         )
 

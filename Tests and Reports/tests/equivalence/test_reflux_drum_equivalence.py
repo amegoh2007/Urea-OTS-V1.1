@@ -567,7 +567,7 @@ def test_the_drum_takes_737_on_the_same_tick(v1):
     this tick's 737 and the column's state after its step; the column takes 775 and the drum's
     pressure a tick late. A feed cut and then a reflux set-point step move every hand-off."""
     s = _v1_state(v1)
-    col2, lic2 = fd.FirstDesorber(l2_stop=False), fd.lic_328503()
+    col2, lic2 = fd.FirstDesorber(taps=False, l2_stop=False), fd.lic_328503(taps=False)
     drum, loops = _drum_and_loops()
     seen = set()
     for k in range(3000):

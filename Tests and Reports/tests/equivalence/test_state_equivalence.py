@@ -75,7 +75,7 @@ def test_the_desorbers_recycles_through_the_plant_state_are_v1s(v1):
     748 and 750 carried by `PlantState.tears`: the delay is V1's, tick for tick."""
     s = c004_eq._v1_state(v1)
     state = PlantState()
-    col2, lic2 = fd.FirstDesorber(), fd.lic_328503()
+    col2, lic2 = fd.FirstDesorber(taps=False), fd.lic_328503(taps=False)
     col3, loops3 = hy.Hydrolyser(), hy.HydrolyserLoops()
     col4, loops4 = sd.SecondDesorber(fv_329401=sd.V1_FV_329401), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
     moved = set()

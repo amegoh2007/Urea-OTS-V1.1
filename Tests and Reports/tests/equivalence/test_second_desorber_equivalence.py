@@ -604,7 +604,7 @@ def test_the_desorber_takes_749_on_the_same_tick(v1):
     748 a tick late, the hydrolyser 328C004's pressure a tick late. A feed cut and then an MP
     steam step move every hand-off."""
     s = _v1_state(v1)
-    col2, lic2 = fd.FirstDesorber(l2_stop=False), fd.lic_328503()
+    col2, lic2 = fd.FirstDesorber(taps=False, l2_stop=False), fd.lic_328503(taps=False)
     col3, loops3 = hy.Hydrolyser(), hy.HydrolyserLoops()
     col4, loops4 = sd.SecondDesorber(fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401))
     m748, y748 = t.C002_M748_DES_KGH, dict(t.DES_C003.y)

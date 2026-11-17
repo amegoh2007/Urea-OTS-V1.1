@@ -97,6 +97,48 @@ C002_M_FLOOR_KG = 1.0
 #: read 377 % there. Above it the column overflows (decision 11, applied as a standing rule).
 C002_FULL_KG = C002_VOL_M3 * C002_RHO_KGM3
 
+#: LT-328503's taps (decision 243, handoff B-156's fourth unit). Uhde's datasheet UD-AU-328-EC-0001
+#: (`References/Datasheets/328C002 328C004 Datasheet.pdf`, scanned, read from the page images):
+#: N7B and N7A, the transmitter's pads, at EL 13 330 and 14 530 mm on the principle sketch (p. 6),
+#: on the shell above the flat partition at EL 13 030 mm that is 328C002's floor (the tray
+#: arrangement, p. 7). The lower tap is 300 mm above the partition, the span 1 200 mm, as Uhde's
+#: level sheet UD-MR-G00-EC-0134 p. 6 prints it (set range 110.51 mbar on 923.0 kg/m3, 1.02 times
+#: the head). The tray arrangement draws L.L.L. 300 mm, N.L.L. 725 mm and H.L.L. 1 150 mm above the
+#: partition; V1's 1.150 m "normal" sump level is the drawing's H.L.L., kept as the design holdup.
+LT_328503_TAP_LO_M = 0.300
+LT_328503_SPAN_M = 1.200
+LT_328503_RHO_KGM3 = 923.0
+
+#: The liquid one span of LT-328503 holds [kg], 1 359: the shell's bore between the taps at the
+#: sheet's density.
+LT_328503_SPAN_KG = LT_328503_RHO_KGM3 * math.pi * 0.25 * C002_ID_M ** 2 * LT_328503_SPAN_M
+
+#: LT-328503's reading at the design holdup [%], 70.83: the sump's 1.150 m less the lower tap's
+#: 0.300 m, over the span. LIC-328503's set point between the taps.
+LT_328503_DES_PCT = (C002_H_NLL_M - LT_328503_TAP_LO_M) / LT_328503_SPAN_M * 100.0
+
+
+def lt_328503_pct(m_kg: float) -> float:
+    """LI-328503 [%]: the height of 328C002's sump liquid between LT-328503's taps (decision 243).
+
+    Process utility
+    ---------------
+    What the board shows, what LIC-328503 holds by LV-328503 and what AC4's L2 stop on 328P006A / B
+    reads. A DP cell reads only between its taps: 0 % at 625 kg, the sump about 300 mm deep and the
+    trays' froth still on them (V1 reads 19.7 % there), 100 % at the upper pad; the reading moves 2.34
+    times as far per kilogram as V1's 50 % over the design holdup, which counts the trays' froth.
+    AC4's 5 % L2 stops 328P006A / B at 693 kg, not V1's reading's 159 kg.
+
+    Equation
+    --------
+        LI = clamp( LI_des + (M - M_des) / (rho A L) . 100, 0, 100 )
+
+    written as the departure from the design holdup, so the design holdup reads its set point
+    exactly; the trays' froth is the design's, held in M_des. Source: As-Built §CXXXVI.
+    """
+    return min(max(LT_328503_DES_PCT + (m_kg - C002_M_DES_KG) / LT_328503_SPAN_KG * 100.0, 0.0),
+               100.0)
+
 # ======================================================================================
 # The pressure and the bubble point
 # ======================================================================================
@@ -220,6 +262,8 @@ SV32850_COUNT = 2
 __all__ = [
     "C002_ID_M", "C002_SHELL_M", "C002_VOL_M3", "C002_H_NLL_M", "C002_RHO_KGM3",
     "C002_M_DES_KG", "C002_LEVEL_DES_PCT", "C002_M_FLOOR_KG", "C002_FULL_KG",
+    "LT_328503_TAP_LO_M", "LT_328503_SPAN_M", "LT_328503_RHO_KGM3", "LT_328503_SPAN_KG",
+    "LT_328503_DES_PCT", "lt_328503_pct",
     "C002_DT_TOP_K",
     "C002_DP_COL_BAR", "C002_AREA_M2", "C002_LAM748_KJKG", "C002_LAM750_KJKG",
     "C002_SENS_DES_KW", "C002_Q_DES_KW", "C002_MW737_DES",

@@ -358,7 +358,7 @@ def test_the_kremser_stage_is_v1s(v1):
 
 
 def test_the_state_and_the_controller_are_seeded_as_v1_seeds_them(v1):
-    s, col, lic = _v1_state(v1), fd.FirstDesorber(l2_stop=False), fd.lic_328503()
+    s, col, lic = _v1_state(v1), fd.FirstDesorber(taps=False, l2_stop=False), fd.lic_328503(taps=False)
     assert (s.a328_c002_M, s.a328_c002_T, s.a328_c002_T_prev, s.a328_c002_P, s.w_328c002,
             s.y_328_737) == (col.m_kg, col.t_c, col.t_prev_c, col.p_bara, col.w, col.y_737)
     v1c = s.LIC_328503
@@ -404,7 +404,7 @@ def _run(v1, script, ticks: int, before=None, decided=ALL):
     """Drive the column alone through `script(k)`, comparing everything every tick."""
     if "valve" not in decided:
         raise ValueError("the port runs LV-328503 on Fisher's trim; run V1's in its divergence")
-    s, col, lic = _v1_state(v1, decided), fd.FirstDesorber(l2_stop=False), fd.lic_328503()
+    s, col, lic = _v1_state(v1, decided), fd.FirstDesorber(taps=False, l2_stop=False), fd.lic_328503(taps=False)
     if before:
         before(s, col, lic)
     b = None
@@ -499,7 +499,7 @@ def test_the_pump_at_the_heel_decided_divergence(v1):
     """V1 draws LV-328503's flow from an empty sump and its floor makes the liquid; the port
     caps 328P006 at the heel, flags it, and makes nothing. Decision 24, B-42 and B-43 stand on
     both sides, so the liquid's books are charged what boils."""
-    s, col, lic = _v1_state(v1), fd.FirstDesorber(l2_stop=False), fd.lic_328503()
+    s, col, lic = _v1_state(v1), fd.FirstDesorber(taps=False, l2_stop=False), fd.lic_328503(taps=False)
     _manual(100.0)(s, col, lic)
     made_v1 = made = 0.0
     parted = None
@@ -525,7 +525,7 @@ def test_328p006s_low_level_stop_decided_divergence(v1):
     first reads below its 5 % stand-in L2: there AC4 stops 328P006A and B on the port and 743 is
     nothing, where V1's pair runs on to the heel and its floor makes the liquid. The port runs
     again at 7 % and never reaches the heel."""
-    s, col, lic = _v1_state(v1), fd.FirstDesorber(), fd.lic_328503()
+    s, col, lic = _v1_state(v1), fd.FirstDesorber(taps=False), fd.lic_328503(taps=False)
     _manual(100.0)(s, col, lic)
     made_v1 = made = 0.0
     parted = restart = None
@@ -549,6 +549,33 @@ def test_328p006s_low_level_stop_decided_divergence(v1):
     assert (parted, restart) == (349, 421)
     assert made_v1 > 1.0
     assert abs(made) < 1e-9
+
+
+def test_li_328503_between_its_taps_decided_divergence(v1):
+    """Decision 243 (handoff B-156's fourth unit), both sides. V1 reads LI-328503 as M / M_des x 50
+    and holds 50 %; the port reads LT-328503 between N7B and N7A, 300 and 1500 mm above the
+    partition (Uhde UD-AU-328-EC-0001 p. 6; EC-0134 p. 6), and holds the design holdup's 70.83 %.
+    The design tick is V1's in everything but the reading; 738 cut 25 % at 1 s, each side reads its
+    own law on its own holdup every tick, and each brings its holdup back to the design's."""
+    s, col, lic = _v1_state(v1), fd.FirstDesorber(l2_stop=False), fd.lic_328503()
+    dips = [col.m_kg, s.a328_c002_M]
+    for k in range(18000):
+        x = _design(m738=0.75 * t.C002_M738_DES_KGH) if k >= 10 else _design()
+        _feed(s, x)
+        a = _v1_c002(v1, s, x["m738"], x["t738"], DT, decided=ALL)
+        b = _port(col, lic, x, DT)
+        assert a["LI_328503"] == s.a328_c002_M / c.C002_M_DES_KG * 50.0, f"tick {k}"
+        assert b.level_pct == c.lt_328503_pct(col.m_kg), f"tick {k}"
+        if k == 0:
+            assert (a["in"], a["743"], a["gen"], a["737"], a["q"]) == (
+                b.in_kgh, b.m_743_kgh, b.gen_kgh, b.m_737_kgh, b.q_kw)
+            assert (s.a328_c002_M, s.a328_c002_P, s.a328_c002_T) == (col.m_kg, col.p_bara, col.t_c)
+            assert (a["lvl"], b.lic_pv_pct) == (50.0, c.LT_328503_DES_PCT)
+        dips = [min(dips[0], col.m_kg), min(dips[1], s.a328_c002_M)]
+    assert b.level_pct == pytest.approx(c.LT_328503_DES_PCT, abs=0.01)
+    assert a["LI_328503"] == pytest.approx(50.0, abs=0.01)
+    assert c.C002_M_DES_KG - dips[0] == pytest.approx(50.9, abs=0.1)
+    assert c.C002_M_DES_KG - dips[1] == pytest.approx(103.0, abs=0.1)
 
 
 # --------------------------------------------------------------------------------------
@@ -589,7 +616,7 @@ def test_the_column_takes_738_on_the_same_tick(v1):
     condensates cut move 735; 328C004's temperature stepped moves 738's."""
     s = _v1_state(v1)
     tank, loops = awt.AmmoniaWaterTank(), awt.TankLoops()
-    col, lic = fd.FirstDesorber(l2_stop=False), fd.lic_328503()
+    col, lic = fd.FirstDesorber(taps=False, l2_stop=False), fd.lic_328503(taps=False)
     t_c004 = d.D003_TII_C + 87.0
     for k in range(3000):
         if k == 1500:
@@ -627,7 +654,7 @@ def test_the_full_shell_decided_divergence(v1):
     held at 20 % on Fisher's equal percentage, decision 150), and
     on every tick after it the port's books close while V1 holds more than the shell.
     Decision 24, B-42 and B-43 stand on both sides."""
-    s, col, lic = _v1_state(v1), fd.FirstDesorber(l2_stop=False), fd.lic_328503()
+    s, col, lic = _v1_state(v1), fd.FirstDesorber(taps=False, l2_stop=False), fd.lic_328503(taps=False)
     _manual(20.0)(s, col, lic)
     parted = None
     for k in range(20000):
@@ -654,7 +681,7 @@ def test_the_full_shell_decided_divergence(v1):
 
 def _both(v1, script, ticks, v1_decided):
     """V1 with `v1_decided` against the port: the tick they part, then both sides at the end."""
-    s, col, lic = _v1_state(v1, v1_decided), fd.FirstDesorber(l2_stop=False), fd.lic_328503()
+    s, col, lic = _v1_state(v1, v1_decided), fd.FirstDesorber(taps=False, l2_stop=False), fd.lic_328503(taps=False)
     parted = a = b = None
     for k in range(ticks):
         x = script(k)
@@ -676,7 +703,7 @@ def test_lv_328503_on_fishers_trim_decided_divergence(v1):
     minutes on, V1's LIC-328503 has closed to 34.35 % passing 23 416 kg/h, the port's to 47.85 %
     passing 23 879 kg/h — the equal-percentage trim's lower gain at design closes it further for
     the same flow — and the levels stand at 50.12 and 50.08 %."""
-    s, col, lic = _v1_state(v1, ALL - {"valve"}), fd.FirstDesorber(l2_stop=False), fd.lic_328503()
+    s, col, lic = _v1_state(v1, ALL - {"valve"}), fd.FirstDesorber(taps=False, l2_stop=False), fd.lic_328503(taps=False)
     script = _step(10, m738=0.7 * t.C002_M738_DES_KGH)
     for k in range(6000):
         x = script(k)
@@ -739,7 +766,7 @@ def test_sv32850_relieves_a_blocked_overhead_decided_divergence(v1):
     three ticks, and reseat — every 2.7 s, 218 lifts in the ten minutes, venting 817 kg: the
     4.96 t/h the column boils at 158.4 C. They part on the tick the valves lift; the liquid's
     books close on both sides."""
-    s, col, lic = _v1_state(v1), fd.FirstDesorber(l2_stop=False), fd.lic_328503()
+    s, col, lic = _v1_state(v1), fd.FirstDesorber(taps=False, l2_stop=False), fd.lic_328503(taps=False)
     parted, lifts, vented, p_hi, lifted = None, 0, 0.0, 0.0, False
     for k in range(6000):
         x = _step(10, pd001=7.0)(k)
@@ -809,7 +836,7 @@ def test_the_liquid_pays_what_boils_decided_divergence(v1, name, script, v1_made
     vanishes from V1's books, 16.2 kg; with 328D001 a bar higher V1 makes the 4.5 kg its head
     space holds back — each exactly V1's integral of boil-up less overhead. The port's books
     close within 10 g."""
-    s, col, lic = _v1_state(v1), fd.FirstDesorber(l2_stop=False), fd.lic_328503()
+    s, col, lic = _v1_state(v1), fd.FirstDesorber(taps=False, l2_stop=False), fd.lic_328503(taps=False)
     made_v1 = made = held_back = 0.0
     for k in range(3000):
         x = script(k)
@@ -845,7 +872,7 @@ def test_the_inlets_at_their_producers_temperatures_decided_divergence(v1):
     boil-up 99.18 kg/h; after ten minutes the column stands at 139.224 C and 3.5225 bar a against
     V1's 139.0 C and 3.5 bar a, its overhead 6744.6 kg/h against 6665.0."""
     def run(kw, live, ticks, check):
-        s, col, lic = _v1_state(v1), fd.FirstDesorber(live_inlets=live, l2_stop=False), fd.lic_328503()
+        s, col, lic = _v1_state(v1), fd.FirstDesorber(taps=False, live_inlets=live, l2_stop=False), fd.lic_328503(taps=False)
         first = None
         for k in range(ticks):
             x = _design()

@@ -531,7 +531,7 @@ def test_the_hydrolyser_takes_746_on_the_same_tick(v1):
     takes 743 and 328C002's state of THIS tick, 328C002 the hydrolyser's 748 a tick late. The
     feed cut, and then the MP steam cut, move both hand-offs."""
     s = _v1_state(v1)
-    col2, lic2 = fd.FirstDesorber(), fd.lic_328503()
+    col2, lic2 = fd.FirstDesorber(taps=False), fd.lic_328503(taps=False)
     col3, loops3 = hy.Hydrolyser(), hy.HydrolyserLoops()
     m748, y748 = t.C002_M748_DES_KGH, dict(t.DES_C003.y)
     seen = set()

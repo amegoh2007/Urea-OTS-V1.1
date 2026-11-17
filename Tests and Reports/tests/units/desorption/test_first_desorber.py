@@ -52,14 +52,16 @@ def test_the_design_point_is_the_pfds():
     _, out, _ = _run(1)
     r = out[0]
     assert (r.in_kgh, r.m_737_kgh, r.m_743_kgh, r.gen_kgh) == (40434.0, 6665.0, 33769.0, 6665.0)
-    assert (r.p_bara, r.level_pct, r.t_top_c) == (3.5, 50.0, r.t_c - 22.0)
+    assert (r.p_bara, r.t_top_c) == (3.5, r.t_c - 22.0)
+    # LT-328503 between its taps (decision 243): the design holdup reads 70.83 %, V1's 50 %.
+    assert r.level_pct == c.LT_328503_DES_PCT == pytest.approx(70.8333, abs=1e-4)
     assert r.t_c == pytest.approx(139.0, abs=1e-13) and r.q_kw == c.C002_Q_DES_KW
     assert not r.suction_lost and r.m_overflow_kgh == 0.0
 
 
 @pytest.mark.parametrize("m750, p, t_c, m737", [
-    (1.2 * t.C002_M750_DES_KGH, 3.86916, 142.5460, 7874.97),
-    (0.8 * t.C002_M750_DES_KGH, 3.19024, 135.7846, 5405.33),
+    (1.2 * t.C002_M750_DES_KGH, 3.86912, 142.5456, 7874.85),
+    (0.8 * t.C002_M750_DES_KGH, 3.19013, 135.7834, 5405.51),
 ])
 def test_the_stripping_vapour_sets_the_pressure_and_the_temperature(m750, p, t_c, m737):
     """750 a fifth up or down: the duty moves the boil-up, the boil-up the pressure, the
@@ -74,14 +76,14 @@ def test_the_stripping_vapour_sets_the_pressure_and_the_temperature(m750, p, t_c
 def test_the_stripping_vapour_lost_the_column_cools_to_its_feeds():
     """748 and 750 stopped: the net duty goes negative and condenses the column's vapour; the
     overhead closes at 328D001's pressure, and the pressure and its bubble point go on falling
-    until the duty balances — five minutes on, 1.482 bar a and 111.28 C, the two liquid feeds'
+    until the duty balances — five minutes on, 1.483 bar a and 111.29 C, the two liquid feeds'
     mixing temperature (111.29 C). V1 clamps the boil-up at zero and holds 128.5 C, making the
     622.5 kW it discards (decided 2026-09-30, handoff B-42)."""
     _, out, made = _run(3000, dict(m748=0.0, m750=0.0))
     r = out[-1]
     assert r.m_737_kgh == 0.0 and abs(r.q_kw) < 0.6
-    assert r.p_bara == pytest.approx(1.48257, abs=1e-5)
-    assert r.t_c == pytest.approx(111.2794, abs=1e-4)
+    assert r.p_bara == pytest.approx(1.48303, abs=1e-5)
+    assert r.t_c == pytest.approx(111.2886, abs=1e-4)
     t_mix = ((t.C002_M738_DES_KGH * t.C002_T738_DES_C + t.C002_M775_DES_KGH * t.D001_T_C)
              / (t.C002_M738_DES_KGH + t.C002_M775_DES_KGH))
     assert r.t_c == pytest.approx(t_mix, abs=0.02)
@@ -89,25 +91,27 @@ def test_the_stripping_vapour_lost_the_column_cools_to_its_feeds():
 
 
 def test_every_inlet_lost_the_column_stands_hot_and_full_of_its_liquid():
+    """Every inlet stopped: LIC-328503 closes LV-328503 as LT-328503 falls, and the column stands
+    with 1234 kg, its sump 44.8 % up between the taps (decision 243; on V1's reading, 918 kg)."""
     _, out, made = _run(3000, dict(m738=0.0, m748=0.0, m750=0.0, m775=0.0))
     r = out[-1]
     assert (r.m_737_kgh, r.m_743_kgh) == (0.0, 0.0)
-    assert r.m_kg == pytest.approx(918.15, abs=0.01) and r.t_c == pytest.approx(126.826, abs=1e-3)
+    assert r.m_kg == pytest.approx(1234.38, abs=0.01) and r.t_c == pytest.approx(127.850, abs=1e-3)
     assert abs(made) < 1e-9
 
 
 def test_lv_328503_holds_the_level_when_328c004s_overhead_is_halved():
     """750 halved: the column strips far less — its bottoms carry 5.4 % NH3 ten minutes on — and
     LV-328503, choking on the bottoms' own bubble pressure at 139 C, still passes them: the level
-    holds 50 %, the valve at 57.98 % on Fisher's trim (decision 150). On V1's choke at 328E021's
+    holds its 70.83 % between LT-328503's taps (decision 243), the valve at 57.97 % on Fisher's trim (decision 150). On V1's choke at 328E021's
     outlet, 190 C, the valve is wide open and the level through 145 % (decided 2026-09-30, handoff
     B-43)."""
     col, out, _ = _run(6000, dict(m750=0.5 * t.C002_M750_DES_KGH))
     r = out[-1]
-    assert r.level_pct == pytest.approx(50.00, abs=0.01)
-    assert r.m_743_kgh == pytest.approx(33635.2, abs=0.1)
-    assert r.lic_op_pct == pytest.approx(57.98, abs=0.01)
-    assert col.w["NH3"] == pytest.approx(0.05423, abs=1e-5)
+    assert r.level_pct == pytest.approx(70.85, abs=0.01)
+    assert r.m_743_kgh == pytest.approx(33628.2, abs=0.1)
+    assert r.lic_op_pct == pytest.approx(57.97, abs=0.01)
+    assert col.w["NH3"] == pytest.approx(0.05419, abs=1e-5)
 
 
 def test_328p006_at_the_heel_delivers_what_the_column_holds():
@@ -127,13 +131,14 @@ def test_328p006_at_the_heel_delivers_what_the_column_holds():
 def test_a_full_shell_overflows():
     """Decision 11. LV-328503 held at 20 %, on Fisher's equal percentage (decision 150): the shell
     fills at 25 t/h and is full at 1462.4 s; from then on the column holds 11 988 kg and 25.4 t/h
-    leaves as the overflow, the books closed to 1e-8 kg over the 2000 s."""
+    leaves as the overflow, the books closed to 1e-8 kg over the 2000 s. LT-328503 reads 100 % at its
+    upper tap (decision 243); V1's reading passes 377 %."""
     col, out, made = _run(20000, man=20.0)
     first = next(k for k, r in enumerate(out) if r.m_overflow_kgh > 0.0)
     assert first * DT == pytest.approx(1462.4, abs=1e-9)
     assert col.m_kg == c.C002_FULL_KG == pytest.approx(11987.77, abs=0.01)
     assert out[-1].m_overflow_kgh == pytest.approx(25386.5, abs=0.1)
-    assert out[-1].level_pct == pytest.approx(377.40, abs=0.01)
+    assert out[-1].level_pct == 100.0
     assert abs(made) < 1e-8
 
 
@@ -153,7 +158,7 @@ def test_sv32850_and_sv32851_hold_a_blocked_column():
     lifts = [k for k in range(1, len(out))
              if out[k].relief_lifted and not out[k - 1].relief_lifted]
     assert lifts[0] == 119 and out[118].p_bara >= c.SV32850_SET_BARA
-    assert out[119].m_relief_kgh == pytest.approx(51916.11, abs=0.01)
+    assert out[119].m_relief_kgh == pytest.approx(51910.57, abs=0.01)
     assert (lifts[-1] - lifts[-2]) * DT == pytest.approx(2.7, abs=1e-9)
     assert min(r.p_bara for r in out[119:]) == pytest.approx(c.SV32850_RESEAT_BARA, abs=1e-9)
     assert out[-1].m_737_kgh == 0.0
@@ -171,14 +176,38 @@ def test_328p006s_run_flag_true_is_the_default_call_and_false_delivers_nothing()
 
 def test_328p006_stops_below_lt_328503s_l2_and_runs_again_past_its_hysteresis():
     """Decision 217: AC4 stops 328P006A / B on LT-328503 below L2 (the stand-in 5 %, 2 %
-    hysteresis). LV-328503 wide open: LI-328503 passes below 5 % at 34.9 s and the pair stops, 743
-    zero; the column refills and the pair runs again at 42.1 s past 7 %. The column never reaches
-    its heel, and its books close."""
+    hysteresis). LV-328503 wide open: LI-328503, between LT-328503's taps (decision 243), passes
+    below 5 % at 21.8 s, 693 kg in the column, and the pair stops, 743 zero; the column refills and
+    the pair runs again at 25.0 s past 7 %. The column never reaches its heel, and its books close."""
     col, out, made = _run(6000, man=100.0)
     stopped = [r.m_743_kgh == 0.0 for r in out]
     first = stopped.index(True)
     back = stopped.index(False, first)
-    assert (first, back) == (349, 421)
+    assert (first, back) == (218, 250)
     assert out[first].lic_pv_pct < 5.0 <= out[first - 1].lic_pv_pct
     assert out[back].lic_pv_pct >= 7.0 > out[back - 1].lic_pv_pct
     assert not any(r.suction_lost for r in out) and abs(made) < 1e-9
+
+
+def test_lt_328503_reads_between_its_taps_and_v1s_reading_is_kept_on_the_flag():
+    """Decision 243 (handoff B-156, both sides): LT-328503 reads 328C002's sump between N7B and N7A,
+    300 and 1500 mm above the partition (Uhde UD-AU-328-EC-0001 p. 6; EC-0134 p. 6, 1200 mm on
+    923 kg/m3). V1's design holdup reads 70.83 %, LIC-328503's seed; 0 % at 625 kg, 100 % at 1985 kg;
+    the flag off, V1's M / M_des x 50. The first tick is the same on either but for the reading."""
+    lo = c.C002_M_DES_KG - c.LT_328503_DES_PCT / 100.0 * c.LT_328503_SPAN_KG
+    assert lo == pytest.approx(625.43, abs=0.01)
+    assert c.lt_328503_pct(lo) == pytest.approx(0.0, abs=1e-12)
+    assert c.lt_328503_pct(lo + c.LT_328503_SPAN_KG) == pytest.approx(100.0, abs=1e-12)
+    assert c.lt_328503_pct(0.5 * lo) == 0.0 and c.lt_328503_pct(c.C002_FULL_KG) == 100.0
+    v1 = fd.FirstDesorber(taps=False)
+    v1.m_kg = lo
+    assert v1.level_pct() == pytest.approx(19.690, abs=1e-3)
+    assert fd.lic_328503().sp == c.LT_328503_DES_PCT and fd.lic_328503(taps=False).sp == 50.0
+    args = (t.C002_M738_DES_KGH, t.C002_T738_DES_C, t.C002_M748_DES_KGH, dict(t.DES_C003.y),
+            t.C002_M750_DES_KGH, dict(t.DES_C004.y), t.C002_M775_DES_KGH, t.C003_P_BARA,
+            t.D001_P_BARA, DT)
+    a = fd.FirstDesorber().step(fd.lic_328503(), *args)
+    b = fd.FirstDesorber(taps=False).step(fd.lic_328503(taps=False), *args)
+    differ = {k for k in a.__dataclass_fields__ if getattr(a, k) != getattr(b, k)}
+    assert differ == {"lic_pv_pct", "level_pct"}
+
