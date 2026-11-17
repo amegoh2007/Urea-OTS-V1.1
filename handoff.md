@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-17, session 125.
+**Last updated:** 2026-11-17, session 126.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -20,22 +20,7 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 # Section A — Rewrite issues
 
-### A-60 — B-104's tubes' take rings with a period of two ticks
-
-*Raised 2026-11-17, session 124 (As-Built §CXXXV.4).* With LT-322501's sump full and the tubes' ceiling on (B-104's
-scenario: LIC-322501 in MAN, LV-322501 at 10 %), the tubes' take alternates 20.5 and 32.8 t/h and 322R001's discharge
-26.3 and 37.8 t/h from one tick to the next over the last 20 s read (ticks 5 800 to 6 000), on either of 323C003's laws; PT-329201 moves
-1e-4 bar with it. Acceptance: the take and the discharge hold one value from tick to tick, or the ring is shown to be
-the plant's; the scenario's two-tick means within their tolerances.
-Established: decision 241 moved the ring's phase by a tick (the cap at tick 2 180, not 2 181), and the single tick 6 000
-then read 37.8 t/h where V1's column reads 26.3; the two-tick means agree to 5 kg/h on either law (`probe_b104.py` in
-`Tests and Reports\reports\Session_124_b156\c003`). The test asserts the means of the held liquor, the take and the
-discharge; its other tick-6000 pins (the submerged fraction, the levels, TT-322004, the loops) are single ticks.
-The 37.7 and 32.7 t/h the test quoted before decision 170 match the ring's high half.
-Ruled out: none yet.
-Options: (a) keep as built, the means asserted; (b) find the quantity read a tick late that rings and solve it on the
-tick, as A-21's saturation fraction was.
-Next step: trace the ring's tear; then the process engineer's choice between (a) and (b).
+*None open.*
 
 ---
 
@@ -167,12 +152,12 @@ load, and all five holds are lost. Acceptance: the plant's TT-322004, the hydrol
 below, 323D001 at its set point, the 100 % pin to the bit. Options: (a) keep as built, L3 reported as not
 fulfilled; (b) the rise off with the change that holds 322R001 (B-118), never alone. Next step: B-118's.
 
-### B-156 — Three level transmitters read V1's holdup ratio, not their taps
+### B-156 — Two level transmitters read V1's holdup ratio, not their taps
 
 *Raised 2026-11-15, session 118 (As-Built §CXXVIII.5).* Uhde's data sheets (UD-MR-G00-EC-0133, EC-0134) print every
-level transmitter's nozzle distance. Ten modelled levels read between their taps on those distances
-(`Tests and Reports/tests/data/test_level_transmitter_sheets.py`). Three still read V1's holdup ratio: LT-328504
-(328C003, 1 000 mm), LT-328505 (328C004, 1 000 mm) and LT-329501 (322E003's sump, 10 000 mm). Acceptance: each reads between its sheet's nozzles on its vessel's datasheet geometry, its
+level transmitter's nozzle distance. Eleven modelled levels read between their taps on those distances
+(`Tests and Reports/tests/data/test_level_transmitter_sheets.py`). Two still read V1's holdup ratio: LT-328504
+(328C003, 1 000 mm) and LT-329501 (322E003's sump, 10 000 mm). Acceptance: each reads between its sheet's nozzles on its vessel's datasheet geometry, its
 design level reproduced; the seed identical to HEAD at tick 1 and, by 600 s, within decision 230's bound (6e-5 relative
 on every unrounded state and flow above 1, near-zero names left out, 2e-3 on the two boil-offs; the seed is not a fixed
 point, B-94) or a bound the process engineer restates for the unit on its measured values, as decisions 233 and 241
@@ -186,14 +171,17 @@ design reading 26.77 %, so LIC-323503's set point and history are seeded there a
 restated on load; LT-323501 on 323C003 (decision 241, §CXXXV), over the neck, the cone and the shell, its design the
 plant's 40 %, LV-323501's seal lost at N5's lower edge (29.21 %); LT-328503 on 328C002 (decision 243, §CXXXVI), N7B and
 N7A 300 and 1 500 mm above the partition, V1's design holdup reading 70.83 % (V1's 1.150 m sump is the drawing's H.L.L.),
-the seed within decision 230's bound. Each move takes the stops on its level with it: 323P008's now stop at 763 kg,
-328P006's at 693 kg; decision 217's on LT-328505 (328P007) moves with the fifth unit. A design reading off V1's
+the seed within decision 230's bound; LT-328505 on 328C004 (decision 244, §CXXXVII), N11B and N11A 210 and 1 210 mm
+above the bottom tangent line, V1's design holdup reading 71.00 % (V1's 0.920 m is the drawing's H.L.L.; its N.L.L.,
+510 mm, 30.00 %, measured and not taken), the seed within decision 230's bound. Each move takes the stops on its
+level with it: 323P008's now stop at 763 kg, 328P006's at 693 kg, 328P007's at 689 kg. A design reading off V1's
 moved 324E001's boil-off past decision 230's 2e-3 on 323D011 and 323C003 (§CXXXIV.4, §CXXXV.3); on 328C002, a design
 reading off V1's too, it stayed at 6.6e-5 (§CXXXVI.3). A unit's move also moves the earlier units' parts, so their
-pins are re-measured with it (§CXXXV.4, §CXXXVI.4): 323C003's boil-off part is 1.582e-2 against decision 241's 1.6e-2. Ruled out without the process
-engineer: a ceiling or overflow V1 has none of (§CXXXI.5). Next step: the fifth unit, LT-328505 on 328C004, whose taps
-N11A / N11B are on the same sketch (UD-AU-328-EC-0001 p. 6: EL 1 210 and 210 mm above 328C004's bottom tangent line);
-both sides measured, and 323C003's boil-off part against its 1.6e-2 measured first. LT-329501 last: it sets 322F001's
+pins are re-measured with it (§CXXXV.4, §CXXXVI.4, §CXXXVII.4): 323C003's boil-off part is 1.582e-2 against decision 241's 1.6e-2, unmoved by
+the fifth unit. Ruled out without the process engineer: a ceiling or overflow V1 has none of (§CXXXI.5). Next step: the
+sixth unit, LT-328504 on 328C003 (UD-AU-328-EC-0003; N5A / N5B 1 000 mm apart above tray 1, read off the page images
+first: V1's 34 251.5 kg design holdup stands about 12.6 m deep, well below the taps, so the design reading is the
+process engineer's choice); both sides measured, 323C003's boil-off part first. LT-329501 last: it sets 322F001's
 suction (data gap 1).
 
 ---

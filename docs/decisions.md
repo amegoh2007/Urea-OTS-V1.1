@@ -1302,3 +1302,21 @@ decision on an item.
      identical at tick 1 but for the reading; by 600 s its flows part 1.96e-5 and the boil-off 6.6e-5, inside decision
      230's bound with no restatement. The process engineer also confirmed session 124's restatement of decision 233's
      boil-off bound to 4.3e-3 (decision 241). As-Built §CXXXVI.1-3.
+244. **LI-328505 reads between LT-328505's taps on 328C004** (2026-11-17, the process engineer's choice, session 126;
+     B-156's fifth unit). N11B and N11A at EL 210 and 1 210 mm above 328C004's bottom tangent line in the nozzle table
+     of Uhde's principle sketch (UD-AU-328-EC-0001 p. 6); Uhde's level sheet UD-MR-G00-EC-0134 p. 7 prints the 1 000 mm
+     and 923 kg/m3: `data.unit_328c004.lt_328505_pct`, written as the departure from V1's design holdup, which reads
+     71.00 %. V1's 0.920 m sump is the drawing's H.L.L. (its N.L.L. is 510 mm, its L.L.L. 100 mm), kept as the design
+     holdup; the drawing's N.L.L. (30.00 %) was measured and not taken. LIC-328505's set point and history are seeded
+     at 71.00 %; a save made on V1's reading is restated as the tap reading of the holdup it held. AC4's L2 stop reads
+     it, so 328P007A / B stop at 689 kg, not 144 kg. ``taps=False`` and ``lic_328505(taps=False)`` are V1's on the
+     harnesses. The seed is identical at tick 1 but for the reading; by 600 s its flows part 2.36e-5 and the boil-off
+     5.1e-7, inside decision 230's bound with no restatement; 323C003's boil-off part stays 1.582e-2. As-Built
+     §CXXXVII.1-4.
+245. **A-60 closed as built: B-104's two-tick ring is kept, its means asserted** (2026-11-17, the process engineer's
+     choice of option (a), session 126). The ring is traced to LV-322501's flashing choke: in B-104's scenario
+     322E001's bottoms (CO2 25-32 wt %, NH3 3 wt %, 136 C) lie on the edge of the rigorous bubble-point surface, which
+     returns about 907 bar on one tick (clamped to PT-329201) and refuses the composition on the next, where
+     `stripper_sump.bottoms_pv_bara` falls back to water's 3.5 bar; the drain flips 21.7 / 41.8 t/h and closes the loop
+     through 322E001's one-tick read of 322R001's overflow. Not taken: the solve on the tick (b), whose map has no root
+     across the jump, and a continuous fallback at the loop pressure (c), a new mechanism. As-Built §CXXXVII.5.

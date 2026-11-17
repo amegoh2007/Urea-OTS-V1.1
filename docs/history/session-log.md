@@ -5187,3 +5187,13 @@ taken (report: `Tests and Reports\reports\Session_125_gaps`). LI-328503 reads be
 holdup kept at 70.83 % (V1's 1.150 m is the drawing's H.L.L.), LIC-328503 seeded there and saves restated; 328P006's
 L2 stop moves to 693 kg (decision 243). The seed parts 1.96e-5 on flows and 6.6e-5 on the boil-off by 600 s, inside
 decision 230's bound. The process engineer confirmed decision 233's restated 4.3e-3. Part CXXXVI; register row 356.
+
+### Session 126 — B-156's fifth unit, LI-328505 between its taps; A-60 traced and closed (2026-11-17)
+
+Ran a pasted plan, its numbers measured: its N.L.L. for 328C004 (720 mm) is not the drawing's 510 mm. LI-328505 reads
+between LT-328505's taps, N11B and N11A 210 and 1 210 mm above the bottom tangent line (UD-AU-328-EC-0001 p. 6;
+EC-0134 p. 7), V1's design holdup kept at 71.00 % (V1's 0.920 m is the drawing's H.L.L.), the N.L.L.'s 30.00 % measured
+and not taken; 328P007's L2 stop moves to 689 kg (decision 244). The seed parts 2.36e-5 by 600 s, inside decision 230;
+323C003's boil-off part stays 1.582e-2. A-60's ring is LV-322501's Pv jumping across the rigorous surface's edge
+(907 bar, then refused: water's 3.5 bar) through the one-tick overflow tear; closed as built (decision 245). Part
+CXXXVII; register row 357.

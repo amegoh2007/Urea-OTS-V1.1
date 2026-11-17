@@ -4,7 +4,7 @@
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-17, session 125
+**Last updated:** 2026-11-17, session 126
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -20,14 +20,18 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   (decision 189). The 335 melt header is computed on AC4 PC35.2 (decision 224), LV-324501A on a 1 s positioner lag
   and its sheet's 6.9 bar a inlet (decisions 236, 237); a restore opens it on the save's drain (decision 238).
   Trips 35.1, 35.3 and 35.4 act on the header as AC4 PC35 draws them (decision 228). LI-323502, LI-323503 and
-  LI-323501 and LI-328503 read between their taps (decisions 219, 233, 241, 243), four of B-156's seven. PC21's timers run AC4's minutes (decisions 229, 231).
+  LI-323501, LI-328503 and LI-328505 read between their taps (decisions 219, 233, 241, 243, 244), five of B-156's seven. PC21's timers run AC4's minutes (decisions 229, 231).
   FY-321404 is shown and set on the DCS's formula (decision 235).
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A one (A-60), Section B five (B-118 with B-120 folded in, B-125, B-126, B-136 and
+* **Open.** `handoff.md`: Section A none, Section B five (B-118 with B-120 folded in, B-125, B-126, B-136 and
   B-156), Section C none, 9 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
+* **Session 126** (Part CXXXVII; decisions 244, 245). B-156's fifth unit: LI-328505 reads between LT-328505's taps
+  on 328C004, V1's design holdup kept at 71.00 % (the drawing's N.L.L., 30.00 %, measured and not taken), 328P007's
+  L2 stop at 689 kg, the seed within decision 230's bound. A-60 traced to LV-322501's Pv jumping across the rigorous
+  surface's edge and closed as built (report: `Tests and Reports\reports\Session_126_b156`).
 * **Session 125** (Part CXXXVI; decision 243). 'V1.1 Gap Closure.docx' read and checked: a generic blueprint that
   closes no open item, its numbers not taken (report: `Tests and Reports\reports\Session_125_gaps`). B-156's fourth
   unit: LI-328503 reads between LT-328503's taps on 328C002 (UD-AU-328-EC-0001), V1's design holdup kept at 70.83 %,
@@ -41,16 +45,10 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   are unchanged to the bit (decision 228, B-146 closed; stand-ins in data gaps 5 and 14). Researched, nothing built:
   the DCS's FFIC-321404 formula is sourced and checked on Book2 (B-128), the CO2 line stands 5 bar over the loop on
   the plant (B-135); A-58 and A-59 raised; then PC21's timers moved to AC4's minutes, A-58 closed (Part CXXXII).
-* **Sessions 117 and 118** (Parts CXXVII, CXXVIII; decisions 210 to 214). V1.1 runs and tests without V1 (decision
-  210, A-33 closed); the trend window has a CLEAR button; the archive was searched for the open gaps; 322P002's
-  delivery is set by hand in the field (decision 212); B-145 closed as built (decision 213); the seven levels on V1's
-  holdup ratio move to their nozzles unit by unit (decision 214, B-156). Research: `Tests and Reports\reports\Session_118_research`.
-* **Session 119 closed A-38, A-40, A-41 and A-50** (Part CXXIX; decisions 215 to 217). `master` is pushed to its own repository.
-  AC4's low-level stops of 328P002, 328P006, 328P007 and 335P001 are built on the process engineer's 5 % L2 with
-  2 % hysteresis (decision 217, A-41); 328P007's service is kept as built (decision 215); the bad-sample test is
-  restated on decision 186 (decision 216, A-40); A-38's run flags have tests; the azeotrope test asserts B-106 on
-  window means three trees agree on (A-50); the engine's own sawtooth there, A-57, is closed by session 122. The seed is unchanged to the bit. The
-  suite: 8 355 tests, all passing (the whole suite, 8 353, before the review's fix and 335P001's test; their files rerun after). Scratch: `Tests and Reports\reports\Session_119_build`.
+* **Sessions 117 to 119** (Parts CXXVII to CXXIX; decisions 210 to 217). V1.1 runs and tests without V1 (decision 210);
+  322P002's delivery set by hand (decision 212); the seven levels move to their nozzles unit by unit (decision 214,
+  B-156); AC4's low-level stops on a 5 % L2 with 2 % hysteresis (decision 217); A-38, A-40, A-41 and A-50 closed.
+  Scratch: `Tests and Reports\reports\Session_118_research`, `Session_119_build`.
 * **B-118 in scratch, sessions 99 to 112** (As-Built Parts CX to CXIX and CXXII). Session 99 ran the gap
   resolution plan (decisions 182 to 188). On bundle A 92.3 % passes decision 180's test and the low holds latch;
   B-126 (b)'s species holdup removes the low holds' latch and loses 92.3 % on the cold branch (session 103).
@@ -72,9 +70,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 126 | `docs/history/session-log.md` |
-| Decision | 244 | `docs/decisions.md` |
-| As-Built Part | CXXXVII | the As-Built reference, appended at its end |
+| Session | 127 | `docs/history/session-log.md` |
+| Decision | 246 | `docs/decisions.md` |
+| As-Built Part | CXXXVIII | the As-Built reference, appended at its end |
 | Handoff Section A | A-61 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |
 
