@@ -139,9 +139,11 @@ LIC_324501_X_DES_PCT = round((HEADER_P_DES_BARG - PC35_E1_BIAS_BARG) * PC35_XTAB
 
 #: 335P001A / B, the melt pumps (KSB, UD-AU-335-EC-0039): the head curve as read on the scanned
 #: datasheet, H = H0 - c (Q / Q_ref)^2 [m, m3/h] — shut-off about 71 m, the duty marker about 80 m3/h
-#: and 65 m on the middle of the three curves; the impeller legend is unreadable (As-Built §CXIX.4;
-#: open data gap). Only the curve's droop enters the header: LV-324501A's inlet is the design's,
-#: moved by the head the flow costs.
+#: and 65 m on the middle of the three curves (As-Built §CXIX.4). Checked on KSB's factory tests
+#: K 77746 / 77747 (UD-AU-335-DZ-0026-012 pp. 25, 29; the 213 mm impeller) and kept (decision 247):
+#: its slope at the header's design flow is the test's; its shut-off stands 2.0-2.3 m above the
+#: test's 68.7-69.0 m (As-Built §CXXXVIII.1). Only the curve's droop enters the header: LV-324501A's
+#: inlet is the design's, moved by the head the flow costs.
 P001_H0_M = 71.0
 P001_DROOP_M = 5.0
 P001_Q_REF_M3H = 80.0
