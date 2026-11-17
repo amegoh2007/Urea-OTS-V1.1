@@ -76,7 +76,7 @@ def test_the_desorbers_recycles_through_the_plant_state_are_v1s(v1):
     s = c004_eq._v1_state(v1)
     state = PlantState()
     col2, lic2 = fd.FirstDesorber(taps=False), fd.lic_328503(taps=False)
-    col3, loops3 = hy.Hydrolyser(), hy.HydrolyserLoops()
+    col3, loops3 = hy.Hydrolyser(taps=False), hy.HydrolyserLoops()
     col4, loops4 = sd.SecondDesorber(taps=False, fv_329401=sd.V1_FV_329401), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401),
                                          lic_328505=sd.lic_328505(taps=False))
     moved = set()

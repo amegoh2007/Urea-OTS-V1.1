@@ -105,6 +105,51 @@ C003_FULL_KG = C003_VOL_M3 * C003_RHO_KGM3
 C003_H_DES_M = C003_M_DES_KG / (C003_RHO_KGM3 * C003_AREA_M2)
 C003_HEAD_DES_BAR = C003_RHO_KGM3 * G_ACC * C003_H_DES_M / PA_PER_BAR
 
+#: LT-328504's taps (handoff B-156's sixth unit). Uhde's datasheet UD-AU-328-EC-0003 (scanned, read
+#: from the page image of the principle sketch, p. 5): N5A, the upper pad, 475 mm below the top
+#: tangent line, N5B 1 000 mm below N5A, and the N.L.L. 975 mm below the top tangent line, so the
+#: drawing's normal level stands at the span's mid-point. The column runs liquid-full to its top
+#: disengagement space, the taps 19.375 and 20.375 m above the bottom tangent line; V1's design
+#: holdup, an hour of 747, stands 12.554 m deep (above). Decided 2026-11-17 (decision 246): V1's
+#: holdup, and with it the vapour space, the head and the thermal inertia, is kept, and the design
+#: holdup is read as the drawing's N.L.L. Uhde's level sheet UD-MR-G00-EC-0134 p. 6 prints the
+#: 1 000 mm nozzle distance and a set range of 0-96.15 mbar on 908 kg/m3 (1.080 times the head;
+#: rev. 2, 14.7 bar a and 190 C).
+LT_328504_TAP_HI_BELOW_TL_M = 0.475
+LT_328504_SPAN_M = 1.000
+LT_328504_NLL_BELOW_TL_M = 0.975
+LT_328504_RHO_KGM3 = 908.0
+
+#: The liquid one span of LT-328504 holds [kg], 2 712: the shell's bore between the taps at the
+#: sheet's density.
+LT_328504_SPAN_KG = LT_328504_RHO_KGM3 * C003_AREA_M2 * LT_328504_SPAN_M
+
+#: LT-328504's reading at the design holdup [%], 50.00: the N.L.L. 500 mm above N5B, over the
+#: span. It is V1's 50 %, so LIC-328504's set point and seed are unchanged.
+LT_328504_DES_PCT = round((LT_328504_TAP_HI_BELOW_TL_M + LT_328504_SPAN_M
+                           - LT_328504_NLL_BELOW_TL_M) / LT_328504_SPAN_M * 100.0, 9)
+
+
+def lt_328504_pct(m_kg: float) -> float:
+    """LI-328504 [%]: the hydrolyser's level between LT-328504's taps.
+
+    Process utility
+    ---------------
+    What the board shows and what LIC-328504 holds by LV-328504. A DP cell reads only between its
+    taps: 1 356 kg below the design holdup the level is at N5B and reads 0 %, 1 356 kg above it at
+    N5A and reads 100 %. The reading moves 25.1 times as far per kilogram as V1's 50 % over the
+    design holdup, which counts the whole column.
+
+    Equation
+    --------
+        LI = clamp( LI_des + (M - M_des) / (rho A L) . 100, 0, 100 )
+
+    written as the departure from the design holdup, which reads the drawing's N.L.L. (decision
+    246). Source: As-Built §CXXXVIII.
+    """
+    return min(max(LT_328504_DES_PCT + (m_kg - C003_M_DES_KG) / LT_328504_SPAN_KG * 100.0, 0.0),
+               100.0)
+
 # ======================================================================================
 # The heat balance at design
 # ======================================================================================
@@ -258,6 +303,8 @@ __all__ = [
     "C003_T_C", "C003_P_BARA", "C003_T746_C", "C003_DT_DES_K", "C003_DT_748_K", "C003_RHO_KGM3",
     "C003_ID_M", "C003_SHELL_M", "C003_VOL_M3", "C003_AREA_M2", "C003_M_DES_KG",
     "C003_LEVEL_DES_PCT", "C003_M_FLOOR_KG", "C003_FULL_KG", "C003_H_DES_M", "C003_HEAD_DES_BAR",
+    "LT_328504_TAP_HI_BELOW_TL_M", "LT_328504_SPAN_M", "LT_328504_NLL_BELOW_TL_M",
+    "LT_328504_RHO_KGM3", "LT_328504_SPAN_KG", "LT_328504_DES_PCT", "lt_328504_pct",
     "M911_DH_KJKG", "LAM748_BASE_KJKG", "C003_TAU_DES_S", "HYDROLYSIS_DH_KJMOL",
     "E021_EPS_T", "E021_LOSS_DT_KGKH", "E021_HOT_FLOW_FLOOR_KGH",
     "MW748_DES", "PV328203_CHAR", "PV328203_OP_DES_PCT", "PV328203_XT",

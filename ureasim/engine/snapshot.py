@@ -303,8 +303,8 @@ def adopt_added_state(plant: PlantState, reference: PlantState) -> None:
     ``reference``, a plant the present model builds, at the same path; a retired boundary value is dropped and
     handed to the engine's adopter, a header saved before LV-324501A had a positioner opens the
     valve at the stroke that passes the save's drain (decisions 236 and 238), and LIC-323503,
-    LIC-323501, LIC-328503 and LIC-328505 saved on V1's reading are restated between their taps
-    (decisions 233, 241, 243 and 244). A save
+    LIC-323501, LIC-328503, LIC-328504 and LIC-328505 saved on V1's reading are restated between
+    their taps (decisions 233, 241, 243, 244 and 246). A save
     holding all of it is left as it is.
     """
     retired = {k: plant.boundary.pop(k) for k in RETIRED_BOUNDARY if k in plant.boundary}
@@ -317,7 +317,7 @@ def adopt_added_state(plant: PlantState, reference: PlantState) -> None:
     unit = plant.units.get("324E003")
     header = _attributes(unit).get("header") if unit is not None else None
     lacks_position = header is not None and "lv_a_position_pct" not in _attributes(header)
-    lacks_taps = tuple(u for u in ("323E011", "323C003", "328C002", "328C004")
+    lacks_taps = tuple(u for u in ("323E011", "323C003", "328C002", "328C003", "328C004")
                        if u in plant.units and "taps" not in _attributes(plant.units[u]))
     _fill_added(plant, reference, set())
     if lacks_taps:

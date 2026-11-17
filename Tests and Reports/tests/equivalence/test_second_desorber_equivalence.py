@@ -607,7 +607,7 @@ def test_the_desorber_takes_749_on_the_same_tick(v1):
     steam step move every hand-off."""
     s = _v1_state(v1)
     col2, lic2 = fd.FirstDesorber(taps=False, l2_stop=False), fd.lic_328503(taps=False)
-    col3, loops3 = hy.Hydrolyser(), hy.HydrolyserLoops()
+    col3, loops3 = hy.Hydrolyser(taps=False), hy.HydrolyserLoops()
     col4, loops4 = sd.SecondDesorber(taps=False, fv_329401=sd.V1_FV_329401, l2_stop=False), sd.SecondDesorberLoops(fic_329401=sd.fic_329401(sd.V1_FV_329401),
                                          lic_328505=sd.lic_328505(taps=False))
     m748, y748 = t.C002_M748_DES_KGH, dict(t.DES_C003.y)

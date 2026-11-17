@@ -383,7 +383,7 @@ def test_the_conversion_integral_executes_v1s(v1, t_c, m_746, w_urea, w_h2o):
 def test_the_state_and_the_controllers_are_seeded_as_v1_seeds_them(v1):
     """Every seed V1's, but PV-328203's stroke and the two span gains, which the decided seeds
     carry; V1's own are 50 %, 1.50 %/bar and 0.40 %/(kg/h)."""
-    s, col, loops = _v1_state(v1), hy.Hydrolyser(), hy.HydrolyserLoops()
+    s, col, loops = _v1_state(v1), hy.Hydrolyser(taps=False), hy.HydrolyserLoops()
     assert (s.a328_c003_M, s.a328_c003_T, s.a328_c003_T_prev, s.a328_c003_P, s.w_328c003,
             s.y_328_748) == (col.m_kg, col.t_c, col.t_prev_c, col.p_bara, col.w, col.y_748)
     assert col.t_749_c == v1["R328_C004_T749"]
@@ -428,7 +428,7 @@ def _port(col, loops, x, dt):
 
 def _run(v1, script, ticks: int, dt: float = DT, before=None, decided=ALL):
     """Drive the hydrolyser alone through `script(k)`, comparing everything every tick."""
-    s, col, loops = _v1_state(v1, decided), hy.Hydrolyser(), hy.HydrolyserLoops()
+    s, col, loops = _v1_state(v1, decided), hy.Hydrolyser(taps=False), hy.HydrolyserLoops()
     if not {"valve", "gains"} <= decided:
         raise ValueError("the port's seeds are the decided ones; run V1's in the divergences")
     if before:
@@ -532,7 +532,7 @@ def test_the_hydrolyser_takes_746_on_the_same_tick(v1):
     feed cut, and then the MP steam cut, move both hand-offs."""
     s = _v1_state(v1)
     col2, lic2 = fd.FirstDesorber(taps=False), fd.lic_328503(taps=False)
-    col3, loops3 = hy.Hydrolyser(), hy.HydrolyserLoops()
+    col3, loops3 = hy.Hydrolyser(taps=False), hy.HydrolyserLoops()
     m748, y748 = t.C002_M748_DES_KGH, dict(t.DES_C003.y)
     seen = set()
     for k in range(3000):
@@ -583,7 +583,7 @@ def test_the_liquid_pays_what_boils_decided_divergence(v1, name, before, v1_made
     and the column holds 200 C, its pressure rising on the vapour it now keeps until SV32852 holds
     it between 21.71 and 24.01 bar a. V1 runs without the relief here, as it is."""
     dt = 0.5
-    s, col, loops = _v1_state(v1), hy.Hydrolyser(), hy.HydrolyserLoops()
+    s, col, loops = _v1_state(v1), hy.Hydrolyser(taps=False), hy.HydrolyserLoops()
     before(s, col, loops)
     made_v1 = made = held_back = 0.0
     for k in range(7200):
@@ -618,7 +618,7 @@ def _both(v1, script, ticks, dt, before, v1_decided):
     flags first rises, each side's liquid books on what boils, the temperature each side
     started the last tick on, and both sides at the end."""
     s = _v1_state(v1, v1_decided)
-    col, loops = hy.Hydrolyser(), hy.HydrolyserLoops()
+    col, loops = hy.Hydrolyser(taps=False), hy.HydrolyserLoops()
     if before:
         before(s, col, loops)
     out = SimpleNamespace(parted=None, first={}, made_v1=0.0, made=0.0, s=s, col=col,
@@ -776,3 +776,30 @@ def test_the_two_gains_on_span_decided_divergence(v1, name, before, field, v1_en
     ours = r.col.p_bara if field == "P" else r.b.m_911_kgh
     theirs = r.s.a328_c003_P if field == "P" else r.a["911"]
     assert (theirs, ours) == (pytest.approx(v1_end, abs=0.01), pytest.approx(end, abs=0.01))
+
+
+def test_li_328504_between_its_taps_decided_divergence(v1):
+    """Decision 246 (handoff B-156's sixth unit), both sides. V1 reads LI-328504 as M / M_des x 50;
+    the port reads LT-328504 between N5B and N5A, 1 475 and 475 mm below the top tangent line (Uhde
+    UD-AU-328-EC-0003 p. 5; EC-0134 p. 6), V1's design holdup read as the drawing's N.L.L. at
+    mid-span. Both hold 50 % at design, so the design tick is V1's to the bit; 746 cut 25 % at 1 s,
+    each side reads its own law on its own holdup every tick, and the port's loop, 25.1 times as
+    stiff per kilogram, dips 435 kg in the half hour where V1's dips 2 566 kg and is still
+    falling."""
+    s, col, loops = _v1_state(v1), hy.Hydrolyser(), hy.HydrolyserLoops()
+    assert c.LT_328504_DES_PCT == c.C003_LEVEL_DES_PCT == 50.0
+    assert c.C003_M_DES_KG / c.LT_328504_SPAN_KG * 2.0 == pytest.approx(25.12, abs=0.01)
+    dips = [col.m_kg, s.a328_c003_M]
+    for k in range(18000):
+        x = _design(m746=0.75 * t.C003_M746_DES_KGH) if k >= 10 else _design()
+        _feed(s, x)
+        m_v1 = s.a328_c003_M
+        a = _v1_c003(v1, s, x["m746"], DT, ALL)
+        b = _port(col, loops, x, DT)
+        assert a["lvl"] == m_v1 / c.C003_M_DES_KG * 50.0, f"tick {k}"
+        assert b.level_pct == c.lt_328504_pct(col.m_kg), f"tick {k}"
+        if k == 0:
+            _assert_tick(a, b, s, col, loops, "tick 0")
+        dips = [min(dips[0], col.m_kg), min(dips[1], s.a328_c003_M)]
+    assert c.C003_M_DES_KG - dips[0] == pytest.approx(434.9, abs=0.5)
+    assert c.C003_M_DES_KG - dips[1] == pytest.approx(2566.0, abs=0.5)

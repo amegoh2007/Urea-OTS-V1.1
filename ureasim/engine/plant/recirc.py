@@ -37,6 +37,7 @@ from __future__ import annotations
 from ureasim.data import unit_323c003 as c003
 from ureasim.data import unit_323e011 as e011
 from ureasim.data import unit_328c002 as c002
+from ureasim.data import unit_328c003 as c3h
 from ureasim.data import unit_328c004 as c004
 from ureasim.engine.schedule import DeclaredTear, Operator, Result, State, Step, Tear
 from ureasim.units.recirc import flash_condenser as fc
@@ -66,30 +67,34 @@ def units() -> tuple[dict, dict]:
 
 
 #: Each level whose controller a save made on V1's reading restates, by its unit: the loop in the
-#: unit's loops and the holdup a V1 reading stands for [kg per %] (decisions 233, 241, 243 and 244;
-#: 328C002 and 328C004 are unit 328's, kept here so one restatement serves every level).
+#: unit's loops and the holdup a V1 reading stands for [kg per %] (decisions 233, 241, 243, 244 and
+#: 246; 328C002, 328C003 and 328C004 are unit 328's, kept here so one restatement serves every
+#: level).
 _TAP_READINGS = {
     "323E011": (lambda loops: loops[1], e011.D011_M_DES_KG / e011.D011_LVL_SP_PCT,
                 e011.lt_323503_pct),
     "323C003": (lambda loops: loops[2], c003.C003_M_FULL_KG / 100.0, c003.lt_323501_pct),
     "328C002": (lambda loops: loops[0], c002.C002_M_DES_KG / c002.C002_LEVEL_DES_PCT,
                 c002.lt_328503_pct),
+    "328C003": (lambda loops: loops[0].lic_328504, c3h.C003_M_DES_KG / c3h.C003_LEVEL_DES_PCT,
+                c3h.lt_328504_pct),
     "328C004": (lambda loops: loops[0].lic_328505, c004.C004_M_DES_KG / c004.C004_LEVEL_DES_PCT,
                 c004.lt_328505_pct),
 }
 
 
 def adopt_tap_reading(plant, units: tuple[str, ...] = ("323E011",)) -> None:
-    """Restate LIC-323503, LIC-323501, LIC-328503 and LIC-328505 between their taps on a save made
-    on V1's reading (decisions 233, 241, 243 and 244).
+    """Restate LIC-323503, LIC-323501, LIC-328503, LIC-328504 and LIC-328505 between their taps on
+    a save made on V1's reading (decisions 233, 241, 243, 244 and 246).
 
     Process utility
     ---------------
     An exercise saved before a level read between its taps holds its controller's set point and PV
-    history as V1's reading: M / M_des x 50 for LIC-323503, LIC-328503 and LIC-328505, M / M_full
-    x 100 for LIC-323501. Taken as tap readings they would ask for 453 kg more in 323D011, 745 kg more in
-    323C003, 283 kg less in 328C002, or 238 kg less in 328C004, and kick
-    the loop on its first tick. Each is restated as the tap reading of the holdup it stood for, so
+    history as V1's reading: M / M_des x 50 for LIC-323503, LIC-328503, LIC-328504 and LIC-328505,
+    M / M_full x 100 for LIC-323501. Taken as tap readings they would ask for 453 kg more in
+    323D011, 745 kg more in 323C003, 283 kg less in 328C002, or 238 kg less in 328C004, and kick
+    the loop on its first tick; LIC-328504's design reading is V1's, so only a save off the design
+    holdup moves. Each is restated as the tap reading of the holdup it stood for, so
     the vessel holds the level it was saved at and the first tick moves nothing.
 
     Equation: r_taps = `lt_pct`(r_v1 . kg_per_pct), for each unit in ``units``.

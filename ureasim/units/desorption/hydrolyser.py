@@ -40,7 +40,7 @@ with lambda_748 back-solved so the design holds, the design endotherm taken out 
 of, everything that boils; what the valve does not pass stays in the head space, where the
 pressure integral carries it (decision 24).
 
-**The level** is M / M_des x 50. LIC-328504 strokes LV-328504 on the IEC 60534 liquid law, from
+**The level** is LT-328504's reading between its taps (below). LIC-328504 strokes LV-328504 on the IEC 60534 liquid law, from
 the live column plus its live head to 328C004's pressure, its choke on the liquor's bubble
 pressure at 328E021's hot outlet of the tick before (V1: it flashes at design).
 
@@ -79,6 +79,12 @@ process engineer decided on another unit, applied here under §5 rule 7.
     letdown pass its pressure-driven flow whatever the column holds and its 1 kg floor makes up
     the difference. Here 747 is capped at the liquid above a 1 kg heel plus what arrives on the
     tick, net of what boils, and the loss is flagged.
+  * **LI-328504 reads between LT-328504's taps** (decision 246, decision 33's class by decision
+    214): N5B and N5A, 1 475 and 475 mm below the top tangent line
+    (`data.unit_328c003.lt_328504_pct`). V1's design holdup is kept and read as the drawing's
+    N.L.L., mid-span, 50 %, V1's own reading, so LIC-328504's seed is unchanged; the reading moves
+    25.1 times as far per kilogram as V1's, 0 and 100 % at 1 356 kg below and above the design
+    holdup. V1 reads M / M_des x 50; ``taps=False`` is V1's.
   * **A full column overflows** (decision 11). Above the shell's 56 571 kg the excess leaves as a
     published stream at the bottoms' state; its destination is not yet named (handoff A-15,
     Phase 5).
@@ -174,6 +180,7 @@ from ureasim.data.unit_328c003 import (
     TIC_328012_KC,
     TIC_328012_SP_HI_K,
     TIC_328012_TI_S,
+    lt_328504_pct,
 )
 from ureasim.thermo.ammonia_water import VOLATILE, liquor_pv_bara, relative_volatility_ratio
 from ureasim.thermo.domains import MW
@@ -390,6 +397,13 @@ class Hydrolyser:
     t_749_c: float = C004_T749_C
     #: SV32852 and its lift (B-47).
     sv_32852: GasReliefValve = field(default_factory=sv_32852)
+    #: LT-328504 between its taps (handoff B-156's sixth unit); False is V1's M / M_des x 50.
+    taps: bool = True
+
+    def level_pct(self) -> float:
+        """LI-328504 [%] on the present holdup: between LT-328504's taps, or V1's ratio."""
+        return (lt_328504_pct(self.m_kg) if self.taps
+                else self.m_kg / C003_M_DES_KG * C003_LEVEL_DES_PCT)
 
     def step(self, loops: HydrolyserLoops, m_746_kgh: float, w_746: dict, t_c002_c: float,
              p_c002_bara: float, p_c004_bara: float, dt: float) -> HydrolyserResult:
@@ -436,7 +450,7 @@ class Hydrolyser:
         gen_748 = gas_hyd + gas_str
 
         # ----- LIC-328504 -> LV-328504, the letdown to 328C004 ----------------------------
-        level = self.m_kg / C003_M_DES_KG * C003_LEVEL_DES_PCT
+        level = self.level_pct()
         lic_op = loops.lic_328504.step(level, dt)
         head_m = self.m_kg / (C003_RHO_KGM3 * C003_AREA_M2)
         p1 = self.p_bara + C003_RHO_KGM3 * G_ACC * head_m / PA_PER_BAR
@@ -517,7 +531,7 @@ class Hydrolyser:
             drain_lost=drain_lost, q_net_kw=q_net, q_hyd_kw=q_hyd, m_overflow_kgh=m_overflow,
             m_relief_kgh=m_relief, relief_lifted=self.sv_32852.valve.lifted,
             p_bara=self.p_bara, t_c=self.t_c, t_748_c=self.t_c - C003_DT_748_K, m_kg=self.m_kg,
-            level_pct=self.m_kg / C003_M_DES_KG * C003_LEVEL_DES_PCT,
+            level_pct=self.level_pct(),
             w=dict(self.w), y_748=dict(self.y_748), vle_domain=domain,
             tic_pv_k=tic_pv, tic_op_pct=tic_op,
         )
