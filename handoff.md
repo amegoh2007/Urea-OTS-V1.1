@@ -188,11 +188,13 @@ plant's 40 %, LV-323501's seal lost at N5's lower edge (29.21 %); LT-328503 on 3
 N7A 300 and 1 500 mm above the partition, V1's design holdup reading 70.83 % (V1's 1.150 m sump is the drawing's H.L.L.),
 the seed within decision 230's bound. Each move takes the stops on its level with it: 323P008's now stop at 763 kg,
 328P006's at 693 kg; decision 217's on LT-328505 (328P007) moves with the fifth unit. A design reading off V1's
-moves 324E001's boil-off past decision 230's 2e-3 (§CXXXIV.4, §CXXXV.3: on every reading measured); a unit's move also
-moves the earlier units' parts, so their pins are re-measured with it (§CXXXV.4). Ruled out without the process
+moved 324E001's boil-off past decision 230's 2e-3 on 323D011 and 323C003 (§CXXXIV.4, §CXXXV.3); on 328C002, a design
+reading off V1's too, it stayed at 6.6e-5 (§CXXXVI.3). A unit's move also moves the earlier units' parts, so their
+pins are re-measured with it (§CXXXV.4, §CXXXVI.4): 323C003's boil-off part is 1.582e-2 against decision 241's 1.6e-2. Ruled out without the process
 engineer: a ceiling or overflow V1 has none of (§CXXXI.5). Next step: the fifth unit, LT-328505 on 328C004, whose taps
 N11A / N11B are on the same sketch (UD-AU-328-EC-0001 p. 6: EL 1 210 and 210 mm above 328C004's bottom tangent line);
-both sides measured. LT-329501 last: it sets 322F001's suction (data gap 1).
+both sides measured, and 323C003's boil-off part against its 1.6e-2 measured first. LT-329501 last: it sets 322F001's
+suction (data gap 1).
 
 ---
 

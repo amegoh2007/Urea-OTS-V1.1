@@ -524,7 +524,8 @@ def test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence(
     three trees (89428cc, 4593bb2, 2ede52a: decisions 224, 236 and 237 between them) agree on to
     0.02 t/h and 0.001 bar (As-Built §CXXIX.4): from 50 to 150 s the port's melt condenses 71.3
     t/h (71.6 before decision 243) (71.5 before decision 241) on average where V1's condenses 198.0; from 90 to 110 s PT-329201 stands at 147.69 (147.68 before decision 243) bar a
-    on the port against 141.02 on V1. The port's loop reaches V1's trip 22.2 set point, 155 bar a,
+    on the port against 141.02 on V1. (LI-328503 between its taps, decision 243, moves the seed's own drift by parts
+    in 1e-6 and the condensation mean 0.34 t/h: the window mean is not robust to ppm moves upstream.) The port's loop reaches V1's trip 22.2 set point, 155 bar a,
     after 180 s and, with no such trip (decision 189), stands at 154.90 bar a on average over the
     last 20 s, where V1's never passes 141.7 bar a."""
     def act(k, plant, s):

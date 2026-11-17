@@ -26803,16 +26803,17 @@ times V1's reading per kilogram. AC4's 5 % L2 stops 328P006A / B at 693.4 kg (V1
 
 ## CXXXVI.4 Whole-plant pins moved, and the checks
 
-LI-328503 between its taps moves eleven whole-plant pins by a few parts in 1e-6 to 1e-5, through LIC-328503's
-draw down the desorption train; each is restated at its measured value, the old one in its docstring (decision
-243). Recorded in one pass with the approx recorder (`plug\rec125.py`) and re-pinned by `repin243.py`.
+LI-328503 between its taps moves fifteen whole-plant pins, twelve in the synthesis loop's decided tests and three in
+`test_recirc.py`, through LIC-328503's draw down the desorption train: most by parts in 1e-6 to 1e-5, B-106's window
+mean by 0.5 %. Each is restated at its measured value, the old one in its docstring (decision 243). Recorded in one pass with the approx recorder (`plug\rec125.py`) and re-pinned by `repin243.py`.
 
 * `test_synthesis_loop_decided_equivalence.py`: B-76's sumps 3 649.35 and 3 765.35 kg (3 649.34, 3 765.34); A-12's
   CO2 case, V1's loop 139.5424 bar a (139.5422); A-21's ringing tick 227 355.5 kg/h (227 353.1), the solved
   condensation 131 847.0 and 131 860.3 kg/h (131 846.1, 131 859.5); B-103's held 2 223.45 kg (2 223.44), the loops
   141.9952 and 141.0394 bar a (141.9953, 141.0395); B-104's V1 loop 146.6710 (146.6711); B-106's window means
-  71.29 t/h and 147.687 bar a (71.63, 147.677). The last moves 0.34 t/h on a mean over a ring that moves a single
-  tick 14 t/h (A-50, §CXXIX.4).
+  71.29 t/h and 147.687 bar a (71.63, 147.677). The condensation mean moves 0.34 t/h, more than three times its pin's
+  0.1, on a ppm-level move upstream: the mean over the ring (A-50, §CXXIX.4) is not robust to the seed's own drift, as
+  the three trees' 0.02 t/h agreement suggested.
 * `test_recirc.py`, the other levels' parts from V1's law at 600 s, now with 328C002 between its taps on both sides:
   323D001's 4.88e-5 (4.93e-5); 323C003's 4.843e-5 and 324E001's boil-off 1.582e-2 (4.864e-5, 1.579e-2), inside
   decision 241's 1.6e-2. Two tests added for 328C002 itself: its first tick the same on either law but for its two
