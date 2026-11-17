@@ -25,22 +25,18 @@ STANDINS = [
     (1, "ureasim.control.jet_pump", "K_ENTRY", 0.10, "its suction-inlet loss, open literature"),
     (1, "ureasim.control.jet_pump", "K_THROAT", 0.05, "its mixing-throat friction, open literature"),
     (1, "ureasim.control.jet_pump", "ETA_DIFF", 0.80, "its diffuser recovery, open literature"),
-    (2, "ureasim.data.unit_322c001", "TRIP_22_1_HIGH_C", 110.0, "TT-322015's H2, the DCS readback"),
-    (2, "ureasim.data.unit_322c001", "TRIP_22_1_CLEAR_C", 108.0, "its clearing point: V1's 2 K hysteresis"),
     (4, "ureasim.data.unit_324", "F003_M_TAU_S", 180.0, "LI-324501 on V1's holdup ratio: the melt's residence"),
     (4, "ureasim.data.unit_324", "F003_LEVEL_SP_PCT", 54.7, "LIC-324501's set point, V1's"),
     (5, "ureasim.data.unit_322_loop", "TRIP_21_2_FY_L2_FRAC", 0.05, "FY-322403's L2: V1's 21.4 threshold"),
     (5, "ureasim.data.unit_322_loop", "TRIP_21_8_PDY_L2_BAR", 0.1, "PDY-321203 / 204's L2"),
-    (8, "ureasim.data.unit_323e011", "LT_323503_L2_PCT", 5.0, "LT-323503's L2, the faceplate's"),
-    (8, "ureasim.data.unit_323e011", "LT_323503_L2_HYST_PCT", 2.0, "its restart hysteresis, the 2 % stand-in"),
-    (8, "ureasim.data.low_level_stops", "L2_PCT",
-     {"LT-328501": 5.0, "LT-328503": 5.0, "LT-328505": 5.0, "LY-324501": 5.0},
-     "the four other AC4 L2 stops, LT-323503's 5 % (decision 217)"),
-    (8, "ureasim.data.low_level_stops", "L2_HYST_PCT", 2.0, "their restart hysteresis, the same 2 %"),
     (9, "ureasim.data.unit_335", "FIC_335405_KC", 100.0, "FIC-335405's gain, V1's"),
     (9, "ureasim.data.unit_335", "FIC_335405_TI_S", 15.0, "FIC-335405's integral time, V1's"),
     (10, "ureasim.data.unit_324", "E001_COND_TAU_S", 90.0, "LI-329505 on V1's holdup ratio: the chest condensate's residence"),
     (10, "ureasim.data.unit_324", "E001_COND_LEVEL_SP_PCT", 50.0, "LIC-329505's set point, V1's"),
+    (12, "ureasim.data.unit_335", "LV_324501A_TAU_S", 1.0, "LV-324501A's positioner lag, the process engineer's"),
+    (14, "ureasim.data.unit_335", "LVSL_324501A_PCT", 0.0, "LVSL-324501A's make point, the process engineer's"),
+    (15, "ureasim.data.unit_322e003", "LEVEL_NLL_PCT", 50.0, "LI-329501 on V1's holdup ratio: its design reading"),
+    (15, "ureasim.data.unit_322e003", "TAU_HOLDUP_MIN", 4.0, "the sump's residence, V1's back-solved scale"),
 ]
 
 
@@ -65,5 +61,6 @@ def test_gap3_the_in_situ_factors_anchoring_each_vendor_map(tag, k):
 
 
 def test_every_open_gap_has_a_row():
-    """The open gaps of `handoff.md`: 1, 2, 3, 4, 5, 8, 9 and 10."""
-    assert sorted({row[0] for row in STANDINS} | {1, 3}) == [1, 2, 3, 4, 5, 8, 9, 10]
+    """The open gaps of `handoff.md`: 1, 3, 4, 5, 9, 10, 12, 14 and 15 (2 and 8 closed by decision 242, 11 by
+    decision 247; 15 opened by decision 248)."""
+    assert sorted({row[0] for row in STANDINS} | {1, 3}) == [1, 3, 4, 5, 9, 10, 12, 14, 15]

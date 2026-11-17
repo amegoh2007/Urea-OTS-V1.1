@@ -5206,3 +5206,13 @@ bottom tangent line). The N.L.L. stands mid-span, so V1's design holdup, kept, r
 them, 25.1 times V1's gain, the loop damped; AI-328701's seed part restated to 2e-4 (decision 246). Data gap 11 closed
 on KSB's K 77746 / 77747, the law kept, its slope at design the test's (decision 247). LT-329501's sheet read, not
 built. Part CXXXVIII; register row 358.
+
+### Session 128 — the New folder's gap-closure reports checked; LT-329501 to the ledger (2026-11-18)
+
+Asked to close every open gap from `References\Gaps Closure\New folder`: two truncated AI-tool docx reports and three
+copies of one HTML blueprint. Each claim was traced to its page, most read on the image (As-Built §CXXXIX.1 says which). None closes an item: the B-118
+cluster's "bundle" is the handoff's own options; the 322F001, ejector, LV-324501A and LVSL claims are known, misread or
+not on the page. LT-329501's taps were found on line 322004 (piping list pp. 91-92; as-built isometric UD-RL-100-MB-0004),
+12 789 mm apart against the sheet's 10 000 mm, and p. 27's +16.65 m belongs to 322E003's bottom part: LT-329501 moved
+to the ledger as data gap 15, V1's ratio kept, B-156 closed on six units (decision 248). Rows 1, 9, 12 and 14 updated;
+the stale stand-ins test restated on the ledger. Nothing under `ureasim/` changed. Part CXXXIX.

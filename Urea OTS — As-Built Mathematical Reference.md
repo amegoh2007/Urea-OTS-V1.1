@@ -27021,3 +27021,86 @@ Uhde's UD-MR-G00-EC-0133 p. 3 (printed 2 / 5, rev. 2), LT 329501, loop L 329501:
 sides "High Pressure Condensate", liquid; design 182 bar g and 130 C; 141 bar a, 99 C, 1 133 kg/m3; 0-1 200 mbar over
 10 000 mm, 1.080 times the head; Emerson 1151 DP, manifold PN 400. The plan's 211 C is 329D005's column. Not read:
 UD-MR-329-EC-0001 p. 3 and isometric UD-RL-100-MB-0420. The design reading is the process engineer's.
+
+# Part CXXXIX — Session 128: the New folder's gap-closure reports checked; LT-329501 to the ledger (2026-11-18)
+
+Asked: use the files in `D:\Work\Urea Simulation Docs\References\Gaps Closure\New folder` to close all open gaps, each
+decision taken as the most recommended answer. Decision 248. Scratch and page renders:
+`Tests and Reports\reports\Session_128_gaps`. Nothing under `ureasim/` changed.
+
+## CXXXIX.1 The folder, claim by claim
+
+Five files: `Gap Closure1.docx` and `Gap Closure2.docx`, two reports by another AI tool, each ending mid-sentence in
+the file itself (29 810 and 22 420 characters of body text, the last section cut); and three byte-identical copies
+(SHA-256 b06fac36...) of an HTML "engineering blueprint". None is a plant document. Every claim that bears on an open
+item was traced to the page it cites; the Read column says what was read on the image, what on OCR text only, and what was not opened:
+
+| Claim | Cited | Read | Verdict |
+|---|---|---|---|
+| B-118, B-125, B-126, B-136 close together: X_INF re-anchored to 95 % of equilibrium, the 8.5 bar inert offset in the bubble-point cap, laws S and B, P1's UA exponent (one report "fitted" at 0.85-0.92, no fit shown), E1eu's 4.38 bar margin, twelve species compartments, the feed-deficit rise off | handoff; Operating Manual III §1.1.1.2 | the handoff's own options and measurements (§CXIV, §CXVII.8, §CXXII, §CXXIII.5) | no new datum; no measured combination passes decision 180's holds, and 849 seed leaves move; not built |
+| LT-329501's loop is UD-MR-329-EC-0001 p. 3 | p. 3 | p. 3 is the unit's parts index (L 329501, one page, as built 04.06.07); the loop is p. 77 | p. 77 verified: LI with AH, L:329256 U:329257, 10 000 mm, 1 133 kg/m3, 141 bar a, 99 C, both fluids HP condensate |
+| LT-329501's taps at +10.00 and +20.00 m | UD-AU-322-EC-0005 pp. 7, 27 | both pages | false: p. 27's +10.00 m is the ejector (printed "335F001"), +16.65 m is 322E003's bottom part; the taps are on line 322004 (§CXXXIX.2) |
+| UD-RL-100-MB-0420 is the purge header | MB-0420 | the isometric | true: 15-CPH2-329262 from 329P004A / B's discharges (EL +1314) to CONT. ON 329256 (EL +2266) and 329265, PI 329260, 182 bar g, 130 C |
+| design reading 54 %, 5.4 m; or 61.57 % on +16.65 m | the above | - | rests on the false tap elevations; not taken |
+| FI-329421 / 422 purge 20 L/h, 5-45 L/h | UD-MR-329-EC-0001 pp. 41-42 | not opened | no item depends on it |
+| 322F001: bores 44 / 84 / 160 / 70 / 80 mm | UD-AU-322-DZ-0013-003 | as §LIX.4 | true, and the pressure envelope only (AD 2000 strength sheets), no nozzle or throat |
+| 322F001: XMTR 40-100 % against stroke 50-0 mm in 8.33 mm steps | UD-AU-322-DZ-0013-005 §5.2 | PDF p. 8 | true (the last row printed "10 %" for 100 %); already §LIX.4; the diagrams themselves are not enclosed |
+| 322F001: nozzle Item 50 18.20 mm full bore, 16.72 mm at 74 %; throat liner 50.23 mm | DZ-0013-005, DZ-0013-003 | the pages read | false as sourced: 16.72 and 50.23 mm are the port's own back-solved bores (`data/unit_322f001`), quoted back |
+| 324F004's nozzle 24.7 mm, throat 106.5 mm; 324F005's 14.5 and 30.8 mm | UD-AU-324-DZ-0009-001, -0010-001 | 324F004's drawing | true, and already in the survey (§XLVII.4) and the port's maps (§XLIX.4); no curve |
+| HV-329605 / 606 pressure drops calibrate a 1.48 bar a break-off | UD-MR-329-EC-0001 pp. 65, 67 | not opened | a calibration proposal, not Körting's curve; row 3 stays |
+| LT-324501: EC-0136 and MB-0180 | the two | as §CXXVII.5, checklist row 11 | nothing new |
+| PC21 / PC35 limits on a "Yokogawa CS3000"; `interlocks_322.py`, `PC21_CLOSE_RATE`, `PC35_NH3_MIN` | - | the code and data gap 5 | false: the trips are on ABB AC4; no such module or constants exist |
+| FIC-335405: loop F 335405 on p. 20, `SCALE_MAX` 1 500 kg/h, KP 0.5 | UD-MR-335-EC-0001 | pp. 35, 36 | the loop is p. 35: F 335405 an indicator (FI, AL), magnetic-inductive FT 335405, 0-1 m3/h, 1 320 kg/m3, 0.3 / 0.47 / 0.76 m3/h; F 335406 a software ratio indicator (FFYI, AH and AL, range 0-7 in the form's kg/h field, FS 335406, TEA0021); the stand-ins are 100 per t/h and 15 s, not those quoted. P&ID 106, which carries the FFYI, was not found in the merged P&ID file; UD-MR-335-FF-0002 gave no OCR hit and was not read on the image |
+| LT-329505: 3 000 mm covers the pot's lower 3 m | EC-0133, MB-0312 | as checklist row 10 | an inference on known pages; row 10 stays |
+| LV-324501A: stroking 1.5 / 2.4 s, tau 0.6-0.8 s; or 2 350 Nl/h giving tau 0.9-1.2 s; the stand-in "10 s" | DZ-0013-005 p. 30; "PSS EVE0102" | p. 30; the SRI986 manual (PDF pp. 37-68): printed pp. 1, 2, 14, 15 and 17 on the image, the rest on OCR text | p. 30 is Valtek's table for Valtek actuators on Valtek's positioner 2200 (2112, 30 mm: EP-PR-6 1.5 s, EP-VT-6 2.4 s); LV-324501A is a KP size P4, 40 mm, on an SRI986 (§CXXVIII.3). The SRI986 manual's §4.1 gives the gain by supply (single-acting about 150 / 90 / 60 at 1.4 / 4 / 6 bar) and §4.3 a damping throttle (air output down about 2.5 times); its contents list no technical data and no response or stroking time. The stand-in is 1 s |
+| LVSL-324501A makes at 1-2 % of travel, NAMUR; the stand-in "2.0 %" | DZ-0013-005 pp. 59-60 | p. 59 | false: §8.4 says the switching functions "may be freely selected and set"; the stand-in is 0 % |
+| `test_data_gap_standins.py` still lists closed gaps 2 and 8 | the test | the test | true: stale since decision 242; fixed here (§CXXXIX.4) |
+| Table 3: G1, G2, G6, G9, C10, C43 | `Gaps solution.md` | - | outside the handoff; nothing taken |
+
+## CXXXIX.2 LT-329501's taps, and decision 248
+
+**The taps.** Uhde's piping list UD-RL-G00-MB-0001 (rev. 2, printed pp. 91-92, PDF pp. 94-95: 329256 on p. 91, 329257 on p. 92) runs the instrument lines 10-CPH1-329256K and
+329257K (EK99, 182 bar g, 130 C) from the purge lines 329262 and 329263, fed by 329P004A / B, both to line **322004**.
+322004 is 150-ACA1-322004-EK19L-D80, 322E003's liquid outlet to 322F001: isometric UD-RL-100-MB-0004 rev 03, stamped
+as built (Uhde drawing 14-059714; pipe 168.3 x 12.5, DIN 2462, 1.4466, 22.9 m; 167 bar g, 200 C). It leaves 322E003/N6
+at X 108778, Y 529000, EL +21192, falls to EL +20976, runs vertically to EL +13000 and +12860, then down to EL +8300,
+and horizontally to 322F001/N1 at X 106650, Y 528030, EL +8300, past TT-322002 and XV-322903. The upper tap is a 120 x 6
+NS nipple at EL +21089 (orientation S, 80 degrees down), its connection to 329257 at EL +20818; the lower one a
+120 x 6 NS nipple on the horizontal run at X 105170, EL +8300, its connection to 329256 at EL +8024. Branch to branch,
+12 789 mm (connection ends 12 794 mm), against the 10 000 mm of the sheet and the loop summary. The instrument lines'
+own isometrics (MB-0415, MB-0416) are field-routed and give no elevation.
+
+**The HP-level drawing.** UD-AU-322-EC-0005 p. 27 ("Liquid levels in HP-vessels", 22E03D18.DWG, 14.09.04): 322R001's
+overflow +50.0 m, 322E002 and 322R001 +21.20 m, 322E001 +13.20 and +3.50 m, 322E003 +16.65 m on its bottom part, the
+ejector +10.00 m. The as-built isometric puts 322F001/N1 at +8.30 m, so the static column from N6 is 12.89 m against
+EC-0013's "10 m L.C. suction head" (§LIX.4).
+
+**The arithmetic** (calculated, not printed). On 1 133 kg/m3 the taps' 12.789 m is 1 421 mbar, 118 % of the 1 200 mbar
+range; the sheet's 10 m is 1 111 mbar. If both impulse legs stand full of purge condensate, a full downcomer shows the
+cell (rho_liquor - rho_leg) g dz: 167, 179 and 217 mbar (13.9, 14.9 and 18.1 %) for legs of 1 000, 990 and 960 kg/m3,
+before the line's friction and the carry-under's voids. Book2's 1-11 % is of that order. This is an inference, not a
+datum: the legs' fill and the calibration are what checklist row 25 asks.
+
+**The options.** The model carries the scrubber's lumped holdup, 3 837 kg at 50 % (`data/unit_322e003`), which also sets
+322F001's suction, the loop-pressure sum and the flooded-surface derate; it has no downcomer state. (a) A ledger row,
+V1's ratio kept, as LT-324501 and LT-329505 (data gaps 4 and 10); (b) a reading on the sheet's 10 m with V1's holdup
+placed at mid-span, as decision 246 did on 328C003's drawn N.L.L., although no page here places a design level between
+these taps; (c) the +16.65 m, which belongs to another vessel. (a) is taken (decision 248): B-156 closes with six of its
+seven units built (decisions 219, 233, 241, 243, 244, 246), LT-329501 is data gap 15 with checklist row 25, and the seed
+is unchanged by construction.
+
+## CXXXIX.3 The data-gap rows
+
+Rows 1, 9, 12 and 14 gain what the pages above give (row 1 the suction line's elevations; row 9 the loop summary's FI
+and FFYI; row 12 the SRI986 manual and the Valtek table's scope; row 14 the manual's freely set switch points). Rows 3,
+4, 5 and 10 are unchanged. No row closes: each still waits on Körting, a plant readback or a walk-down. Section B keeps
+B-118, B-125, B-126 and B-136 as written.
+
+## CXXXIX.4 Checks
+
+`Tests and Reports/tests/data/test_data_gap_standins.py` is restated on the ledger: rows 2 and 8 out (decision 242),
+rows 12 (`unit_335.LV_324501A_TAU_S` 1.0), 14 (`unit_335.LVSL_324501A_PCT` 0.0) and 15 (`unit_322e003.LEVEL_NLL_PCT`
+50.0, `TAU_HOLDUP_MIN` 4.0) in, the open set 1, 3, 4, 5, 9, 10, 12, 14 and 15. `test_level_transmitter_sheets.py`'s
+docstring names LT-329501 as data gap 15. `Tests and Reports/tests/data`, `Tests and Reports/tests/docs` and
+`test_layering.py`: 432 passed. The PyQt6 grep of CLAUDE.md rule 3 prints nothing. The full suite was not run: no
+file under `ureasim/` changed.

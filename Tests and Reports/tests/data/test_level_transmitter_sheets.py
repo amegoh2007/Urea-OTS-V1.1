@@ -6,8 +6,9 @@ Decision 33's class reads a level between its transmitter's taps. Twelve modelle
 span taken from a general arrangement drawing, a nozzle schedule or the isometrics. Uhde's level-transmitter
 data sheets (UD-MR-G00-EC-0133 and UD-MR-G00-EC-0134, scans read in session 118 and checked on the page
 image) print each transmitter's nozzle distance. This file pins every modelled span to its sheet, so a span
-that moves off the sheet fails here. The one level that still reads V1's holdup ratio is handoff B-156's
-LT-329501 and has no row; LT-324501 and LT-329505 are data gaps 4 and 10.
+that moves off the sheet fails here. The one level that still reads V1's holdup ratio, LT-329501, has no row: its
+taps sit 12 789 mm apart on line 322004 against the sheet's 10 000 mm, and it is data gap 15 (decision 248), as
+LT-324501 and LT-329505 are data gaps 4 and 10.
 """
 
 from __future__ import annotations

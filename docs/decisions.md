@@ -1341,3 +1341,13 @@ decision on an item.
      kept: its slope at the header's 62.2 m3/h, -0.097 m per m3/h, is the test's (-0.083 to -0.094); its shut-off stands
      2.0-2.3 m above the test's, so `KAPPA` and the dead-head bracket carry about 0.28 bar more droop than the pump. A
      refit, measured and not taken, would turn `KAPPA` negative (-0.03 to -0.07). As-Built §CXXXVIII.1.
+248. **LT-329501 leaves B-156 for the data-gap ledger, V1's holdup ratio kept; B-156 closes on six units** (2026-11-18,
+     session 128; the recommended option, taken under the process engineer's instruction for the session to choose the
+     most recommended answer). Both taps sit on line 322004, 322E003's outlet to 322F001, not on a vessel: Uhde's
+     piping list UD-RL-G00-MB-0001 pp. 91-92 (PDF 94-95) runs the purged impulse lines 329256 and 329257 to 322004, and the as-built
+     isometric UD-RL-100-MB-0004 rev 03 puts their branches at EL +8300, on the run to 322F001/N1, and EL +21089, beside
+     322E003/N6: 12 789 mm apart, against the 10 000 mm of Uhde's sheet (EC-0133 p. 3) and loop summary
+     (UD-MR-329-EC-0001 p. 77). The model carries the scrubber's lumped holdup, not the downcomer's level, and no page
+     gives the span the 0-1 200 mbar covers or a design level between the taps (UD-AU-322-EC-0005 p. 27's +16.65 m
+     stands in 322E003's bottom part). As LT-324501 and LT-329505 (data gaps 4 and 10), it becomes data gap 15 and keeps
+     V1's holdup ratio; decision 214's other six units stand as built. Nothing under `ureasim/` moves. As-Built §CXXXIX.2.
