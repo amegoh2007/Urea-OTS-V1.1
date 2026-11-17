@@ -152,8 +152,7 @@ a Qt layout method gets none.
 * **ALWAYS use the claude-mem skill (2026-10-22).** At session start, and before re-deriving any
   earlier session's work, search claude-mem's cross-session memory (`Skill(claude-mem:mem-search)`)
   for what is already known — a measurement, a decision, a dead end. It complements the four living
-  documents and never replaces them; claude-mem's skills that fan work out to sub-agents
-  (`claude-mem:do`, `claude-mem:build`) stay excluded by the no-sub-agents rule below.
+  documents and never replaces them.
 * **ALWAYS update the four living documents** — `project.md`, `handoff.md`,
   `Urea OTS — As-Built Mathematical Reference.md` and this file when its rules change —
   each fact once, in the home §3a gives it, whenever any of the following happens:
@@ -161,8 +160,6 @@ a Qt layout method gets none.
   - a milestone in `project.md` flips state,
   - an equation is ported, altered or found to disagree with the original,
   - **before ending a coding session, unconditionally.**
-* **Do not use sub-agents / multi-agent fan-out.** Carried over from the V1 directives. Work
-  inline, in this session, with this context.
 * **Finalize before the context runs out (2026-10-09).** Always finalize the session — the four
   documents updated, the checks run, and the final report of §7 printed — before the
   conversation's context limit is reached; then compact. Never let a compaction cut a session off
@@ -383,8 +380,7 @@ on Fable works as the rest of this file says.
 | Claude Opus | Claude Fable | `"advisorModel": "fable"` in `.claude/settings.json`, the project's default |
 | Claude Sonnet | Claude Opus | for that session: `claude --advisor opus`, or `/advisor opus` |
 
-The advisor is a server-side tool, not a sub-agent: §3's rule against sub-agents does not exclude it.
-It reads the whole transcript anew on every call, so it is called at the stages below and at a
+The advisor is a server-side tool. It reads the whole transcript anew on every call, so it is called at the stages below and at a
 blocker, never between routine steps. Before Stage 2, confirm that the `advisor` tool is offered and
 which model answers (`/advisor` prints it). Where it is not offered — Fable access or its
 usage-credits consent missing (`/model fable` gives it), or the pairing refused — stop and tell the
