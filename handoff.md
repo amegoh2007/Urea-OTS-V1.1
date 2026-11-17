@@ -179,9 +179,9 @@ moved 324E001's boil-off past decision 230's 2e-3 on 323D011 and 323C003 (§CXXX
 reading off V1's too, it stayed at 6.6e-5 (§CXXXVI.3). A unit's move also moves the earlier units' parts, so their
 pins are re-measured with it (§CXXXV.4, §CXXXVI.4, §CXXXVII.4): 323C003's boil-off part is 1.582e-2 against decision 241's 1.6e-2, unmoved by
 the fifth unit. Ruled out without the process engineer: a ceiling or overflow V1 has none of (§CXXXI.5). Next step: the
-sixth unit, LT-328504 on 328C003 (UD-AU-328-EC-0003; N5A / N5B 1 000 mm apart above tray 1, read off the page images
-first: V1's 34 251.5 kg design holdup stands about 12.6 m deep, well below the taps, so the design reading is the
-process engineer's choice); both sides measured, 323C003's boil-off part first. LT-329501 last: it sets 322F001's
+sixth unit, LT-328504 on 328C003 (UD-AU-328-EC-0003; a pasted plan puts N5A / N5B 1 000 mm apart above tray 1, at
+about 19.2 and 20.2 m, not yet read off the page images; V1's 34 062 kg design holdup stands 12.554 m deep
+(`C003_H_DES_M`), so if the taps are there the design reading is the process engineer's choice); both sides measured, 323C003's boil-off part first. LT-329501 last: it sets 322F001's
 suction (data gap 1).
 
 ---

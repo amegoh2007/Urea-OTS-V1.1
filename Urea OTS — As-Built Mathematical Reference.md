@@ -26840,7 +26840,8 @@ line: L.L.L. 100 mm, H.L.L. 920 mm. Uhde's level sheet UD-MR-G00-EC-0134 p. 7: 1
 (§CXXXVI.2). The plan's N.L.L. of 720 mm, its Option 2 at 51.00 %, its 226.6 kg and its 72 kg L2 holdup are not the
 drawing's: the N.L.L. is 510 mm, Option 2 reads 30.00 % and removes 464.5 kg, and V1's 5 % holds 143.6 kg. The DCS
 faceplate photographs of 10 July 2026 show unit 328 idle (LIC-328503 and LIC-328504 MV -0.5 %, SP 0 %): no operating
-reading to choose between the two. Book2 logs no LI-328505.
+reading to choose between the two. Book2's unit-328 levels are LT-328507 and LT-328508 only: it logs no
+LT-328503, LT-328504 or LT-328505.
 
 The law: LI = clamp(LI_des + (M - M_des) / (rho A L) x 100, 0, 100), rho 923.0, A the 1 250 mm bore, L 1.000 m;
 LI_des = (0.920 - 0.210) / 1.000 = 71.00 %. The span holds 1 132.69 kg; 0 % at 632.25 kg (V1 reads 22.01 % there);
@@ -26873,7 +26874,11 @@ LV-328505's inlet head (`C004_HEAD_DES_BAR`) is the whole holdup's, untouched.
   cut 25 % for 30 min: the design tick equal but for the reading, each side reading its own law every tick, V1 back to
   50 % and the port to 71.00 %. The V1 harnesses run ``taps=False``, ``==`` every tick.
 * A save on V1's reading (`test_snapshot.py`): LIC-328505's 50 % set point restated to 71.00 %, a 40 % PV to 45.64 %,
-  the first tick unmoved.
+  the first tick unmoved. The six shipped exercises (`check_scenarios.py`): LIC-328505 restated to 71.0000, PV
+  70.928 to 71.100 %, tick 1's output unmoved to 1e-3 %, 328P007 running. A save whose V1 reading stood between 5
+  and 22 % (a holdup under 632 kg) now reads at or under the L2 stop on load.
+* Every consumer of LI-328505 (an uncut grep of `ureasim`, `tools` and the tests): the packet's ``LI_328505``,
+  LIC-328505's faceplate and the L2 stop; no alarm limit or range is set around V1's 50 %.
 
 ## CXXXVII.4 Whole-plant pins moved, and the checks
 
@@ -26918,6 +26923,6 @@ means of 26.6 and 32.0; the overflow held at its 200-tick mean, both hold one va
 the held overflow too). The paste's chain (TT bottoms to Pv) has the signs right and the mechanism wrong.
 
 Options put: (a) keep as built, the two-tick means asserted; (b) the solve on the tick (decision 78's class, as decision
-135), whose map has no root across the jump, so a bracket lands on the edge; (c) a continuous fallback, Pv at the loop
+135), not run: the two arms suggest its map has no root across the jump, so a bracket would land on the edge; (c) a continuous fallback, Pv at the loop
 pressure where the surface refuses the bottoms, a new mechanism touching every refused state. The process engineer
 chose (a): A-60 is closed, the ring the artefact of a far off-design state.

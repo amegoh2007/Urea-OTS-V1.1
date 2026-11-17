@@ -1318,5 +1318,5 @@ decision on an item.
      322E001's bottoms (CO2 25-32 wt %, NH3 3 wt %, 136 C) lie on the edge of the rigorous bubble-point surface, which
      returns about 907 bar on one tick (clamped to PT-329201) and refuses the composition on the next, where
      `stripper_sump.bottoms_pv_bara` falls back to water's 3.5 bar; the drain flips 21.7 / 41.8 t/h and closes the loop
-     through 322E001's one-tick read of 322R001's overflow. Not taken: the solve on the tick (b), whose map has no root
-     across the jump, and a continuous fallback at the loop pressure (c), a new mechanism. As-Built §CXXXVII.5.
+     through 322E001's one-tick read of 322R001's overflow. Not taken: the solve on the tick (b), not prototyped, whose map the two
+     link-breaking arms suggest has no root across the jump, and a continuous fallback at the loop pressure (c), a new mechanism. As-Built §CXXXVII.5.
