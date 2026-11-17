@@ -179,8 +179,8 @@ mid-span, 50 %, AI-328701's part restated to 2e-4 and 323D011's boil-off part (d
 level with it: 323P008's now stop at 763 kg, 328P006's at 693 kg, 328P007's at 689 kg. A design reading off V1's
 moved 324E001's boil-off past decision 230's 2e-3 on 323D011 and 323C003 (§CXXXIV.4, §CXXXV.3); on 328C002, a design
 reading off V1's too, it stayed at 6.6e-5 (§CXXXVI.3). A unit's move also moves the earlier units' parts, so their
-pins are re-measured with it (§CXXXV.4, §CXXXVI.4, §CXXXVII.4): 323C003's boil-off part is 1.582e-2 against decision 241's 1.6e-2, unmoved by
-the fifth unit. Ruled out without the process engineer: a ceiling or overflow V1 has none of (§CXXXI.5). Next step: the
+pins are re-measured with it (§CXXXV.4, §CXXXVI.4, §CXXXVII.4): 323C003's boil-off part is 1.587e-2 against decision 241's 1.6e-2 after the sixth
+unit (0.8 % margin; the seventh will likely cross it). Ruled out without the process engineer: a ceiling or overflow V1 has none of (§CXXXI.5). Next step: the
 seventh unit, LT-329501, last: it sets 322F001's suction (data gap 1) and the plant reads 7-11 % where the engine holds
 50 % (B-118). Uhde's sheet UD-MR-G00-EC-0133 p. 3 (rev. 2, read off the page image, §CXXXVIII.5): taps L 329256 and
 U 329257, both sides liquid ("High Pressure Condensate"), 141 bar a and 99 C, 1 133 kg/m3, 0-1 200 mbar over 10 000 mm

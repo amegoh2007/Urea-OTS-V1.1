@@ -73,7 +73,7 @@ def test_the_residual_credit_scales_with_the_load_decided_divergence(v1):
     """B-75. The CO2 demand cut to 80 %: the reactor's load ratio settles at 0.79 and the recycle
     tear it deletes falls with it. V1 still credits the design residual, 2024.9 kg/h, and its loop
     runs down; the port credits the residual at the same ratio (1522.0 (1522.1 before decision 178) (1521.7 before decision 170) kg/h after two minutes).
-    After two minutes V1's PT-329201 reads 141.4889 (141.4864 before decision 178) (141.4877 before decision 170) bar a, the port's 141.5020 (141.4994 before decision 178) (141.5007 before decision 170) (load ratio 0.7915,
+    After two minutes V1's PT-329201 reads 141.4889 (141.4864 before decision 178) (141.4877 before decision 170) bar a, the port's 141.5019 (141.5020 before decision 246) (141.4994 before decision 178) (141.5007 before decision 170) (load ratio 0.7915,
     with the session-69 valves on their vendor sheets and 322E006 on PFD 28's water, decisions
     150 and 151; 141.4894, 141.5024 and 1521.6 with HV-323605, PV-323203 and TV-328002 on their Metso trims, 2026-10-17 — V1's side through the
     steam network it shares with the port; 141.4895 and 141.5025 on session 53's code, 2026-10-15;

@@ -267,7 +267,8 @@ def test_328c002_parts_from_v1s_law_by_decision_230s_bound_in_ten_minutes():
     times as large between the taps, and the bottoms it sets reach 328C003 and 328C004. Decision 243
     keeps decision 230's bound at 600 s, 328C002's two readings left out. Measured with 328C004 between
     its taps on both sides: 1.688e-5 (AI-328701's conductivity), 6.44e-5 (324E001's boil-off), the
-    holdup 0.0023 kg below V1's law (1.958e-5 and 6.63e-5 before decision 244)."""
+    holdup 0.0023 kg below V1's law (1.958e-5 and 6.63e-5 before decision 244); with 328C003 between its
+    taps too (decision 246), 2.270e-5 and 9.96e-5."""
     taps, v1 = Scheduler(*build_plant()), _v1_desorber(Scheduler(*build_plant()))
     for _ in range(6000):
         taps.tick()

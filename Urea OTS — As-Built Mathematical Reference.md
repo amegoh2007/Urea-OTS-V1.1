@@ -1655,7 +1655,7 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 355 | LI-323501 between LT-323501's taps on 323C003 (decision 241) | LI = M / M_full x 100, LIC-323501's PV the same, held at 60 %; LV-323501's seal at the bottom of the span | `data/unit_323c003` ``lt_323501_pct``, ``LT_323501_DES_PCT``, ``LT_323501_SEAL_PCT``, the bottom's geometry; `units/recirc/rectifying_column` ``taps``, ``V1_COLUMN``, ``lic_323501(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-16: the reading between N8 and the line seal, 2 000 mm over the neck, the cone and the shell, the plant's 40 % at V1's design holdup, LIC-323501 seeded and set there; the seal lost at N5's lower edge, 29.21 %; ``V1_COLUMN``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_323501_between_its_taps_decided_divergence` and `test_lv_323501s_seal_is_lost_at_n5_decided_divergence`; the seed identical at tick 1 but for the reading, its flows within 4.86e-5 by 600 s, 324E001's boil-off 1.58e-2 (§CXXXV.4) |
 | 356 | LI-328503 between LT-328503's taps on 328C002 (decision 243) | LI = M / M_des x 50, LIC-328503's PV the same, held at 50 % | `data/unit_328c002` ``lt_328503_pct``, ``LT_328503_DES_PCT``, the taps and span; `units/desorption/first_desorber` ``taps``, ``level_pct``, ``lic_328503(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-17: the reading between N7B and N7A, 1 200 mm on the shell above the partition, V1's design holdup at 70.83 %, LIC-328503 seeded and set there; ``taps=False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_328503_between_its_taps_decided_divergence`; the seed identical at tick 1 but for the reading, its flows within 1.96e-5 by 600 s, 324E001's boil-off 6.6e-5 (§CXXXVI.3) |
 | 357 | LI-328505 between LT-328505's taps on 328C004 (decision 244) | LI = M / M_des x 50, LIC-328505's PV the same, held at 50 % | `data/unit_328c004` ``lt_328505_pct``, ``LT_328505_DES_PCT``, the taps and span; `units/desorption/second_desorber` ``taps``, ``level_pct``, ``lic_328505(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-17: the reading between N11B and N11A, 1 000 mm on the shell above the bottom tangent line, V1's design holdup at 71.00 %, LIC-328505 seeded and set there; ``taps=False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_328505_between_its_taps_decided_divergence`; the seed identical at tick 1 but for the reading, its flows within 2.36e-5 by 600 s, 324E001's boil-off 5.1e-7 (§CXXXVII.3) |
-| 358 | LI-328504 between LT-328504's taps on 328C003 (decision 246) | LI = M / M_des x 50, LIC-328504's PV the same, held at 50 % | `data/unit_328c003` ``lt_328504_pct``, ``LT_328504_DES_PCT``, the taps and span; `units/desorption/hydrolyser` ``taps``, ``level_pct``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-17: the reading between N5B and N5A, 1 000 mm below the top tangent line, V1's design holdup read as the drawing's N.L.L. at mid-span, 50 %, V1's own reading, LIC-328504's seed unchanged; ``taps=False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_328504_between_its_taps_decided_divergence`; the seed identical at tick 1 but for the reading, AI-328701 within decision 246's 2e-4 by 600 s, every other flow within 6e-5, 324E001's boil-off 2.4e-4 (§CXXXVIII.3) |
+| 358 | LI-328504 between LT-328504's taps on 328C003 (decision 246) | LI = M / M_des x 50, LIC-328504's PV the same, held at 50 % | `data/unit_328c003` ``lt_328504_pct``, ``LT_328504_DES_PCT``, the taps and span; `units/desorption/hydrolyser` ``taps``, ``level_pct``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-17: the reading between N5B and N5A, 1 475 and 475 mm below the top tangent line, V1's design holdup read as the drawing's N.L.L. at mid-span, 50 %, V1's own reading, LIC-328504's seed unchanged; ``taps=False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_328504_between_its_taps_decided_divergence`; the seed identical at tick 1 but for the reading, AI-328701 within decision 246's 2e-4 by 600 s, every other flow within 6e-5, 324E001's boil-off 2.4e-4 (§CXXXVIII.3) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -26938,7 +26938,7 @@ test report, B-156's sixth unit (LT-328504 on 328C003) on its Option 1, and reco
 
 KSB's quality file UD-AU-335-DZ-0026-012 (scanned, 37 pages, read off the page images). The acceptance test protocols,
 "Abnahme-Prüfprotokoll" BP2, pp. 25 (335P001A, K 77746, order position 007900/1) and 29 (335P001B, K 77747, 007900/2):
-CPKCHXYD 80-250, ISO 9906 class 1, cold water, closed bed; guarantee Q 82.00 m3/h, H 65.20 m, eta 60 %, 2 940 1/min,
+CPKCHXYD 80-250, ISO 9906 class 1, cold water, closed bed (both headers read); guarantee Q 82.00 m3/h, H 65.20 m, eta 60 %, 2 940 1/min,
 P 29.40 kW at 1.22 kg/dm3, motor 37 kW; impeller 213 mm, remachining form A06; measuring bores 124.90 and 79.50 mm.
 Values at the guaranteed speed, as printed:
 
@@ -26968,7 +26968,7 @@ step was run on the refit, which was not taken. Data gap 11 is closed.
 ## CXXXVIII.2 328C003 and LT-328504, as read (decision 246)
 
 Uhde's UD-AU-328-EC-0003 rev. 01, principle sketch p. 5 (the page image at 400 dpi): from the top tangent line N5A
-475 mm down, N5B 1 000 mm below N5A, the N.L.L. 975 mm down, between them; tray 1 below N5B, N2 below tray 1; the shell
+475 mm down, N5B 1 000 mm below N5A, the N.L.L. 975 mm down, between them; N2 just under N5B, tray 1 below both; the shell
 20 850 mm between tangent lines, I.D. 1 950, 17 trays at 1 100 mm. N5B and N5A stand 19.375 and 20.375 m above the
 bottom tangent line, not the plan's 19.2-20.2 m. Uhde's level sheet UD-MR-G00-EC-0134 p. 6 (printed 5 / 6, rev. 2),
 LT 328504, loop L 328504: 328C003, ammonia water / carbamate gas, design 25.00 bar g and 230 C, 14.7 bar a and 190 C,
@@ -26996,7 +26996,8 @@ LI-328504 (an uncut grep): its consumers are the packet's ``LI_328504``, the fac
 * Both sides (`test_li_328504_between_its_taps_decided_divergence`): 746 cut 25 % for 30 min, the design tick ``==``
   V1's in everything, each side reading its own law every tick. The V1 harnesses run ``taps=False``.
 * A save on V1's reading (`test_snapshot.py`): the set point stays 50 %, a 49.5 % PV is restated to 37.44 %, the first
-  tick unmoved. A save at the design holdup is unchanged by the restatement.
+  tick unmoved. The six shipped exercises (`check_scenarios.py`): 328C003 at 33 799-34 405 kg, V1 reading 49.62-50.50
+  %, the taps 40.32-62.63 %, inside the span; LIC-328504's set point 50 %, tick 1's output moved by 1e-3 % at most.
 
 ## CXXXVIII.4 Pins moved, and the checks
 

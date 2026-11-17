@@ -1322,7 +1322,7 @@ decision on an item.
      link-breaking arms suggest has no root across the jump, and a continuous fallback at the loop pressure (c), a new mechanism. As-Built §CXXXVII.5.
 246. **LI-328504 reads between LT-328504's taps on 328C003, V1's design holdup read as the drawing's N.L.L.**
      (2026-11-17, the process engineer's instruction, session 127; B-156's sixth unit). Uhde's principle sketch
-     UD-AU-328-EC-0003 p. 5 puts N5A 475 mm and N5B 1 475 mm below the top tangent line (19.375 and 20.375 m above the
+     UD-AU-328-EC-0003 p. 5 puts N5A 475 mm and N5B 1 475 mm below the top tangent line (20.375 and 19.375 m above the
      bottom one) and the N.L.L. 975 mm below it, at the span's mid-point; Uhde's level sheet UD-MR-G00-EC-0134 p. 6
      (rev. 2) prints 1 000 mm and 0-96.15 mbar on 908 kg/m3. V1's design holdup, an hour of 747, stands 12.554 m deep,
      6.8 m under N5B; it is kept, with the vapour space, the head and the thermal inertia it carries, and read as the
