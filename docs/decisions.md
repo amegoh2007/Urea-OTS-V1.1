@@ -1291,3 +1291,14 @@ decision on an item.
      110 C (V1's band); LT-323503's L2 hysteresis stays 2 % (B-96); the L2 of LT-328501, LT-328503, LT-328505 and
      LY-324501 stays LT-323503's 5 % with the same 2 % (decision 217). Nothing in the model moves. A DCS readback
      (checklist rows 1, 2 and 17 to 20) would still replace them. As-Built §CXXXV.5.
+243. **LI-328503 reads between LT-328503's taps on 328C002** (2026-11-17, the process engineer's choice, session 125;
+     B-156's fourth unit). N7B and N7A at EL 13 330 and 14 530 mm on Uhde's principle sketch (UD-AU-328-EC-0001 p. 6),
+     300 and 1 500 mm above the flat partition at EL 13 030 mm that is 328C002's floor (the tray arrangement, p. 7);
+     Uhde's level sheet UD-MR-G00-EC-0134 p. 6 prints the 1 200 mm and 923.0 kg/m3: `data.unit_328c002.lt_328503_pct`,
+     written as the departure from V1's design holdup, which reads 70.83 %. V1's 1.150 m sump is the drawing's H.L.L.
+     (its N.L.L. is 725 mm), kept as the design holdup. LIC-328503's set point and history are seeded there; a save made
+     on V1's reading is restated as the tap reading of the holdup it held. AC4's L2 stop reads it, so 328P006A / B stop
+     at 693 kg, not 159 kg. ``taps=False`` and ``lic_328503(taps=False)`` are V1's on the harnesses. The seed is
+     identical at tick 1 but for the reading; by 600 s its flows part 1.96e-5 and the boil-off 6.6e-5, inside decision
+     230's bound with no restatement. The process engineer also confirmed session 124's restatement of decision 233's
+     boil-off bound to 4.3e-3 (decision 241). As-Built §CXXXVI.1-3.

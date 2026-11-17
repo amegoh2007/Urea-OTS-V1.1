@@ -1653,6 +1653,7 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 353 | LI-323503 between LT-323503's taps on 323D011 (decision 233) | LI = M / M_des x 50, LIC-323503's PV the same | `data/unit_323e011` ``lt_323503_pct``, ``LT_323503_DES_PCT``, ``D011_M_LO_KG``, ``LT_323503_SPAN_KG``; `units/recirc/flash_condenser` ``taps``, ``V1_CONDENSER``; `units/recirc/flash_condenser_loops` ``lic_323503(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-16: the reading between N2B and N2A, 1 310 mm on the cylinder, 26.77 % at V1's design holdup, LIC-323503 seeded and set there; ``taps = False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_323503_between_its_taps_decided_divergence`; the seed identical at tick 1 and up to 3.15e-4 relative by 600 s (§CXXXIV.4) |
 | 354 | FY-321404 on the DCS's formula at the packet and the command (decision 235) | the packet's ratio block and ``ratio_set`` on the engine's molar ratio | `data/unit_321` ``FY_321404_DCS_FACTOR``; `engine/packet/unit_321` ``ratio``; `engine/command` ``_ratio_set``, ``_controller_set`` (CAS) | **`[DECIDED DIVERGENCE]`** 2026-11-16: published x 1.0317 and taken / 1.0317 after the 2.0-5.0 limits; the loop on the engine's ratio unchanged, so no harness moves; both sides in `test_the_station_at_design` (V1's published 2.023, the port's 2.087) and `test_the_speed_controllers_and_the_ratio` (§CXXXIV.6) |
 | 355 | LI-323501 between LT-323501's taps on 323C003 (decision 241) | LI = M / M_full x 100, LIC-323501's PV the same, held at 60 %; LV-323501's seal at the bottom of the span | `data/unit_323c003` ``lt_323501_pct``, ``LT_323501_DES_PCT``, ``LT_323501_SEAL_PCT``, the bottom's geometry; `units/recirc/rectifying_column` ``taps``, ``V1_COLUMN``, ``lic_323501(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-16: the reading between N8 and the line seal, 2 000 mm over the neck, the cone and the shell, the plant's 40 % at V1's design holdup, LIC-323501 seeded and set there; the seal lost at N5's lower edge, 29.21 %; ``V1_COLUMN``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_323501_between_its_taps_decided_divergence` and `test_lv_323501s_seal_is_lost_at_n5_decided_divergence`; the seed identical at tick 1 but for the reading, its flows within 4.86e-5 by 600 s, 324E001's boil-off 1.58e-2 (§CXXXV.4) |
+| 356 | LI-328503 between LT-328503's taps on 328C002 (decision 243) | LI = M / M_des x 50, LIC-328503's PV the same, held at 50 % | `data/unit_328c002` ``lt_328503_pct``, ``LT_328503_DES_PCT``, the taps and span; `units/desorption/first_desorber` ``taps``, ``level_pct``, ``lic_328503(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-17: the reading between N7B and N7A, 1 200 mm on the shell above the partition, V1's design holdup at 70.83 %, LIC-328503 seeded and set there; ``taps=False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_328503_between_its_taps_decided_divergence`; the seed identical at tick 1 but for the reading, its flows within 1.96e-5 by 600 s, 324E001's boil-off 6.6e-5 (§CXXXVI.3) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -26740,3 +26741,83 @@ recorder's own: a ``!=`` against approx and a test file edited after collection)
 8 408 collected, 8 408 passed. The PyQt6 grep printed nothing; `rectifying_column.py` stands at 593 lines. After
 the audit (A-60, the survey's labels, the exercises): `tests/phase7/test_deviations.py`, `tests/docs` and `test_layering`,
 100 passed.
+
+# Part CXXXVI — Session 125: the gap-closure docx; LI-328503 between its taps (2026-11-17)
+
+Asked: research how to close every open gap one at a time on `References\Gaps Closure\V1.1 Gap Closure.docx`,
+plan, execute, commit and push. The research report is `Tests and Reports\reports\Session_125_gaps\Session 125
+research - V1.1 Gap Closure docx.md`. Decision 243; register row 356.
+
+## CXXXVI.1 The docx, measured against itself and the record
+
+The docx is a generic steady-state blueprint; its writer says it could not read the project. It names no open item. Its
+sections fall on rulings already made: tear acceleration on decision 8 (A-10) and the fixed 0.1 s step; e-NRTL and
+SR-POLAR on §I.2.2; the prilling tower on decision 73's scope; the kinetics are V1's, ported. Its own numbers
+(`check_docx_numbers.py`; the Piotrowski equation checked on its raw OMML):
+
+* Piotrowski's conversion polynomial, as transcribed, gives -9.33 at its own worked point (456 K, a 3.0017, b 0.4293)
+  against the quoted 0.6114; its K2 exponent is -1857.
+* The quoted mole fractions (sum 0.9988) are consistent with conversion 0.5846 and y about 0.96 on
+  N = 1 + a + b - 2y + st; the printed N = 1 + a + b - y - st is the docx's error.
+* Rahimpour's hydrolysis constants give about 0.04 times V1.1's Inoue-Otsuka line at 130 to 210 C; the two are an
+  activity-based reversible rate and a second-order line, not comparable. Biuret: 80.0 kJ/mol against V1's 85.0.
+
+Nothing in it enters `ureasim/`. No handoff item closes on it.
+
+## CXXXVI.2 328C002 and LT-328503, as read (decision 243)
+
+Uhde's datasheet UD-AU-328-EC-0001 (`References\Datasheets\328C002 328C004 Datasheet.pdf`, scanned, read from the page
+images at 300 dpi): the nozzle table (p. 4) names N7A / B "LT 328503", DN 80 PN 40 pads; the principle sketch (p. 6)
+puts N7A at EL 14 530 mm and N7B at 13 330 mm, the partition between 328C002 and 328C004 at 13 030 mm (328C004's
+shell 13 030 mm from the bottom tangent line); the tray arrangement (p. 7) draws the partition flat, tray 15 2 370 mm
+above it, and L.L.L. 300 mm, N.L.L. 725 mm, H.L.L. 1 150 mm above it (425 mm either side of N.L.L.). Uhde's level
+sheet UD-MR-G00-EC-0134 p. 6, LT-328503: nozzle distance 1 200 mm, set range 110.51 mbar, 923.0 kg/m3, 1.017 times
+the head. N7B is the drawing's L.L.L.
+
+V1's sump at the design is 1.150 m (`C002_H_NLL_M`, "the tray arrangement"): the drawing's H.L.L., not its N.L.L.
+Logged; the design holdup is kept (the process engineer's choice).
+
+The law: LI = clamp(LI_des + (M - M_des) / (rho A L) x 100, 0, 100), rho 923.0, A the 1 250 mm bore, L 1.200 m;
+LI_des = (1.150 - 0.300) / 1.200 = 70.83 %. 0 % at 625.43 kg (V1 reads 19.69 % there), 100 % at 1 984.66 kg; 2.34
+times V1's reading per kilogram. AC4's 5 % L2 stops 328P006A / B at 693.4 kg (V1's reading: 158.8 kg).
+
+## CXXXVI.3 Measured, both sides
+
+* The whole plant (`c002\measure_bound.py`, unrounded state, decision 230's scoring): tick 1 identical but for
+  `328C002.level_pct` and `lic_pv_pct`. By 600 s the largest flow part is 1.96e-5 (AI-328701), 328C002's 743 5.3e-6,
+  the boil-offs 6.6e-5 (324E001) and 1.9e-5 (322R001); the holdup 0.0023 kg below V1's law. Inside 6e-5 and 2e-3: no
+  restatement.
+* The unit alone (`c002\proto_unit.py`): 738 cut 25 %, the holdup dips 50.9 kg on the taps, 103.0 kg on V1's reading;
+  750 halved, both hold; LV-328503 at 80 % in MAN, the L2 stop at 65.1 s with 692 kg (V1's reading: 104.2 s, 158 kg).
+* The unit's pins (`test_first_desorber.py`), restated: the design reads 70.83 %; 750 up a fifth 3.86912 bar a,
+  142.5456 C, 7 874.85 kg/h (3.86916, 142.5460, 7 874.97), down a fifth 3.19013, 135.7834, 5 405.51 (3.19024, 135.7846,
+  5 405.33); the stripping vapour lost 1.48303 bar a, 111.2886 C (1.48257, 111.2794); every inlet lost 1 234.38 kg,
+  127.850 C (918.15, 126.826); 750 halved 70.85 %, 33 628.2 kg/h, LV 57.97 %, NH3 0.05419 (50.00, 33 635.2, 57.98,
+  0.05423); a full shell reads 100 % (377.4); SV32850's lift 51 910.57 kg/h (51 916.11); the L2 stop at 21.8 s and 25.0 s
+  (34.9, 42.1).
+* Both sides (`test_li_328503_between_its_taps_decided_divergence`): V1's transcription and the port on the taps, 738
+  cut 25 % for 30 min: the design tick equal but for the reading, each side reading its own law every tick, V1 back to
+  50 % and the port to 70.83 %, the dips 103.0 and 50.9 kg. The V1 harnesses run ``taps=False``, ``==`` every tick.
+* The six shipped exercises (`c002\check_scenarios.py`): LIC-328503 restated to 70.8333, PV 70.795 to 70.882 %, tick 1's
+  output unmoved to 1e-3 %, 328P006 running.
+
+## CXXXVI.4 Whole-plant pins moved, and the checks
+
+LI-328503 between its taps moves eleven whole-plant pins by a few parts in 1e-6 to 1e-5, through LIC-328503's
+draw down the desorption train; each is restated at its measured value, the old one in its docstring (decision
+243). Recorded in one pass with the approx recorder (`plug\rec125.py`) and re-pinned by `repin243.py`.
+
+* `test_synthesis_loop_decided_equivalence.py`: B-76's sumps 3 649.35 and 3 765.35 kg (3 649.34, 3 765.34); A-12's
+  CO2 case, V1's loop 139.5424 bar a (139.5422); A-21's ringing tick 227 355.5 kg/h (227 353.1), the solved
+  condensation 131 847.0 and 131 860.3 kg/h (131 846.1, 131 859.5); B-103's held 2 223.45 kg (2 223.44), the loops
+  141.9952 and 141.0394 bar a (141.9953, 141.0395); B-104's V1 loop 146.6710 (146.6711); B-106's window means
+  71.29 t/h and 147.687 bar a (71.63, 147.677). The last moves 0.34 t/h on a mean over a ring that moves a single
+  tick 14 t/h (A-50, §CXXIX.4).
+* `test_recirc.py`, the other levels' parts from V1's law at 600 s, now with 328C002 between its taps on both sides:
+  323D001's 4.88e-5 (4.93e-5); 323C003's 4.843e-5 and 324E001's boil-off 1.582e-2 (4.864e-5, 1.579e-2), inside
+  decision 241's 1.6e-2. Two tests added for 328C002 itself: its first tick the same on either law but for its two
+  readings, and its part at 600 s, 1.958e-5 and 6.63e-5, the holdup 0.0023 kg below V1's law (§CXXXVI.3).
+* The full suite in nine parallel groups (`suite\`): 8 403 passed, 8 failed, every failure one of the pins above;
+  the eight rerun after restatement pass, and the five files the change touches (182 tests) pass.
+* `grep -rn "PyQt6" ureasim/net ureasim/engine ureasim/units ureasim/control ureasim/core ureasim/thermo` prints
+  nothing. `units/desorption/first_desorber.py` is 467 lines, `data/unit_328c002.py` 276.

@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-16, session 124.
+**Last updated:** 2026-11-17, session 125.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -167,12 +167,12 @@ load, and all five holds are lost. Acceptance: the plant's TT-322004, the hydrol
 below, 323D001 at its set point, the 100 % pin to the bit. Options: (a) keep as built, L3 reported as not
 fulfilled; (b) the rise off with the change that holds 322R001 (B-118), never alone. Next step: B-118's.
 
-### B-156 — Four level transmitters read V1's holdup ratio, not their taps
+### B-156 — Three level transmitters read V1's holdup ratio, not their taps
 
 *Raised 2026-11-15, session 118 (As-Built §CXXVIII.5).* Uhde's data sheets (UD-MR-G00-EC-0133, EC-0134) print every
-level transmitter's nozzle distance. Nine modelled levels read between their taps on those distances
-(`Tests and Reports/tests/data/test_level_transmitter_sheets.py`). Four still read V1's holdup ratio: LT-328503 (328C002,
-1 200 mm), LT-328504 (328C003, 1 000 mm), LT-328505 (328C004, 1 000 mm) and LT-329501 (322E003's sump, 10 000 mm). Acceptance: each reads between its sheet's nozzles on its vessel's datasheet geometry, its
+level transmitter's nozzle distance. Ten modelled levels read between their taps on those distances
+(`Tests and Reports/tests/data/test_level_transmitter_sheets.py`). Three still read V1's holdup ratio: LT-328504
+(328C003, 1 000 mm), LT-328505 (328C004, 1 000 mm) and LT-329501 (322E003's sump, 10 000 mm). Acceptance: each reads between its sheet's nozzles on its vessel's datasheet geometry, its
 design level reproduced; the seed identical to HEAD at tick 1 and, by 600 s, within decision 230's bound (6e-5 relative
 on every unrounded state and flow above 1, near-zero names left out, 2e-3 on the two boil-offs; the seed is not a fixed
 point, B-94) or a bound the process engineer restates for the unit on its measured values, as decisions 233 and 241
@@ -184,12 +184,15 @@ reaches them unit by unit, one a session, each measured on both sides before it 
 (decision 219, §CXXXI), its design at the taps' mid-point, V1's 50 %; LT-323503 on 323D011 (decision 233, §CXXXIV), its
 design reading 26.77 %, so LIC-323503's set point and history are seeded there and a save made on V1's reading is
 restated on load; LT-323501 on 323C003 (decision 241, §CXXXV), over the neck, the cone and the shell, its design the
-plant's 40 %, LV-323501's seal lost at N5's lower edge (29.21 %). Each move takes the stops on its level with it:
-decision 217's on LT-328503 (328P006) and LT-328505 (328P007); 323P008's now stop at 763 kg. A design reading off V1's
+plant's 40 %, LV-323501's seal lost at N5's lower edge (29.21 %); LT-328503 on 328C002 (decision 243, §CXXXVI), N7B and
+N7A 300 and 1 500 mm above the partition, V1's design holdup reading 70.83 % (V1's 1.150 m sump is the drawing's H.L.L.),
+the seed within decision 230's bound. Each move takes the stops on its level with it: 323P008's now stop at 763 kg,
+328P006's at 693 kg; decision 217's on LT-328505 (328P007) moves with the fifth unit. A design reading off V1's
 moves 324E001's boil-off past decision 230's 2e-3 (§CXXXIV.4, §CXXXV.3: on every reading measured); a unit's move also
 moves the earlier units' parts, so their pins are re-measured with it (§CXXXV.4). Ruled out without the process
-engineer: a ceiling or overflow V1 has none of (§CXXXI.5). Next step: the fourth unit, its vessel's geometry read from
-its datasheet (the vendor archive first) and both sides measured.
+engineer: a ceiling or overflow V1 has none of (§CXXXI.5). Next step: the fifth unit, LT-328505 on 328C004, whose taps
+N11A / N11B are on the same sketch (UD-AU-328-EC-0001 p. 6: EL 1 210 and 210 mm above 328C004's bottom tangent line);
+both sides measured. LT-329501 last: it sets 322F001's suction (data gap 1).
 
 ---
 

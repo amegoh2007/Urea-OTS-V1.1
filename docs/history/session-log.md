@@ -5177,3 +5177,13 @@ design readings measured on the whole plant, the plant's 40 % chosen, LV-323501'
 the bound restated for the unit; decision 233's boil-off bound restated to 4.3e-3 on the same terms. Thirty-five
 pins moved and restated; B-104's take rings with a period of two ticks, now asserted on the two-tick mean (A-60).
 Data gaps 2 and 8 signed off on their stand-ins (decision 242). Part CXXXV; register row 355.
+
+### Session 125 — the gap-closure docx checked; B-156's fourth unit, LI-328503 between its taps (2026-11-17)
+
+Read 'V1.1 Gap Closure.docx' whole, equations included: a generic steady-state blueprint whose author could not see
+the project; it names no open item, its Piotrowski polynomial misses its own worked point, and no number of it is
+taken (report: `Tests and Reports\reports\Session_125_gaps`). LI-328503 reads between LT-328503's taps on
+328C002: N7B and N7A 300 and 1 500 mm above the partition (UD-AU-328-EC-0001 pp. 6, 7; EC-0134 p. 6), V1's design
+holdup kept at 70.83 % (V1's 1.150 m is the drawing's H.L.L.), LIC-328503 seeded there and saves restated; 328P006's
+L2 stop moves to 693 kg (decision 243). The seed parts 1.96e-5 on flows and 6.6e-5 on the boil-off by 600 s, inside
+decision 230's bound. The process engineer confirmed decision 233's restated 4.3e-3. Part CXXXVI; register row 356.
