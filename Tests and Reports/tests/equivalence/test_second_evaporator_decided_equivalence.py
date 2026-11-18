@@ -28,19 +28,20 @@ v1 = h.v1
 
 
 def _both(v1, script, n, off, sp=None, setup=None, vendor_trim=False, seal_air=False,
-          bisect=False, vendor_drain=False, ac4=False):
+          bisect=False, vendor_drain=False, ac4=False, ac4_ly=False):
     """V1's transcription without the departure `off`, and the port, side by side; returns the
     tick each side's state was first not ``==`` the other's, and per tick (V1, port) records. The
     port runs V1's linear chest valve unless ``vendor_trim`` (PV-329212's own test), V1's sealed
     leg unless ``seal_air`` (B-107's own test), V1's last sweep unless ``bisect`` (B-108's) and
     V1's span law on LV-324501 unless ``vendor_drain`` (decision 150's), and V1's selector unless
-    ``ac4`` (AC4's computed header, decision 224's)."""
+    ``ac4`` (AC4's computed header, decision 224's), and V1's level unless ``ac4_ly`` (LY-324501 on
+    AC4's formula, decision 252's)."""
     dec = h.ALL - {off}
     s = h._v1_state(v1, dec)
     chest = h.se.PV_329212_CHEST if vendor_trim else h.se.V1_CHEST
     unit, loops = (h.se.SecondEvaporator(chest=chest, backward_species=False, seal_air=seal_air,
                                          bisect_fixed_point=bisect, vendor_drain=vendor_drain,
-                                         ac4_header=ac4),
+                                         ac4_header=ac4, ac4_ly=ac4_ly),
                    h.se.SecondEvaporatorLoops(pic=h.se.pic_329212(chest),
                                               level=h.se.lic_324501(vendor=vendor_drain,
                                                                   ac4=ac4)))
@@ -275,6 +276,24 @@ def test_335p001s_low_level_stop_on_ac4_decided_divergence(v1):
     assert hist[2999]["leg"][0] == pytest.approx(351.63, abs=0.01)
 
 
+
+def test_ly_324501_on_ac4s_formula_decided_divergence(v1):
+    """Decision 252 on decision 217's run. Stage 1's leg stops at 0.5 s. V1 reads the level alone
+    and throttles to 775 kg in five minutes. On AC4's formula LY-324501 is the level until it meets
+    LT-324501's LRV floor, about 20.7 % at the vacuum, at 113.6 s, and then reads the floor: it never
+    falls below the 5 % L2, so 335P001A and B are never stopped and the header draws the separator
+    down to its 1 kg floor, where V1's level alone stops them at 169.3 s with 345.6 kg held."""
+    from ureasim.units.evaporation.melt_leg_transmitter import ly_floor_pct
+    parted, hist = _both(v1, h._step(v1, 5, m=0.0), 3000, "heel", vendor_drain=True, ac4=True,
+                         ac4_ly=True)
+    at_floor = [k for k, r in enumerate(hist) if r["level"] == ly_floor_pct(r["P"][1])]
+    assert parted == 6 and at_floor[0] == 1136 and at_floor == list(range(1136, 3000))
+    assert all(r["level"] > ly_floor_pct(r["P"][1]) for r in hist[:1136])
+    assert min(r["level"] for r in hist) > 20.7 > 5.0
+    assert hist[1693]["leg"][1] == pytest.approx(69496.3, abs=0.1)
+    assert hist[2999]["M"] == (pytest.approx(774.60, abs=0.01), 1.0)
+    assert hist[2999]["leg"] == (pytest.approx(351.63, abs=0.01), 0.0)
+
 def test_pv_329212_on_its_vendor_trim_decided_divergence(v1):
     """Decision 23's class, decided 2026-10-14: PV-329212 on Metso's DN 80 balanced Neldisc, its
     printed capacities as its curve (and, since decision 170, 2026-11-06, Valmet's S-Disc shape between
@@ -330,7 +349,7 @@ def test_the_fixed_point_on_the_energy_balance_at_the_heel_decided_divergence():
     for bisect in (False, True):
         unit = h.se.SecondEvaporator(chest=h.se.V1_CHEST, backward_species=False, seal_air=True,
                                      bisect_fixed_point=bisect, vendor_drain=False,
-                                     ac4_header=False)
+                                     ac4_header=False, ac4_ly=False)
         loops = h.se.SecondEvaporatorLoops(pic=h.se.pic_329212(h.se.V1_CHEST),
                                            level=h.se.lic_324501(vendor=False))
         loops.level.mode, loops.level.op = "MAN", 100.0

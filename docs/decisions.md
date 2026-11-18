@@ -1375,3 +1375,13 @@ decision on an item.
      1.04014. The design pin is unchanged, bit for bit. `vendor_map` keeps the vendor's scale and V1's width. The
      break is softer than the plant's, which logged 0.6 bar a at 75 % load; Körting's curves (data gap 3) still
      decide it. As-Built §CXLIV.
+252. **LY-324501 is AC4's formula on V1's level** (2026-11-18, session 133, in V1.2; the process engineer's "AC4
+     formula, V1 level" and "Indicator, LIC, L2 stop"). AC4 PC35.2.1 computes LY-324501 = (LT-324501 - 1000
+     PT-324203) / 885 x 100 from a gauge transmitter at the leg's one tap; Rosemount's -700 mbar LRV gives it a floor,
+     20.6 % at the design 0.131 bar a. Built in `units/evaporation/melt_leg_transmitter` on V1's holdup ratio, not on
+     the leg's profile (which kept no bit-identical seed and moved a slug 20 times as far, As-Built §CXLV.3): LY-324501
+     = max(level, floor), read by LIC-324501, the console and 335P001's L2 stop; the seal air keeps the holdup.
+     `SecondEvaporator.ac4_ly`, False in the V1 harnesses. The seed is unchanged to the bit. At the design vacuum the
+     L2 stop cannot act: a lost feed drains the separator to its 1 kg heel, the seal's air breaks the vacuum, and only
+     then (0.270 bar a) does LY-324501 fall below L2; beside PC35's trips the vacuum recovers and the pumps run again.
+     Data gap 4 stays open on the configured LRV and the leg's walk-down. As-Built §CXLV.9.

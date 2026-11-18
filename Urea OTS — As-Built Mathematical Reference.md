@@ -27623,8 +27623,8 @@ At 105 % load 324F002 works close to its decided break; the bleed still has 60 %
 
 # Part CXLV — Session 133: LY-324501 on the leg's geometry, the cooling-water lead, PT-323204's digits, the UF85 pumps, the Drive copy
 
-*2026-11-18, session 133, on V1.2 (branch `v1.2`, after 2efb181). Nothing under `ureasim/` changed and no decision was
-taken. Task 1 of the session's request, the session 114 scratch plan for B-118, B-125, B-126 and B-136, runs in
+*2026-11-18, session 133, on V1.2 (branch `v1.2`, after 2efb181). After the research, LY-324501 was built on AC4's
+formula over V1's level (decision 252, §CXLV.9), on branch `v1.2-d252` off ad39795, to merge into `v1.2`. Task 1 of the session's request, the session 114 scratch plan for B-118, B-125, B-126 and B-136, runs in
 session 134 (Part CXLVI). Scripts and runs: `Tests and Reports\reports\Session_133_ly324501`.*
 
 ## CXLV.1 The melt's profile above LT-324501's tap (data gap 4)
@@ -27755,4 +27755,62 @@ README's and the local zip's; 297 entries, `zipfile.testzip` clean.
 
 ## CXLV.8 Checks
 
-The documentation tests (`Tests and Reports/tests/docs`). Nothing under `ureasim/` changed, so the suite was not run.
+The research (CXLV.1 to CXLV.7): the documentation tests (`Tests and Reports/tests/docs`). The build: CXLV.10.
+
+## CXLV.9 LY-324501 on AC4's formula, as built (decision 252)
+
+The process engineer chose AC4's formula on V1's level (option B of CXLV.3), its result read by LIC-324501, the console's
+LI-324501 and 335P001's low-level stop, as AC4 wires it. Built in `units/evaporation/melt_leg_transmitter.ly_324501`,
+with the span and the LRV in `data/unit_324` (`LY_324501_SPAN_MBAR` 885, AC4 PC35.2.1; `LT_324501_LRV_MBAR` -700,
+Rosemount's record, §CXL.1):
+
+    level    = clamp(100 m / m_full, 0, 100)                                   [V1, the holdup ratio, kept]
+    LY_floor = (LRV - 1000 (PT-324203 - P_atm)) / 885 x 100                    [CXLV.2]
+    LY-324501 = max(level, LY_floor)                                           [AC4 PC35.2.1 on LT-324501's range]
+
+PT-324203 is the tick's solved pressure, the one the packet publishes; P_atm the engine's 1.01325 bar. The formula's
+round trip (LT-324501 built from the level and AC4's subtraction undone) agrees with the level to 1e-13 %, so above the
+floor the level is returned unchanged, not recomputed. The upper value, 900 mbar, lies above 100 % at any pressure below
+the atmosphere and is not carried. The seal air of B-107 reads the holdup itself, not LY-324501: it is the melt over
+the seal, not a reading. `SecondEvaporator.ac4_ly` switches it (True); False is V1's level, which the equivalence
+harnesses keep; `data.retired_state` fills it on a save made before it, and above the floor a save's level is LY-324501
+already, so nothing is restated. The stage's four controller factories moved verbatim to
+`units/evaporation/second_evaporator_loops` to keep `second_evaporator` within 600 lines (544); it re-exports them.
+
+Measured:
+
+* The design seed, 600 s, the same build with `ac4_ly` True and False in separate processes: LY-324501, LIC-324501's
+  output, PT-324203 and the melt equal to the bit on 6 000 of 6 000 ticks, and the whole plant's snapshot at 600 s
+  byte-identical (`seed_ly.py`). The design point is kept to the bit, inside decision 230's basis with no bound used.
+* Decision 217's run (stage 1's leg stopped at 0.5 s, the vendor drain on AC4's header), 3 000 ticks, against V1
+  (`test_ly_324501_on_ac4s_formula_decided_divergence`). V1's level alone (decision 217's test) stops 335P001A and B
+  at 169.3 s with 345.6 kg held. On AC4's formula LY-324501 is the level until it meets the floor, 20.73 % at
+  0.1298 bar a, at 113.6 s, and reads the floor from there to the end; its least value is 20.73 %, so the 5 % L2 never
+  acts. The header draws 69.5 t/h at 169.3 s and the separator down to its 1 kg floor; at 300 s it holds 1.0 kg and
+  draws nothing, where V1 holds 774.6 kg and drains 351.6 kg/h. Over 600 s the reading stays on the floor (20.75 %)
+  and PT-324203 at 0.1296 bar a: the harness runs V1's sealed leg (`seal_air` False), so no air enters.
+* The stage as built, the seal's air on (`test_second_evaporator.py`, `heel_unit.py`, `heel_trips.py`). B-62 with the
+  stop: LY-324501 on the floor from 113.6 s; the seal uncovers at 176.5 s, its air breaks the vacuum and lowers the
+  floor, and 335P001A and B stop at 189.6 s on 4.91 % at 0.270 bar a, stage 2 already on its 1 kg heel at 175.36 C,
+  drawing 1.9 t/h of air (on V1's level: 169.3 s, 346.0 kg held, the seal covered). B-63 with the stop: the heel, not
+  the stop, ends the drain at 372.2 s, LY-324501 on 12.65 % at 0.201 bar a; 1 kg at 162.18 C, as with the stop off
+  (on V1's level: 354.0 s, 346.7 kg held). B-62 beside PC35's trips: the late stop loses 35.1 and 35.4, LV-324501A
+  shuts, the air stops and the vacuum recovers, so the floor rises above L2 and its hysteresis and 335P001A and B run
+  again at 190.3 s (decision 217's stop does not latch); 35.1 heals and LIC-324501 is unclamped while 35.4 holds
+  LV-324501A shut on the 1 kg heel.
+
+The consequence §CXLV.2 foresaw is now the engine's: at the design vacuum the console reads about 20.7 % on an empty
+leg, and 335P001's low-level stop on LY-324501 acts only after the seal is lost and PT-324203 rises above 0.269 bar a;
+once the vacuum recovers the floor releases the pumps again. What 335P001 does running on an empty leg (cavitation,
+its own protection) is not modelled.
+
+## CXLV.10 Checks
+
+Run in the worktree, in parallel groups beside session 134's scratch runs: `units/evaporation`, `data`, the layering
+test and the documentation tests 520 passed after the four re-pinned tests of CXLV.9 (decision 217's two stops and the
+trips' case on AC4's header, B-62 on V1's selector given V1's level); the second evaporator's decided equivalence 19,
+its equivalence with the vacuum train's decided and the first evaporator's 36, `engine/test_snapshot.py` with the
+evaporation plant 45 (the six shipped exercises restore with `ac4_ly` filled, each level 54.70 to 54.73 % against a
+floor of 19.9 to 22.3 %), `engine/packet` 34, the rest of `engine` 149. The design seed's snapshot byte-identical at
+600 s (CXLV.9). Not run: `hmi`, `phase7` and the other units' and equivalence files, which no change reaches; the
+whole suite in one pass. `pyflakes` clean on the four changed modules.

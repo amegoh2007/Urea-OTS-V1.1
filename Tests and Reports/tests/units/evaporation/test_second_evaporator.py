@@ -34,7 +34,7 @@ P_E006 = d.E006_P_DES_BARA
 
 
 def _run(n, feed=d.P1_DES_KGH, p_mp=P_MP_BARA, p335=d.PIC_335201_DES_BARG, ac4=True):
-    unit = se.SecondEvaporator(ac4_header=ac4)
+    unit = se.SecondEvaporator(ac4_header=ac4, ac4_ly=ac4)
     loops = se.SecondEvaporatorLoops(level=se.lic_324501(ac4=ac4))
     r = None
     for _ in range(n):
@@ -92,8 +92,9 @@ def test_a_lost_feed_boils_the_held_melt_b62():
     the 9-bar header (PV-329212 on its vendor trim), and at 170.2 C the melt's equilibrium at the
     vacuum is 98.57 % and it boils no more. (616 kg/h, 151.4 C and 170.6 C with PV-329212 on the
     chord, before decision 170, 2026-11-06 put Valmet's S-Disc table between its printed points.)
-    On V1's selector, the harness's side of decision 224; AC4's header is pinned below."""
-    unit = se.SecondEvaporator(ac4_header=False)
+    On V1's selector and V1's level, the harness's side of decisions 224 and 252; AC4's header is
+    pinned below."""
+    unit = se.SecondEvaporator(ac4_header=False, ac4_ly=False)
     loops = se.SecondEvaporatorLoops(level=se.lic_324501(ac4=False))
     for k in range(6000):
         feed = 0.0 if k >= 5 else d.P1_DES_KGH
@@ -211,7 +212,7 @@ def _pc35():
 
 def _chain(n, cut_at=None, ac4=True, stop=True, trips=None):
     u1, l1 = fe.FirstEvaporator(), fe.FirstEvaporatorLoops()
-    u2 = se.SecondEvaporator(ac4_header=ac4)
+    u2 = se.SecondEvaporator(ac4_header=ac4, ac4_ly=ac4)
     if not stop:
         u2.l2_stop = False
     l2 = se.SecondEvaporatorLoops(level=se.lic_324501(ac4=ac4))
@@ -291,11 +292,15 @@ def test_a_feed_pump_trip_on_ac4s_header_drains_stage_2_to_its_heel_b63():
 
 
 def test_a_lost_feed_on_ac4s_header_stops_335p001_on_ly_324501s_l2_b62():
-    """Decision 217 on B-62: AC4 stops 335P001A / B on LY-324501 below L2 (the stand-in 5 %, 2 %
-    hysteresis). The pumps stop at 169.3 s on 4.99 %, the header drawing 69.5 t/h the tick before;
-    with no feed the level cannot recover and the pair stays stopped, so the seal never uncovers and
-    stage 2 holds 346.0 kg of melt at 175.33 C and 98.64 %, where with the stop off it drains to its
-    1 kg heel and draws air. Trips 35.1, 35.3 and 35.4 act beside it in the engine (decision 228)."""
+    """Decision 217 on B-62, LY-324501 on AC4's formula (decision 252). AC4 stops 335P001A / B on
+    LY-324501 below L2 (the stand-in 5 %, 2 % hysteresis), but from 113.6 s LY-324501 reads
+    LT-324501's LRV floor, 20.73 % at the vacuum, so the header drains on: the seal uncovers at
+    176.5 s, the air it draws breaks the vacuum and lowers the floor, and the pumps stop at 189.6 s
+    on 4.91 % at 0.270 bar a, stage 2 already on its 1 kg heel (B-108's fixed point on the ticks it
+    empties). It holds 1 kg at 175.36 C and 98.63 %, drawing 1.9 t/h of air. On V1's level the pumps
+    stopped at 169.3 s with 346.0 kg held and the seal covered (decision 217's pins before decision
+    252). Trips 35.1, 35.3 and 35.4 act beside it in the engine (decision 228)."""
+    from ureasim.units.evaporation.melt_leg_transmitter import ly_floor_pct
     unit, loops = se.SecondEvaporator(), se.SecondEvaporatorLoops()
     out = []
     for k in range(3000):
@@ -304,48 +309,57 @@ def test_a_lost_feed_on_ac4s_header_stops_335p001_on_ly_324501s_l2_b62():
                       d.PIC_335201_DES_BARG, 0.1)
         out.append((r, unit.p001_stopped))
     first = next(k for k, (_, s) in enumerate(out) if s)
-    assert first == 1693 and all(s and r.m_402_kgh == 0.0 for r, s in out[first:])
+    assert first == 1896 and all(s and r.m_402_kgh == 0.0 for r, s in out[first:])
     assert out[first][0].level_pct < 5.0 <= out[first - 1][0].level_pct
-    assert out[first - 1][0].m_402_kgh == pytest.approx(69499.13, abs=0.01)
-    assert all(r.converged and r.seal_air_kgh == 0.0 for r, _ in out)
-    assert (unit.m_kg, r.t_c, unit.w["Urea"]) == (pytest.approx(346.043, abs=1e-3),
-                                                  pytest.approx(175.3256, abs=1e-4),
-                                                  pytest.approx(0.98644, abs=1e-5))
+    assert next(k for k, (r, _) in enumerate(out) if r.level_pct == ly_floor_pct(r.p_bara)) == 1136
+    assert next(k for k, (r, _) in enumerate(out) if r.seal_air_kgh > 0.0) == 1765
+    assert out[first - 1][0].m_402_kgh == 0.0
+    assert out[first][0].p_bara == pytest.approx(0.2698, abs=1e-4)
+    assert all(r.converged or r.bisected for r, _ in out)
+    assert (unit.m_kg, r.t_c, unit.w["Urea"]) == (1.0, pytest.approx(175.3578, abs=1e-4),
+                                                  pytest.approx(0.98628, abs=1e-5))
+    assert r.seal_air_kgh == pytest.approx(1881.6, abs=1.0)
 
 
 def test_a_feed_pump_trip_on_ac4s_header_stops_335p001_on_ly_324501s_l2_b63():
-    """Decision 217 on B-63: stage 2 finishes the leg's melt as with the stop off, and when
-    LY-324501 passes below 5 % at 354.0 s AC4 stops 335P001A / B; the leg has run dry, so the level
-    cannot recover: the drain stays shut, the seal never uncovers and stage 2 holds 346.7 kg of melt
-    at 162.18 C and 98.41 %, never below 140 C."""
+    """Decision 217 on B-63, LY-324501 on AC4's formula (decision 252): stage 2 finishes the leg's
+    melt as with the stop off, but LY-324501 stands on its LRV floor, so the stop does not act before
+    the heel does: the seal uncovers at 361.3 s and the heel shuts the drain at 372.2 s with
+    LY-324501 on 12.65 % at 0.201 bar a. Stage 2 holds its 1 kg heel at 162.18 C and 98.41 %, never
+    below 140 C, drawing 1.9 t/h of air, as with the stop off. On V1's level the pumps stopped at
+    354.0 s with 346.7 kg held and the seal covered (decision 217's pins before decision 252)."""
     run = _chain(4000, cut_at=5)
     first = next(k for k in range(400, 4000) if run[k][1].m_402_kgh == 0.0)
-    assert first == 3540 and all(r2.m_402_kgh == 0.0 for _, r2 in run[first:])
-    assert run[first][1].level_pct < 5.0 <= run[first - 1][1].level_pct
-    assert all(r.converged and r.t_c >= 140.0 and r.seal_air_kgh == 0.0 for _, r in run)
+    assert first == 3722 and all(r2.m_402_kgh == 0.0 for _, r2 in run[first:])
+    assert run[first][1].level_pct == pytest.approx(12.6547, abs=1e-4)
+    assert next(k for k in range(4000) if run[k][1].seal_air_kgh > 0.0) == 3613
+    assert all(r.converged and r.t_c >= 140.0 for _, r in run)
     r2 = run[-1][1]
-    assert (r2.m_kg, r2.t_c, r2.w["Urea"]) == (pytest.approx(346.698, abs=1e-3),
-                                               pytest.approx(162.1801, abs=1e-4),
+    assert (r2.m_kg, r2.t_c, r2.w["Urea"]) == (1.0, pytest.approx(162.1801, abs=1e-4),
                                                pytest.approx(0.98413, abs=1e-5))
+    assert r2.seal_air_kgh == pytest.approx(1881.7, abs=1.0)
 
 
 def test_on_b62_and_b63_the_trips_follow_the_l2_stop_and_leave_the_holdup_as_it_was():
-    """Decision 228 on §CXXI.6's two cases: the L2 stop loses 35.1 and 35.4 on its tick, and from
-    the next LV-324501A is shut, LIC-324501 clamped at 100 %, HV-335602 driven open and 335P002
-    held. With no feed the pumps stay stopped, so stage 2 holds what it holds without the trips, to
-    the bit: the seal is the L2 stop's. What the trips change is the valves: LV-324501A parked shut
-    where without them PIC-335201 winds it open on the empty header."""
+    """Decision 228 on §CXXI.6's two cases, LY-324501 on AC4's formula (decision 252). On B-62 the
+    late L2 stop, at 189.6 s on the heel, loses 35.1 and 35.4 on its tick; from the next LV-324501A
+    is shut, HV-335602 driven open and 335P002 held, so the seal's air stops, the vacuum recovers
+    and LY-324501's floor rises above L2 and its hysteresis: 335P001A / B run again at 190.3 s
+    (decision 217's stop does not latch) and 35.1 heals, LIC-324501 unclamped, while 35.4 holds
+    LV-324501A shut. Stage 2 holds its 1 kg heel, as without the trips. On B-63 the trips leave the
+    holdup as it was, to the bit."""
     trips, unit, loops = _pc35(), se.SecondEvaporator(), se.SecondEvaporatorLoops()
     for k in range(3000):
         feed = 0.0 if k >= 5 else d.P1_DES_KGH
         r = unit.step(loops, feed, d.E001_T_DES_C, d.W_S401, P_MP_BARA, P_MOTIVE, P_E006, TV5,
                       d.PIC_335201_DES_BARG, 0.1, trips=trips.actions)
         _trips_beside(trips, unit)
-    assert (unit.m_kg, r.t_c, unit.w["Urea"]) == (pytest.approx(346.043, abs=1e-3),
-                                                  pytest.approx(175.3256, abs=1e-4),
-                                                  pytest.approx(0.98644, abs=1e-5))
-    assert (trips.flag_35_1.latched, trips.flag_35_4.latched, trips.p002_held) == (True,) * 3
-    assert (loops.level.op, unit.header.lv_a_position_pct, unit.header.hv_pct) == (100.0, 0.0, 100.0)
+    assert (unit.m_kg, r.t_c, unit.w["Urea"]) == (1.0, pytest.approx(175.3578, abs=1e-4),
+                                                  pytest.approx(0.98628, abs=1e-5))
+    assert not unit.p001_stopped
+    assert (trips.flag_35_1.latched, trips.flag_35_4.latched, trips.p002_held) == (False, True, True)
+    assert (loops.level.op, unit.header.lv_a_position_pct, unit.header.hv_pct) == (
+        pytest.approx(84.9585, abs=1e-4), 0.0, 100.0)
     off, on = _chain(4000, cut_at=5), _chain(4000, cut_at=5, trips=_pc35())
     assert [(a[1].m_kg, a[1].t_c, a[1].m_402_kgh) for a in off] == [
         (b[1].m_kg, b[1].t_c, b[1].m_402_kgh) for b in on]
