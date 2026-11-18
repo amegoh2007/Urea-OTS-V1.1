@@ -27620,3 +27620,129 @@ outputs, PT-324201, PT-323204 and PT-324204. In `load105_conversion` stage 1 sta
 0.33 bar a set point on V1.2 (0.335 at 5 min, 0.333 at 15) where V1.1 holds it, PIC-324202 closing the bleed from
 64.3 to 59.9 % against it; the vacuum does not break, and stage 2 is as on V1.1 (PIC-324203 near 9 % on both).
 At 105 % load 324F002 works close to its decided break; the bleed still has 60 % of travel.
+
+# Part CXLV — Session 133: LY-324501 on the leg's geometry, the cooling-water lead, PT-323204's digits, the UF85 pumps, the Drive copy
+
+*2026-11-18, session 133, on V1.2 (branch `v1.2`, after 2efb181). Nothing under `ureasim/` changed and no decision was
+taken. Task 1 of the session's request, the session 114 scratch plan for B-118, B-125, B-126 and B-136, runs in
+session 134 (Part CXLVI). Scripts and runs: `Tests and Reports\reports\Session_133_ly324501`.*
+
+## CXLV.1 The melt's profile above LT-324501's tap (data gap 4)
+
+Read on the page images this session:
+
+* UD-AU-324-DZ-0008-001 (assembly 12148-0): OD 2500, T/L to T/L 1550, the lower T/L 590 above the support's top at
+  EL +15.285 (so EL +15.875), N2 "LIQUID OUTLET" DN 350, 355.6 x 10, its flange 750 below the support and 1340 below
+  the lower T/L (EL +14.535, as MB-0180 puts it), 324E003's OD 1020 riser entering through the bottom head, N9 PT
+  324204; 3 500 kg to be supplied, 7 100 kg operating, 14 250 kg at retest, 10.7 m3 nominal.
+* UD-AU-324-DZ-0008-002 (sectional and skirt 12148-1): heads R2000 / R385, 10 mm plate (8 mm minimum); "667 (Head)"
+  is the 639 mm dish and the 28 mm straight flange that sets the seam off the T/L.
+* UD-AU-324-DZ-0008-004 (nozzle details 12148-4): N2's axis meets the head at 828 mm from the centre line, its flange
+  at 940 mm and 1340 mm below the T/L, 512 mm straight and a 45-degree bend on R533.
+* UD-AU-324-DZ-0008-009 (mechanical calculation 6359) pp. 5-6: both heads Korbbogen, OD 2500, crown sphere OD 4016;
+  the opening it checks is 316 mm, against the nozzle table's 355.6 x 10 (335.6 bore), which the profile uses.
+* UD-RL-100-MB-0180: the leg 219.1 x 4.5 (210.1 bore) from N2 at EL +14.535 to the tap at EL +8.495, its centre-line
+  runs 3.356 m down, 1.866 m on the 72.1-degree slope to EL +10.605, 1.068 m down, 1.084 m on the 56.8-degree slope to
+  EL +8.945, then 0.450 m to the tap: 7.824 m. The BOM's 5.5 m of DN 200 pipe, the 600 mm sight glass, the 350 x 200
+  reducer and the four LR elbows' arcs (1.37 m) come to about 7.8 m for the whole line, below the tap included, so the
+  leg's volume is uncertain by about 6 % (20 kg).
+
+Calculated on that geometry (`proto_geometry.py`):
+
+    LY-324501 = (LT-324501 - 1000 PT-324203) / 885 x 100 = rho g h / 885 mbar      [AC4 PC35.2.1]
+    885 mbar = 7.397 m of melt at 1 220 kg/m3: 100 % stands at EL +15.892, 17 mm above the lower T/L.
+
+| LY-324501 | EL (m) | melt above the tap (kg) | kg per % |
+|---|---|---|---|
+| 0 % | 8.495 | 0 | 3.1 |
+| 20.6 % | 10.019 | 85 | 3.1 |
+| 50 % (FF-0002's set point) | 12.194 | 232 | 3.1 |
+| 54.7 % (LIC-324501's) | 12.541 | 247 | 3.1 |
+| 81.65 % (N2's flange) | 14.535 | 331 | 5.8 |
+| 93.7 % (N2 meets the head) | 15.427 | 432 | 65 |
+| 100 % | 15.892 | 2 256 | 364 |
+
+The span is the leg to 81.7 %, N2 and its bend to 93.7 %, and the head's annulus outside 324E003's riser above. The
+holdup the engine keeps, V1's 180 s on PFD 402 (3 797 kg), placed on that geometry stands 0.34 m above the T/L and
+reads 104.2 %; the 7 100 - 3 500 = 3 600 kg the assembly's weights leave (calculated; it may include more than melt)
+reads 103.8 %. At the plant's 50 % the leg holds 232 kg above the tap: the plant's level stands in the leg, with
+324F003's bottom dry, where the engine's holdup fills the head.
+
+## CXLV.2 LY-324501's floor on Rosemount's LRV
+
+LT-324501 reads at the tap in gauge (§CXL.2), so with the melt at the tap it reads 1000 (P - P_atm) mbar. On
+Rosemount's -700 mbar LRV (§CXL.1) LY-324501 cannot read below
+
+    LY_floor = (-700 - 1000 (P_324F003 - P_atm)) / 885 x 100
+
+20.6 % at the design 0.131 bar a on the engine's 1.01325 bar atmosphere (19.2 % on the loop summary's -0.87 bar g,
+§CXLIII.4); 24.1 % at 0.10 bar a, 12.8 % at 0.20, and 5 % only above 0.269 bar a. If the configured LRV is
+Rosemount's (checklist row 11 decides it), then at the design vacuum LY-324501 cannot fall below FF-0002's L1 of 15 % nor
+below decision 217's 5 % L2, and AC4's low-level stop of 335P001 on LY-324501 cannot act; a lost seal, raising the
+pressure, lowers the floor.
+
+## CXLV.3 The engine with LI-324501 read on the leg (scratch arms)
+
+`arm_profile.py`, both arms on the same engine in one script each, 1 800 s from the design seed, a 100 kg slug added to
+the holdup at 600 s. The control arm is the engine as built. The profile arm re-compiles `SecondEvaporator.step` with
+its two level reads (the seal air's and LIC-324501's) taken as LY-324501 on the profile of CXLV.1, the holdup read as
+the melt above the tap and seeded at the profile's 54.7 %, 246.6 kg; `E003_LIQUOR` keeps m_des = 3 797 kg, so the
+melt's thermal inertia (r_hold 0.065) and the vapour space (10.50 against 7.59 m3) move with the seeded holdup.
+
+Untouched, 0 to 600 s, the largest difference between the arms on the unrounded state: LI-324501 6.0e-3 % (1.1e-4
+relative), LIC-324501's output 8.6e-3 % (2.5e-4), PT-324203 4.5e-7 bar (3.5e-6), TT-324002 3.4e-4 K (2.4e-6), the
+melt 7.9e-3 kg/h (1.0e-7). The profile arm does not keep the design point to the bit: its level and LIC-324501's
+output stand above decision 230's 6e-5 relative bound within 600 s. Reading LY-324501 on V1's level instead (the AC4
+formula and the floor of CXLV.2 applied to it) is exact: over 600 s from the seed LY-324501 equals the level to the bit
+on 6 000 of 6 000 ticks, the formula's round trip within 1.4e-14 %, because the floor never acts at the design vacuum.
+
+The 100 kg slug: on the control arm LI-324501 rises 1.44 % and returns on LIC-324501's 200 s integral, below 1 % of
+its set point after 926 s, the melt moving 2 kg/h. On the profile arm it rises 28.8 % to 83.5 % (above N2's flange),
+LIC-324501 opens from 35.0 to 59.5 %, the level undershoots to 45.7 % and is within 1 % of set point after 1 153 s;
+the melt swings 56 kg/h and TT-324002 0.08 K. The leg holds 3.1 kg a percent where V1's holdup holds 69: the plant's
+level answers a disturbance about 22 times as far.
+
+## CXLV.4 The cooling-water lead on 324E002 and 324E005 (§CXLI.7 row 3)
+
+Each condenser solved alone (`desk_cw.py`) at its design inlet and at 75 % of it, at fixed shell pressures, on (a) the
+PFD's water with UA anchored on it, (b) Uhde's water with UA re-anchored (the design point kept), (c) Uhde's water on
+(a)'s UA. On 324E002 (1 591 000 against 2 218 000 kg/h) the vent at 0.30 to 0.60 bar a is the same on (b) to 0.1 kg/h,
+and 1 to 4 % lower on (c); on 324E005 (415 000 against 470 000) within 2 %. More water lowers the vent the ejectors
+draw, so the lead moves the engine away from the plant's 0.60 bar a at HIC-329605 55 %; it does not explain it.
+Uhde's flows on the sheets' rises (324E002 30 to 40 C, 324E005 30 to 34 C) carry 25 735 and 2 181 kW against the
+engine's anchored 18 019 and 1 875 kW: they are a rating margin on a larger duty, not more water at the PFD's duty. The
+HIC-329605 step probe at 75 % load waits on a low-load candidate from session 134.
+
+## CXLV.5 PT-323204's digits
+
+The packet carries 323F010's pressure to three decimals (`engine/packet/recirculation.py`, `RECIRC_323.F010.P_bara`);
+screens 323-1 and 324-1 format it to two (`data/screen_layout.py`, `dec: 2`, as V1's `overlays.js`), and the faceplate
+shows three on a click. Three decimals is two `DECIDED_EDITS` rows in `tools/overlay_decisions.py` and the converter's
+rerun, a display change with no physics; a change of 323F010's coupling to 324F001 (HV-323605, stream 705) would move
+the seed and the equivalence pins. Not built: the process engineer's choice.
+
+## CXLV.6 The Bran + Luebbe lead on FIC-335405 (§CXLI.7 row 9)
+
+FIC-335405 run alone (`desk_uf85.py`), from its seed and then a cascade step from 617.1 to 700 kg/h:
+
+| 100 % stroke | seed OP | FT-335405 held | OP at 700 kg/h | 63 % of the step |
+|---|---|---|---|---|
+| V1's 1 388 kg/h | 44.46 % | 617.072 kg/h | 50.43 % | 26.0 s |
+| 820 l/h x 1 320 kg/m3 = 1 082 kg/h | 57.01 % | 617.072 kg/h | 64.67 % | 29.1 s |
+| 820 l/h x 1 305 kg/m3 = 1 070 kg/h | 57.66 % | 617.072 kg/h | 65.41 % | 29.3 s |
+| 863.9 l/h x 1 320 kg/m3 (works test) | 54.11 % | 617.072 kg/h | 61.38 % | 28.4 s |
+
+At design FT-335405 and FFIC-335406 are unchanged on every arm: only FIC-335405's output moves, and the loop answers
+about 12 % slower. FFIC-335406's OUT H, 0.80 t/h, is reached at 74 %. The model's single loop stands for one pump; with
+both pumps running, as AC4's two PIDCONs allow, the capacity doubles. FT-335405's 617 kg/h is 0.468 m3/h at 1 320 kg/m3,
+the loop summary's normal 0.47 m3/h.
+
+## CXLV.7 The Drive copy, round trip
+
+The five parts were downloaded from the Drive folder `urea simulator V1.2` into an empty folder, joined with the README's
+`copy /b` and hashed: 31 641 179 bytes, SHA-256 3CF7B678FA6E6A99CB6634D4C46BBB740B60AE8E53562AFA6B51A8625CD191AF, the
+README's and the local zip's; 297 entries, `zipfile.testzip` clean.
+
+## CXLV.8 Checks
+
+The documentation tests (`Tests and Reports/tests/docs`). Nothing under `ureasim/` changed, so the suite was not run.

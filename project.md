@@ -5,7 +5,7 @@ is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-18, session 132
+**Last updated:** 2026-11-18, session 133
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -29,6 +29,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
 * **Open.** `handoff.md`: Section A none, Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
   Section C none, 9 open data gaps. Every data gap waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
+* **Session 133** (Part CXLV; no decision). Researched in scratch, nothing built: LY-324501 on 324F003's and the leg's drawings (the plant's level stands in the leg, 232 kg at 50 %; the LRV floor sits above L2), the cooling-water lead ruled out, PT-323204's two decimals, the UF85 pumps' capacity, the Drive copy downloaded and its hash checked. The session 114 scratch plan runs in session 134.
 * **Session 132** (Part CXLIV; decision 251). V1.2 made. The separators' ejectors break on the plant's 5 November
   bracket: HV-329605 and HV-329606 now move PIC-324202, PT-324201, PT-323204, PIC-324203 and PT-324204 below 64 % and
   40 %; the design pin unchanged. The New folder's other stand-ins have no Helwan source and are not built (§CXLIV.4).
@@ -71,11 +72,11 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 133 | `docs/history/session-log.md` |
-| Decision | 252 | `docs/decisions.md` |
-| As-Built Part | CXLV | the As-Built reference, appended at its end |
-| Handoff Section A | A-61 | `handoff.md` |
-| Handoff Sections B and C | B-157 | `handoff.md` |
+| Session | 135 (133 this session; 134 claimed by the B-118 side session) | `docs/history/session-log.md` |
+| Decision | 252 (session 133 took none; 253 to 257 claimed by session 134), then 258 | `docs/decisions.md` |
+| As-Built Part | CXLVII (CXLV this session; CXLVI claimed by session 134) | the As-Built reference, appended at its end |
+| Handoff Section A | A-62 (A-61 claimed by session 134) | `handoff.md` |
+| Handoff Sections B and C | B-160 (B-157 to B-159 claimed by session 134) | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers
 here before it writes anything else.

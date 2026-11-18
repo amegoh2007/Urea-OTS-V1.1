@@ -5259,3 +5259,14 @@ bracket (64 / 55 %, 40 / 38 %, PT-329207 4.22 bar g); the seed unchanged leaf fo
 bar a at 55 % and 0.430 at 45 %, stage 2 at 0.150 at 38 % and 0.265 at 35 %, softer than the plant's 0.6. The New
 folder's other stand-ins have no Helwan source; 100847-100852 are another plant's drawings; none built. An
 essentials zip went to Google Drive in five parts (its 10 MB upload limit). Part CXLIV; runs `Tests and Reports\reports\Session_132_ejector_break`.
+
+### Session 133 — 2026-11-18: LY-324501 on its drawings; three leads checked; the Drive copy
+
+On V1.2. The session 114 B-118 plan was handed to session 134. Read on the images: 324F003's assembly, sectional,
+nozzle and calculation sheets and MB-0180; AC4's 885 mbar puts 100 % at the lower T/L, the leg holding 3.1 kg a
+percent, 232 kg at the plant's 50 %, where V1's 3 797 kg holdup reads 104.2 %. A scratch arm reading the level on
+that profile leaves the design point (2.5e-4 on LIC-324501's output in 600 s) and answers a slug 22 times as far; the
+AC4 formula on V1's level keeps the seed to the bit, its LRV floor (20.6 %) above the 5 % L2. Uhde's cooling water
+lowers the vent and so does not explain stage 1's 0.6 bar a; PT-323204's three decimals are two decided edits; the
+Bran + Luebbe pumps move FIC-335405 to 57 %, nothing else at design. The Drive parts were downloaded and joined to the
+README's hash. Nothing built, no decision. Part CXLV; runs `Tests and Reports\reports\Session_133_ly324501`.
