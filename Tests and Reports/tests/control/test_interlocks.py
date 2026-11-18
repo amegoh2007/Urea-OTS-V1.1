@@ -40,6 +40,7 @@ from ureasim.control.interlocks import (
     Interlock,
     InterlockSet,
     Monoflop,
+    OffDelayTimer,
     OnDelayTimer,
     Unit21TripInputs,
     Unit21Trips,
@@ -362,28 +363,41 @@ def test_the_timer_and_the_monoflop():
     assert sum(m.step(True, DT) for _ in range(200)) == 99
 
 
+def test_the_off_delay_timer():
+    """TOFF (ABB's T at the right, UD-MR-G00-DZ-0045-016 p. 447, decision 249): true at once on a
+    rising input, false TD after it falls; seeded settled, its input high."""
+    t = OffDelayTimer(5.0)
+    assert t.remaining_s == 5.0 and t.step(True, DT)
+    assert [t.step(False, DT) for _ in range(60)].index(False) == 49
+    assert t.step(True, DT) and t.step(False, DT)
+
+
 def test_the_design_is_healthy():
     assert _run(_ac4(), 30.0) == (False, False, False)
 
 
-def test_no_pump_running_trips_21_2_and_both_pumps_flags_until_its_bypass():
-    """Both machines stopped: 21.2 at once, 21.8 and 21.10 with it; HS-321634 turned, healthy
-    5 s later."""
+def test_no_pump_running_trips_21_2_after_its_delay_and_the_bypass_acts_at_once():
+    """Both machines stopped (decision 249, page 20's TOFF): 321P002B's own flag at once for its
+    10 s monoflop, 21.2 TD later and 21.8 with it; HS-321634 turned restores 21.2 at once."""
     trips = _ac4()
-    assert _run(trips, 0.1, p002b_running=False) == (True, True, True)
-    assert _run(trips, 4.9, p002b_running=False, hs_321634=True) == (True, True, True)
-    assert _run(trips, 0.2, p002b_running=False, hs_321634=True) == (False, False, False)
+    assert _run(trips, 0.1) == (False, False, False)
+    assert _run(trips, 0.1, p002b_running=False) == (False, False, True)
+    assert _run(trips, 4.8, p002b_running=False) == (False, False, True)
+    assert _run(trips, 0.2, p002b_running=False) == (True, True, True)
+    assert _run(trips, 0.1, p002b_running=False, hs_321634=True) == (False, False, True)
+    assert _run(trips, 5.0, p002b_running=False, hs_321634=True) == (False, False, False)
 
 
 def test_323p001_and_the_co2():
-    """323P001 stopped: 21.2, its bypass 15 s; FY-322403 below L2: 21.2 at once, back 5 s after
-    the CO2 returns, and HS-322606 bypasses it and XV-322902 both."""
+    """323P001 stopped: 21.2 after 15 s, back at once on its bypass; FY-322403 below L2: 21.2 after
+    5 s, back at once when the CO2 returns (decision 249); HS-322606 bypasses it and XV-322902."""
     trips = _ac4()
-    assert _run(trips, 0.1, p001_running=False)[0]
-    assert _run(trips, 14.9, p001_running=False, hs_323604=True)[0]
-    assert not _run(trips, 0.2, p001_running=False, hs_323604=True)[0]
-    assert _run(trips, 0.1, fy_322403_low=True)[0]
-    assert _run(trips, 4.9)[0] and not _run(trips, 0.2)[0]
+    assert not _run(trips, 14.9, p001_running=False)[0]
+    assert _run(trips, 0.2, p001_running=False)[0]
+    assert not _run(trips, 0.1, p001_running=False, hs_323604=True)[0]
+    assert not _run(trips, 4.9, fy_322403_low=True)[0]
+    assert _run(trips, 0.2, fy_322403_low=True)[0]
+    assert not _run(trips, 0.1)[0]
     assert not _run(trips, 1.0, fy_322403_low=True, xv_322902_open=False, hs_322606=True)[0]
     assert _run(trips, 0.1, xv_322902_open=False)[0]
 

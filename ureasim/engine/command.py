@@ -128,10 +128,9 @@ def _pump_toggle(plant: PlantState, cmd: Mapping, _r) -> str:
         if _trip(plant, own).latched:
             u21 = plant.units["SYN-TRIPS"].unit21      # the plant's own timers: a save keeps its own
             pumps, p001 = _duration(u21.td_pumps_s), _duration(u21.td_p001_s)
-            why = (f"trip 21.2's flag is lost — no HP ammonia pump running {pumps} (HS-321634 "
-                   f"bypasses it {pumps} after it is turned), no 323P001 running {p001} "
-                   f"(HS-323604, {p001} after it is turned), no CO2 to the stripper (HS-322606) "
-                   "or a trip hand switch turned"
+            why = (f"trip 21.2's flag is lost — no HP ammonia pump run for {pumps} (HS-321634 "
+                   f"bypasses it), no 323P001 run for {p001} (HS-323604), no CO2 to the stripper "
+                   "(HS-322606) or a trip hand switch turned"
                    if _trip(plant, "21_2").latched else
                    "XV-321901 shut, its suction's sub-cooling below PDY's L2, or within 10 s of "
                    "its stop")

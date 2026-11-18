@@ -166,15 +166,14 @@ class DcsTripFlag(Interlock):
 
 @dataclass
 class OnDelayTimer:
-    """ABB Advant's timer element T, read as an on-delay: true once its input has held for TD.
+    """ABB Advant's timer element TON: true once its input has held for TD, false at once.
 
     Process utility
     ---------------
-    A healthy signal a trip flag only accepts once it has stood for its delay — an HP ammonia pump
-    running 5 min, CO2 flowing 5 s. The on-delay is the process engineer's reading (2026-10-09); in
-    PC21 it is the only one that works for PC21.1.1 / .2's start-up override of XV-322901, which
-    draws the same symbol, I /--/ O (pages 5 and 7, handoff A-58). Seeded settled, the plant at its
-    seed having held every input for longer than any delay.
+    A signal that counts only once it has stood for its delay: an HP ammonia pump running 5 min
+    before its flag demands XV-322901 open, PC21.1.1 / .2's start-up override (pages 5 and 7, T drawn
+    at the left of I /--/ O, UD-MR-G00-DZ-0045-016 p. 447; decision 249). Seeded settled, the plant
+    at its seed having held every input for longer than any delay.
     """
 
     td_s: float
@@ -188,6 +187,33 @@ class OnDelayTimer:
         """Advance one tick on input ``i``; return the output."""
         self.elapsed_s = min(self.elapsed_s + dt, self.td_s) if i else 0.0
         return i and self.elapsed_s >= self.td_s - 1e-9
+
+
+@dataclass
+class OffDelayTimer:
+    """ABB Advant's timer element TOFF: true at once on its input, false TD after the input falls.
+
+    Process utility
+    ---------------
+    A trip that waits out a stop before it acts: 21.2 holds the synthesis 5 min after both HP
+    ammonia pumps stop, 15 min after 323P001, 5 s after the CO2 falls below its L2, as the trip
+    schedule writes "time delay 5 min." (decision 249). ABB's PC-elements manual
+    (UD-MR-G00-DZ-0045-016, p. 447) draws TOFF with its T at the right of I /--/ O, TON with it at
+    the left; AC4's page 20 draws 21.2's three timers with it at the right. Seeded settled, its
+    input high, the hold full.
+    """
+
+    td_s: float
+    remaining_s: float | None = None
+
+    def __post_init__(self) -> None:
+        if self.remaining_s is None:
+            self.remaining_s = self.td_s
+
+    def step(self, i: bool, dt: float) -> bool:
+        """Advance one tick on input ``i``; return the output."""
+        self.remaining_s = self.td_s if i else max(self.remaining_s - dt, 0.0)
+        return i or self.remaining_s > 1e-9
 
 
 @dataclass
@@ -273,9 +299,10 @@ class Unit21Trips:
         [not T5:0(321P002A running) or XVSH-322901] and not MONO10(not 321P002A running);
     TRIP_21_10_FLAG1 (PC21.1.2, page 7) the same on 321P002B, PT-321221, ST-321953 and
         PDY-321204.
-    Each T an on-delay of its TD, T5:0 five minutes and T5 five seconds as the printout writes them
-    (decision 229), MONO a retriggerable pulse of TP seconds. So 21.2 is lost at once when the pumps
-    stop, and its bypass keys act only after their delay.
+    T5:0 is five minutes and T5 five seconds as the printout writes them (decision 229). Page 20's
+    three T are TOFF, the T drawn at the right (decision 249); pages 5 and 7's T5:0 is TON, the
+    start-up override of XV-322901. MONO is a retriggerable pulse of TP seconds. So 21.2 is lost TD
+    after its cause and returns at once, its bypass keys acting at once.
     """
 
     td_pumps_s: float
@@ -287,18 +314,18 @@ class Unit21Trips:
                                                                          "urea synthesis main"))
     flag_21_8: DcsTripFlag = field(default_factory=lambda: DcsTripFlag("21_8", "321P002A"))
     flag_21_10: DcsTripFlag = field(default_factory=lambda: DcsTripFlag("21_10", "321P002B"))
-    t_pumps: OnDelayTimer = field(init=False)
-    t_p001: OnDelayTimer = field(init=False)
-    t_fy: OnDelayTimer = field(init=False)
+    t_pumps: OffDelayTimer = field(init=False)
+    t_p001: OffDelayTimer = field(init=False)
+    t_fy: OffDelayTimer = field(init=False)
     t_run_a: OnDelayTimer = field(init=False)
     t_run_b: OnDelayTimer = field(init=False)
     mono_a: Monoflop = field(init=False)
     mono_b: Monoflop = field(init=False)
 
     def __post_init__(self) -> None:
-        self.t_pumps = OnDelayTimer(self.td_pumps_s)
-        self.t_p001 = OnDelayTimer(self.td_p001_s)
-        self.t_fy = OnDelayTimer(self.td_fy_s)
+        self.t_pumps = OffDelayTimer(self.td_pumps_s)
+        self.t_p001 = OffDelayTimer(self.td_p001_s)
+        self.t_fy = OffDelayTimer(self.td_fy_s)
         self.t_run_a = OnDelayTimer(self.td_run_s)
         self.t_run_b = OnDelayTimer(self.td_run_s)
         self.mono_a = Monoflop(self.tp_stop_s)
@@ -402,6 +429,7 @@ __all__ = [
     "Interlock",
     "HystereticInterlock",
     "DcsTripFlag",
+    "OffDelayTimer",
     "OnDelayTimer",
     "Monoflop",
     "Unit21TripInputs",

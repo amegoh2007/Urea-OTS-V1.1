@@ -33,8 +33,8 @@ Logic
     PIC-335201 CLAMP = (not TRIP_35_1_FLAG1 or not TRIP_35_4_FLAG1) and not HS-335201A
     LIC-324501 CLAMP = not TRIP_35_1_FLAG1 and not HS-335201B
 A de-energised solenoid is the trip's action: LV-324501B and HV-335602 fail open, LV-324501A shuts.
-T600 is PC35.5.2's timer, TD "10:0"; the scan does not resolve its mode, and it is read as an
-on-delay of both pumps stopped (the process engineer's reading, decision 228; data gap 5).
+T600 is PC35.5.2's timer, TD "10:0", a TOFF of either pump running (its T drawn at the right,
+page 283; decision 249), built as the equivalent on-delay of both pumps stopped (decision 228).
 
 What is held healthy
 --------------------

@@ -336,8 +336,10 @@ def test_every_shipped_exercise_loads_and_holds_no_retired_state(path):
 @pytest.mark.parametrize("path", sorted(SCENARIOS.glob("*.json")), ids=lambda p: p.stem)
 def test_every_shipped_exercise_runs_trip_21_2_on_the_sheets_timers(path):
     """Decisions 229 and 231: a save carries its timers, so the six shipped exercises were moved onto
-    PC21's 5:0, 15:0 and 5:0 with the seed; each restores them settled and holds the flags on its first
-    tick (321P002B runs, so its run timer is settled; 321P002A is stopped, its count at 0)."""
+    PC21's 5:0, 15:0 and 5:0 with the seed, and 21.2's three onto TOFF (decision 249); each restores
+    them settled and holds the flags on its first tick (321P002B runs, so its run timer is settled;
+    321P002A is stopped, its count at 0)."""
+    from ureasim.control.interlocks import OffDelayTimer
     from ureasim.data.unit_322_loop import (TRIP_21_2_P001_TD_S, TRIP_21_2_PUMPS_TD_S,
                                             TRIP_21_8_RUN_TD_S)
     back = snapshot.load(str(path), build_plant()[1])
@@ -346,8 +348,9 @@ def test_every_shipped_exercise_runs_trip_21_2_on_the_sheets_timers(path):
     seed = build_plant()[1].units["SYN-TRIPS"].unit21
     assert ((seed.td_pumps_s, seed.t_pumps.td_s, seed.td_p001_s, seed.t_p001.td_s, seed.td_run_s,
              seed.t_run_a.td_s, seed.t_run_b.td_s) == (300.0, 300.0, 900.0, 900.0, 300.0, 300.0, 300.0))
-    assert ((u.td_pumps_s, u.t_pumps.td_s, u.t_pumps.elapsed_s, u.td_p001_s, u.t_p001.td_s,
-             u.t_p001.elapsed_s) == (300.0,) * 3 + (900.0,) * 3)
+    assert ((u.td_pumps_s, u.t_pumps.td_s, u.t_pumps.remaining_s, u.td_p001_s, u.t_p001.td_s,
+             u.t_p001.remaining_s) == (300.0,) * 3 + (900.0,) * 3)
+    assert all(isinstance(t, OffDelayTimer) for t in (u.t_pumps, u.t_p001, u.t_fy))
     assert ((u.td_run_s, u.t_run_a.td_s, u.t_run_a.elapsed_s, u.t_run_b.td_s, u.t_run_b.elapsed_s)
             == (300.0, 300.0, 0.0, 300.0, 300.0))
     Scheduler(build_plant()[0], back).tick()
