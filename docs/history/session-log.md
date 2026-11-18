@@ -5258,4 +5258,4 @@ PT-324204. Built (decision 251): each separator ejector's P_c scale and break wi
 bracket (64 / 55 %, 40 / 38 %, PT-329207 4.22 bar g); the seed unchanged leaf for leaf. Measured: stage 1 at 0.345
 bar a at 55 % and 0.430 at 45 %, stage 2 at 0.150 at 38 % and 0.265 at 35 %, softer than the plant's 0.6. The New
 folder's other stand-ins have no Helwan source; 100847-100852 are another plant's drawings; none built. An
-essentials zip went to Google Drive. Part CXLIV; runs `Tests and Reports\reports\Session_132_ejector_break`.
+essentials zip went to Google Drive in five parts (its 10 MB upload limit). Part CXLIV; runs `Tests and Reports\reports\Session_132_ejector_break`.
