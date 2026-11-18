@@ -27349,3 +27349,49 @@ As built: V1's holdup ratio. Moving to this reading needs the leg's geometry and
     - 321P002's speed "acc. to load table", not found;
     - 322E001's lower shell-condensate block valve closed at 100 % load and below.
   - The model has no shell-condensate handle. It is a lead for B-136, and is for the process engineer.
+
+# Part CXLII — Session 130: trip 21.2 on the sheet's off-delays and the schedule's 8 500 Nm3/h (decisions 249, 250; 2026-11-18)
+
+The process engineer's answer to §CXLI.1-2: "Measure then build". Scratch: `Tests and Reports\reports\Session_130_gaps`
+(`measure_21_2.py`, `repin249.py`, `ends.py`).
+
+## CXLII.1 Measured before the build
+
+From the design seed, 600 s, the event at 60 s, both arms the committed engine with the candidate patched in:
+
+| Case | As built (on-delays, V1's 5 %) | Candidate (TOFF, 8 500 Nm3/h) |
+|---|---|---|
+| Seed held | no trip | no trip |
+| 321P002A and B stopped | 21.2 at 60.0 s, at once | 21.2 at 359.9 s, 5 min after |
+| CO2 demand cut to 10 t/h (18 %) | no trip (L2 2.73 t/h) | 21.2 at 78.1 s: the feed falls through 16.39 t/h, then 5 s |
+
+The candidate's L2 is 8 500 Nm3/h on FT-322403's own basis (kg/h / `CO2_FEED_MW` x 22.414): 16.39 t/h, 30.003 %
+of `CO2_DES_KGH`.
+
+## CXLII.2 Built
+
+* `control/interlocks.OffDelayTimer` (TOFF): its output follows a rising input at once and falls TD after the input
+  falls. Its state is `remaining_s`, seeded at TD with the input high. `Unit21Trips.t_pumps`, `t_p001` and `t_fy` are
+  OffDelayTimers. The pumps' flags keep `OnDelayTimer` (TON, pages 5 and 7), and PC35's T600 keeps its equivalent
+  build. 21.2 is lost TD after its cause and returns at once. A bypass key acts at once.
+* `data/unit_322_loop.TRIP_21_2_FY_L2_NM3H` = 8 500.0 replaces `TRIP_21_2_FY_L2_FRAC` = 0.05.
+  `engine/plant/synthesis_loop` compares FT-322403's Nm3/h with it.
+* `engine/command`: a refused 321P002 start names the delays as run-for times. The bypasses act at once.
+* The six shipped exercises: each file's three timer objects moved onto `OffDelayTimer`, settled (`remaining_s` = TD).
+  Every other leaf is unchanged. A save made before keeps its `OnDelayTimer` objects and their behaviour, as a save
+  keeps its timers (§CXXXII.3).
+* Data gap 5's FY-322403 row leaves the stand-in register (`test_data_gap_standins`).
+
+## CXLII.3 The decided-equivalence pins (both sides asserted)
+
+| Test | Before | Now |
+|---|---|---|
+| SV32251 / SV32252 at 160.5 bar a: V1, port, relief, its ammonia | 159.3133, 157.6919 bar a, 209 261.0, 106 131.3 kg/h | 159.4509, 157.8658, 209 491.7, 106 248.3 |
+| B-88, the loop at 155.5 bar a: 320K002's line | 144.2532 bar a | 146.8608 |
+| Decision 189, the loop at 155.5 bar a: PT-329201 | 154.3152 bar a | 154.4555 |
+| A-12, 321P002B's fault, a minute on: V1 / AC4 | 139.2789 / 141.1457, 21.2 lost, valves shut | 139.3108 / 139.3108, no flag lost yet, valves open |
+| A-12, the CO2 cut to zero: V1 / AC4 | 139.5424 / 140.8893 | 139.5247 / 140.8033, 21.2 lost |
+
+In the three pressure cases the starved feed now trips 21.2 5 s after it falls below the L2. Before, it tripped on the
+first tick. V1's side moves through the steam network it shares with the port. After the pump fault, AC4 holds the
+loop for 21.2's 5 min, so at a minute both sides are the same.

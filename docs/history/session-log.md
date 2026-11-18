@@ -5234,5 +5234,7 @@ one per gap group; every value used was read on the page image. Found: AC4 PC21.
 are ABB TOFF elements (DZ-0045-016 p. 447), so 21.2 trips 5 min / 15 min / 5 s after its causes where the build trips
 at once; FY-322403's trip is 8 500 Nm3/h on the as-built schedule (30.0 % of design against V1's 5 %). Both are build
 candidates, unmeasured, for the process engineer. PIC-335201's CLAMPREF is a printed 0; LV-324501A has a booster relay,
-withdrawing §CXL.4's slew bound. Rows 1, 3, 4, 9, 10, 15 and B-136 narrowed. No decision; nothing under `ureasim/`
-changed. Part CXLI; report `Tests and Reports\reports\Session_130_gaps`.
+withdrawing §CXL.4's slew bound. Rows 1, 3, 4, 9, 10, 15 and B-136 narrowed. Then, on "Measure then build": measured
+in scratch (a pump stop trips 21.2 at 359.9 s, a CO2 cut to 10 t/h at 78.1 s) and built both: `OffDelayTimer` for
+page 20's three T (decision 249) and `TRIP_21_2_FY_L2_NM3H` = 8 500 (decision 250); six exercises and five equivalence
+pins restated. Parts CXLI, CXLII; report `Tests and Reports\reports\Session_130_gaps`.

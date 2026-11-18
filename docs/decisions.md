@@ -1351,3 +1351,16 @@ decision on an item.
      gives the span the 0-1 200 mbar covers or a design level between the taps (UD-AU-322-EC-0005 p. 27's +16.65 m
      stands in 322E003's bottom part). As LT-324501 and LT-329505 (data gaps 4 and 10), it becomes data gap 15 and keeps
      V1's holdup ratio; decision 214's other six units stand as built. Nothing under `ureasim/` moves. As-Built §CXXXIX.2.
+249. **Trip 21.2's three timers are off-delays: 21.2 trips 5 min, 15 min and 5 s after its causes** (2026-11-18,
+     session 130; the process engineer's "Measure then build"). ABB's AC 400 PC Elements Reference Manual
+     (UD-MR-G00-DZ-0045-016 p. 447) tells TON (T at the left of I /--/ O) from TOFF (T at the right). AC4 page 20 draws
+     PC21.5.1's .2 (5:0), .4 (15:0) and .16 (5) with the T at the right, as the trip schedule's "time delay 5 min." and
+     "15 min." read; pages 5 and 7's start-up override stays TON; PC35's T600 is TOFF, equivalent to its build. Built:
+     `control/interlocks.OffDelayTimer` for `Unit21Trips.t_pumps`, `t_p001`, `t_fy`, seeded settled, the six shipped
+     exercises' three timers moved onto it; a save made before keeps its `OnDelayTimer` objects. Supersedes the
+     on-delay of decision 229 for these three. As-Built §CXLI.1, §CXLII.
+250. **FY-322403's L2 is the schedule's 8 500 Nm3/h** (2026-11-18, session 130; the process engineer's "Measure then
+     build"). Uhde's Trip and Interlock Schedule UAN 01-3042-602 rev 03 as-built, sheet 321/1, trips 21.2 at FY-322403
+     8 500 Nm3/h (pre-alarm 10 000), in `References\trip_and_interlock_schedule.md` line 71. Built:
+     `data/unit_322_loop.TRIP_21_2_FY_L2_NM3H`, compared on FT-322403's own Nm3 basis, 30.0 % of the design CO2,
+     replacing V1's 5 % (data gap 5's stand-in). As-Built §CXLI.2, §CXLII.
