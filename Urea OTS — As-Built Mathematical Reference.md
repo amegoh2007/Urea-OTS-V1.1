@@ -27193,3 +27193,159 @@ Data-gap rows 4, 9, 10, 12, 14 and 15 gain the above; no row closes and none is 
 gains row 26 (LT-328503's configured range) and row 9 asks for both FIC-335405 faceplates. `Tests and Reports/tests/data`,
 `Tests and Reports/tests/docs` and `test_layering.py` pass; the PyQt6 grep prints nothing; the full suite was not run,
 no file under `ureasim/` having changed.
+
+# Part CXLI — Session 130: the open gaps researched by seven agents; PC21's off-delays and FY-322403's trip value (2026-11-18)
+
+Asked: deep research for solutions to the open gaps, then plan, execute and commit. `/research-deep` ran its fan-out
+for the first time (the no-sub-agents rule was removed on 2026-11-18): seven read-only agents, one per gap group, on
+`References\` and the soft-copy archive. Their JSON and page renders are in `Tests and Reports\reports\Session_130_gaps`.
+Each value below was read on the page image. Values read by an agent alone are marked "(agent)". Nothing under `ureasim/`
+changed. No decision was taken. Two build candidates, §CXLI.1 and §CXLI.2, go to the process engineer.
+
+## CXLI.1 PC21's timers are off-delays where the trip schedule's delays stand (data gap 5)
+
+ABB's AC 400 PC Elements Reference Manual (UD-MR-G00-DZ-0045-016, printed p. 438, PDF p. 447, read on the image) draws
+the two timer elements with one symbol, I /--/ O, and tells them apart by where the T stands. In TON the T stands at the
+left: the output follows a rising input after TD and falls at once. In TOFF the T stands at the right: the output rises
+at once and falls TD after the input falls. Read on the image of UD-MR-G00-FF-0004:
+
+| Page | Element | T stands | Element type | Input |
+|---|---|---|---|---|
+| 5 (PC21.1.1) and 7 (PC21.1.2) | .2, D=5:0 | left | TON | the pump running: XV-322901's start-up override |
+| 5 | .23, D=10 | right | TOFF | speed discrepancy |
+| 20 (PC21.5.1) | .2, D=5:0 | right | TOFF | OR(21P2AM1RS, 21P2BM1RS, HS-321634) |
+| 20 | .4, D=15:0 | right | TOFF | OR(23P1AM1RS, 23P1BM1RS, HS-323604) |
+| 20 | .16, D=5 | right | TOFF | NOT(FY-322403 < L2), the input inverted |
+| 283 (PC35.5.2) | .2, D=10:0 | right | TOFF | OR(335P002A / B running) |
+
+TRIP_21_2_FLAG1 is the AND of the three TOFF outputs with the other healthy inputs (.11). Both 321P002 pumps stopping
+therefore trip 21.2 after 5 min, and both 323P001 pumps stopping trip it after 15 min. The CO2 flow staying below L2 for
+5 s also trips it. This is the schedule's "not running (time delay 5 min.)" and "15 min." (UAN 01-3042-602 rev 03,
+sheet 321/1). It resolves §CXXXII.2's residual conflict. The same symbol reads TON on pages 5 and 7 and TOFF on page 20.
+Session 120 took them as one element.
+
+**As built** (`control/interlocks.OnDelayTimer`, decision 229): every PC21 timer is an on-delay of the healthy input.
+A pump stop therefore drops 21.2's flag at once. The delays act only on the flag's return.
+
+**Candidate.** Page 20's three timers become off-delays of the healthy input, the same as on-delays of the fault. 21.2
+then trips 5 min, 15 min and 5 s after its causes, and returns at once. Pages 5 and 7 stay on-delays.
+
+**PC35's T600 is unchanged.** It is a TOFF of OR(335P002A / B running), the same as decision 228's 600 s on-delay of
+both pumps stopped.
+
+## CXLI.2 FY-322403's trip value (data gap 5)
+
+Uhde's Trip and Interlock Schedule UAN 01-3042-602 rev 03 (as-built, 17.03.07), sheet 321/1, trip 21.2, "CO2-Flow
+low". This is `Trip System\UREA tRIP\Trip21-1_master.doc`, exported and read on the image (p. 1), and the same row is in
+`References\trip_and_interlock_schedule.md` line 71:
+
+* pre-alarm FY-322403 10 000 Nm3/h;
+* trip FY-322403 8 500 Nm3/h.
+
+The ledger called FY-322403's L2 "a database value the archive does not hold". It has been in `References\` throughout.
+On the DCS's own factor (FY-322403 x 0.001929 t/h, §CXXX.4), 8 500 Nm3/h is 16.40 t/h, 30.0 % of `CO2_DES_KGH`
+(54 618 kg/h); this is calculated. As built: V1's 5 % (`data/unit_322_loop.TRIP_21_2_FY_L2_FRAC`), 2.73 t/h.
+
+The same schedule's sheet 321/2 (p. 2, read on the image) gives:
+
+* PSLL-321211 at 3 bar g, with PAL at 4 bar g (lube oil);
+* SSH-321952 at 152 RPM, with SAH at 142 RPM (torque converter);
+* PDYSLL-321203 at 0.1 bar, which agrees with `TRIP_21_8_PDY_L2_BAR`.
+
+AC4 p. 5 prints ST-321950's COMP-R H1 as 1.52E+02, matching the 152 RPM. Sheet 321/3's PT-321221 and ST-321953 were
+read on the text layer only (agent). The simulator models neither lube oil nor the torque converter, and takes these
+inputs as healthy.
+
+**Candidate.** `TRIP_21_2_FY_L2_FRAC` becomes the schedule's 8 500 Nm3/h on the DCS's factor. Neither CXLI.1 nor CXLI.2
+is measured. A scratch pump stop, restart and CO2 cut, with the six shipped exercises replayed, come before a build.
+
+## CXLI.3 PIC-335201's CLAMPREF is a printed zero (data gap 5)
+
+On UD-MR-G00-FF-0004 p. 252, the PIDCON .11 of PC35.2.2 (agent's block identification), the image reads
+`D=0.000000-112 CLAMPREF`, CLAMP at pin 111 inverted, EOLIM 1, EOLL 0 and EOHL 100. The value is a literal, not a database
+reference as §CXXX.2 recorded, and it equals decision 228's 0 %. The stand-in is confirmed.
+
+Still open in row 5:
+* TRIP_84_8's L2;
+* the SR flip-flops' dominance (the manual's SR page was not reached);
+* the configured limits on the DCS.
+
+## CXLI.4 LV-324501A carries a booster relay (data gap 12)
+
+Flowserve's summary of items (UD-MR-G00-DZ-0048-001, STAN 0522419-0, page 8, PDF p. 9, read on the image):
+
+* Pos. 148, LV 324501A, 0310 P4, DN 100, actuator P4-42, accessories 2, 3, 5 and 7. Accessory 7 is the booster relay.
+* Pos. 149 carries accessories 2, 3 and 5 only, actuator P3-41. It is printed "LV 324501A", read as LV-324501B.
+
+Read on the agent's renders: the data sheet (DZ-0048-002 p. 264) names "SMC Booster EIL 100 / Side Mtd"; SMC's bulletin
+(DZ-0048-034 p. 2) gives 600 l_n/min at 0.5 MPa; Uhde's sheet (EC-0236 p. 21) lists the booster and "Quick Closing
+<3 sec". §CXL.4's slew bound of at least 6.6 s rests on the positioner's 3 500 l_n/h alone. It does not hold for the
+boosted Pos. 148 and is withdrawn. No stroking time or time constant is printed. The 1 s lag stands, and is not
+contradicted.
+
+## CXLI.5 LVSL-324501A (data gap 14)
+
+UD-MR-324-EC-0001 p. 24 (agent) draws LVSL-324501A as an inductive contact to spec MZBB006, "position closed". Flowserve
+names an SGE 985-T7EAAN, whose spec sheet (DZ-0019-005 p. 3) prints a switching differential under 1 % and a
+repeatability under 0.2 %. No switch point is printed, and Uhde's MZBB006 spec was not found.
+
+## CXLI.6 LT-324501's reading in AC4 (data gap 4)
+
+AC4 PC35.2.1 (UD-MR-G00-FF-0004 p. 248, read on the image) computes LY-324501 from LT-324501 and PT-324203:
+
+* .1 multiplies PT-324203 by 1.000000E+03;
+* .2 takes the difference of LT-324501 and that product;
+* .3 divides by 8.850000E+02;
+* .4 multiplies by 1.000000E+02.
+
+Read as LY = (LT − 1000 · PT) / 885 · 100, which is the agent's pin reading of .2 where the two wires cross. The DCS
+subtracts 324F003's pressure from a single-tap reading in software, so 100 % is 885 of LT-324501's units, mbar if PT
+is in bar. This fits K1A42's gauge reading at one tap (§CXL.2).
+
+As built: V1's holdup ratio. Moving to this reading needs the leg's geometry and a seed bound (decision 33's class).
+
+## CXLI.7 The other rows (agents' findings, narrowing only)
+
+* **Row 1, 322F001.**
+  - Uhde's data sheet UD-AU-322-EC-0013 p. 2, read on the image, gives:
+    - motive NH3 44 600 kg/h at 161.7 bar a and 30 C;
+    - suction 62 000 kg/h at 141.5 bar a and 165 C;
+    - mixed 106 600 kg/h at 145.0 bar a and 107 C;
+    - row 18, "Static pump head 4.2 bar g".
+  - These flows are near the 1925 MTPD basis, not the 1750 MTPD one; §LIX.4 cited only EC-0013's remarks.
+  - The as-built drawing DZ-0013-002 draws the nozzle and throat without dimensions. A body bore of Ø164 x 60 bounds
+    the throat at 44 mm or less, and scaling the drawing gives about 38-39 mm (agent, uncertain), against the
+    back-solved 50.23 mm.
+* **Row 3, 324F002 / F004 / F005.**
+  - The ejector file's TOC (UD-AU-324-AB-0007) lists 20 documents, none of them a curve.
+  - 324F002's control range is 40-100 % (EC-0007 p. 2).
+  - Körting requires 3.1 bar g before the nozzle for 324F004 / F005 and starts 324F004 at 330 mbar suction
+    (DZ-0009-005 p. 14).
+  - The condensers' sheets give cooling water at 30-40 C (324E002) and 30-34 C (324E005).
+  - Uhde's cooling-water flows of 2 218 000 and 470 000 kg/h differ from the engine's PFD 1 591 000 and 415 000 kg/h.
+    This is a lead.
+* **Row 9.**
+  - AC4 pp. 265-267: FIC-335405B's output is HV-335610 (database PIDCON86), and FIC-335405A's is HV-335609 (PIDCON85).
+  - HV-335609 / 610 are the stroke positioners of two Bran + Luebbe H4-51 diaphragm pumps at 100 strokes/min, 4-20 mA,
+    fail closed (EC-0001 pp. 87-90, EC-0072, DZ-0034-001).
+  - The works test gives 129.9-863.9 l/h over the stroke (DZ-0034-003 p. 9).
+  - The vendor maximum of 820 l/h a pump is about 1 082 kg/h on 1 320 kg/m3 (calculated), against V1's stroke law of
+    1 388 kg/h at 100 %. This is a lead.
+  - No tuning is printed.
+* **Rows 10 and 26.** Rosemount's certificate of compliance (DZ-0012-005 p. 23) and WIKA's seal certificate (p. 24) key LT
+  329505 and LT 328503 on one two-unit line at 0-326 mbar (agent). This weakens §CXL.1's reading of the 326 mbar
+  "LT 329505" as a mis-keyed LT 323505, and does not say which unit is installed. Only rev 02 of EC-0133 / 0134 / 0136
+  exists.
+* **Row 15.** Operating Manual III (UD-VT-G00-DC-0003 file 002, printed pp. 1-59 and 1-83, agent) says both of
+  LT-329501's measuring lines carry a continuous condensate injection from 329P004A / B. This is the manual's
+  confirmation of K3V91's purged legs.
+* **Section B.** No vendor or licensor case below 100 % load exists for 322E001, 322E002 or 322R001. Each sheet prints
+  one case: 41 738 kW for the new stripper, 44 900 kW for 322E002.
+  - The plant's handwritten notebooks (`Operating Manual and SOP\Urea Plant Shutdown.pdf` p. 1 and `Start-Up.pdf` p. 8,
+    agent) follow the L1-L13 load-reduction steps and add:
+    - TI-322002 held at 163-168 C;
+    - TI-322011 at 130-135 C, against the manual's 114 C, a conflict;
+    - 322E003's tempered water raised 5 C a 10 % of load;
+    - 321P002's speed "acc. to load table", not found;
+    - 322E001's lower shell-condensate block valve closed at 100 % load and below.
+  - The model has no shell-condensate handle. It is a lead for B-136, and is for the process engineer.

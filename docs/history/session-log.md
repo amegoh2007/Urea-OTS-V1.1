@@ -5226,3 +5226,13 @@ condensate (K3V91); LT-324501 is read as a gauge reading at its one tap (K1A42);
 (K3V31); the DCS carries FFIC-335406 over FIC-335405A and B; the SRI986's capacity bounds LV-324501A's full stroke at
 6.6 s or more on 2.0 bar g, 3.1 s on 6 bar (calculated). No row closes; rows 4, 9, 10, 12, 14 and 15 updated. LT-328503's factory 0-326 mbar against
 the 110.51 mbar built: checklist row 26. Nothing under `ureasim/` changed; no decision. Part CXL.
+
+### Session 130 — 2026-11-18: the open gaps researched by seven agents
+
+`/research-deep`'s fan-out ran for the first time: seven read-only agents on `References\` and the soft-copy archive,
+one per gap group; every value used was read on the page image. Found: AC4 PC21.5.1's three trip 21.2 timers (page 20)
+are ABB TOFF elements (DZ-0045-016 p. 447), so 21.2 trips 5 min / 15 min / 5 s after its causes where the build trips
+at once; FY-322403's trip is 8 500 Nm3/h on the as-built schedule (30.0 % of design against V1's 5 %). Both are build
+candidates, unmeasured, for the process engineer. PIC-335201's CLAMPREF is a printed 0; LV-324501A has a booster relay,
+withdrawing §CXL.4's slew bound. Rows 1, 3, 4, 9, 10, 15 and B-136 narrowed. No decision; nothing under `ureasim/`
+changed. Part CXLI; report `Tests and Reports\reports\Session_130_gaps`.

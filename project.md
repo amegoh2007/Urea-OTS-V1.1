@@ -4,7 +4,7 @@
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-18, session 129
+**Last updated:** 2026-11-18, session 130
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -29,10 +29,11 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Open.** `handoff.md`: Section A none, Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
   Section C none, 9 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
-* **Session 129** (Part CXL). The open gaps researched in the archive: Rosemount's factory records of the level
-  transmitters, Uhde's hook-ups and AC4's UF85 loops narrow data gaps 4, 9, 10, 12, 14 and 15; none closes. LT-328503's
-  factory range (0-326 mbar) differs from the 110.51 mbar decision 243 built on: checklist row 26 (report:
-  `Tests and Reports\reports\Session_129_gaps`).
+* **Session 130** (Part CXLI). The open gaps researched by seven `/research-deep` agents. Found: PC21's page-20 timers
+  are ABB TOFF elements and FY-322403's trip is 8 500 Nm3/h (the schedule, in `References\`); as built, on-delays and
+  V1's 5 % (§CXLI.1-2). Both are build candidates for the process engineer, unmeasured. CLAMPREF 0 confirmed;
+  LV-324501A's booster withdraws §CXL.4's bound; rows 1, 3, 4, 9, 10, 15 narrowed. Session 129 (Part CXL) researched
+  the same rows inline (reports: `Tests and Reports\reports\Session_129_gaps`, `Session_130_gaps`).
 * **Sessions 121 to 128** (Parts CXXXI, CXXXIII to CXXXIX; decisions 219, 230, 232 to 235, 239 to 248). B-156 closed:
   six levels between their taps, LT-329501 data gap 15; data gaps 2, 8 and 11 closed; 322P002's field delivery to
   FI-322402's 40 m3/h; FY-321404 on the DCS's formula; A-57, B-127, A-59, B-135 and A-60 closed as built. The gap
@@ -68,9 +69,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 130 | `docs/history/session-log.md` |
+| Session | 131 | `docs/history/session-log.md` |
 | Decision | 249 | `docs/decisions.md` |
-| As-Built Part | CXLI | the As-Built reference, appended at its end |
+| As-Built Part | CXLII | the As-Built reference, appended at its end |
 | Handoff Section A | A-61 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |
 
