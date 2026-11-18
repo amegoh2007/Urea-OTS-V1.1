@@ -27636,16 +27636,19 @@ Read on the page images this session:
   the lower T/L (EL +14.535, as MB-0180 puts it), 324E003's OD 1020 riser entering through the bottom head, N9 PT
   324204; 3 500 kg to be supplied, 7 100 kg operating, 14 250 kg at retest, 10.7 m3 nominal.
 * UD-AU-324-DZ-0008-002 (sectional and skirt 12148-1): heads R2000 / R385, 10 mm plate (8 mm minimum); "667 (Head)"
-  is the 639 mm dish and the 28 mm straight flange that sets the seam off the T/L.
+  runs from the head's end to its seam, 28 mm past the T/L, so the dish is 639 mm outside (calculated, 667 - 28;
+  it matches -001's 590 below the T/L and -002's 49 beyond the support).
 * UD-AU-324-DZ-0008-004 (nozzle details 12148-4): N2's axis meets the head at 828 mm from the centre line, its flange
-  at 940 mm and 1340 mm below the T/L, 512 mm straight and a 45-degree bend on R533.
+  at 940 mm and 1340 mm below the T/L, 512 mm straight, a 24-degree bend on R533 and a 169 mm stub (read on a
+  200 dpi render; the sheet's 45 degrees is the weld bevel at the head).
 * UD-AU-324-DZ-0008-009 (mechanical calculation 6359) pp. 5-6: both heads Korbbogen, OD 2500, crown sphere OD 4016;
   the opening it checks is 316 mm, against the nozzle table's 355.6 x 10 (335.6 bore), which the profile uses.
 * UD-RL-100-MB-0180: the leg 219.1 x 4.5 (210.1 bore) from N2 at EL +14.535 to the tap at EL +8.495, its centre-line
   runs 3.356 m down, 1.866 m on the 72.1-degree slope to EL +10.605, 1.068 m down, 1.084 m on the 56.8-degree slope to
   EL +8.945, then 0.450 m to the tap: 7.824 m. The BOM's 5.5 m of DN 200 pipe, the 600 mm sight glass, the 350 x 200
   reducer and the four LR elbows' arcs (1.37 m) come to about 7.8 m for the whole line, below the tap included, so the
-  leg's volume is uncertain by about 6 % (20 kg).
+  leg's volume is uncertain by about 6 % (20 kg). The reducer's length and the elbows' 1.5 D radius are not printed on
+  MB-0180; they are taken.
 
 Calculated on that geometry (`proto_geometry.py`):
 
@@ -27658,9 +27661,9 @@ Calculated on that geometry (`proto_geometry.py`):
 | 20.6 % | 10.019 | 85 | 3.1 |
 | 50 % (FF-0002's set point) | 12.194 | 232 | 3.1 |
 | 54.7 % (LIC-324501's) | 12.541 | 247 | 3.1 |
-| 81.65 % (N2's flange) | 14.535 | 331 | 5.8 |
-| 93.7 % (N2 meets the head) | 15.427 | 432 | 65 |
-| 100 % | 15.892 | 2 256 | 364 |
+| 81.65 % (N2's flange) | 14.535 | 331 | 5.6 |
+| 93.7 % (N2 meets the head) | 15.427 | 429 | 65 |
+| 100 % | 15.892 | 2 253 | 364 |
 
 The span is the leg to 81.7 %, N2 and its bend to 93.7 %, and the head's annulus outside 324E003's riser above. The
 holdup the engine keeps, V1's 180 s on PFD 402 (3 797 kg), placed on that geometry stands 0.34 m above the T/L and
@@ -27689,18 +27692,24 @@ its two level reads (the seal air's and LIC-324501's) taken as LY-324501 on the 
 the melt above the tap and seeded at the profile's 54.7 %, 246.6 kg; `E003_LIQUOR` keeps m_des = 3 797 kg, so the
 melt's thermal inertia (r_hold 0.065) and the vapour space (10.50 against 7.59 m3) move with the seeded holdup.
 
-Untouched, 0 to 600 s, the largest difference between the arms on the unrounded state: LI-324501 6.0e-3 % (1.1e-4
-relative), LIC-324501's output 8.6e-3 % (2.5e-4), PT-324203 4.5e-7 bar (3.5e-6), TT-324002 3.4e-4 K (2.4e-6), the
-melt 7.9e-3 kg/h (1.0e-7). The profile arm does not keep the design point to the bit: its level and LIC-324501's
-output stand above decision 230's 6e-5 relative bound within 600 s. Reading LY-324501 on V1's level instead (the AC4
+Untouched, on decision 230's basis (tick 1 to the bit, then the relative difference by 600 s on the unrounded
+state), on the six channels logged (LI-324501, LIC-324501's output, PT-324203, TT-324002, the melt and its strength;
+not every state of the plant): at tick 1 the level differs by 2.4e-14 % (the table's seed round-off) and TT-324002 by
+1.6e-9 K, the holdup's own inertia and vapour space, so an exact seed would not keep the pin to the bit either. By
+600 s: LI-324501 1.1e-4 relative (6.0e-3 %), LIC-324501's output 2.5e-4 (8.6e-3 %), PT-324203 3.5e-6, TT-324002
+2.4e-6, the melt 1.0e-7. The control arm's own seed drifts (LI-324501 54.6991 % at 600 s); the profile reading carries
+that drift at 22 times the gain (54.6931 %). A profile reading would need its own bound, about 1.2e-4 by 600 s on the
+level and 3e-4 on LIC-324501's output, above decision 230's 6e-5. Reading LY-324501 on V1's level instead (the AC4
 formula and the floor of CXLV.2 applied to it) is exact: over 600 s from the seed LY-324501 equals the level to the bit
 on 6 000 of 6 000 ticks, the formula's round trip within 1.4e-14 %, because the floor never acts at the design vacuum.
 
 The 100 kg slug: on the control arm LI-324501 rises 1.44 % and returns on LIC-324501's 200 s integral, below 1 % of
-its set point after 926 s, the melt moving 2 kg/h. On the profile arm it rises 28.8 % to 83.5 % (above N2's flange),
+its set point and has not settled when the run ends (53.83 % at 1 800 s, still falling, LIC-324501's output above
+its seed), the melt moving 2 kg/h. On the profile arm it rises 28.8 % to 83.5 % (above N2's flange),
 LIC-324501 opens from 35.0 to 59.5 %, the level undershoots to 45.7 % and is within 1 % of set point after 1 153 s;
-the melt swings 56 kg/h and TT-324002 0.08 K. The leg holds 3.1 kg a percent where V1's holdup holds 69: the plant's
-level answers a disturbance about 22 times as far.
+the melt swings 56 kg/h and TT-324002 0.08 K. The slug moved the level 28.8 % against 1.44 %, 20 times as far; the
+leg holds 3.1 kg a percent where V1's holdup holds 69, 22 times as little. The arms ran with N2's bend read as 45
+degrees; the 24 degrees of the 200 dpi render move only the band above 81.7 %, by 3 kg.
 
 ## CXLV.4 The cooling-water lead on 324E002 and 324E005 (§CXLI.7 row 3)
 
@@ -27709,8 +27718,9 @@ PFD's water with UA anchored on it, (b) Uhde's water with UA re-anchored (the de
 (a)'s UA. On 324E002 (1 591 000 against 2 218 000 kg/h) the vent at 0.30 to 0.60 bar a is the same on (b) to 0.1 kg/h,
 and 1 to 4 % lower on (c); on 324E005 (415 000 against 470 000) within 2 %. More water lowers the vent the ejectors
 draw, so the lead moves the engine away from the plant's 0.60 bar a at HIC-329605 55 %; it does not explain it.
-Uhde's flows on the sheets' rises (324E002 30 to 40 C, 324E005 30 to 34 C) carry 25 735 and 2 181 kW against the
-engine's anchored 18 019 and 1 875 kW: they are a rating margin on a larger duty, not more water at the PFD's duty. The
+Calculated: on the sheets' rises (324E002 30 to 40 C, 324E005 30 to 34 C) Uhde's flows would carry 25 735 and
+2 181 kW against the engine's anchored 18 019 and 1 875 kW, which reads as a larger rated duty rather than more water
+at the PFD's duty; the flow and the rise were not checked on one sheet, so this is an inference. The
 HIC-329605 step probe at 75 % load waits on a low-load candidate from session 134.
 
 ## CXLV.5 PT-323204's digits
