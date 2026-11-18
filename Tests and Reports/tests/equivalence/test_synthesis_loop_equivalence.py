@@ -81,9 +81,11 @@ from ureasim.data.unit_322_loop import (
     SV32251_SET_BARA,
     SV32251_Z_REL,
     SYN_LOOP_V_V1_M3,
-    TRIP_21_2_FY_L2_FRAC,
+    TRIP_21_2_FY_L2_NM3H,
     TRIP_21_8_PDY_L2_BAR,
 )
+from ureasim.core.units_of_measure import NM3_PER_KMOL
+from ureasim.data.unit_320 import CO2_FEED_MW
 from ureasim.engine.plant import build_plant
 from ureasim.engine.plant.synthesis import design_feed_station
 from ureasim.engine.plant.synthesis_loop import _unit21_trips
@@ -523,7 +525,8 @@ def _v1_tick(v1, s, x, decided):
             p002a_running=st.pump_a.running, p002b_running=st.pump_b.running,
             p001_running=True, xv_322902_open=s.line.xv_322902_open,
             xv_321901_closed=not st.xv_321901_open, xv_322901_open=st.xv_322901_open,
-            fy_322403_low=line.feed_th < TRIP_21_2_FY_L2_FRAC * (v1["CO2_DES_KGH"] / 1000.0),
+            fy_322403_low=(line.feed_th * 1000.0 / CO2_FEED_MW * NM3_PER_KMOL
+                           < TRIP_21_2_FY_L2_NM3H),
             pdy_321203_low=feed.subcooling_a_bar < TRIP_21_8_PDY_L2_BAR,
             pdy_321204_low=feed.subcooling_b_bar < TRIP_21_8_PDY_L2_BAR), dt)
         s.trips.update({"21_2": t2, "21_8": t8, "21_10": t10})
@@ -910,7 +913,8 @@ def test_v1s_trip_22_2_and_the_port_without_it_decided_divergence(v1):
     the next. The port holds no 22.2; the pressure stepped onto the loop starves the CO2 line, so
     21.2's flag is lost on the same tick and AC4 shuts XV-322902 and stops both pumps: after a
     minute the feeds are cut and PT-329201 stands at 154.3152 bar a (both sides measured on
-    2026-11-12)."""
+    2026-11-12); 154.4555 with 21.2's CO2 timer an off-delay and FY-322403's L2 at 8 500 Nm3/h,
+    the trip 5 s after the starved feed falls below it (decisions 249 and 250)."""
     def act(k, plant, s):
         if k == 0:
             plant.units["PT-329201"].p_syn_bara = s.p_syn = 155.5
@@ -921,7 +925,7 @@ def test_v1s_trip_22_2_and_the_port_without_it_decided_divergence(v1):
     assert not hasattr(trips, "i_22_2") and trips.latched == dict.fromkeys(("21_2", "21_8", "21_10"), True)
     assert not sched.plant.units["320K002"].xv_322902_open
     assert hist[-1][1]["321"].flow_total_th == 0.0
-    assert hist[-1][1]["PT-329201"].p_syn_bara == pytest.approx(154.3152, abs=1e-4)
+    assert hist[-1][1]["PT-329201"].p_syn_bara == pytest.approx(154.4555, abs=1e-4)
 
 
 # --------------------------------------------------------------------------------------

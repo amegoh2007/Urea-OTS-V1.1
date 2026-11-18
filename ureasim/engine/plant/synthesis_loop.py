@@ -40,13 +40,13 @@ from dataclasses import dataclass, field, replace
 
 from ureasim.control.interlocks import Unit21TripInputs, Unit21Trips
 from ureasim.core.stream import MW_COMP, atom_ratio
+from ureasim.core.units_of_measure import NM3_PER_KMOL
 from ureasim.data.engine import DT_S
 from ureasim.data.operator_commands import TRIP_21_HAND_SWITCHES
-from ureasim.data.unit_320 import SYN_P_DES_BARA
-from ureasim.data.unit_321 import CO2_DES_KGH
+from ureasim.data.unit_320 import CO2_FEED_MW, SYN_P_DES_BARA
 from ureasim.data.unit_322e003 import HOLDUP_MAX_KG
 from ureasim.data.unit_322_loop import (
-    TRIP_21_2_FY_L2_FRAC,
+    TRIP_21_2_FY_L2_NM3H,
     TRIP_21_2_FY_TD_S,
     TRIP_21_2_P001_TD_S,
     TRIP_21_2_PUMPS_TD_S,
@@ -241,7 +241,7 @@ def _trips(plant, a, dt):
         p002a_running=a["a_on"], p002b_running=a["b_on"],
         p001_running=a["p001a"]["on"] or a["p001b"]["on"], xv_322902_open=a["xv_322902_open"],
         xv_321901_closed=not a["xv_321901_open"], xv_322901_open=a["xv_322901_open"],
-        fy_322403_low=a["co2_feed_th"] < TRIP_21_2_FY_L2_FRAC * (CO2_DES_KGH / 1000.0),
+        fy_322403_low=a["co2_feed_th"] * 1000.0 / CO2_FEED_MW * NM3_PER_KMOL < TRIP_21_2_FY_L2_NM3H,
         pdy_321203_low=a["pdy_a_bar"] < TRIP_21_8_PDY_L2_BAR,
         pdy_321204_low=a["pdy_b_bar"] < TRIP_21_8_PDY_L2_BAR,
         hs_321634=a["hs_321634"], hs_323604=a["hs_323604"], hs_322606=a["hs_322606"],

@@ -44,7 +44,7 @@ __all__ = [
     "trip_label",
     "TRIP_21_2_PUMPS_TD_S", "TRIP_21_2_P001_TD_S",
     "TRIP_21_2_FY_TD_S", "TRIP_21_8_RUN_TD_S", "TRIP_21_8_STOP_TP_S", "TRIP_21_8_PDY_L2_BAR",
-    "TRIP_21_2_FY_L2_FRAC",
+    "TRIP_21_2_FY_L2_NM3H",
 ]
 
 # ======================================================================================
@@ -163,7 +163,8 @@ def trip_label(key: str) -> str:
 #: (.16 "D=5-2"; page 20), as the trip schedule UAN 01-3042's "time delay 5 min." and "15 min."
 #: (decision 229); each pump's flag's 5 min from its start to XV-322901 open (pages 5 and 7, .2
 #: "D=5:0-2"), the schedule's "automatic start up override 5 min." (decision 231), and 10 s after it
-#: stops (MONO "D=10-3").
+#: stops (MONO "D=10-3"). 21.2's three are TOFF, its delays on the trip (the T drawn at the right,
+#: ABB's UD-MR-G00-DZ-0045-016 p. 447; decision 249); the pumps' flags' 5 min is TON.
 TRIP_21_2_PUMPS_TD_S = 300.0
 TRIP_21_2_P001_TD_S = 900.0
 TRIP_21_2_FY_TD_S = 5.0
@@ -174,7 +175,9 @@ TRIP_21_8_STOP_TP_S = 10.0
 #: functional diagram's PDYSLL at 0.1 bar (UD-MR-321-FF-0002 page 5), the number V1's 21.2 used.
 TRIP_21_8_PDY_L2_BAR = 0.1
 
-#: FY-322403's L2 [-, of the design CO2], the CO2 flow below which 21.2 trips: a DCS database value
-#: the archive does not hold; V1's 21.4 threshold, 5 %, stands in (decided 2026-10-09, handoff Open
-#: data gaps). Source: V1 ``step_sim`` 10101.
-TRIP_21_2_FY_L2_FRAC = 0.05
+#: FY-322403's L2 [Nm3/h], the CO2 flow below which 21.2 trips: the trip, FY-322403 8 500 Nm3/h (its
+#: pre-alarm 10 000 Nm3/h), on Uhde's Trip and Interlock Schedule UAN 01-3042-602 rev 03 as-built,
+#: sheet 321/1 (`References/trip_and_interlock_schedule.md` line 71; As-Built §CXLI.2). Compared with
+#: FT-322403 on the engine's own Nm3 basis, 30.0 % of the design CO2. Replaces V1's 21.4 threshold,
+#: 5 % (decision 250).
+TRIP_21_2_FY_L2_NM3H = 8500.0

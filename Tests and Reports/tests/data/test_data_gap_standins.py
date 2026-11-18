@@ -27,7 +27,6 @@ STANDINS = [
     (1, "ureasim.control.jet_pump", "ETA_DIFF", 0.80, "its diffuser recovery, open literature"),
     (4, "ureasim.data.unit_324", "F003_M_TAU_S", 180.0, "LI-324501 on V1's holdup ratio: the melt's residence"),
     (4, "ureasim.data.unit_324", "F003_LEVEL_SP_PCT", 54.7, "LIC-324501's set point, V1's"),
-    (5, "ureasim.data.unit_322_loop", "TRIP_21_2_FY_L2_FRAC", 0.05, "FY-322403's L2: V1's 21.4 threshold"),
     (5, "ureasim.data.unit_322_loop", "TRIP_21_8_PDY_L2_BAR", 0.1, "PDY-321203 / 204's L2"),
     (9, "ureasim.data.unit_335", "FIC_335405_KC", 100.0, "FIC-335405's gain, V1's"),
     (9, "ureasim.data.unit_335", "FIC_335405_TI_S", 15.0, "FIC-335405's integral time, V1's"),

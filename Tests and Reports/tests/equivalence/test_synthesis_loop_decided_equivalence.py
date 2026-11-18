@@ -41,17 +41,19 @@ def test_sv32251_and_sv32252_relieve_the_loop_decided_divergence(v1):
     159.3140 before them; with B-81's lines and B-77 (b) and AC4's trips, decided 2026-10-09: 156.4679 and 158.7766 before them; 156.4672 before FFIC-321404A
     / B, B-85). B-75 and B-78 run on both sides. (On session 46's decisions — 320K002 a boundary
     feed, LIC-322501 and the SICs on the DCS's table, the stopped SICs forced to MAN at their table
-    tunings; 159.24 and 156.92 bar a before.)"""
+    tunings; 159.24 and 156.92 bar a before.) With 21.2's CO2 timer an off-delay and FY-322403's L2
+    at 8 500 Nm3/h (decisions 249 and 250) AC4 cuts the feeds 5 s after the CO2 falls below its L2:
+    157.87 bar a, V1's 159.45, 209.5 t/h relieved, 106.2 of it ammonia."""
     def act(k, plant, s):
         if k == 0:
             plant.units["PT-329201"].p_syn_bara = s.p_syn = 160.5
     hist, _, _ = h.run_both(v1, 601, act, decided=h.ALL - {"A-16"}, check=False)
     out, res, p_v1 = hist[600]
     pt = res["PT-329201"]
-    assert out.m_psv == 0.0 and p_v1 == pytest.approx(159.3133, abs=1e-4)
-    assert pt.relief_lifted and pt.p_syn_bara == pytest.approx(157.6919, abs=1e-4)
-    assert (pt.m_relief_kgh, pt.m_relief_nh3_kgh) == (pytest.approx(209261.0, abs=0.1),
-                                                     pytest.approx(106131.3, abs=0.1))
+    assert out.m_psv == 0.0 and p_v1 == pytest.approx(159.4509, abs=1e-4)
+    assert pt.relief_lifted and pt.p_syn_bara == pytest.approx(157.8658, abs=1e-4)
+    assert (pt.m_relief_kgh, pt.m_relief_nh3_kgh) == (pytest.approx(209491.7, abs=0.1),
+                                                     pytest.approx(106248.3, abs=0.1))
 
 
 def test_hv_322604_discharges_against_322c001_decided_divergence(v1):
@@ -207,7 +209,8 @@ def test_a_trip_shutting_xv_322902_trips_the_co2_boundary_decided_divergence(v1)
     instructor's 54.618 t/h into the blocked line, which packs until SV32064 lifts on tick 316
     (31.7 s) and still holds 159.70 bar a after a minute. The port trips the machine with the
     valve: the boundary's demand is zero from the same tick, the line holds 144.25 bar a and
-    SV32064 never lifts."""
+    SV32064 never lifts. With 21.2's CO2 timer an off-delay and FY-322403's L2 at 8 500 Nm3/h
+    (decisions 249 and 250) the trip comes 5 s after the starved feed falls below its L2: 146.86 bar a."""
     seen = []
 
     def act(k, plant, s):
@@ -219,7 +222,7 @@ def test_a_trip_shutting_xv_322902_trips_the_co2_boundary_decided_divergence(v1)
     assert s.line.pressure_bara == pytest.approx(159.6998, abs=1e-4)
     assert sched.plant.operator["320K002-CO2"] == 0.0
     assert not any(r["320K002"].relief_lifted for _, r, _ in hist)
-    assert sched.plant.units["320K002"].pressure_bara == pytest.approx(144.2532, abs=1e-4)
+    assert sched.plant.units["320K002"].pressure_bara == pytest.approx(146.8608, abs=1e-4)
 
 
 def test_the_vapour_inventory_node_decided_divergence(v1):
@@ -254,7 +257,10 @@ def test_the_trips_as_ac4_executes_them_decided_divergence(v1, case):
     141.1460 / 140.8889 before decisions 150 and 151; V1's CO2 case 139.5415 before
     the three Metso valves went on their trims, 2026-10-17; before 2026-10-16, when 21.2
     left XV-322902 and XV-322903 open, both at 139.4947 / 139.5184; V1's side moves too, through
-    the steam network it shares with the port)."""
+    the steam network it shares with the port). With 21.2's three timers off-delays and FY-322403's L2
+    at 8 500 Nm3/h (decisions 249 and 250): after 321P002B's fault AC4 holds 21.2 for its 5 min, so a
+    minute on no flag is lost, the valves stand open and both sides stand at 139.3108 bar a; the CO2
+    cut trips 21.2 5 s after the feed falls below its L2, 139.5247 / 140.8033 bar a.)"""
     def act(k, plant, s):
         if k == 5 and case == "fault":
             plant.units["321"].pump_b.fault = s.station.pump_b.fault = True
@@ -273,13 +279,14 @@ def test_the_trips_as_ac4_executes_them_decided_divergence(v1, case):
     assert ends[False][0] == {**dict.fromkeys(("21_2", "21_4", "21_8", "21_10", "22_2"), False),
                               v1_trip: True}
     assert ends[False][1:5] == (False, False, True, True)
-    assert ends[True][0] == {"21_2": True, "21_4": False, "21_8": True, "21_10": True,
+    lost = case == "co2"                # decision 249: the pumps' stop waits out its 5 min
+    assert ends[True][0] == {"21_2": lost, "21_4": False, "21_8": lost, "21_10": lost,
                              "22_2": False}
-    assert ends[True][1:5] == (False, False, False, False)
+    assert ends[True][1:5] == (False, False, not lost, not lost)
     assert ends[False][6:8] == (True, True)
-    assert ends[True][6:] == (False, False, False, False)
-    assert (ends[False][5], ends[True][5]) == {"fault": (139.2789, 141.1457),
-                                               "co2": (139.5424, 140.8893)}[case]
+    assert ends[True][6:] == (not lost,) * 4
+    assert (ends[False][5], ends[True][5]) == {"fault": (139.3108, 139.3108),
+                                               "co2": (139.5247, 140.8033)}[case]
 
 
 def _the_loop_at_130_7(k, plant, s):
