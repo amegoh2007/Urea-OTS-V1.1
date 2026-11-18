@@ -27812,5 +27812,8 @@ trips' case on AC4's header, B-62 on V1's selector given V1's level); the second
 its equivalence with the vacuum train's decided and the first evaporator's 36, `engine/test_snapshot.py` with the
 evaporation plant 45 (the six shipped exercises restore with `ac4_ly` filled, each level 54.70 to 54.73 % against a
 floor of 19.9 to 22.3 %), `engine/packet` 34, the rest of `engine` 149. The design seed's snapshot byte-identical at
-600 s (CXLV.9). Not run: `hmi`, `phase7` and the other units' and equivalence files, which no change reaches; the
-whole suite in one pass. `pyflakes` clean on the four changed modules.
+600 s (CXLV.9). Then, the files that name the stop, the level or B-62 / B-63: `phase7`'s seal-loss, loop-atom,
+deviation, coupled and scenario-runner tests, `control`, and the first evaporator's decided and the pre-evaporator's
+equivalence: 17, 113 and 231 passed, none moved. Not run: `hmi` and the rest of the units' and equivalence files, and the whole suite in
+one pass, which waits for session 134's runs. `pyflakes` clean on the changed modules. No decided class is written for
+decision 252 while its consequence is before the process engineer.

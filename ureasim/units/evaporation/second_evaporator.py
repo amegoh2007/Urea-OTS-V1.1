@@ -70,6 +70,11 @@ Where this stage departs from V1 — each a decided divergence, run both ways in
     LY-324501 below L2 (decision 217; MOTCON IC2, As-Built §CXIX.2): the header has no pumps from
     L2 until the level clears it by the hysteresis (stand-ins, `data.low_level_stops`). PC35's trips
     clamp LIC-324501 at 100 % on 35.1 and act on the header (decision 228).
+  * **LY-324501 on AC4's formula** (decision 252): the level LIC-324501, the console and the L2
+    stop read is V1's holdup ratio with LT-324501's LRV floor, max(level, LY_floor(PT-324203))
+    (`melt_leg_transmitter`), about 20.7 % at the design vacuum, where V1 reads the ratio alone. So
+    at the vacuum the L2 stop cannot act: a lost feed drains the separator to its heel, and the stop
+    acts once the seal's air has raised PT-324203 above 0.269 bar a. The seal air reads the holdup.
 
 PV-329212 runs on its vendor trim (decision 23's class, decided 2026-10-14): Metso's DN 80
 balanced Neldisc, Cv 150, its printed capacities and Valmet's S-Disc shape between them as its curve
