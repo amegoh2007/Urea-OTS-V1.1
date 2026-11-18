@@ -27395,3 +27395,87 @@ of `CO2_DES_KGH`.
 In the three pressure cases the starved feed now trips 21.2 5 s after it falls below the L2. Before, it tripped on the
 first tick. V1's side moves through the steam network it shares with the port. After the pump fault, AC4 holds the
 loop for 21.2's 5 min, so at a minute both sides are the same.
+
+# Part CXLIII — Session 131: another tool's closure dossier checked against the archive; PC21's SR latches read (2026-11-18)
+
+Asked: close the open items with `References\Gaps Closure\New folder\urea_simulator_v1_1_final_closure_dossier_4_section_b_bugs_9_data_gaps.html`,
+another tool's report of 2026-11-18 that marks all thirteen items (B-118, B-125, B-126, B-136 and data gaps 1, 3, 4,
+5, 9, 10, 12, 14, 15) closed. Every page it cites was opened (`CLAUDE.md` §4). A value is "verified" only when it was
+read on the page image. None of the thirteen items closes on the dossier. Two findings are new, both read on primary
+sources the dossier does not cite for them: PC21's SR latches (§CXLIII.2) and 321P002B's vendor limits (§CXLIII.3).
+Nothing under `ureasim/` changed. No decision was taken. Renders: `Tests and Reports\reports\Session_131_dossier`.
+
+## CXLIII.1 The dossier's claims, item by item
+
+| Item | The dossier claims | Its source | What the source holds | Verdict |
+|---|---|---|---|---|
+| B-118 | 322E002's UA on (G / G_des)^0.80; PIC-329204 as "329D005, 5.3 bar a", raised 0.35 bar a 10 % of load cut | Operating Manual §2.1, §3.4, §4.4 | `References\Urea_Operating_Manual_Helwan.md` ends at §3.4, UF storage; §2.1 is raw materials; neither PIC-329204 nor a 0.35 bar rule is in it. PIC-329204 reads 16.6-18.2 bar g on Book2 (B-118's table). The exponent is P1's form, 0.77, measured in bundle A (§CVII.1) | not in the source |
+| B-125 | equilibrium 170.3 C at 140.2 bar a against 322E002's outlet at 167.5 C; a five-coefficient saturation law | "Book 2's equipment datasheet"; the 1750 MTPD PFD, stream 322003 | 167.5, 140.2 and 170.3 are not in the 1750 MTPD PFD file. Book2 is the DCS trend workbook, not a datasheet | not in the source |
+| B-126 | 322R001's 136 t at 27.14 % urea, 37.26 % NH3, 21.10 % CO2, 14.49 % water, by a nine-tray integration with alpha 0.62 | the 1750 MTPD PFD, streams 322003L and 322001 | none of the stream flows quoted (194 257, 205 221 kg/h and their components) is in the PFD file. A seed composition is not the missing species state (§CXIII.3) | not in the source |
+| B-136 | PIC-329205 at 20.1 bar a, lowered 0.2 bar a 1 000 Nm3/h of CO2; the bottoms on TI-322005 at 164 C; a stripping efficiency on (L / L_des)^-0.22 | Operating Manual §4.4; `HP STRIPPER 322E001.md` | the manual has no §4.4, and neither file holds the rule, 164 C or 171 C. TT-322005 is 322R001's top here; TT-322004 is the stripper's bottoms | not in the source |
+| Gap 1 | a three-point curve at 110, 100 and 60 % load (at 100 %: 40 756 kg/h motive, 44 850 kg/h suction at 135.7 bar a, 144.2 bar a mixed); a 43.43 mm throat | `322F001 Design Calculations` (UD-AU-322-DZ-0013-003) p. 4 | p. 4 is an AD 2000-Merkblatt B1 wall-thickness check of item 10: 205 bar, 200 C, 225 mm outside diameter, 16.21 mm required. No page of the twelve holds a curve. Uhde's EC-0013 prints 44 600 and 62 000 kg/h (§CXLI.7) | false (image) |
+| Gap 1 | Körting size 100/200, serial S 666 565, 1 525 mm long, 35 mm stroke | DZ-0013-005 p. 28 | none of these strings is in the file's OCR text. The envelope is not the row's datum | not verified; immaterial |
+| Gap 3 | 324F002: 396 kg/h motive, 102 kg/h suction, 300 to 950 mbar a. 324F004: 225 and 160 kg/h, 160 to 320 mbar a. 324F005: 55 and 30 kg/h, 310 to 1 043 mbar a. Linear compression parameters derived from these | the three data sheets and design calculations | 324F002 p. 2: suction 94 kg/h at 0.2 bar a and 45 C, motive 650 kg/h at 4.1 bar a and 146 C, mixed 744 kg/h at 1.0 bar a and 123 C (image). 324F005 p. 2: no flows, "see specification 324F004" (image). 324F004: 634 kg/h suction at 0.12 bar a (OCR). The design calculations are mechanical | false (image) |
+| Gap 4 | LY-324501 = (L − P · 1000) / 885 · 100; the leg from 324F003/N2 at EL +14535 to the tap at EL +8495; set point 50 %, L1 15 %, H1 80 %; PT-324202 as 324F003's pressure, 0.33 bar a | 324-FF-0002 p. 2, 324-EC-0001 p. 22, MB-0180 | the formula and both elevations verified (image), already recorded (§CIII.5, §CXVI.4, §CXLI.6). P. 22 prints no set point and no alarm limit, and 0.13 bar a. PT-324202 is 324F001's, whose pressure is 0.33 bar a (§CXLIII.4) | nothing new beyond §CXLIII.4 |
+| Gap 5 | PT-321211 / 221's L2 3.0 bar g; ST-321952 / 953's H2 152 rpm | Peroni DZ-0005-021 and -017 | verified on both pumps (§CXLIII.3) | verified (image) |
+| Gap 5 | the SR latches trip-dominant | Uhde's trip schedule sheets | the schedule draws no flip-flop. The conclusion agrees with AC4 and ABB's manual (§CXLIII.2) | source wrong; conclusion confirmed |
+| Gap 5 | TRIP_84_8's L1 5.0 bar g and L2 4.0 bar g; instrument air normally at 5.5-7.0 bar g | the trip schedule; DZ-0012-006 p. 5 | the schedule's pre-alarm and trip cells for "Pressure Instrument Air low, TRIP 84-8" are blank. SG1 PC15.1.5 (FF-0006 p. 51) prints `VALUE<L2`. The loop summaries P 384207A / B / C (384-EC-0001 pp. 25-27) print 0-16 bar g and 4.5 bar g normal, with no setting (§LXXIII.2). The dossier's 5.0 bar g pre-alarm sits above that normal | not in the source |
+| Gap 9 | F 335405 at 0-110 t/h, 63.2 t/h normal, on line 324041; V1's tuning kept | 335-EC-0001 p. 20, 335-FF-0002 p. 7 | p. 20 is A 335707, 335D004's density. F 335405 is p. 35 (image): 0-1 m3/h, 0.47 m3/h normal, 1 320 kg/m3. 335-FF-0002's text holds no 335405 (a text search; p. 7 not rendered) | false (image) |
+| Gap 10 | nozzle distance 3 600 mm, so the 326 mbar unit is LT-329505's head | 329-EC-0001 p. 84 | B44 prints 3000 mm (image). 3 600 mm is 326 mbar back-solved on 922 kg/m3 | false (image) |
+| Gap 12 | "Quick Closing <3 sec." confirms the 1 s lag; a trip stroke of about 1.8 s | 324-EC-0001 p. 23 | the remark verified (image), already in §CXLI.4 from EC-0236. No positioner response or stroking time is printed; 1.8 s has no source | not closed |
+| Gap 14 | a Pepperl+Fuchs SJ3,5-SN slot sensor making at 1 % of stroke or less | 324-EC-0001 p. 24; DZ-0014-007 pp. 39-42 | p. 24 is known (§CXLI.5). DZ-0014-007 is an Ex-certificate file listing slot-sensor types; it names neither MZBB006 nor LV-324501A and prints no switch point | not closed |
+| Gap 15 | 0-1 200 mbar over 10 000 mm; the design reading 0 % on a gas-filled leg; LAH 50 % | DZ-0012-006 p. 2, 329-EC-0001 p. 77, 329-FF-0002 p. 2 | the factory record and the nozzle distance are already in row 15. 329-FF-0002 p. 2 is FFIC-329401, and its text names LT-329501 on no page (a text search). A gas-filled leg contradicts the purged legs (K3V91, §CXL.2; Manual III, §CXLI.7) and Book2's 1-11 % | the design reading false |
+
+## CXLIII.2 PC21's SR latches: the trip dominates the hand switch (data gap 5)
+
+ABB's AC 400 PC Elements Reference Manual (UD-MR-G00-DZ-0045-016, printed p. 407, PDF p. 416, read on the image)
+defines SR: terminal 1 is the set input, terminal 2 the "Reset input which overrides the set input", and "If the reset
+input is set, the output is unconditionally reset."
+
+AC4 PC21.5.1 (UD-MR-G00-FF-0004 p. 20, read on a 300 dpi image) wires the latches of trip 21.2's valves:
+
+| Element | S (pin 1) | R (pin 2) | Output |
+|---|---|---|---|
+| .12 | HS-321901 | TRIP_21_2_FLAG1 (.11), inverted | XVY-321901 |
+| .13 | HS-322901 | the same | XVY-322901 |
+| .15 | HS-322903 | the same | XVY-322903 |
+| .14 | HS-322902 | .19 = OR(NOT TRIP_21_2_FLAG1, NOT TRIP_20_1_NOT-18) | XVY_322902, to SG1 |
+
+A lost flag sets each R, and R overrides S, so the hand switch cannot open the valve while 21.2 is lost. This is the
+stand-in as built (§LXV.6: "the reset dominates: a lost flag holds the valve shut against its hand switch"), now read on
+the element's definition and on its wiring. AC4 pp. 5 and 7 (PC21.1.1 and PC21.1.2, images) hold no SR element: the pump
+flags 21.8 and 21.10 are ANDs with timers and monoflops and carry no latch, as built. It is confirmed; nothing changes.
+Data gap 5's SR item closes.
+
+## CXLIII.3 321P002A / B's lube-oil and overspeed settings (data gap 5)
+
+Peroni's sheets, read on the image:
+
+* 321P002A. Interlock key UD-AU-321-DZ-0005-021, sheet 2/4: PT 321211 at 6-8 barg (10 barg max.), alarm 4 barg
+  decreasing, shut-down 3 barg decreasing. Switch-point summary DZ-0005-017, PDF p. 3: P321211 PIALSALL, L 4 barg
+  = 10.4 mA, LL 3 barg = 8.8 mA on 0-10 barg; S321952 SSAH, H > 152 RPM = 18.74 mA on 0-165 RPM.
+* 321P002B. DZ-0005-022, sheet 2/4: PT 321221 at the same 6-8, 4 and 3 barg. DZ-0005-018, PDF p. 3: P321221 LL
+  3 barg = 8.8 mA; S321953 SSAH, H > 152 RPM.
+
+They agree with Uhde's schedule (§CXLI.2), whose sheet 321/3 was read on the text layer only. The loop summaries
+P 321211 and P 321221 (UD-MR-321-EC-0001 pp. 42-43) print 0-10 bar g and AL, SALL, with no setting. The simulator
+models neither the lube oil nor the torque converter, so these inputs stay healthy. Data gap 5 keeps TRIP_84_8's L2
+alone.
+
+## CXLIII.4 PT-324202 or PT-324203 in LY-324501 (data gap 4)
+
+Uhde's functional diagram UD-MR-324-FF-0002 p. 2 (rev 00, 01.09.2005) subtracts PT-324202 and prints LT-324501's
+range as -800 to 900 mbar. AC4 PC35.2.1 (p. 248, §CXLI.6) subtracts PT-324203. Rosemount's record is -700 to 900 mbar
+(§CXL.1). The loop summary puts L 324501 and P 324203 on P&ID 105/2, 324F003 at 0.13 bar a (-0.87 bar g), and
+P 324202 on 105/1, 324F001 at -0.7 bar g (UD-MR-324-EC-0001). AC4, the as-configured software, subtracts the pressure
+of the vessel the leg drains; the functional diagram's tag is taken as a drafting slip.
+
+PT-324203 is a gauge transmitter, -1 to 1 bar g (UD-MR-324-EC-0001 p. 29, read on the image). Calculated: at 0.13 bar a
+with the liquid at the tap, LT-324501 would read -870 mbar, below the -700 mbar LRV. LY-324501 then cannot read below
+(-700 + 870) / 885 = 19.2 %, or 7.9 % on the drawing's -800 mbar. Checklist row 11 (the configured LRV and URV)
+decides which.
+
+## CXLIII.5 Checks
+
+The documentation tests pass (`Tests and Reports/tests/docs`). Nothing under `ureasim/` changed, so the suite was not
+run.

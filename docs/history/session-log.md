@@ -5238,3 +5238,14 @@ withdrawing §CXL.4's slew bound. Rows 1, 3, 4, 9, 10, 15 and B-136 narrowed. Th
 in scratch (a pump stop trips 21.2 at 359.9 s, a CO2 cut to 10 t/h at 78.1 s) and built both: `OffDelayTimer` for
 page 20's three T (decision 249) and `TRIP_21_2_FY_L2_NM3H` = 8 500 (decision 250); six exercises and five equivalence
 pins restated. Parts CXLI, CXLII; report `Tests and Reports\reports\Session_130_gaps`.
+
+### Session 131 — 2026-11-18: another tool's closure dossier checked against the archive
+
+Asked to close the open items with a closure dossier (`References\Gaps Closure\New folder\urea_simulator_v1_1_final_closure_dossier_...html`)
+that marks B-118, B-125, B-126, B-136 and data gaps 1, 3, 4, 5, 9, 10, 12, 14 and 15 closed. Every cited page was
+opened: none of the 13 closures holds. Its Section B laws and stream values are in none of its cited files; gaps 1, 3, 9
+and 10 are false on the image (322F001's p. 4 is a wall-thickness check; 324F002 prints 94 / 650 / 744 kg/h; F 335405
+is 0-1 m3/h; B44 prints 3000 mm, not 3 600). Found on primary sources: PC21's SR latches are reset-dominant with the
+inverted 21.2 flag on R (ABB DZ-0045-016 printed p. 407, AC4 p. 20), as built; Peroni's sheets give 3 barg and 152 RPM
+for both 321P002 pumps. Row 5 narrowed to TRIP_84_8's L2; row 4 logs FF-0002's PT-324202 against AC4's PT-324203.
+Nothing under `ureasim/` changed; no decision. Part CXLIII; renders `Tests and Reports\reports\Session_131_dossier`.

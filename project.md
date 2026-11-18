@@ -4,7 +4,7 @@
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-18, session 130
+**Last updated:** 2026-11-18, session 131
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -29,11 +29,12 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Open.** `handoff.md`: Section A none, Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
   Section C none, 9 open data gaps. Every data gap
   waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
-* **Session 130** (Parts CXLI, CXLII). The open gaps researched by seven `/research-deep` agents. Found and built (decisions 249,
-  250; Part CXLII): PC21's page-20 timers are ABB TOFF elements, so 21.2 is lost 5 min / 15 min / 5 s after its causes,
-  and FY-322403's trip is the schedule's 8 500 Nm3/h, not V1's 5 %. CLAMPREF 0 confirmed;
-  LV-324501A's booster withdraws §CXL.4's bound; rows 1, 3, 4, 9, 10, 15 narrowed. Session 129 (Part CXL) researched
-  the same rows inline (reports: `Tests and Reports\reports\Session_129_gaps`, `Session_130_gaps`).
+* **Sessions 129 to 131** (Parts CXL to CXLIII; decisions 249, 250). The open gaps researched in the archive. Built: PC21's
+  page-20 timers as ABB TOFF elements, 21.2 lost 5 min / 15 min / 5 s after its causes (decision 249), and FY-322403's trip
+  at the schedule's 8 500 Nm3/h (decision 250). Session 131 checked another tool's closure dossier page by page: none of
+  its 13 closures holds (§CXLIII.1); PC21's SR latches read reset-dominant with the trip on R, as built, and 321P002B's
+  limits on Peroni's sheets, so row 5 keeps TRIP_84_8's L2 alone. Reports: `Tests and Reports\reports\Session_129_gaps`
+  to `Session_131_dossier`.
 * **Sessions 121 to 128** (Parts CXXXI, CXXXIII to CXXXIX; decisions 219, 230, 232 to 235, 239 to 248). B-156 closed:
   six levels between their taps, LT-329501 data gap 15; data gaps 2, 8 and 11 closed; 322P002's field delivery to
   FI-322402's 40 m3/h; FY-321404 on the DCS's formula; A-57, B-127, A-59, B-135 and A-60 closed as built. The gap
@@ -69,9 +70,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 131 | `docs/history/session-log.md` |
+| Session | 132 | `docs/history/session-log.md` |
 | Decision | 251 | `docs/decisions.md` |
-| As-Built Part | CXLIII | the As-Built reference, appended at its end |
+| As-Built Part | CXLIV | the As-Built reference, appended at its end |
 | Handoff Section A | A-61 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |
 
