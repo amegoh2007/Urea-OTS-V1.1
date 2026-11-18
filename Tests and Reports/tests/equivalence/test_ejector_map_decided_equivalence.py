@@ -45,17 +45,18 @@ def _v1_f004(v1, hic_pct, p):
 
 @pytest.mark.parametrize("case, v1_f004, port_f004, v1_f002, port_f002", [
     ("design", 584.0, 584.0, 72.0, 72.0),
-    ("motive halved", 292.0, 638.645, 36.0, 88.917),
+    ("motive halved", 292.0, 643.183, 36.0, 0.000),
     ("discharge raised", 584.0, 0.0, 72.0, 0.0),
-    ("from atmosphere", 4517.084, 5400.600, 221.073, 296.872),
+    ("from atmosphere", 4517.084, 5406.218, 221.073, 296.872),
 ])
 def test_the_ejector_pull_decided_divergence(v1, case, v1_f004, port_f004, v1_f002, port_f002):
     """B-57 and B-61. At the PFD's vacuums and design motive both pull the PFD's 584 and 72 kg/h:
     V1's lines by construction, the maps on their design anchor. Halve the motive and V1 halves
-    its pull; the maps, still critical, pull a little more (639 and 89). Raise the discharge to
-    1.5 bar a (324F004) and 2.5 (324F002) and V1 does not notice; the ejectors break and pull
-    nothing. From atmosphere, V1's line climbs with the pressure to 4517 and 221 kg/h; the maps
-    to 5401 and 297."""
+    its pull; 324F004's map, still critical, pulls a little more (643), and 324F002's, its nozzle
+    at 2.05 bar a below the plant's lost stroke, breaks and pulls nothing (decision 251; 639 and 89
+    before it). Raise the discharge to 1.5 bar a (324F004) and 2.5 (324F002) and V1 does not
+    notice; the ejectors break and pull nothing. From atmosphere, V1's line climbs with the
+    pressure to 4517 and 221 kg/h; the maps to 5406 (5401 before decision 251) and 297."""
     p4, p2, hic, motive, d4, d2 = {
         "design": (0.131, 0.33, 50.0, 390.0, 0.30, 1.0),
         "motive halved": (0.131, 0.33, 25.0, 195.0, 0.30, 1.0),

@@ -74,8 +74,8 @@ def test_hv_322604_discharges_against_322c001_decided_divergence(v1):
 def test_the_residual_credit_scales_with_the_load_decided_divergence(v1):
     """B-75. The CO2 demand cut to 80 %: the reactor's load ratio settles at 0.79 and the recycle
     tear it deletes falls with it. V1 still credits the design residual, 2024.9 kg/h, and its loop
-    runs down; the port credits the residual at the same ratio (1522.0 (1522.1 before decision 178) (1521.7 before decision 170) kg/h after two minutes).
-    After two minutes V1's PT-329201 reads 141.4889 (141.4864 before decision 178) (141.4877 before decision 170) bar a, the port's 141.5019 (141.5020 before decision 246) (141.4994 before decision 178) (141.5007 before decision 170) (load ratio 0.7915,
+    runs down; the port credits the residual at the same ratio (1521.9 (1522.0 before decision 251) (1522.1 before decision 178) (1521.7 before decision 170) kg/h after two minutes).
+    After two minutes V1's PT-329201 reads 141.4894 (141.4889 before decision 251) (141.4864 before decision 178) (141.4877 before decision 170) bar a, the port's 141.5025 (141.5019 before decision 251) (141.5020 before decision 246) (141.4994 before decision 178) (141.5007 before decision 170) (load ratio 0.7915,
     with the session-69 valves on their vendor sheets and 322E006 on PFD 28's water, decisions
     150 and 151; 141.4894, 141.5024 and 1521.6 with HV-323605, PV-323203 and TV-328002 on their Metso trims, 2026-10-17 — V1's side through the
     steam network it shares with the port; 141.4895 and 141.5025 on session 53's code, 2026-10-15;
@@ -99,9 +99,9 @@ def test_the_residual_credit_scales_with_the_load_decided_divergence(v1):
     pt, ratio = res["PT-329201"], res["322R001"].reaction.co2_scale
     assert ratio == pytest.approx(0.7915, abs=1e-4)
     assert pt.resid_credit_kgh == pt.loop_mass_frac * ratio * SYN_LOOP_RESID_DES_KGH
-    assert pt.resid_credit_kgh == pytest.approx(1522.0, abs=0.1)
-    assert (p_v1, pt.p_syn_bara) == (pytest.approx(141.4889, abs=1e-4),
-                                     pytest.approx(141.5019, abs=1e-4))
+    assert pt.resid_credit_kgh == pytest.approx(1521.9, abs=0.1)
+    assert (p_v1, pt.p_syn_bara) == (pytest.approx(141.4894, abs=1e-4),
+                                     pytest.approx(141.5025, abs=1e-4))
 
 
 def test_the_recondensed_backlog_returns_to_the_sump_decided_divergence(v1):
@@ -260,7 +260,8 @@ def test_the_trips_as_ac4_executes_them_decided_divergence(v1, case):
     the steam network it shares with the port). With 21.2's three timers off-delays and FY-322403's L2
     at 8 500 Nm3/h (decisions 249 and 250): after 321P002B's fault AC4 holds 21.2 for its 5 min, so a
     minute on no flag is lost, the valves stand open and both sides stand at 139.3108 bar a; the CO2
-    cut trips 21.2 5 s after the feed falls below its L2, 139.5247 / 140.8033 bar a.)"""
+    cut trips 21.2 5 s after the feed falls below its L2, 139.5237 / 140.8033 bar a (139.5247 before the
+    separators' ejectors broke on the plant's bracket, decision 251).)"""
     def act(k, plant, s):
         if k == 5 and case == "fault":
             plant.units["321"].pump_b.fault = s.station.pump_b.fault = True
@@ -286,7 +287,7 @@ def test_the_trips_as_ac4_executes_them_decided_divergence(v1, case):
     assert ends[False][6:8] == (True, True)
     assert ends[True][6:] == (not lost,) * 4
     assert (ends[False][5], ends[True][5]) == {"fault": (139.3108, 139.3108),
-                                               "co2": (139.5247, 140.8033)}[case]
+                                               "co2": (139.5237, 140.8033)}[case]
 
 
 def _the_loop_at_130_7(k, plant, s):
@@ -337,7 +338,7 @@ def test_the_saturation_fraction_solved_on_the_tick_decided_divergence(v1):
     transcription). HV-322605 60 -> 100 % at 0.5 s. On the tear the fraction rings with a period
     of two ticks — 322E002 condenses 3.7 then 227.4 t/h (227.3 before decision 243; 227 355.8 kg/h with LI-328505
     between its taps, decision 244, 227 355.5 before; 227 356.3 with LI-328504 between its taps,
-    decision 246), its melt at 171 then 220 bar a — and the
+    decision 246; 227 337.8 with the separators' ejectors on the plant's bracket, decision 251), its melt at 171 then 220 bar a — and the
     gas it passes builds the loop to 152.52 bar a in 30 s; solved on the tick it condenses a
     steady 131.8 t/h at a fraction of 0.514, its melt at 176.5 bar a, and the loop stands at
     141.357 bar a. Before the step the two differ by the seed's own drift (the tear's fraction
@@ -352,15 +353,15 @@ def test_the_saturation_fraction_solved_on_the_tick_decided_divergence(v1):
     assert res["322E002"].holdup.condenser.liq_kgh == pytest.approx(out.hpcc["liq_kgh"], rel=1e-4)
     (a, ra, _), (b, rb, p_v1) = hist[299], hist[300]
     assert (a.hpcc["liq_kgh"], b.hpcc["liq_kgh"]) == (pytest.approx(3742.7, abs=0.1),
-                                                     pytest.approx(227356.3, abs=0.1))
+                                                     pytest.approx(227337.8, abs=0.1))
     assert (a.hpcc["P_bub"], b.hpcc["P_bub"]) == (pytest.approx(171.29, abs=0.01),
                                                  pytest.approx(220.29, abs=0.01))
     assert p_v1 == pytest.approx(152.5155, abs=1e-4)
     hp = rb["322E002"].holdup
     assert (hp.condenser.liq_kgh, hp.condenser.p_bub_bara, hp.sat_frac) == (
-        pytest.approx(131847.3, abs=0.1), pytest.approx(176.47, abs=0.01),
+        pytest.approx(131840.9, abs=0.1), pytest.approx(176.47, abs=0.01),
         pytest.approx(0.5143, abs=1e-4))
-    assert ra["322E002"].holdup.condenser.liq_kgh == pytest.approx(131860.6, abs=0.1)
+    assert ra["322E002"].holdup.condenser.liq_kgh == pytest.approx(131854.2, abs=0.1)
     assert rb["PT-329201"].p_syn_bara == pytest.approx(141.3572, abs=1e-4)
 
 
@@ -489,7 +490,8 @@ def test_322e001s_tubes_standing_full_hold_the_liquor_back_in_the_reactor_decide
     the same to 5 kg/h, and its single tick reads the 26 286.1 kg/h above. LI-328505 between its taps
     (decision 244) moves the means to 26.6 and 32.0 t/h (26 606.1 and 32 036.1 kg/h; 26 610.9 and
     32 045.6 before), the tubes to 8 403.0 kg and V1's side to 146.6709; LI-328504 between its taps
-    (decision 246) to 26 608.7 and 32 041.0 kg/h and 8 402.9 kg. The ring is 322E001's bottoms
+    (decision 246) to 26 608.7 and 32 041.0 kg/h and 8 402.9 kg; decision 251 to 32 042.5 kg/h and V1's
+    side to 146.6715. The ring is 322E001's bottoms
     on the edge of the bubble-point surface, refused on one tick and 907 bar on the next (A-60, closed
     as built by decision 245, As-Built §CXXXVII.5)."""
     def act(k, plant, s):
@@ -513,12 +515,12 @@ def test_322e001s_tubes_standing_full_hold_the_liquor_back_in_the_reactor_decide
         lambda r: r["322R001"].m_out_kgh))
     assert (out.sump.held_kg, held) == (0.0, pytest.approx(8402.9, abs=0.1))
     assert st.submerged_frac == pytest.approx(0.9671, abs=1e-4)
-    assert (take, m_out) == (pytest.approx(26608.7, abs=1.0), pytest.approx(32041.0, abs=1.0))
+    assert (take, m_out) == (pytest.approx(26608.7, abs=1.0), pytest.approx(32042.5, abs=1.0))
     assert (s.react_level_pct, rr.level_pct) == (pytest.approx(80.336, abs=1e-3),
                                                  pytest.approx(85.943, abs=1e-3))
     assert (out.sump.tt_322004_c, sp.tt_322004_c) == (pytest.approx(165.61, abs=0.01),
                                                       pytest.approx(141.57, abs=0.01))
-    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(146.6709, abs=1e-4),
+    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(146.6715, abs=1e-4),
                                                    pytest.approx(140.0067, abs=1e-4))
 
 
@@ -574,9 +576,9 @@ def test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence(
         return row[2]
 
     assert (_mean(hist, liq, 501, 1500), _mean(hist, liq_v1, 501, 1500)) == (
-        pytest.approx(71.39, abs=0.1), pytest.approx(197.98, abs=0.05))
+        pytest.approx(70.90, abs=0.1), pytest.approx(197.98, abs=0.05))
     assert (_mean(hist, p, 901, 1100), _mean(hist, p_v1, 901, 1100)) == (
-        pytest.approx(147.687, abs=0.005), pytest.approx(141.0222, abs=5e-4))
+        pytest.approx(147.681, abs=0.005), pytest.approx(141.0222, abs=5e-4))
     over = next(k for k, row in enumerate(hist) if p(row) >= 155.0)
     assert 1800 < over <= 2000
     assert _mean(hist, p, 1801, 2000) == pytest.approx(154.90, abs=0.03)

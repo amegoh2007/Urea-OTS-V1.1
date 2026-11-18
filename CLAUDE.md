@@ -7,6 +7,10 @@ any file. They override habit, convenience and any "quicker way" that conflicts 
 
 ## 0. What this workspace is
 
+**V1.2 (2026-11-18, session 132).** This folder, `D:\Work\Urea Simulator V1.2` on git branch `v1.2`, is a copy of V1.1
+at commit 5ddc107; V1.1 is kept unchanged as the version to return to. Every rule below binds here as written;
+where it names `Urea Simulator V1.1`, read this folder.
+
 `Urea Simulator V1.1` is a **ground-up rewrite** of the Urea Plant Operator Training Simulator
 (OTS) that lives in `E:\Simulator\Urea Simulation` (read from its copy `D:\Work\Urea Simulation V1`,
 decision 223; the V1 files the suite reads are copied into `Tests and Reports/tests/equivalence/v1_reference`, decision 210,

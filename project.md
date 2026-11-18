@@ -1,10 +1,11 @@
-# project.md — Urea Plant OTS, Version 1.1
+# project.md — Urea Plant OTS, Version 1.2
 
-**Working directory:** `D:\Work\Urea Simulator V1.1`
+**Working directory:** `D:\Work\Urea Simulator V1.2`, git branch `v1.2`, a copy of V1.1 at commit 5ddc107; V1.1
+is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-18, session 131
+**Last updated:** 2026-11-18, session 132
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -27,14 +28,15 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
 * **Open.** `handoff.md`: Section A none, Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
-  Section C none, 9 open data gaps. Every data gap
-  waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
+  Section C none, 9 open data gaps. Every data gap waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
+* **Session 132** (Part CXLIV; decision 251). V1.2 made. The separators' ejectors break on the plant's 5 November
+  bracket: HV-329605 and HV-329606 now move PIC-324202, PT-324201, PT-323204, PIC-324203 and PT-324204 below 64 % and
+  40 %; the design pin unchanged. The New folder's other stand-ins have no Helwan source and are not built (§CXLIV.4).
 * **Sessions 129 to 131** (Parts CXL to CXLIII; decisions 249, 250). The open gaps researched in the archive. Built: PC21's
   page-20 timers as ABB TOFF elements, 21.2 lost 5 min / 15 min / 5 s after its causes (decision 249), and FY-322403's trip
   at the schedule's 8 500 Nm3/h (decision 250). Session 131 checked another tool's closure dossier page by page: none of
   its 13 closures holds (§CXLIII.1); PC21's SR latches read reset-dominant with the trip on R, as built, and 321P002B's
-  limits on Peroni's sheets, so row 5 keeps TRIP_84_8's L2 alone. Reports: `Tests and Reports\reports\Session_129_gaps`
-  to `Session_131_dossier`.
+  limits on Peroni's sheets, so row 5 keeps TRIP_84_8's L2 alone.
 * **Sessions 121 to 128** (Parts CXXXI, CXXXIII to CXXXIX; decisions 219, 230, 232 to 235, 239 to 248). B-156 closed:
   six levels between their taps, LT-329501 data gap 15; data gaps 2, 8 and 11 closed; 322P002's field delivery to
   FI-322402's 40 m3/h; FY-321404 on the DCS's formula; A-57, B-127, A-59, B-135 and A-60 closed as built. The gap
@@ -48,7 +50,6 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Sessions 117 to 119** (Parts CXXVII to CXXIX; decisions 210 to 217). V1.1 runs and tests without V1 (decision 210);
   322P002's delivery set by hand (decision 212); the seven levels move to their nozzles unit by unit (decision 214,
   B-156); AC4's low-level stops on a 5 % L2 with 2 % hysteresis (decision 217); A-38, A-40, A-41 and A-50 closed.
-  Scratch: `Tests and Reports\reports\Session_118_research`, `Session_119_build`.
 * **B-118 in scratch, sessions 99 to 112** (As-Built Parts CX to CXIX and CXXII). Session 99 ran the gap
   resolution plan (decisions 182 to 188). On bundle A 92.3 % passes decision 180's test and the low holds latch;
   B-126 (b)'s species holdup removes the low holds' latch and loses 92.3 % on the cold branch (session 103).
@@ -70,9 +71,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 132 | `docs/history/session-log.md` |
-| Decision | 251 | `docs/decisions.md` |
-| As-Built Part | CXLIV | the As-Built reference, appended at its end |
+| Session | 133 | `docs/history/session-log.md` |
+| Decision | 252 | `docs/decisions.md` |
+| As-Built Part | CXLV | the As-Built reference, appended at its end |
 | Handoff Section A | A-61 | `handoff.md` |
 | Handoff Sections B and C | B-157 | `handoff.md` |
 

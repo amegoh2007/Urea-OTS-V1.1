@@ -60,12 +60,12 @@ def test_pv_324202_on_its_vendor_trim():
 
 def test_a_lost_header_dilutes_the_melt():
     """The LP header to 1.2 bar a: on PV-329203's vendor trim (decided 2026-10-14) the melt falls
-    to 101.46 C and 84.45 % urea, and the stage boils 4882 kg/h where it boiled 14 072 (99.9 C,
+    to 101.46 C and 84.45 % urea, and the stage boils 4883 kg/h (4882 before decision 251) where it boiled 14 072 (99.9 C,
     83.4 % and 3780 on V1's linear valve); the held melt, cooling, does not boil on its own."""
     _, _, r = _run(18000, p_lp=1.2)
     assert r.t_c == pytest.approx(101.458, abs=0.001)
     assert r.w_melt == pytest.approx(0.8445, abs=1e-4)
-    assert r.m_vap_kgh == pytest.approx(4882.1, abs=0.5)
+    assert r.m_vap_kgh == pytest.approx(4883.3, abs=0.5)
     assert r.m_boil_kgh == 0.0
 
 
@@ -87,8 +87,8 @@ def test_a_lost_feed_boils_the_held_melt_as_it_drains_b62():
         assert r.converged
     assert unit.m_kg == 1.0 and r.m_401_kgh == 0.0
     assert r.m_vap_kgh == 0.0 == r.m_boil_kgh
-    assert r.t_c == pytest.approx(151.824, abs=1e-3)
-    assert unit.w["Urea"] == pytest.approx(0.97065, abs=1e-5)
+    assert r.t_c == pytest.approx(151.852, abs=1e-3)
+    assert unit.w["Urea"] == pytest.approx(0.97058, abs=1e-5)
 
 
 def test_on_the_vendor_anchor_pv_324202_would_run_out_of_air_b61():

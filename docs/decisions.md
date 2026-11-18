@@ -1364,3 +1364,14 @@ decision on an item.
      8 500 Nm3/h (pre-alarm 10 000), in `References\trip_and_interlock_schedule.md` line 71. Built:
      `data/unit_322_loop.TRIP_21_2_FY_L2_NM3H`, compared on FT-322403's own Nm3 basis, 30.0 % of the design CO2,
      replacing V1's 5 % (data gap 5's stand-in). As-Built §CXLI.2, §CXLII.
+251. **The separators' ejectors break on the plant's 5 November bracket** (2026-11-18, session 132, in V1.2 only; the
+     process engineer's "Build it"). Reported: a step on HV-329605 barely moved PIC-324202, PT-324201 and PT-323204,
+     and one on HV-329606 barely moved PIC-324203 and PT-324204, where the plant lost both vacuums (HIC-329605 held at
+     64 % and lost at 55 %, HIC-329606 held at 40 % and lost at 38 %, PT-329207 4.22 bar g; As-Built §CV.5). Built in
+     `data/unit_324.EJECTOR_BREAKS` and `units/evaporation/ejector_map`: each of 324F002, 324F004 and 324F005 is made
+     critical against its design discharge at its design suction with its valve at the held stroke on the logged
+     header, and its break width is fitted so that at the lost stroke it pulls its design load less the design bleed;
+     V1's flux shape runs on [1, w] instead of [1, 1/r*]. Scales 0.43610, 0.31233, 0.71224; widths 1.09820, 1.05737,
+     1.04014. The design pin is unchanged, bit for bit. `vendor_map` keeps the vendor's scale and V1's width. The
+     break is softer than the plant's, which logged 0.6 bar a at 75 % load; Körting's curves (data gap 3) still
+     decide it. As-Built §CXLIV.

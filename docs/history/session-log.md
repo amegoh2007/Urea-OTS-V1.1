@@ -5249,3 +5249,13 @@ is 0-1 m3/h; B44 prints 3000 mm, not 3 600). Found on primary sources: PC21's SR
 inverted 21.2 flag on R (ABB DZ-0045-016 printed p. 407, AC4 p. 20), as built; Peroni's sheets give 3 barg and 152 RPM
 for both 321P002 pumps. Row 5 narrowed to TRIP_84_8's L2; row 4 logs FF-0002's PT-324202 against AC4's PT-324203.
 Nothing under `ureasim/` changed; no decision. Part CXLIII; renders `Tests and Reports\reports\Session_131_dossier`.
+
+### Session 132 — 2026-11-18: V1.2; the separators' ejectors break on the plant's bracket
+
+V1.2 copied from V1.1 at 5ddc107 (`D:\Work\Urea Simulator V1.2`, branch `v1.2`); V1.1 kept as it was. Asked to fix
+two bugs: HV-329605 barely moved PIC-324202, PT-324201 and PT-323204, and HV-329606 barely moved PIC-324203 and
+PT-324204. Built (decision 251): each separator ejector's P_c scale and break width put on the plant's 5 November
+bracket (64 / 55 %, 40 / 38 %, PT-329207 4.22 bar g); the seed unchanged leaf for leaf. Measured: stage 1 at 0.345
+bar a at 55 % and 0.430 at 45 %, stage 2 at 0.150 at 38 % and 0.265 at 35 %, softer than the plant's 0.6. The New
+folder's other stand-ins have no Helwan source; 100847-100852 are another plant's drawings; none built. An
+essentials zip went to Google Drive. Part CXLIV; runs `Tests and Reports\reports\Session_132_ejector_break`.

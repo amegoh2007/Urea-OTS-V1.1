@@ -38,6 +38,7 @@ Sources
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 
 from ureasim.core.packet import normalise_solution_mass_fraction as _w_norm
 from ureasim.data.control_valves import (
@@ -52,7 +53,9 @@ from ureasim.data.control_valves import (
     full_stroke_m3h,
 )
 from ureasim.data.design_point import R324_FEED_DES, R324_W_IN
+from ureasim.core.units_of_measure import ATM_BARA
 from ureasim.data.unit_323 import F010_T_SP_C, MEVAP_DES_KGH, W_S317
+from ureasim.data.unit_323c005 import C005_P_BARA
 from ureasim.data.unit_324_train import (
     CW_CP_KJKG_K,
     EJECTOR_DUTIES,
@@ -444,6 +447,47 @@ PIC_324203_TI_S = 200.0
 LIC_324501_KC = 0.85
 LIC_324501_TI_S = 200.0
 
+# ======================================================================================
+# The ejectors' break-off on the plant's motive strokes (decision 251)
+# ======================================================================================
+
+
+@dataclass(frozen=True)
+class EjectorBreak:
+    """Where the plant's ejector loses its vacuum on its motive valve's stroke.
+
+    ``hold_pct`` is the stroke at which the plant still holds its design vacuum and ``lost_pct``
+    the one at which it has lost it [%]. ``p_discharge_bara`` is what the ejector discharges into at
+    design. ``bleed_des_kgh`` is the design false air its stage's PIC admits [kg/h], which the
+    plant ran shut."""
+
+    tag: str
+    valve: str
+    hold_pct: float
+    lost_pct: float
+    p_discharge_bara: float
+    bleed_des_kgh: float
+
+
+#: The LP header the break-off was logged on [bar a]: PT-329207 4.20-4.24 bar g, taken at its mid
+#: 4.22 bar g, 5 November 2026 13:11-13:16 (As-Built §CV.5).
+MOTIVE_BREAK_HEADER_BARA = 4.22 + ATM_BARA
+
+#: The plant's break-off bracket (decision 251, 2026-11-18, the process engineer's instruction to
+#: make HV-329605 and HV-329606 act on the vacuums). Source: the DCS trend photos of 5 November
+#: 2026, 75 % load, digitized in As-Built §CV.5. Stage 1 sat at 0.56-0.64 bar a with HIC-329605 at
+#: 48-55 % and at 0.25-0.33 bar a at 64-73 %. Stage 2 sat at 0.40-0.48 bar a with HIC-329606 at
+#: 35-38 % and at 0.14-0.17 bar a at 40-41 %. HV-329606 drives 324F004 and 324F005 together, so
+#: both carry its bracket. The discharges are 323C005's 1.0 bar a, 324E006's 0.3 and 324E007's 1.0;
+#: the bleeds are PFD 784's and 783's 21 kg/h.
+EJECTOR_BREAKS = {
+    "324F002": EjectorBreak("324F002", "HIC-329605", 64.0, 55.0, C005_P_BARA, F001_FA_DES_KGH),
+    "324F004": EjectorBreak("324F004", "HIC-329606", 40.0, 38.0, E006_P_DES_BARA,
+                            F003_FA_DES_KGH),
+    "324F005": EjectorBreak("324F005", "HIC-329606", 40.0, 38.0, E007_P_DES_BARA,
+                            F003_FA_DES_KGH),
+}
+
 __all__ = [
     "F001_P_DES_BARA", "F003_P_DES_BARA", "E001_W_UREA_DES", "E001_T_DES_C", "E003_W_UREA_DES",
     "E003_T_DES_C", "MELT_A_UREA_WATER_K", "E006_P_DES_BARA", "E007_P_DES_BARA", "CW_CP_KJKG_K",
@@ -474,5 +518,5 @@ __all__ = [
     "PIC_335201_DES_BARG", "E003_LIQUOR", "F003_P_MIN_BARA", "F003_P_MAX_BARA",
     "TT_324002_SPAN_C", "PT_329212_SPAN_BAR", "PT_324203_SPAN_BAR", "TIC_324002_KC",
     "TIC_324002_TI_S", "PIC_329212_KC", "PIC_329212_TI_S", "PIC_324203_KC", "PIC_324203_TI_S",
-    "LIC_324501_KC", "LIC_324501_TI_S",
+    "LIC_324501_KC", "LIC_324501_TI_S", "EjectorBreak", "MOTIVE_BREAK_HEADER_BARA", "EJECTOR_BREAKS",
 ]

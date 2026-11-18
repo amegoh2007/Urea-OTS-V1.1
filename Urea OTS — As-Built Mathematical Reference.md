@@ -27479,3 +27479,144 @@ decides which.
 
 The documentation tests pass (`Tests and Reports/tests/docs`). Nothing under `ureasim/` changed, so the suite was not
 run.
+
+# Part CXLIV — Session 132: V1.2; the separators' ejectors break on the plant's bracket (2026-11-18)
+
+V1.2 is a copy of V1.1 at commit 5ddc107, in `D:\Work\Urea Simulator V1.2` on git branch `v1.2`; V1.1 is kept
+as it was, the version to return to. The process engineer asked for three things in V1.2: the changes the files
+in `References\Gaps Closure\New folder` recommend, a fix for two reported bugs on the motive-steam hand valves,
+and an essentials copy on Google Drive. Decided with the process engineer: sourced changes only, the bug fix
+built as decision 251, one zip of the files that run the simulator.
+
+## CXLIV.1 The reported bugs, measured on V1.1
+
+The report: a change in HV-329605's opening should visibly move PIC-324202, PT-324201 and PT-323204, and one in
+HV-329606's should move PIC-324203 and PT-324204. Measured on V1.1's engine in AUTO, 15 minutes after each step
+from the design seed: the steps reach the loops (the motive flow and the nozzle pressure follow the valve), but the
+vacuums barely move. On the vendor-anchored break each ejector's critical back pressure falls only slowly with
+its motive, and its capacity rises as its motive falls, so the bleed valves absorb the step. The plant lost both
+vacuums on 5 November 2026 between HIC-329605 64 and 55 % and HIC-329606 40 and 38 %, at PT-329207 4.22 bar g
+(§CV.5). The engine's vacuum held there.
+
+A first prototype anchored only the critical back pressure's scale on the bracket (critical at the break-off
+stroke). Neither stage broke: V1's break runs from P_c to P_c / r*, 1.85 times it, too gentle for a stroke change
+of a few percent. Fitting 324F004 on a quasi-steady 324E006 pressure instead of its design discharge would have put
+its design P_c at 0.2385 bar a, below its 0.3 bar a discharge, and moved the seed; rejected for the rule below,
+the same for all three ejectors.
+
+## CXLIV.2 The law (decision 251)
+
+Each ejector's bracket is `data.unit_324.EJECTOR_BREAKS`: the motive valve, the stroke held, the stroke lost, the
+design discharge (324F002 into 323C005 at `C005_P_BARA`, 324F004 into 324E006, 324F005 into 324E007) and the
+design bleed (324F001's or 324F003's false air). The strokes are read on the logged header,
+`MOTIVE_BREAK_HEADER_BARA` = 4.22 bar g + 1.01325 = 5.23325 bar a, the other valve at its design stroke
+(HV-329605 69.06 %, HV-329606 80.16 %), through the train's own valve and nozzle law (`break_nozzle_bara`).
+
+    scale  : P_c(P_s,des, P_m,hold) = P_d,des                       (the vendor scale replaced)
+    x_lost = P_d,des / P_c(P_s,des, P_m,lost) > 1
+    width w: C(P_s,des, P_m,lost) . F(x_lost; w) = m_s,des - m_bleed,des,   1 < x_lost < w < 1/r*
+    F(x; w): 1 for x <= 1;  r = r* (1 + (x - 1)(1/r* - 1)/(w - 1));  flux(r) / flux(r*);  0 from x = w
+
+w is found by bisection on [x_lost, 1/r*] until the bracket stops shrinking; F rises with w. A bracket with
+x_lost <= 1 or a need outside (0, 1) raises, so a changed datum cannot pass unnoticed. `unchoked_fraction` with no
+width is V1's law, value for value; at w = 1/r* the two laws are one.
+
+| Ejector | Valve | Held / lost | P_m held / lost (bar a) | Scale, vendor to decided | Width | P_c at design / P_d (bar a) |
+|---|---|---|---|---|---|---|
+| 324F002 | HIC-329605 | 64 / 55 % | 4.028 / 3.499 | 0.56430 to 0.43610 | 1.09820 | 1.0088 / 1.0 |
+| 324F004 | HIC-329606 | 40 / 38 % | 1.784 / 1.681 | 0.26507 to 0.31233 | 1.05737 | 0.4343 / 0.3 |
+| 324F005 | HIC-329606 | 40 / 38 % | 1.784 / 1.681 | 0.50146 to 0.71224 | 1.04014 | 1.5693 / 1.0 |
+
+At the design motive, 4.1 bar a, P_c lies above each design discharge, F = 1 and C is unchanged, so the design pin
+holds: the seed's packet is identical leaf for leaf to V1.1's (0 of its leaves differ). On the table, the held
+stroke gives P_c within 1e-4 of P_d, and the lost stroke gives the design load less the bleed within 2 %
+(324F002 51.00 against 51.0 kg/h, 324F004 562.4 against 563.0, 324F005 19.78 against 20.0).
+
+Consequences pinned in `test_ejector_map.py`: 324F004 at 0.131 bar a and 4.1 bar a is critical to 0.434 bar a and
+pulls nothing from 0.4593 bar a (V1's map ran on to 0.69); against 0.3 bar a it stops discharging below about
+1.7 bar a of motive (V1's pulled 625 kg/h at 1.5); at 0.05 bar a suction it no longer discharges into 0.3 bar a
+(V1's pulled 138 kg/h); 324F002 at 0.2 bar a no longer discharges into 1.0 bar a (V1's pulled 31.6).
+
+For 324F002 the held stroke puts its nozzle at 3.01 bar g, about Körting's 3.1 bar g minimum motive. For 324F004 and
+324F005 the nozzle law (P_m = 4.1 bar a x m / m_des, handoff B-64) puts the held 40 % at 0.77 bar g, far below
+Körting's 3.1 bar g: on the model, the second stage's bracket is the valve's, not the nozzle's.
+
+## CXLIV.3 Measured on V1.2's engine
+
+AUTO, 15 minutes after each step from the design seed; PT-323204 is 323F010's pressure. V1.1's engine on the
+same steps: HIC-329605 55 % left PT-324201 at 0.327 bar a and PIC-324202 at 65.3 % (it fell); HIC-329606 37 % left
+PT-324204 at 0.129 bar a and PIC-324203 at 93.1 %.
+
+| Step | PIC-324202 OP | PT-324201 (bar a) | PT-323204 (bar a) | PIC-324203 OP | PT-324204 (bar a) |
+|---|---|---|---|---|---|
+| seed | 61.1 % | 0.330 | 0.460 | 92.0 % | 0.131 |
+| HIC-329605 100 % | 56.5 % | 0.333 | 0.460 | 91.0 % | 0.133 |
+| HIC-329605 64 % | 61.2 % | 0.330 | 0.460 | 92.0 % | 0.131 |
+| HIC-329605 60 % | 57.3 % | 0.333 | 0.461 | 91.2 % | 0.133 |
+| HIC-329605 55 % | 43.2 % | 0.345 | 0.463 | 88.3 % | 0.140 |
+| HIC-329605 45 % | 0.0 % | 0.430 | 0.497 | 61.4 % | 0.221 |
+| HIC-329606 41 % | 61.0 % | 0.330 | 0.460 | 93.1 % | 0.129 |
+| HIC-329606 40 % | 61.0 % | 0.330 | 0.460 | 93.0 % | 0.129 |
+| HIC-329606 39 % | 61.0 % | 0.330 | 0.460 | 89.5 % | 0.136 |
+| HIC-329606 38 % | 61.0 % | 0.330 | 0.460 | 81.5 % | 0.150 |
+| HIC-329606 37 % | 61.0 % | 0.330 | 0.460 | 68.5 % | 0.174 |
+| HIC-329606 35 % | 61.0 % | 0.330 | 0.460 | 20.6 % | 0.265 |
+
+The 100, 64 and 60 % rows of HIC-329605 ran on the prototype with 324F005 on V1's break, which does not act on
+those steps; the others on all three ejectors, the 45 and 55 % and the 35 and 38 % rows on the built code. A
+stage-1 loss reaches stage 2 on the engine: at 45 % 324E006's pressure rises to 0.618 bar a and PT-324204 to 0.221.
+
+Both bugs are fixed: a stroke below the bracket now moves the loops and their pressures, and a stroke above it is
+absorbed by the bleed valves, as on the plant. With both bleeds held shut (MAN at 0 %), stage 1 runs at 0.298 bar a
+at 64 %, 0.311 at 60, 0.336 at 55 and 0.372 at 50 %; stage 2 still holds at 37 %. The plant logged 0.6 bar a at
+55 %, at 75 % load. The model's break is softer than the plant's, and Körting's curves (data gap 3) still decide
+its shape.
+
+The prototype, a monkey-patched copy of the map, and the built code agree on every packet leaf after 15 minutes
+on each arm. Scripts and runs: `Tests and Reports\reports\Session_132_ejector_break` (`proto_width.py`, `probe_hv.py`).
+
+## CXLIV.4 The New folder's other recommendations
+
+Every file in `References\Gaps Closure\New folder` was read. Gap Closure1 and 2 and the blueprint HTML (its three
+copies identical) were reviewed in session 128 (§CXXXIX.1), and the closure dossier in session 131 (§CXLIII.1):
+those findings stand and are not repeated. New here:
+
+* `100847` to `100852` (PFD, steam and cooling-water UFDs, three mass balances) are the drawings of another plant,
+  ZMSL's 3 250 MTPD unit, not Helwan's 1 750 MTPD; nothing in them is taken.
+* Gap Closure3 and the deep-research HTML propose stand-ins for B-118, B-125, B-126, B-136 and data gaps 1, 3, 4, 5,
+  9, 10, 12, 14 and 15. Each is a fit or a literature correlation with no Helwan source: B-125's option (b) top-ridge
+  law (+0.42 C/bar, its curvatures and its -11.5 C water penalty), the part-load heat-transfer schedule for B-118,
+  a species vector and initial state for 322R001 (B-126), a condensate-valve lead law (B-136), SIMC tunings for
+  FIC-335405 (gap 9) and positioner constants for LV-324501A (gaps 12, 14). None is built (sourced changes only).
+* Gap 3 in both reports: 324F002's 94 / 650 / 744 kg/h agree with the sheet (§CXLIII.1); Gap Closure3's suction,
+  discharge and 1 135 mbar a break pressures and its 480 kg/h for 324F004 are estimates, not taken. The deep-research
+  report's critical motive of 2.95-3.28 bar g, a Huang ratio of 0.72-0.80 on the design, agrees with 324F002's held
+  stroke above. Its lead, 324E002's cooling water (Uhde 2 218 t/h against the PFD's 1 591 t/h), is already
+  §CXLI.7's and stays with checklist row 13.
+
+## CXLIV.5 Checks
+
+The full suite ran in nine parallel groups on the built law: 33 tests failed, every one a pin decision 251 moved,
+and none the design pin. Nine were the old `test_ejector_map.py`, rewritten to assert both laws (17 pass). The
+other 24 were restated from one recorder pass (every moved `pytest.approx` logged with its value), the three exact
+pins by hand, and the tests whose behaviour changed say so in their docstrings: 324F002 at half motive and against
+1.9 bar a now breaks (0.530 bar a, the bleed shut, where the map stayed critical at 0.319 and held 0.339),
+324F004 against 0.5 bar a passes its break harder (0.1517 against 0.1313), and on 324E006's lost water 324F004
+keeps none of its capacity (1.4 % before; stage 2 at 0.2875 bar a in two minutes against 0.2587). The trip
+through the train sends 94.8 kg/h from stage 1 against 105.7. The synthesis loop's transients move through the
+recycle by at most 18.5 kg/h on 227 338 (the residual credit 1521.9 against 1522.0, PT-329201 by 6e-4 bar). All
+re-pinned files pass, `units/evaporation` whole (135 and 22 tests), with the layering test and the documentation
+tests. Old and new values: `Tests and Reports\reports\Session_132_ejector_break\rec`.
+
+`Tests and Reports/tests/engine/plant/test_evaporation.py` pins the fix on the whole plant, 300 s after each
+step from the seed: HIC-329605 64 % and HIC-329606 40 % hold the separator pressure within 0.003 bar and the
+PIC's output within 1.5 %; 55 % and 38 % raise it by more than 0.015 bar and close the PIC by more than 4 %, and
+HIC-329605 55 % raises PT-323204 by more than 0.003 bar. PT-323204 is shown to two decimals on 323-1 and
+324-1, so the 55 % step (0.460 to 0.465 bar a) reads 0.46 to 0.47 there and the 45 % step 0.46 to 0.50.
+
+Off the design pin: each of the six shipped exercises (90 to 105 % load) was restored on V1.1 and on V1.2 and run
+15 minutes untouched (`scen_check.py`). Five are identical to the printed digit on PIC-324202's and PIC-324203's
+outputs, PT-324201, PT-323204 and PT-324204. In `load105_conversion` stage 1 stands 0.003 to 0.005 bar over its
+0.33 bar a set point on V1.2 (0.335 at 5 min, 0.333 at 15) where V1.1 holds it, PIC-324202 closing the bleed from
+64.3 to 59.9 % against it; the vacuum does not break, and stage 2 is as on V1.1 (PIC-324203 near 9 % on both).
+At 105 % load 324F002 works close to its decided break; the bleed still has 60 % of travel.

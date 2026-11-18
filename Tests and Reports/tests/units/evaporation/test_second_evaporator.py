@@ -262,9 +262,9 @@ def test_a_feed_pump_trip_sends_stage_2_the_melt_its_leg_drains_b63():
     assert next(k for k in range(400, 12005) if run[k][1].m_402_kgh == 0.0) == 6376
     r1, r2 = run[12004]
     assert r1.m_401_kgh == 0.0 and r2.m_402_kgh == 0.0 and r2.m_vap_kgh == 0.0 == r2.m_boil_kgh
-    assert (r2.m_kg, r2.w["Urea"], r2.t_c) == (pytest.approx(1496.39, abs=0.01),
+    assert (r2.m_kg, r2.w["Urea"], r2.t_c) == (pytest.approx(1496.40, abs=0.01),
                                                pytest.approx(0.98396, abs=1e-5),
-                                               pytest.approx(161.4070, abs=1e-4))
+                                               pytest.approx(161.4014, abs=1e-4))
 
 
 def test_a_feed_pump_trip_on_ac4s_header_drains_stage_2_to_its_heel_b63():
@@ -286,7 +286,7 @@ def test_a_feed_pump_trip_on_ac4s_header_drains_stage_2_to_its_heel_b63():
     r1, r2 = run[12004]
     assert r1.m_401_kgh == 0.0 and r2.m_402_kgh == 0.0 and r2.m_kg == 1.0 and r2.header.capped
     assert (r2.w["Urea"], r2.t_c) == (pytest.approx(0.98413, abs=1e-5),
-                                      pytest.approx(162.1849, abs=1e-4))
+                                      pytest.approx(162.1801, abs=1e-4))
     assert r2.seal_air_kgh == pytest.approx(1882.0, abs=1.0)
 
 
@@ -324,8 +324,8 @@ def test_a_feed_pump_trip_on_ac4s_header_stops_335p001_on_ly_324501s_l2_b63():
     assert run[first][1].level_pct < 5.0 <= run[first - 1][1].level_pct
     assert all(r.converged and r.t_c >= 140.0 and r.seal_air_kgh == 0.0 for _, r in run)
     r2 = run[-1][1]
-    assert (r2.m_kg, r2.t_c, r2.w["Urea"]) == (pytest.approx(346.693, abs=1e-3),
-                                               pytest.approx(162.1849, abs=1e-4),
+    assert (r2.m_kg, r2.t_c, r2.w["Urea"]) == (pytest.approx(346.698, abs=1e-3),
+                                               pytest.approx(162.1801, abs=1e-4),
                                                pytest.approx(0.98413, abs=1e-5))
 
 

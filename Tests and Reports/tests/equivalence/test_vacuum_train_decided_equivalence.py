@@ -84,7 +84,7 @@ def test_the_cold_ends_lagged_on_their_water_decided_divergence(v1):
     """Handoff B-65, decided 2026-10-02, option a. 323P003 stops; two minutes.
 
     V1: stage 2's held melt boils in pulses on V1's one-tick tear — 3698 kg/h, nothing for four
-    ticks, 5685, nothing for three — 339 times (342 before the boil was bounded at the melt model's
+    ticks, 5685, nothing for three — 338 times (339 before decision 251; 342 before the boil was bounded at the melt model's
     99 C window, As-Built §LXII.4); on the bursts 324E006 and 324E007 overload and 722
     sends up to 8.5 t/h to atmosphere. The port: the cold ends lag on their tubes' water (324E002
     11.54 s, 324E005 7.67 s, 324E006 3.12 s), and nothing pulses — not the boil-off, stage 2's
@@ -96,7 +96,7 @@ def test_the_cold_ends_lagged_on_their_water_decided_divergence(v1):
     theirs = _v1_tear_trip(v1, 1200, 5)
     b2 = [r2.m_boil_kgh for _, r2, _ in theirs]
     assert [round(x, 1) for x in b2[26:31]] == [0.0, 5685.0, 0.0, 0.0, 0.0]
-    assert _pulses(b2, 50.0) == 339
+    assert _pulses(b2, 50.0) == 338
     assert max(s["722"] for _, _, s in theirs[:700]) == pytest.approx(8469.71, abs=0.01)
 
     mine = _plant(1200, cut_at=5)
@@ -121,7 +121,8 @@ def test_324e006s_shell_live_decided_divergence(v1):
     reads, is to the bit what it was: stage 2 never learns. The port's `vacuum_train` is V1's
     here too. The port's `VacuumTrain`: the shell, 0.542 m3 on 324E006's name plate, reaches
     324E007's 1.0 bar a in 2.5 s (0.876 bar a at 2.1 s); against it 324F004 entrains nothing at stage 2's design
-    vacuum (its critical back pressure 0.369 bar a; it passes nothing past 1.85 times that)."""
+    vacuum (its critical back pressure 0.434 bar a, and it passes nothing past 1.057 times that, on
+    the decided break of decision 251; 0.369 bar a and 1.85 times before it)."""
     x = h._inputs(cw={"324E006": 0.0})
     mine, theirs = h._compare(v1, x)
     base = v1["vacuum_train_324"](MEVAP_DES_KGH, d.V1_DES_KGH, d.V2_DES_KGH, 21.0, 21.0,
@@ -144,6 +145,6 @@ def test_324e006s_shell_live_decided_divergence(v1):
     assert shell[20] == pytest.approx(0.8760, abs=1e-4)
     assert shell.index(1.0) == 24
     _, p_crit = em.interpolated("324F004", d.F003_P_DES_BARA, 4.1)
-    assert p_crit == pytest.approx(0.369, abs=1e-3)
+    assert p_crit == pytest.approx(0.434, abs=1e-3)
     assert em.unchoked_fraction(train.p_324e006_bara, p_crit) == 0.0
     assert em.unchoked_fraction(0.3, p_crit) == 1.0
