@@ -352,13 +352,23 @@ E003_LAMBDA_STEAM_KJKG = H_G_MP_KJKG - H_F_MP_KJKG
 
 #: The melt's residence [s], LIC-324501's set point [%] (V1's, "tagged screenshot") and the
 #: holdups [kg] (V1 ``R324_F003_M_*``). LT-324501 reads the barometric leg to 335P001, not the
-#: vessel (UD-AU-324-EC-0008; loop summary L 324501, range 0-100 %, no tap distance): the level is
-#: V1's holdup ratio (handoff Open data gaps).
+#: vessel (UD-AU-324-EC-0008; its tap at EL +8.495 on UD-RL-100-MB-0180, As-Built §CXLV.1): the
+#: level is V1's holdup ratio, which LY-324501 reads through AC4's formula (decision 252).
 F003_M_TAU_S = 180.0
 F003_LEVEL_SP_PCT = 54.7
 F003_M_DES_KG = P2_DES_KGH / 3600.0 * F003_M_TAU_S
 F003_M_FULL_KG = F003_M_DES_KG / (F003_LEVEL_SP_PCT / 100.0)
 F003_M_FLOOR_KG = 1.0
+
+#: LY-324501's span [mbar]: AC4 PC35.2.1 computes LY-324501 = (LT-324501 - 1000 PT-324203) / 885 x 100
+#: (UD-MR-G00-FF-0004 p. 248, read on the image; As-Built §CXLI.6), 7.397 m of the 1 220 kg/m3 melt.
+#: LT-324501's lower range value [mbar g]: Rosemount's factory calibration of serial 8064075,
+#: -700 to 900 mbar (UD-MR-G00-DZ-0012-002 p. 76, -006 p. 3, read on the image; Uhde's EC-0136 p. 3
+#: agrees; As-Built §CXL.1). Below it the transmitter reads no lower, so LY-324501 has a floor that
+#: rises with the vacuum (decision 252, As-Built §CXLV.2). The 900 mbar upper value never binds
+#: (it lies above 100 % at any pressure below the atmosphere), so it is not carried.
+LY_324501_SPAN_MBAR = 885.0
+LT_324501_LRV_MBAR = -700.0
 
 #: The false air PIC-324203 admits at design [kg/h], PFD 783 (V1 ``R324_F003_FA_DES``), through
 #: PV-324203 on its vendor trim (decision 23's class): the stroke at which Flowserve's Pos. 56 passes
@@ -510,7 +520,7 @@ __all__ = [
     "F003_VOL_M3", "F003_RHO_L", "F003_MW_VAP", "E003_LAMBDA_KJKG", "E003_PCHEST_DES_BARA",
     "E003_OP_DES_PCT", "PV_329212_OP_DES_PCT", "PV_329212_XT", "CP_FEED2_DES", "CP_HOLD2_DES", "E003_Q_DES_KW", "E003_UA_KW",
     "E003_LAMBDA_STEAM_KJKG", "F003_M_TAU_S", "F003_LEVEL_SP_PCT", "F003_M_DES_KG",
-    "F003_M_FULL_KG", "F003_M_FLOOR_KG", "F003_FA_DES_KGH", "PV_324203_OP_DES_PCT",
+    "F003_M_FULL_KG", "F003_M_FLOOR_KG", "LY_324501_SPAN_MBAR", "LT_324501_LRV_MBAR", "F003_FA_DES_KGH", "PV_324203_OP_DES_PCT",
     "E005_INLET_DES_KGH", "LIC_324501_OP_DES_PCT", "LV_324501_SPAN_KGH", "PIC_335201_RELIEF_BARG",
     "LV_324501_P_UP_BARA", "LV_324501_P_DOWN_BARA", "LV_324501_DP_DES_BAR", "LV_324501_RHO_KGM3",
     "LV_324501A_OP_DES_PCT", "LV_324501B_FULL_KGH", "LV_324501_CHAR",

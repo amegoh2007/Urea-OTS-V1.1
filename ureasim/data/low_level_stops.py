@@ -21,6 +21,9 @@ Process utility
 ---------------
 Each stop protects a pump from running its suction vessel dry: below the limit the pair delivers
 nothing, and it delivers again once the level has recovered past the limit by the hysteresis.
+LY-324501 carries LT-324501's LRV floor (decision 252): at 324F003's vacuum it reads no lower than
+about 20.7 %, so 335P001's stop acts only once the vacuum has broken above 0.269 bar a, and it
+releases the pumps again when the vacuum recovers.
 """
 
 from __future__ import annotations

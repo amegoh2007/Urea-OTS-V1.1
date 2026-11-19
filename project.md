@@ -29,7 +29,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
 * **Open.** `handoff.md`: Section A one (A-61), Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
   Section C none, 9 open data gaps. Every data gap waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
-* **Session 133** (Part CXLV; no decision). Researched in scratch, nothing built: LY-324501 on 324F003's and the leg's drawings (the plant's level stands in the leg, 232 kg at 50 %; the LRV floor sits above L2), the cooling-water lead ruled out, PT-323204's two decimals, the UF85 pumps' capacity, the Drive copy downloaded and its hash checked. The session 114 scratch plan runs in session 134.
+* **Session 133** (Part CXLV; decision 252, built on branch `v1.2-d252` and merged into `v1.2` after session 134's runs). LY-324501 built on AC4's formula over V1's level with Rosemount's LRV floor, the seed unchanged to the bit; at the design vacuum 335P001's L2 stop cannot act, kept as built (2026-11-19). Researched: 324F003's and the leg's drawings (232 kg at the plant's 50 %), the cooling-water lead ruled out, PT-323204's two decimals, the UF85 pumps' capacity, the Drive copy's hash. The session 114 scratch plan ran in session 134.
 * **Session 132** (Part CXLIV; decision 251). V1.2 made. The separators' ejectors break on the plant's 5 November
   bracket: HV-329605 and HV-329606 now move PIC-324202, PT-324201, PT-323204, PIC-324203 and PT-324204 below 64 % and
   40 %; the design pin unchanged. The New folder's other stand-ins have no Helwan source and are not built (§CXLIV.4).
@@ -72,9 +72,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 135 (134 the B-118 side session) | `docs/history/session-log.md` |
-| Decision | 253 (252 session 133's, on the unmerged `v1.2-d252`; session 134 took none) | `docs/decisions.md` |
-| As-Built Part | CXLVII (CXLVI session 134's) | the As-Built reference, appended at its end |
+| Session | 135 (133 this session; 134 the B-118 side session's) | `docs/history/session-log.md` |
+| Decision | 253 (252 session 133's; session 134 took none) | `docs/decisions.md` |
+| As-Built Part | CXLVII (CXLV session 133's, CXLVI session 134's) | the As-Built reference, appended at its end |
 | Handoff Section A | A-62 (A-61 session 134's) | `handoff.md` |
 | Handoff Sections B and C | B-157 (session 134 took none) | `handoff.md` |
 

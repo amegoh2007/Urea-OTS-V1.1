@@ -7,7 +7,8 @@ LT-324501 reads the leg's level, not the vessel's (UD-AU-324-EC-0008). The leg's
 between the separator's 0.13 bar a and the atmosphere. Run it down until LT-324501 uncovers the
 seal and atmospheric air enters the vacuum through the drain's path: the condenser 324E005 behind
 the separator blankets, 324F004 cannot hold the load, and stage 2's vacuum breaks (handoff B-107,
-decided 2026-10-22; `Scenarios.md` §5.4). V1's empty leg admits nothing.
+decided 2026-10-22; `Scenarios.md` §5.4). V1's empty leg admits nothing. The seal reads the
+holdup's own level, not LY-324501, whose LRV floor (decision 252) stands above the seal's band.
 
 The air's rate is the drain trim's own: LV-324501A's liquid sizing on the blow-through law of
 `consequence.seal` (As-Built §XIX.1-2), nothing tuned.

@@ -63,11 +63,15 @@ ADDED_UNITS = ("335-TRIPS",)
 #: and decision 219 (LI-323502 between its taps, 2026-11-16) and decisions 233 and 241 (LI-323503 and
 #: LI-323501 between their taps, 2026-11-16, decision 243, LI-328503, 2026-11-17, decision
 #: 244, LI-328505, 2026-11-17, and decision 246, LI-328504, 2026-11-17; the engine then restates
-#: each controller on the tap reading).
+#: each controller on the tap reading), and decision 252 (LY-324501 on AC4's formula, 2026-11-18;
+#: above its floor it is the level a save holds, so nothing is restated; a save of a drained
+#: separator reads the floor on load, and a 335P001 stop it holds is released if the floor stands
+#: above L2 and its hysteresis).
 ADDED_ATTRIBUTES = MappingProxyType({
     "ureasim.units.evaporation.second_evaporator:SecondEvaporatorLoops": ("header",),
     "ureasim.units.evaporation.second_evaporator:SecondEvaporator": ("ac4_header", "header",
-                                                                     "l2_stop", "p001_stopped"),
+                                                                     "l2_stop", "p001_stopped",
+                                                                     "ac4_ly"),
     "ureasim.units.finishing.melt_header:MeltHeader": ("lv_a_position_pct",),
     "ureasim.units.desorption.reflux_drum:RefluxDrum": ("l2_stop", "p002_stopped"),
     "ureasim.units.desorption.first_desorber:FirstDesorber": ("l2_stop", "p006_stopped", "taps"),

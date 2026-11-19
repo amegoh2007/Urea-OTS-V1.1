@@ -5269,7 +5269,9 @@ that profile keeps no bit-identical seed (1.1e-4 on the level by 600 s) and answ
 AC4 formula on V1's level keeps the seed to the bit, its LRV floor (20.6 %) above the 5 % L2. Uhde's cooling water
 lowers the vent and so does not explain stage 1's 0.6 bar a; PT-323204's three decimals are two decided edits; the
 Bran + Luebbe pumps move FIC-335405 to 57 %, nothing else at design. The Drive parts were downloaded and joined to the
-README's hash. Nothing built, no decision. Part CXLV; runs `Tests and Reports\reports\Session_133_ly324501`.
+README's hash. Built on branch `v1.2-d252`: LY-324501 on AC4's formula over V1's level, the seed byte-identical at
+600 s; a lost feed now drains 324F003 to its heel before the L2 stop can act, kept as built. Part CXLV; decision 252; runs
+`Tests and Reports\reports\Session_133_ly324501`.
 
 ### Session 134 — 2026-11-19: B-118, B-125, B-126 and B-136 on session 114's plan, in scratch
 
