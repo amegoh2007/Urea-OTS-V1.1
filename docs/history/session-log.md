@@ -5306,6 +5306,7 @@ The rulings on session 135's packet recorded as decisions 253 to 267, `handoff.m
 on the thermowells against Book2's 13.88 +/- 1.0 K, the seed itself 13.00 K. Book2's reductions never pass under
 180.6 C. 322R001 refitted with law B meets Book2's flat rise at every anchor; the profile picks f 0.58, V1's own, the
 licensor's 95 % misses by 2.9 K rms. The literature's ejector break gives 1.12 of the plant's 1.82: no build. The
-44 mm bore confirmed as OD less two printed walls, unlabelled as the throat; gap 15's wet reading withdrawn on Book2. The T693b trace and wave M's seventeen
+44 mm bore confirmed as OD less two printed walls, unlabelled as the throat; gap 15's wet reading withdrawn on Book2. The T693b trace puts the 69.3 % feed step on
+323D002 regaining suction (lost at 4 980 s with or without the rule): gap 16 closed, A-62 raised. Wave M's seventeen
 arms left running, unscored. Decisions 268 to 273 proposed; nothing under `ureasim/` changed. Part CXLVIII;
 `Tests and Reports\reports\Session_136_rulings`.

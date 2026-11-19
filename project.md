@@ -27,19 +27,19 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A one (A-61), Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
-  Section C none, 5 open data gaps (1, 3, 10, 15, 16). Each waits on a vendor document (Körting), on one plant DCS
-  readback session (`Tests and Reports\reports\DCS readback checklist.md`) or, row 16, on the T693b trace.
+* **Open.** `handoff.md`: Section A two (A-61, A-62), Section B four (B-118 with B-120 folded in, B-125, B-126 and
+  B-136), Section C none, 4 open data gaps (1, 3, 10, 15). Each waits on a vendor document (Körting) or on one plant
+  DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
 * **Session 136** (Part CXLVIII; decisions 253 to 267 taken on the process engineer's rulings, 268 to 273 proposed;
   nothing built). On Book2's thermowell rise (decision 262) no B-118 arm stands D1: R923 12.10 K against 13.88 +/- 1.0 K,
   the seed's own rise 13.00 K. 322R001 refitted with law B meets Book2's rise at every anchor and the 100 % profile picks
   V1's own approach (f 0.58), so the reactor's law is not needed to explain the turndown. The literature's ejector break
-  falls short of the plant (no build); gap 15's wet reading is withdrawn and the 44 mm throat bore stands as calculated, unlabelled. **Running, unscored:**
-  the T693b trace (gap 16, decision 253's condition) and wave M's seventeen arms, in
+  falls short of the plant (no build); gap 15's wet reading is withdrawn and the 44 mm throat bore stands as calculated,
+  unlabelled. The T693b trace puts the 69.3 % feed step on 323D002 regaining suction, not on the header rule: decision
+  253's condition met, gap 16 closed, A-62 raised. **Running, unscored:** wave M's seventeen arms, in
   `Tests and Reports\scratch\session-136\run\runs`; session 137 scores them.
-* **Session 135** (Part CXLVII). The manual's header-valve rule on the B-118 rig keeps 335P001 running through the 69.3 %
-  and 92.3 % holds, the seed to the bit (decision 253); data gaps measured and [E] estimates made; letters and the
-  readback checklist final.
+* **Session 135** (Part CXLVII). The manual's header-valve rule on the B-118 rig (decision 253); data gaps measured, [E]
+  estimates made; letters and the readback checklist final.
 * **Session 133** (Part CXLV; decision 252, built on branch `v1.2-d252` and merged into `v1.2` after session 134's runs). LY-324501 built on AC4's formula over V1's level with Rosemount's LRV floor, the seed unchanged to the bit; at the design vacuum 335P001's L2 stop cannot act, kept as built (2026-11-19). Researched: 324F003's and the leg's drawings (232 kg at the plant's 50 %), the cooling-water lead ruled out, PT-323204's two decimals, the UF85 pumps' capacity, the Drive copy's hash. The session 114 scratch plan ran in session 134.
 * **Session 132** (Part CXLIV; decision 251). V1.2 made; the separators' ejectors break on the 5 November bracket.
 * **Sessions 129 to 131** (Parts CXL to CXLIII; decisions 249, 250). Built: PC21's page-20 timers as ABB TOFF elements
@@ -75,7 +75,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 | Session | 137 (136 claimed 2026-11-19, the rulings and the Q2 matrix) | `docs/history/session-log.md` |
 | Decision | 274 (253 to 267 taken by session 136 on the rulings of 2026-11-19; 268 to 273 claimed by session 136, proposed in Part CXLVIII, not taken) | `docs/decisions.md` |
 | As-Built Part | CXLIX (CXLVIII claimed by session 136) | the As-Built reference, appended at its end |
-| Handoff Section A | A-62 (A-61 session 134's) | `handoff.md` |
+| Handoff Section A | A-63 (A-62 session 136's) | `handoff.md` |
 | Handoff Sections B and C | B-157 (session 134 took none) | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers

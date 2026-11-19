@@ -28723,15 +28723,30 @@ the ruling's.
 * The two 92.3 % arms that stood on score134 fall 1.78 K under Book2's band: the old 13.05 K band (decision 180's
   pin) and its 1.0 K tolerance had them at 12.09-12.21 K, 0.04 K inside. No arm of session 135 stands D1.
 
-## CXLVIII.3 Step 2: R693b's feed step traced — running, unscored
+## CXLVIII.3 Step 2: R693b's feed step traced
 
 Registered from R693b's own files before the re-run (`run/registry136.md`): LV-324501B never opens (recycle 0, X at
 most 38.7 %); the rule makes no move between 6 000 and 17 340 s; 324F001's outflow to 324E003 falls from 16 600 s
-with 324F001's level (23.14 to 19.2 %); 323D002's LIC-323507 output falls smoothly (50.79 to 49.95 t/h). 324F001's
-draw is `barometric_leg_kgh`, a gravity drain, so its inflow less its vapour must have stepped. T693b (R693b's
-configuration with `probe136`: 323D002's and 324F001's balance terms every 10 s) was at 9 600 of 21 720 s when the
-session closed; `run/trace136.py` reads it (the first term to depart by 1 % from its mean leads the step). Data gap 16
-stays open until it is read (decision 253).
+with 324F001's level (23.14 to 19.2 %); 323D002's LIC-323507 output falls smoothly (50.79 to 49.95 t/h). T693b is
+R693b's configuration with `probe136` (323D002's and 324F001's balance terms every 10 s); `run/trace136.py` names the
+first term to depart by 1 % from its mean (`run/runs/trace136_T693b.txt`, read at 18 460 s).
+
+* The step coincides with 323D002 regaining suction at 16 610 s. The seed holds 323D002 at LIC-323507's 10 %
+  (9 208 kg); on the ramp it empties and its pump loses suction at 4 980 s (holdup 1 kg, PV 0.001 %), after which it
+  passes its inflow through, 55.3 t/h. Over 15 400-16 600 s LIC-323507's output, FIC-324401's set point, falls from
+  53.8 to 50.8 t/h and FIC-324401's output winds down from 94 to 55 %. At 16 610 s the valve throttles below the
+  inflow: suction returns, the delivery falls to the set point (55.3 to 52.1 t/h in 90 s, 49.8 t/h by 17 800 s), and
+  the 4-5 t/h difference refills 323D002 (1 585 kg by 17 800 s). 324F001's feed, vapour and outflow follow at
+  16 610-16 690 s; its pressure, temperature and motive do not move.
+* Check 1, the recycle: LV-324501B's recycle, which returns to 323D002 (`melt_route.melt_split`), is 0 kg/h at
+  every one of T693b's 1 846 samples, and 323D002's recycle inflow is 0 throughout; the last shed before the step is
+  at 6 000 s, 10 610 s earlier.
+* Check 2, the arm without the rule: SB693_ldcL252 (session 134, tree252, no rule) is identical to T693b to the
+  printed digits up to 6 000 s and shows the same loss (324F001's level 48.44 to 43.46 % over 4 950-5 050 s, as
+  T693b's); the rule's first move is at 5 400 s. After 6 030 s that arm latches PC35 (35.1, 35.4) and its path
+  departs, so its regain is not comparable.
+* Decision 253's condition is met: the step is 323D002's own, and the loss precedes the rule. Data gap 16 closes as
+  "the count is the rule's output". 323D002 running on lost suction for 11 630 s of a 69.3 % hold is raised as A-62.
 
 ## CXLVIII.4 Step 3: Book2's bands and load reductions
 
