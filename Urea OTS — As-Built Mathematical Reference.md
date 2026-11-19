@@ -28729,7 +28729,9 @@ Registered from R693b's own files before the re-run (`run/registry136.md`): LV-3
 most 38.7 %); the rule makes no move between 6 000 and 17 340 s; 324F001's outflow to 324E003 falls from 16 600 s
 with 324F001's level (23.14 to 19.2 %); 323D002's LIC-323507 output falls smoothly (50.79 to 49.95 t/h). T693b is
 R693b's configuration with `probe136` (323D002's and 324F001's balance terms every 10 s); `run/trace136.py` names the
-first term to depart by 1 % from its mean (`run/runs/trace136_T693b.txt`, read at 18 460 s).
+first term to depart by 1 % from its mean (`run/runs/trace136_T693b.txt`, read at 18 460 s). Finished at 21 720 s,
+T693b reproduces R693b exactly (session 135's `null135.py`: 0 of 675 492 series leaves and 0 of 118 080 check leaves
+differ), so the probe perturbs nothing and the trace is R693b's.
 
 * The step coincides with 323D002 regaining suction at 16 610 s. The seed holds 323D002 at LIC-323507's 10 %
   (9 208 kg); on the ramp it empties and its pump loses suction at 4 980 s (holdup 1 kg, PV 0.001 %), after which it
