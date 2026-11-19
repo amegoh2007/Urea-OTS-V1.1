@@ -27991,9 +27991,9 @@ score134 (`run/score134.py`) wraps session 108's score108. It reads every arm on
   The correction moves the low-load signs and departures, for example SB693_ldcL's TT-322004 from -6.34 to -9.45 K.
   It changes no verdict.
 * **D2's comparison.** The comparison was made in floating point. A TT-322005 range of two display steps,
-  180.9 - 180.7 = 0.2000000000000284, failed "at most 0.2 K". Both ranges are now rounded to 1e-6. This moves three
-  arms from RINGING to settled: SB923_ldcL, SBd905LL and SB693_ldcL. Each of the three sits exactly at the
-  tolerance. SBd905LL's last TT-322005 swings, 0.2, 0.3, 0.3 and 0.2 K, do not decay: it settles at the tolerance,
+  180.9 - 180.7 = 0.2000000000000284, failed "at most 0.2 K". Both ranges are now rounded to 1e-6. This moves four
+  arms from RINGING to settled: SB923_ldcL, SBd905LL, SB693_ldcL and wave F's SBdc744L (TT-322005 range
+  0.20000000000001705). Each of the four sits exactly at the tolerance. SBd905LL's last TT-322005 swings, 0.2, 0.3, 0.3 and 0.2 K, do not decay: it settles at the tolerance,
   not on a decayed mode.
 
 ## CXLVI.11 A HEAD finding outside B-118: 335P001 stops on LY-324501's L2 at reduced load
@@ -28007,10 +28007,10 @@ Several HEAD arms latch PC35's 35.1 and 35.4:
 to 0 t/h, with no precursor in the synthesis columns. The latch times are:
 
 * 92.3 %: 13 460 s; 15 320 s with the clamp;
-* 90.5 %: 10 140 s;
-* 74.4 %: 6 190 to 8 160 s;
+* 90.5 %: 10 140 s; 10 310 s with the clamp;
+* 74.4 %: 6 130 to 8 160 s;
 * 69.3 %: 5 980 to 7 110 s;
-* 68.9 %: 6 060 to 7 040 s;
+* 68.9 %: 5 980 to 7 040 s;
 * none on the "n" arms at 92.3 and 90.5 %, to 18 960 and 11 940 s;
 * none at 111 %.
 
@@ -28093,11 +28093,12 @@ TT-322010 -1.18 K, PT-329201 -7.90 bar.
 
 **Reading.**
 
-* **No HEAD arm stands D1.** Seven HEAD arms settle: SB923_luL / ldL, SB923_ldcL, SBd905LL, SBdc905L, SBdc744L,
+* **No HEAD arm stands D1 at a hold off 100 %.** Seven HEAD arms settle: SB923_luL / ldL, SB923_ldcL, SBd905LL, SBdc905L, SBdc744L,
   SB693_ldcL and SBdc689L. Their rises are 12.03, 11.07, 11.29, 10.31, 2.51, 4.90 and 4.94 K, and every one fails
   the rise.
-* **Below 90.5 %, "d" with the clamp is the only law that settles** (wave F adds 74.4 and 68.9 %; SBdc744L on a
-  single 8 900 s period at the tolerance). It settles cold: TT-322005 sits 7.3 to 9.8 K under the seed, where the
+* **Below 90.5 %, "d" with the clamp is the only law that settles** (wave F adds 74.4 and 68.9 %). Two of
+  them are marginal: SBdc744L is settled on one 8 900 s period, TT-322005's only extremum 20 s before the hold's
+  end, and only by D2's rounding; SBdc689L's last b_rxn_K swing grew to 0.32 K. It settles cold: TT-322005 sits 7.3 to 9.8 K under the seed, where the
   plant's sits 1.3 K under.
 * **"d" without the clamp rings** at 69.3 % on a 14 400 s hold (3.3 K). It is not settled within 7 200 s at 74.4
   and 68.9 %.
@@ -28121,8 +28122,8 @@ Book2 band's. The "n" arms ring through -8 to -30 K.
   "n". No "d" + area arm was run. The arm neither confirms nor rules out the second reading; which reading holds
   is the process engineer's (CXLVI.9).
 * **The clamp.** On "n" it ran at all six loads and settles none. On "d" it ran at all six (wave F: `SBdc905L`,
-  `SBdc744L`, `SBdc689L`, `SBdc111L`, 14 400 s holds) and settles every reduced load; none stands D1, and 111 % rings
-  (34.3 K range).
+  `SBdc744L`, `SBdc689L`, `SBdc111L`, 14 400 s holds) and settles every reduced load, at 74.4 % only by D2's rounding and at 68.9 %
+  still drifting (CXLVI.13); none stands D1, and 111 % rings (34.3 K range).
 
 ## CXLVI.15 What was not run
 
@@ -28141,8 +28142,8 @@ The engineer's four items, as they stand:
    rise's floor after PC35's latch.
 2. **322E002's UA exponent and the pressure clamp.** Book2 gives 0.50 (CXLVI.2), and it rings at 92.3 %
    (CXLVI.14). The clamp ran on the exponent at all six loads and settles none. On UA as built it settles all five
-   reduced loads, none standing D1, the three below 90.5 % 7.3 to 9.8 K cold on TT-322005; 111 % rings
-   (CXLVI.12-13).
+   reduced loads by D2, none standing D1, the three below 90.5 % 7.3 to 9.8 K cold on TT-322005; 111 % rings
+   (CXLVI.12-13). Without D2's rounding it settles at 90.5 and 68.9 % only, and at 68.9 % it is still drifting.
 3. **The candidate with B-126 (b), B-136 (b), the 322F001 lift and the area lead.**
    - B-126 (b) is in every arm. Its seed criterion has to be a display-resolution one (CXLVI.8).
    - B-136 (b) gives TT-322004 the plant's sign at every settled hold, at 0.8-1.8 times its size (CXLVI.13).
@@ -28156,8 +28157,8 @@ Choices for the process engineer, none taken by this session:
 * Whether D2's rounding to the display step stands (CXLVI.10).
 * Whether D1's floor is read on the last period. On session 112's tree S + B stands at 12.14 K; on HEAD it fails
   at 12.03 K, a margin the size of the latch's effect (CXLVI.11).
-* The candidate, if any. S + B on UA as built is the only law that settles at 92.3 and 90.5 %. None settles on the
-  plant's TT-322005 below 90.5 % without the clamp. The clamp is plant data, not physics (CXLVI.3).
+* The candidate, if any. S + B on UA as built is the only law that settles at 92.3 and 90.5 %. Below 90.5 % none settles without the
+  clamp, and with it every one settles 7.3 to 9.8 K cold on TT-322005, against the plant's 1.3 K. The clamp is plant data, not physics (CXLVI.3).
 * Which reading of 322E001's lower condensate valve holds (CXLVI.9).
 
 ## CXLVI.17 Checks

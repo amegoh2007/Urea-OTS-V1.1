@@ -25,7 +25,7 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 *Raised 2026-11-19, session 134 (As-Built §CXLVI.11). Decision 217.* On V1.2's HEAD the rig's held arms latch PC35's
 35.1 and 35.4: 335P001 stops on LY-324501's 5 % L2 and the melt to the granulator falls to 0 t/h, with no precursor in
 the synthesis. It latches on every arm at 74.4-68.9 % (5 980-8 160 s), and on UA as built at 92.3 % (13 460 s) and
-90.5 % (10 140 s). There is no latch at 111 %, and none on the 0.50-exponent arms at 92.3 and 90.5 %. Session 112's
+90.5 % (10 140-10 310 s). There is no latch at 111 %, and none on the 0.50-exponent arms at 92.3 and 90.5 %. Session 112's
 tree, before decision 217, has no such stop. The rig moves no unit 324 or 335 handle and does not sample LY-324501.
 At 92.3 % the stop moves the synthesis by at most 0.3 K, and by 0.1 K at the hold's end (§CXLVI.11). The plant
 holds 69 % for hours with 335P001 running (Book2).
@@ -103,7 +103,7 @@ close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atom
   design point to the bit at t = 0 (§CXLVI.7). S + B on UA as built settles at 92.3 %, TT-322005 181.5 C, every sign
   the plant's: it stands on session 112's tree, and on HEAD falls 0.02 K under D1's floor (§CXLVI.12). Book2's UA
   exponent 0.50 rings. No inert or liquid term carries the pressure's 3-6 bar (§CXLVI.3); as a clamp it settles UA as
-  built at every reduced load, 7.3-9.8 K cold below 90.5 %. No HEAD arm stands; TT-322004 falls with the load on every
+  built at every reduced load by D2 (74.4 % by its rounding only, 68.9 % still drifting), 7.3-9.8 K cold below 90.5 %. No HEAD arm stands; TT-322004 falls with the load on every
   settled arm, 0.8-1.8 times the plant's (§CXLVI.13). Every HEAD arm below 100 % on UA as built latches PC35 (A-61).
 
 **Bundle A (decision 181), scratch only; `ureasim/` is as built.** P1, 322E002's UA on the battery-limit
