@@ -5,7 +5,7 @@ is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-19, session 134
+**Last updated:** 2026-11-19, session 135
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -28,29 +28,29 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
 * **Open.** `handoff.md`: Section A one (A-61), Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
-  Section C none, 10 open data gaps (16, the header-valve count per load, session 134). Every data gap waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
+  Section C none, 10 open data gaps (16, the header-valve count per load, session 134). Every data gap waits on a vendor
+  document, on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`) or on decisions
+  253 to 257, proposed by session 135 (`Tests and Reports\reports\Session_135_gaps\decision packet.md`).
+* **Session 135** (Part CXLVII; decisions 253 to 257 proposed, none taken; nothing built). The manual's header-valve
+  rule on the B-118 rig, with the rig's 300 s dwell and level guard, keeps 335P001 running through every 69.3 % and
+  92.3 % hold, the seed to the bit; with it S + B on UA as built stands D1 at 92.3 % on every window (margin 0.04 K). Data gaps 4, 5, 9, 10, 12 and 14 prepared to close as built
+  (sensitivities); [E] estimates for 1, 3, 15; D1's rise band is the seed's, the plant's rise measured 13.4-13.9 K.
+  The Körting and Foxboro Eckardt letters, the LV-324501A step test and the readback checklist are final.
 * **Session 133** (Part CXLV; decision 252, built on branch `v1.2-d252` and merged into `v1.2` after session 134's runs). LY-324501 built on AC4's formula over V1's level with Rosemount's LRV floor, the seed unchanged to the bit; at the design vacuum 335P001's L2 stop cannot act, kept as built (2026-11-19). Researched: 324F003's and the leg's drawings (232 kg at the plant's 50 %), the cooling-water lead ruled out, PT-323204's two decimals, the UF85 pumps' capacity, the Drive copy's hash. The session 114 scratch plan ran in session 134.
 * **Session 132** (Part CXLIV; decision 251). V1.2 made. The separators' ejectors break on the plant's 5 November
-  bracket: HV-329605 and HV-329606 now move PIC-324202, PT-324201, PT-323204, PIC-324203 and PT-324204 below 64 % and
-  40 %; the design pin unchanged. The New folder's other stand-ins have no Helwan source and are not built (§CXLIV.4).
+  bracket below HV-329605 64 % and HV-329606 40 %, the design pin unchanged; the New folder's other stand-ins not built.
 * **Sessions 129 to 131** (Parts CXL to CXLIII; decisions 249, 250). The open gaps researched in the archive. Built: PC21's
   page-20 timers as ABB TOFF elements, 21.2 lost 5 min / 15 min / 5 s after its causes (decision 249), and FY-322403's trip
   at the schedule's 8 500 Nm3/h (decision 250). Session 131 checked another tool's closure dossier page by page: none of
   its 13 closures holds (§CXLIII.1); PC21's SR latches read reset-dominant with the trip on R, as built, and 321P002B's
   limits on Peroni's sheets, so row 5 keeps TRIP_84_8's L2 alone.
-* **Sessions 121 to 128** (Parts CXXXI, CXXXIII to CXXXIX; decisions 219, 230, 232 to 235, 239 to 248). B-156 closed:
-  six levels between their taps, LT-329501 data gap 15; data gaps 2, 8 and 11 closed; 322P002's field delivery to
-  FI-322402's 40 m3/h; FY-321404 on the DCS's formula; A-57, B-127, A-59, B-135 and A-60 closed as built. The gap
-  surveys: `Tests and Reports\reports\Session_123_gaps`, `Session_128_gaps`.
-* **Session 120** (Part CXXX; decisions 218 and 228). Every file the simulator uses lives in its folder; the suite,
-  the reports and the scratch live in `Tests and Reports` sub-folders, and saved exercises in the git-ignored
-  `exercises` (decision 218). Trips 35.1, 35.3 and 35.4 are built with four overrides on 324-1b; the seed's leaves
-  are unchanged to the bit (decision 228, B-146 closed; stand-ins in data gaps 5 and 14). Researched, nothing built:
-  the DCS's FFIC-321404 formula is sourced and checked on Book2 (B-128), the CO2 line stands 5 bar over the loop on
-  the plant (B-135); A-58 and A-59 raised; then PC21's timers moved to AC4's minutes, A-58 closed (Part CXXXII).
-* **Sessions 117 to 119** (Parts CXXVII to CXXIX; decisions 210 to 217). V1.1 runs and tests without V1 (decision 210);
-  322P002's delivery set by hand (decision 212); the seven levels move to their nozzles unit by unit (decision 214,
-  B-156); AC4's low-level stops on a 5 % L2 with 2 % hysteresis (decision 217); A-38, A-40, A-41 and A-50 closed.
+* **Sessions 121 to 128** (Parts CXXXI, CXXXIII to CXXXIX; decisions 219, 230, 232 to 235, 239 to 248). B-156 closed;
+  data gaps 2, 8, 11 closed; A-57, B-127, A-59, B-135, A-60 closed as built. Surveys: `Session_123_gaps`, `Session_128_gaps`.
+* **Session 120** (Parts CXXX, CXXXII; decisions 218, 228). Every file the simulator uses lives in its folder, the
+  suite, reports and scratch in `Tests and Reports` (decision 218). Trips 35.1, 35.3 and 35.4 built, the seed to the
+  bit (decision 228; data gaps 5, 14). FFIC-321404's formula sourced (B-128); PC21's timers on AC4's minutes.
+* **Sessions 117 to 119** (Parts CXXVII to CXXIX; decisions 210 to 217). V1.1 runs without V1 (decision 210); AC4's
+  low-level stops on a 5 % L2 (decision 217); the levels to their nozzles (decision 214); A-38, A-40, A-41, A-50 closed.
 * **B-118 in scratch, sessions 99 to 112 and 134** (As-Built Parts CX to CXIX, CXXII and CXLVI). Session 99 ran the
   gap resolution plan (decisions 182 to 188). On bundle A 92.3 % passes decision 180's test and the low holds latch;
   B-126 (b)'s species holdup removes the low holds' latch (session 103). Session 105 removed trip 22.2 (decision 189)
@@ -72,9 +72,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 135 (133 this session; 134 the B-118 side session's) | `docs/history/session-log.md` |
-| Decision | 253 (252 session 133's; session 134 took none) | `docs/decisions.md` |
-| As-Built Part | CXLVII (CXLV session 133's, CXLVI session 134's) | the As-Built reference, appended at its end |
+| Session | 136 (135 claimed 2026-11-19, the gap-closure session) | `docs/history/session-log.md` |
+| Decision | 258 (253 to 257 claimed by session 135, proposed in Part CXLVII, not taken) | `docs/decisions.md` |
+| As-Built Part | CXLVIII (CXLVII claimed by session 135) | the As-Built reference, appended at its end |
 | Handoff Section A | A-62 (A-61 session 134's) | `handoff.md` |
 | Handoff Sections B and C | B-157 (session 134 took none) | `handoff.md` |
 

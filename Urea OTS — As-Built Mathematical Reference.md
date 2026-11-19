@@ -28329,3 +28329,325 @@ count. The count was searched for at 92.3, 90.5, 74.4, 69.3, 68.9 and 111 %, in 
 No Helwan source gives the count at any held load. As the process engineer instructed, E1's calculated count
 (§CXLVI.19) is not used in its place, and no arm was run. The datum is logged as data gap 16. The rig's stand-in
 stays the engine's design seed: ten valves at every load (`data/unit_335.HEADER_VALVES_DES`).
+
+# Part CXLVII — Session 135: the operator's header-valve rule, the data gaps' sensitivities and [E] estimates, the decision packet (2026-11-19)
+
+*2026-11-19, session 135, on V1.2's HEAD (f0e93e3) and on session 134's tree252 (git archive 79fa8ca, decision 252;
+its `ureasim/` equal to HEAD's apart from line endings, `diff -rq --strip-trailing-cr`). Nothing under `ureasim/` or
+`Tests and Reports/tests/` changed and no decision was taken: decisions 253 to 257 are proposed here (§CXLVII.13)
+and in the decision packet (`Tests and Reports\reports\Session_135_gaps\decision packet.md`). Every wave was
+registered before launch (`run/registry135.md`). Scripts, configurations and runs:
+`Tests and Reports\reports\Session_135_gaps`. No archive search was repeated for a datum already recorded as not
+found.*
+
+## CXLVII.1 The operator's header-valve rule, for the rig only
+
+Data gap 16 asked for the plant's header-valve count at each held load. The Operating Manual UD-VT-G00-DC-0003
+(§CXLVI.20) gives a rule instead: the urea melt main header is held at 3 - 3.5 bar by putting sprayer headers on
+line as its pressure rises (p. 4-43) and, on a load reduction, the operator is to "stop sprayer headers accordingly
+to the pressure in the urea melt main header" (pp. 6-22, 6-23), in the order 2; 1, 4, 6, 7, 8, 10; 3, 5, 9, 11
+(pp. 4-40, 4-41, 4-43). The count at a load is the rule's output.
+
+* **The bound's units: bar g.** PT-335201 spans 0-4 bar g; AC4 PC35.2.2's E1 runs 2.8-3.8 bar g; the plant's
+  5 November 2026 trends hold PIC-335201 at 3.23-3.78 bar g; the process engineer's rule of 2026-11-14 (§CXIX.3) is
+  3.2-3.8 bar g. The guide figures' "2.5 - 4.0 bar abs" (1.5-3.0 bar g) would sit at or below E1's floor and would
+  never call for a valve to come off; it is not taken.
+* **Why the triggers are E1's two ends.** PIC-335201 holds the header at E1 = 2.8 + min(X / 50, 1) bar g, X being
+  LIC-324501's output; at a fixed melt one valve moves the header by (N / (N - 1))^2, 1.23 at N = 10 and 1.36 at
+  N = 7, wider than the 3.0-3.5 band (1.17). A rule on the band alone would hunt. The rig's rule
+  (`run/headerrule135.py`, wrapping `Scheduler.tick`, nothing under `ureasim/`) moves one valve through the
+  engine's own `granulation_headers` command, never while PC35 holds LV-324501A shut:
+
+      OFF: PIC-335201 PV < 3.0 bar g and X <= 0.5 %   (E1 at its floor: the online valves draw more than the make)
+      ON:  PIC-335201 PV > 3.5 bar g and LV-324501B open (X > 50: E1 at its ceiling, the excess recycled)
+
+  checked every 60 s, a condition held 120 s, a dwell after each move. The dwell and, in wave H2, a level guard are
+  the rig's choices, not the manual's.
+* **The count it should land on, calculated.** With the header law (flow proportional to N sqrt(P), ten valves at
+  3.5 bar g passing the seed's 75.9 t/h of melt), a load-proportional melt at 69.3 %, 52.6 t/h (0.693 of the seed's,
+  not a plant figure), is passed at E1's floor by 7.7 valves; at 7 valves the header needs 3.43 bar g (X 31 %,
+  LV-324501B shut). So the rule's resting count at 69.3 % is 7, the engine's restore count at L 0.72
+  (`engine/plant/evaporation.py` lines 97-100) and inside §CXLVI.19's 6.9-8.1.
+
+## CXLVII.2 The rule on the rig: waves H and H2
+
+Tree252, `cfg135.py` (cfg134 + the rule + session 134's probeA61), scored with `score134.py`. Every arm registered
+before launch (`run/registry135.md`). Holds of 14 400 s after a 3 600 s settle and the ramp.
+
+| Arm | Base, rule | Moves (reversals), final count | 335P001 / PC35 | Synthesis (score134) |
+|---|---|---|---|---|
+| N100R, N100Rb | the 100 % seed, rule H, H2 | none | runs / none | 0 of 103 320 series and 24 600 verify leaves differ from N100C |
+| R693 | SB693_ldcL252, H | 2 (0), 8 | stops 7 020 s, latch | stopped at 7 290 s |
+| R693u | SB693_luL, H | 16 (8), 6 | runs / none | ringing, period 3 223 s, rise 4.63 K |
+| R923 | SB923_luL, H | 1 (0), 9 | runs / none | **D1 stands**: rise 12.17 K, settled, every sign the plant's |
+| C923 | SB923_luL, no rule | none, 10 | runs / 35.4 at 13 660 s | ringing, period 3 019 s, rise 12.02 K |
+| R693b | SB693_ldcL252, H2 | 4 (0), 6 | runs / none | settled, rise 4.97 K, TT-322005 175.8 C, fails decision 180 |
+| R693ub | SB693_luL, H2 | 12 (6), 6 | runs / none | ringing, period 4 606 s, rise 4.17 K |
+| R923b | SB923_luL, H2 | 1 (0), 9 | runs / none | **D1 stands**, as R923 |
+
+Rule H: dwell 900 s. Rule H2: dwell 300 s, and no OFF move while LY-324501 has risen by more than 0.2 % over the
+120 s persist window; both registered after the reading that called for them.
+
+* **Wave H, 69.3 %.** The ramp ends at 3 720 s; 324E003's feed then falls 74.4 to 55.5 t/h between 4 800 and
+  5 700 s, while TT-322005 falls under 180 C (from 4 390 s), about 2.5 valves in 900 s. One move a 900 s dwell is
+  too slow: R693 reached 8 valves at 6 300 s with the raw level at 8.6 % and falling under LY-324501's 24 %
+  indication floor (LY read 24.0 % from 6 000 s while the raw level fell 19.5 to 2.4 %); the seal was lost at
+  6 950 s and 335P001 stopped at 7 020 s, 990 s later than without the rule (§CXLVI.19). R693u shed a valve while its
+  level was recovering: X sits at 0 % whenever the level is under its set point, so the OFF condition cannot tell a
+  falling level from a rising one.
+* **Wave H2, 69.3 %.** Both arms reach 7 valves by 6 000 s; the raw level bottoms at 27.3 and 28.6 %, above the
+  indication floor, and 335P001 runs to the end with LV-324501A at 56 % or more. A-61's acceptance is met on every
+  69.3 % H2 arm. The count does not stay on the calculated 7. On R693b 324E003's feed steps from 51.0 to 46.5 t/h
+  between 16 600 and 17 400 s, before the move (its upstream cause is not traced); X reaches 0 % at 17 280 s and the
+  rule takes the sixth valve off at 17 340 s; the melt forward then runs at 41-43 t/h on 6 valves. On R693ub the
+  feed swings 45-55 t/h with the synthesis's ring and the rule follows it between 6 and 8 valves. Both are
+  registered fails on the rule's own readings (a count other than 7; more than one reversal).
+* **92.3 %.** With the rule (R923, R923b) one valve comes off near 7 000 s, no latch, and **S + B on UA as built
+  stands D1 on tree252**: rise 12.17 K on the last period and on score108's window, b_rxn_K's last-period range
+  0.17 K, TT-322005's 0.10 K; the five windows (last period, last 1 800 s, last two periods, last 3 600 s, last three periods) read 12.09-12.21 K on R923 and R923b, every one above the 12.05 K floor, the smallest margin 0.04 K inside the 0.12 K spread, drifting +0.047 K per 1 000 s over the last three periods (`run/runs/audit135.txt`). Decision 180 passes on the last period
+  (score134's reading); read as written over the whole hold it fails, TT-322005 touching 180.3 C near 4 590 s, under
+  the band's 180.6 C. Without the rule (C923) 35.4 latches at 13 660 s and the arm rings, rise 12.02 K, as
+  on HEAD (§CXLVI.18). Decision 252's tree alone does not remove the 92.3 % latch; the rule does. With the latch
+  gone no window fails D1; the margin is still inside the window spread (packet Q1b).
+* **100 %.** Idle, the seed to the bit (N100R, N100Rb).
+
+## CXLVII.3 Data gap 14: trip 35.4 with LVSL-324501A at 0, 2 and 5 % of stroke
+
+`desk/row14_lvsl.py` patches `ureasim.engine.plant.evaporation.LVSL_324501A_PCT` (the name the step reads, bound at
+import) and runs the restart test_evaporation draws, from the design seed on tree252: 600 s healthy; both 335P001
+stopped at t0; 335P001A restarted at +30 s; HS-335201A turned at +40 s and released at +70 s.
+
+| Switch at | Seed's lowest stroke (600 s) | 35.4 lost | LVSL makes | 35.4 heals | Stroke at heal | Forward melt at +130 s |
+|---|---|---|---|---|---|---|
+| 0 % | 79.09 % | +0.1 s | +0.2 s | +40.1 s | 7e-14 % | 60 769 kg/h, every flag healthy |
+| 2 % | 79.09 % | +0.1 s | +0.2 s | +42.3 s | 2.07 % | 60 770 kg/h |
+| 5 % | 79.09 % | +0.1 s | +0.2 s | +44.4 s | 5.10 % | 60 773 kg/h |
+
+* **Closing.** The solenoid shuts LV-324501A at once (`melt_header.py`: position 0.0 on `lv_324501a_shut`), so the
+  switch makes on the next tick at any setting: the trip's timing does not depend on it.
+* **Healing.** Under HS-335201A the stroke has to pass the switch; the heal moves from +40.1 s to +42.3 s and
+  +44.4 s, while the operator still holds the keyswitch (released at +70 s). The forward melt at +130 s differs by
+  4 kg/h in 60 770.
+* **The running plant.** The seed's stroke never falls below 79 %; the reduced-load holds keep it at 72.7 % and above
+  (§CXLVI.19), and this session's holds with the header rule at 56 % and above (§CXLVII.2). A switch set anywhere in 0-5 % cannot trip a running plant.
+* The only exercise that uses the switch is the 35.4 restart, and on it the setting moves the heal by at most 4.3 s,
+  inside the operator's own hold of HS-335201A. Proposed: close as built (decision 255).
+
+## CXLVII.4 Data gap 5: TRIP_84_8's L2 has no consumer
+
+`Unit21TripInputs.trip_84_8_healthy` defaults to True (`control/interlocks.py` line 271) and nothing sets it:
+`engine/plant/synthesis_loop.py`'s `_trips` (line 240) builds the inputs without it, no module under `ureasim/`
+assigns it, and the instructor's malfunction list (`data/faceplates.py` lines 222-225: 321P002A and 321P002B
+lube-oil faults, 322E002 tube leak) has no instrument-air entry. PT-384207A / B / C are not modelled. So no
+simulated path, and no malfunction, reaches TRIP_84_8; its L2 cannot change any run. Correction to the session 135
+prompt: the trip is not "reachable by malfunction only", it is not reachable at all. The row's other parts are
+built (decisions 249, 250) or unused (PT-321211 / 221, ST-321952 / 953 taken healthy). Proposed: close as built
+(decision 255); an instrument-air malfunction, if wanted, is a new item.
+
+## CXLVII.5 Data gap 4: LT-324501's range on two sources
+
+Uhde's data sheet UD-MR-G00-EC-0136 p. 3 and Rosemount's factory record UD-MR-G00-DZ-0012-002 p. 76 (1151DP5,
+serial 8064075) both give -700 to 900 mbar; decision 252 is built on it. The functional diagram UD-MR-324-FF-0002
+p. 2 (rev 00) prints -800 to 900 mbar and was set aside by decision 252 (AC4 taken); its floor, 9.3 %, also stands
+above the 5 % L2, so neither reading lets the stop act at the design vacuum (§CXLV.2, .9). Decision 252 itself left
+the row open on the configured LRV and the leg's walk-down. What remains is whether the plant re-ranged the
+transmitter after commissioning. Proposed: close on the two-source agreement, the readback (checklist stop 2 row 5,
+stop 4 row 25) a check, not a blocker (decision 256).
+
+## CXLVII.6 Data gap 1, [E]: 322F001 on the as-built drawing's throat
+
+`desk/row1_jetpump.py` runs `control.jet_pump`'s closure (Cunningham / ESDU 85032 form, as built) with the mixing
+throat fixed at the drawing's bound and the nozzle set by the motive energy balance (`solve_geometry`'s inner
+loop), on NH3 604.8, suction 1 133 and discharge 877.9 kg/m3.
+
+| Basis | Lift bar | Back-solved throat | On a 44 mm throat, K_n 0.05-0.10, K_en 0.10-0.20, eta_d 0.75-0.85, K_th 0.05 | K_th that restores the lift | Stall motive fraction |
+|---|---|---|---|---|---|
+| engine (42 762 / 57 561 kg/h, 140.0 to 144.2 bar a) | 4.20 | 50.23 mm, v 16.0 m/s | rise 4.73-5.15 bar, v 20.9 m/s, nozzle 16.7-16.9 mm | 0.33-0.54 | 0.80-0.81 (as built 0.907) |
+| EC-0013 (44 600 / 62 000 kg/h, 141.5 to 145.0 bar a) | 3.50 | 52.66 mm, v 15.5 m/s | rise 4.07-4.51 bar, v 22.2 m/s, nozzle 17.9-18.1 mm | 0.32-0.52 | 0.75-0.76 |
+
+On a 40 mm throat the restoring K_th is 0.42-0.62 and the stall 0.69-0.74.
+
+* **The finding.** No set of the literature's nozzle, entry and diffuser coefficients reproduces the duty on a 44 mm
+  throat: the jet over-delivers by 0.5-1.0 bar. The duty is met only with a throat loss K_th of 0.32-0.54, 6 to 11
+  times the 0.05 built (about 0.6 to 1.0 bar of friction at 21 m/s). A throat loss of that size is the closure's
+  form of §CV.4's fitted friction share, which needed at least 2.41 bar on the lift; it is the same direction, a
+  machine further from its shutoff head.
+* **The stall.** On a 44 mm throat the machine stalls at 75-81 % of the design motive at the design lift, against
+  90.7 % as built: the margin doubles. The plant holds its entrainment from 69 to 102 % (§CV.3); whether the stall
+  then leaves that range depends on the lift at reduced load, which B-118 carries (decision 180's prototype).
+* **Uhde's 4.2 bar.** EC-0013's pressures give a 3.5 bar rise, its text "static pump head 4.2 bar g"; the engine uses
+  4.2. Both bases are shown.
+* **The literature's coefficients.** Sanger's measured sets (NASA TN D-4445, 1968, pp. 55-58; his eq. 13 reproduces
+  his own peak efficiencies, 35.1 against 35.7 % at R 0.197 and 29.8 against 29.5 % at R 0.066, recomputed this
+  session) give throat friction 0.0985-0.28 and throat plus diffuser 0.20-0.38; nozzle 0.008-0.15, suction entry
+  0.09-0.14. The restoring K_th, 0.32-0.54, lies above the whole measured throat range and at or above the combined
+  range. So either the throat is wider than the drawing's bound as read (§CXLI.7), or 322F001 runs with losses
+  above any open-literature set; the literature cannot pick between them. Two cautions from the same search: the
+  fluids library writes the throat friction 4 f L / D where Sanger writes f L / d (a factor of 4 on what "K_th" means);
+  ESDU 85032 and Karassik were not readable (paywalled) and nothing here rests on them.
+* **Reduced motive, fixed geometry (Sanger's R 0.197 pump, lift held, recomputed):** a 10 % motive cut takes 30 % off
+  the suction flow, 20 % takes 66 %, and entrainment stops near 27 %. The cavitation limit
+  Q2,L = (A_t - A_n) sqrt(2 (P2 - Pv) / (rho_s sigma)), sigma 1.0-1.4 (Cunningham, Hansen and Na 1970, abstract
+  only), does not depend on the motive flow. Both are the open literature's form of the stall that B-118 carries.
+* [E] estimate, not built: throat 44 mm, K_n 0.05, K_en 0.10, eta_d 0.80, K_th 0.49 (engine basis). Recommendation:
+  wait — the estimate changes B-118's 322F001 term, so it goes with B-118's matrix (decision 180), and Körting's
+  diagrams (letter final) decide it.
+
+## CXLVII.7 Data gaps 10 and 15, [E]: the two-leg readings
+
+`desk/rows10_15_dp.py`. Transmitter below both taps, vapour above the liquid, taps H apart, liquid h above the
+lower tap, process density rho_p, leg fill rho_c, HP on the lower tap:
+
+    DP = rho_p g h - rho_c g H            (upper leg wet to its tap)
+    DP = rho_p g h                         (upper leg dry)
+
+**LT-329501 (gap 15)**, 0-1 200 mbar, rho_p 1 133 kg/m3, both legs purged with condensate (K3V91; Manual III pp. 1-59,
+1-83), rho_c 965.5 kg/m3 at the sheet's 99 C and 141 bar a (IAPWS-IF97 region 1):
+
+| Reading | H 10.000 m (sheet, K3V91) | H 12.789 m (isometric) |
+|---|---|---|
+| dry upper leg: 0-100 % covers | h 0-10.80 m; Book2's 1-11 % = h 0.11-1.19 m above the lower tap | the same |
+| wet upper leg: full downcomer reads | 13.7 % (164 mbar); 0 % at h 8.52 m | 17.5 % (210 mbar); 0 % at h 10.90 m |
+| wet: Book2's 1-11 % | h 8.63-9.71 m (86-97 % of H) | h 11.01-12.09 m (86-95 % of H) |
+
+* The dry reading puts the plant's liquid 0.1-1.2 m above 322F001's suction nozzle, a near-empty downcomer; Uhde
+  specifies a 10 m liquid-column suction head (EC-0013). The wet reading, which is what K3V91 and the manual draw,
+  puts it 8.6-12.1 m above, on Uhde's head, with the 0-1 200 mbar range used only in its top 14-18 %. The wet reading
+  is proposed; 10 kg/m3 on rho_c moves it 0.8-1.0 %.
+* The design reading cannot be computed: V1's 3 837 kg at 50 % is 322E003's holdup, and the downcomer's 12.8 m of
+  150 mm pipe holds about 234 kg. Row 15 stays open on the readback (LRV, URV, the legs), with B-118 (322F001's
+  suction).
+
+**LT-329505 (gap 10)**, 0-300 mbar, condensate 922 kg/m3 on both sides (K3V31: a vented separator pot keeps the
+reference leg full). With one fluid both sides, a positive range needs HP on the wet leg: DP = rho g (H - h).
+
+| H | DP empty | 0-300 mbar covers |
+|---|---|---|
+| 3.000 m (sheet) | 271.3 mbar | the whole 3 m; reversed (0 mbar = 100 %), empty reads 9.6 % |
+| 4.478 m (isometrics) | 404.9 mbar | the upper 3.32 m (h 1.16-4.48 m); below h 1.16 m over-range |
+
+* LI-329505 is logged in neither Book2 nor the 5 November trends, so no plant reading picks a reading. The level is
+  V1's holdup ratio on no pot geometry, so either reading changes only the display's scale and LIC-329505's gain in
+  kilograms per per cent, by 3.32 / 3.0 = 1.11 at most. Proposed: close as built (decision 257), the readback (stop 2
+  row 9) a check.
+
+## CXLVII.8 Data gap 9, [E]: FIC-335405 on lambda tunings
+
+`desk/row9_engine.py`, the engine's own FlowLoop (`units.finishing.uf85_dosing.fic_335405`). Open loop, output
+stepped 5 %: Kp 0.01388 t/h per %, no dead time, tau 5.1 s (FT-335405's 5 s lag). Closed loop, the cascade set point
+617.1 to 700 kg/h (§CXLV.6's step):
+
+| Tuning | Kc | Ti s | t63 s | t98 s | Overshoot |
+|---|---|---|---|---|---|
+| V1 (as built) | 100 | 15 | 26.0 | 94.5 | 0 |
+| lambda = tau | 72.0 | 5.1 | 11.0 | 30.1 | 0 |
+| lambda = 2 tau | 36.0 | 5.1 | 16.2 | 47.3 | 0 |
+| lambda = 3 tau | 24.0 | 5.1 | 21.3 | 66.4 | 0 |
+
+Lambda tuning (Kc = tau / (Kp (lambda + theta)), Ti = tau; the IMC rule for a first-order process; Beall, ISA InTech
+May/June 2016; SIMC, Skogestad and Grimholt, "The SIMC method for smooth PID controller tuning": Kc = tau1 /
+(k (tauc + theta)), tauI = min(tau1, 4 (tauc + theta))) needs the plant's dead time, which is not known (the model
+has none; the pumps' stroke actuators and AC4's cycle add some). With theta = 0 the SIMC rule's tauI is tau1 for
+every lambda here, so the two rules give the same set. A stroke actuator ramping at about 1 %/s (ProMinent's figure,
+[uncertain]: not 335P005's own rating) adds about 6 s on this 6 % output step, inside V1's 26 s t63. Every
+tuning settles a UF85 step within 30-95 s with no overshoot; FFIC-335406's ratio follows it. V1's tuning is the
+slowest of the set and inside it. Proposed: close as built (decision 257); the readback (stop 2 row 8) a check.
+
+## CXLVII.9 Data gap 12: LV-324501A's response, inside the trend's resolution
+
+§CXXIII.9 and §CXXVI.1 measured the stand-in: on the 5 November 13:30 header-valve steps a positioner lag of 0.5 to
+3 s converges onto the as-built step within 1 to 4 s, and the plant's trace is on a 4 s grid (3.47 / 3.60 / 3.67 bar g
+at the dip, +4 s, +8 s). The public product specification PSS EVE0102 A-(en) is the archive's UD-MR-G00-DZ-0048-014
+(01.2001), already read (§CXL.4): it prints sensitivity, hysteresis and air capacity, and no positioning time. Any
+tau in 0.5-2 s is therefore inside the only plant record's resolution. The open literature agrees on the order:
+EnTech's limit for a 4-inch valve is dead time 0.2 s and T63 0.6 s or less; a good diaphragm assembly with a digital
+positioner measured dead time 0.16-0.50 s and T63 0.26-0.74 s on 2, 5 and 10 % steps (Emerson Control Valve
+Handbook, 5th ed., 2019; ISA-75.25.01-2024's T63 includes the dead time). An isothermal fill of a 600 cm2 actuator
+at the booster's 600 l_n/min gives a full stroke of 0.4-1.2 s and a 10 % step's air in 0.04 s, so on 1-10 % steps
+the positioner, not the air, sets the response ([uncertain]: no 600 cm2 stroking time is published, and the fill
+estimate is this session's). The built 1 s lies at the slow end of the good assemblies and inside the poor ones'
+1-8 s. Proposed: close as built (decision 257); the Foxboro Eckardt letter and the step test (`Session_135_gaps`)
+would replace the stand-in.
+
+## CXLVII.10 Data gap 3, [E]: the evaporation ejectors' break, on the open literature's form
+
+The stand-in is decision 251's soft break (§CXLIV.2): the critical pressure P_c scales with the motive, the flux falls
+over a width w of 1.04-1.10 on the discharge ratio. On the 5 November bracket the engine's stage 1 holds 0.345 bar a
+at HIC-329605 55 % where the plant logged 0.6 bar a at 75 % load (§CXLIV.3).
+
+The open literature's characteristic (HEI Tech Sheets #102, #103, #104, 2014-2024; Lines, Graham Corp., PTQ October
+2016; Huang and Chang, Int. J. Refrig. 22 (1999) 379-388):
+
+* A steam ejector with a compression ratio above about 2 is critical: its suction pressure depends on its load
+  alone, up to its maximum discharge pressure (MDP). Past the MDP it loses vacuum at once, with flow surging back and
+  forth (HEI #103); throttled below its minimum motive it acts as an on-off device and the suction "will rise
+  sharply" (HEI #104).
+* Graham's published example gives MDP 104, 109, 113 and 117 torr at 220-250 psig motive; on absolute pressures the
+  ratio MDP / P_m stays at 0.442-0.445 (recomputed this session, not stated in the source), so MDP is proportional
+  to the absolute motive over +13 % of design. Below design it is an extrapolation.
+* The vendors' broken-state examples double the suction (15 to 30 torr; 20 to 40 mmHg); untested ejectors broke up to
+  15 mmHg below their curve's MDP (PTQ Q1 2023).
+* The break is below the pickup (recovery), on both motive and discharge pressure; the width of that hysteresis is in
+  no source read ([uncertain]: one unattributed text, possibly Berkeley 1958).
+
+Against the bracket: the plant's 0.6 bar a over the design 0.330 is a factor 1.82, the vendors' "about 2"; the
+engine's 0.345 is 1.05. On MDP proportional to P_m, the lost stroke's motive, 3.499 against 4.028 bar a held, puts
+MDP at 0.869 of the design discharge: past the break, on the literature's form, by 15 %, not inside a soft width.
+
+* [E] estimate, not built: MDP = P_d,des (P_m / P_m,held) on absolute pressures (the held stroke's MDP at the design
+  discharge, as decision 251 already pins it); above the MDP the stage runs broken at about twice its critical
+  suction; recovery at the held stroke. The literature gives neither the hysteresis width nor the break's dynamics,
+  and no engine run was made on the estimate: it changes `units/evaporation`'s ejector map, which decision 251 built
+  and only a new decision can change.
+* Recommendation: wait. Körting's capacity and break-off curves (letter final, item 2) give the shape on the
+  machine itself; the [E] form above is what to build if the letter is not answered, on a decision.
+
+## CXLVII.11 The [E] estimates and the sensitivity ledger
+
+Every row below is analysis only. None is built: an [E] value needs decision 254's class and a decision of its own.
+
+| Row | Datum | Stand-in as built | [E] estimate | Source | Sensitivity | Recommendation |
+|---|---|---|---|---|---|---|
+| 1 | 322F001 throat, losses, curve | back-solved throat 50.23 mm, K_n 0.05, K_en 0.10, K_th 0.05, eta_d 0.80 (§CXLI.7) | throat 44 mm, K_th 0.49 (0.32-0.54) | Sanger NASA TN D-4445 (1968) eq. 13 and pp. 55-58; drawing 159000 633789 D | the duty needs K_th above the literature's measured 0.0985-0.28; stall 90.7 to 75-81 % of design motive (§CXLVII.6) | wait: with B-118's matrix and Körting's diagrams |
+| 3 | 324F002 / 4 / 5 curves | decision 251's soft break, width 1.04-1.10 (§CXLIV.2) | MDP proportional to absolute motive; broken stage at about twice its critical suction; recovery at the held stroke | HEI Tech Sheets #102-#104; Lines, PTQ October 2016 | plant 0.6 against design 0.330 bar a is 1.82, the literature's "about 2"; the engine's 0.345 is 1.05 (§CXLVII.10) | wait: Körting's break-off curves; build the [E] form on a decision if unanswered |
+| 9 | FIC-335405 tuning | V1's Kc 100, Ti 15 s | lambda 1-3 tau on the engine's tau 5.1 s, theta unknown | Beall, ISA InTech 2016; Skogestad and Grimholt (SIMC) | t98 30-95 s, no overshoot, on every tuning (§CXLVII.8) | close as built |
+| 10 | LT-329505 span | V1's holdup ratio | wet reference leg, HP on the wet side; H 3.0 m covers the pot, H 4.478 m its upper 3.32 m | K3V31; isometrics | the display's scale and LIC-329505's kg per % by 1.11 at most; no plant log reads it (§CXLVII.7) | close as built |
+| 12 | LV-324501A response | 1 s first-order lag (decision 236) | T63 0.3-0.8 s (dead time 0.16-0.5 s) | Emerson Control Valve Handbook, 5th ed. (2019); ISA-75.25.01-2024 | any tau 0.5-2 s inside the 5 November trend's 4 s grid (§CXXIII.9, §CXXVI.1, §CXLVII.9) | close as built |
+| 15 | LT-329501 span | V1's holdup ratio | wet upper leg on H 10.000 m: Book2's 1-11 % puts the liquid 8.6-9.7 m above the lower tap | K3V91; Manual III pp. 1-59, 1-83; IAPWS-IF97 | the dry reading puts it 0.1-1.2 m above, against Uhde's 10 m suction head (§CXLVII.7) | wait: the readback, with B-118 (322F001's suction) |
+
+Rows 4, 5 and 14 have no estimate: rows 5 and 14 move nothing (§CXLVII.3, .4), row 4 has two sources (§CXLVII.5).
+
+## CXLVII.12 The acceptance tests on the record
+
+* **D1's rise band.** The centre, 13.05 K, is the engine seed's rise and the ±1.0 K is session 112's prompt
+  acceptance (§CXXII); neither decision 180 nor decision 196 sets it. The plant's rise is measured: Book2 logs
+  322R001's thermowells on every sample and TT-322005 − TT-322010 holds 13.4-13.9 K at 60.7, 69.3, 80.4, 94.2 and
+  111 % (§CXVIII.3). The session 135 prompt's premise (K4 (d), that the plant's rise at 69 % may not be measured)
+  does not hold. A band moved to Book2's centre makes every current arm worse: the engine's 4.86 K at 69.3 %
+  (§CXLVI.19) misses the plant by 8.5-9 K.
+* **D1's window.** At 92.3 % on HEAD the rise reads 12.03-12.18 K across five windows; the last period alone fails
+  the 12.05 K floor by 0.02 K (§CXLVI.18).
+* **The seed.** B-126 (b) differs from the seed in 11 248 leaves, every published tag inside its last displayed
+  digit over 600 s (§CXLVI.8).
+* These are put to the process engineer as packet question Q1; no law matrix was run.
+
+## CXLVII.13 Decisions proposed, not taken
+
+| No. | Proposal | Grounds |
+|---|---|---|
+| 253 | The rig moves GRANULATION-HEADERS by the Operating Manual's rule (UD-VT-G00-DC-0003 pp. 4-40, 4-41, 4-43, 6-22, 6-23), read in bar g on E1's two ends, with the rig's dwell and level guard; data gap 16 closes as "the count is the rule's output". A reading of the process engineer's instruction of 2026-11-19 ("the plant's count") as the plant's own procedure for reaching it, not a reversal of it | §CXLVII.1, .2 |
+| 254 | A decided class: an engineering estimate from open literature or standard practice, bounded by a sensitivity run, may stand in for a vendor datum, tagged [E] with its derivation and source, until the datum arrives; each [E] value is built on a decision of its own | §CXLVII.11 |
+| 255 | Data gaps 5 and 14 close as built: TRIP_84_8's L2 has no consumer; LVSL-324501A at 0, 2 or 5 % moves 35.4's heal by 0 to 4.3 s on an operator-held restart and cannot trip a running plant | §CXLVII.3, .4 |
+| 256 | Data gap 4 closes on the two-source agreement (Uhde EC-0136 p. 3, Rosemount DZ-0012-002 p. 76: −700 to 900 mbar); the readback is a check | §CXLVII.5 |
+| 257 | Data gaps 9, 10 and 12 close as built on their sensitivities: none moves a verdict or a transient a trainee can see | §CXLVII.7-.9 |
+
+Data gaps 1, 3, 15 and 16 stay open: 1 and 3 on Körting (letter final), 15 on the readback with B-118, 16 on
+decision 253.
+
+## CXLVII.14 Deliverables and checks
+
+* `Tests and Reports\reports\Session_135_gaps`: the decision packet; the Körting and Foxboro Eckardt letters, final,
+  not sent; the LV-324501A step test procedure; `research\` (four open-literature results, validated); the session's
+  scripts and runs. `Tests and Reports\reports\DCS readback checklist.md`, one sheet in walking order (28 rows, four
+  stops), new in V1.2 (V1.1's copy untouched).
+* Nothing under `ureasim/` or `Tests and Reports/tests/` changed; `grep -rn PyQt6` below `hmi` prints nothing.

@@ -5287,3 +5287,14 @@ reduced-load HEAD arm (A-61). On the merged tree (79fa8ca) it still stops at 69.
 rig's ten header valves draw 67.9 t/h on E1's 2.8 bar g floor against a 54 t/h make (CXLVI.19). No Helwan source
 gives the plant's header-valve count per load: data gap 16 (CXLVI.20). Nothing built, no decision. Part CXLVI;
 runs `Tests and Reports\reports\Session_134_b118`.
+
+### Session 135 — 2026-11-19: the gap-closure session; the operator's header-valve rule on the B-118 rig
+
+The Operating Manual's header-valve rule, read in bar g on E1's two ends, put on the rig in scratch: with a 300 s
+dwell and no shedding while LY-324501 rises, 335P001 runs every 69.3 % and 92.3 % hold to its end, no PC35 latch, the
+100 % seed to the bit; at 92.3 % S + B on UA as built then stands D1 on all five windows (margin 0.04 K) on tree252,
+where without the rule 35.4 latches. Both 69.3 % arms fail the rule's own readings (a sixth valve off; hunting). Data
+gaps 4, 5, 9, 10, 12 and 14 measured and prepared to close as built; [E] estimates on open literature for 1, 3 and 15;
+D1's band is the seed's, the plant's rise measured 13.4-13.9 K. The decision packet, the Körting and Foxboro Eckardt
+letters, the LV-324501A step test and the DCS readback checklist written. Decisions 253 to 257 proposed, none taken;
+nothing under `ureasim/` changed. Part CXLVII; `Tests and Reports\reports\Session_135_gaps`.
