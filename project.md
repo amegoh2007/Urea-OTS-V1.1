@@ -28,7 +28,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
 * **Open.** `handoff.md`: Section A one (A-61), Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
-  Section C none, 9 open data gaps. Every data gap waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
+  Section C none, 10 open data gaps (16, the header-valve count per load, session 134). Every data gap waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
 * **Session 133** (Part CXLV; decision 252, built on branch `v1.2-d252` and merged into `v1.2` after session 134's runs). LY-324501 built on AC4's formula over V1's level with Rosemount's LRV floor, the seed unchanged to the bit; at the design vacuum 335P001's L2 stop cannot act, kept as built (2026-11-19). Researched: 324F003's and the leg's drawings (232 kg at the plant's 50 %), the cooling-water lead ruled out, PT-323204's two decimals, the UF85 pumps' capacity, the Drive copy's hash. The session 114 scratch plan ran in session 134.
 * **Session 132** (Part CXLIV; decision 251). V1.2 made. The separators' ejectors break on the plant's 5 November
   bracket: HV-329605 and HV-329606 now move PIC-324202, PT-324201, PT-323204, PIC-324203 and PT-324204 below 64 % and

@@ -28298,3 +28298,34 @@ lost first:
   5 026 s); D1 fails decision 180 and the rise: rise 4.86 K, TT-322005 175.69 C (-7.31 K), TT-322004 -9.95 K,
   PT-329201 -5.81 bar, TT-322010 and AY-322701 signs off. SB693_ldcL on 2efb181 read 4.90 K, 175.70 C, -9.45 K,
   -5.85 bar.
+
+## CXLVI.20 The plant's count of header valves online at each load: not in the Helwan record (data gap 16)
+
+The process engineer chose (2026-11-19) that the B-118 rig move GRANULATION-HEADERS with the load on the plant's own
+count. The count was searched for at 92.3, 90.5, 74.4, 69.3, 68.9 and 111 %, in CLAUDE.md §4's order:
+
+* **`References\` and its sub-folders.** Book2.xlsx (`DCS Trends`, sheet "Basic Data (Two Monthes)", 145 columns)
+  logs FY-335401 and FIC-335407 but no header valve, no header pressure and no count. `Urea_NormalOp_29-06-2025` and
+  `Urea_Startup_28-06-2025` have no header tag. The equipment descriptions (`324-1b ... Datasheet 1.md`) and
+  `Gaps Closure`'s dossiers hold none. Its 26 photographs (`Gaps Closure\Gaps`, 22-24 October 2026, viewed on a
+  contact sheet) are trend screens (323C003, PIC-324202, the surge bin), 329-2's condensate faceplates and
+  TT-322015's: none shows 324-1b's GRANULATION HEADERS panel. The 5 November 2026 trend group D
+  (`Data\Trends 511.2026`, §CXVI.5) logs HIC-335602, LV-324501A / B, PIC-335201 and FT-335401; the counts §CXVI.5
+  gives for it (10 to 12) are inferred from a fitted coefficient, `[I]`, not read.
+* **The vendor archive** (`/soft-copy-search`; Operating Manual UD-VT-G00-DC-0003, `Operating Manual and SOP\Helwan
+  Operating Manual meged.pdf`, text layer). It gives the rule and the order, never a count at a load:
+  - page 1-93: 12 header valves, 5 / 3 / 4 for the three spraying chambers;
+  - pages 4-40, 4-41: start-up on header valve 2, then 1, 4, 6, 7, 8 and 10; then "increase plant load by adding
+    other headers until recycle valve LV324501 B is closed";
+  - page 4-43 (to 100 %): "put another sprayer headers on line" as the header pressure rises, in the order
+    3 - 5 - 9 - 11, the main header held at 3 - 3.5 bar; the guide figures give 2.5 - 4.0 bar abs and 70.5 m3/h;
+  - pages 6-22, 6-23 (turndown and shutdown): with limited urea solution, PIC-335201 down to about 2.5 bar abs, and
+    for longer periods "taking one/several individual headers out of operation" to bring the pressure back within
+    ±5 %; on a reduction to about 60 %, "stop sprayer headers accordingly to the pressure in the urea melt main
+    header".
+  The manual's sequence names eleven valves (2; 1, 4, 6, 7, 8, 10; 3, 5, 9, 11) and leaves the twelfth unnamed. The
+  same text is in `References\Sources\Manual.pdf` and the SOP `HFC_Stamicarbon_Urea_Plant_SOP_Formatted.docx`.
+
+No Helwan source gives the count at any held load. As the process engineer instructed, E1's calculated count
+(§CXLVI.19) is not used in its place, and no arm was run. The datum is logged as data gap 16. The rig's stand-in
+stays the engine's design seed: ten valves at every load (`data/unit_335.HEADER_VALVES_DES`).
