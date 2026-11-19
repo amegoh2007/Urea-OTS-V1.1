@@ -28256,3 +28256,45 @@ Choices for the process engineer, none taken by this session:
   at 5 %. Decision 252 (session 133, on `v1.2-d252`, merged into `v1.2` after these runs) makes LY-324501 AC4's formula with
   Rosemount's LRV floor (20.6 % at the design vacuum) and keeps the stop unlatched; there the stop cannot act until
   the vacuum breaks. A-61's latch is therefore to be re-measured on that tree before its cause is sought on HEAD's.
+
+## CXLVI.19 A-61 on decision 252's tree: 335P001 still stops, after the seal is lost; the cause is the rig's header valves
+
+SB693_ldcL252 is SB693_ldcL ("d" + the clamp, 69.3 %, 14 400 s hold) unchanged, on the merged v1.2 tree 79fa8ca
+(decision 252: LY-324501 = max(level, the LRV floor), the L2 stop unlatched). `run/probeA61.py` records
+SecondEvaporator.step every 10 s (`runs/SB693_ldcL252_a61.jsonl`; read by `run/readA61.py`).
+
+**335P001 stops, at 6 030 s** (5 980 s on 2efb181), and PC35's 35.1 and 35.4 latch at the same sample. The seal is
+lost first:
+
+| t s | LY-324501 % | raw level % | floor % | PT-324203 bar a | LIC-324501 out % | LV-324501A stroke % | seal air kg/h | forward kg/h | feed kg/h |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 (seed) | 54.70 | 54.70 | 20.6 | 0.131 | 35.0 | 79.1 | 0 | 75 938 | 78 672 |
+| 4 000 | 55.58 | 55.58 | 21.83 | 0.1201 | 29.3 | 78.0 | 0 | 74 633 | 77 079 |
+| 5 400 | 37.18 | 37.17 | 24.71 | 0.0945 | 0.0 | 72.9 | 0 | 68 292 | 59 235 |
+| 5 800 | 24.37 | 15.81 | 24.37 | 0.0976 | 0.0 | 72.7 | 0 | 67 922 | 54 883 |
+| 6 000 | 24.11 | 3.46 | 24.11 | 0.0999 | 0.0 | 72.7 | 0 | 67 921 | 54 277 |
+| 6 020 | 14.53 | 2.21 | 14.53 | 0.1847 | 0.0 | 72.7 | 172 | 67 921 | 54 244 |
+| 6 030 | 4.58 | 2.29 | 4.58 | 0.2727 | - | - | - | - | - |
+| 6 040 | 22.47 | 0.01 | 22.47 | 0.1144 | 100.0 | 0.0 | 0 | 0 | 56 335 |
+| 21 720 | 54.70 | 54.70 | 9.27 | 0.2312 | 93.0 | 0.0 | 0 | 0 | 149 407 |
+
+* **The sequence is decision 252's.** The raw level reaches the 1 kg heel, the seal admits air from 6 010 s, PT-324203
+  passes 0.269 bar a at 6 030 s, the floor falls to 4.58 %, under the 5 % L2, and 335P001 stops for one sample. The
+  vacuum recovers by 6 060 s and the stop releases; PC35's latches hold LV-324501A shut, so no melt goes forward again
+  in the hold. LV-324501B recycles the whole drain (146 t/h at the end), 324F003's feed rises to 149 t/h and
+  PT-324203 settles at 0.231 bar a.
+* **Why the separator drains.** From 4 990 s 324F003's feed (the 69.3 % make, 54 t/h by 5 800 s) falls under the
+  drain, and from 5 330 s LIC-324501's output is 0 %. At X = 0 PC35.2.2 still sets PIC-335201's set point to
+  E1 = 2.8 bar g (decision 224), and the ten header valves the rig holds online (HEADER_VALVES_DES, the
+  GRANULATION-HEADERS handle, which no rig arm moves) pass 67.9 t/h at that pressure, 0.894 of the design drain. The
+  header's minimum draw exceeds the make, LIC-324501 has no authority left, and the leg empties. The plant's operator
+  takes header valves offline with the load (instruction I-3, decision 224); the rig does not.
+* **The count the load needs** `[I]`: the header flow goes as N sqrt(P), ten valves passing the design drain at
+  3.5 bar g (phi_noz = (N / N_des) sqrt(P / P_des), P in bar g); at the make's 0.72 of the design drain and E1
+  between 2.8 and 3.8 bar g, N lies between 6.9 and 8.1, so seven or eight valves at 69.3 %.
+  At 92.3 % (0.92 of design) ten valves at 2.8 bar g draw 0.894, at the margin, which agrees with that arm's late
+  stop (13 460 s). Not run; the count and whether the rig moves the handle are the process engineer's.
+* **The synthesis does not see decision 252.** D2 settled (b_rxn_K range 0.155 K, TT-322005 0.10 K, period
+  5 026 s); D1 fails decision 180 and the rise: rise 4.86 K, TT-322005 175.69 C (-7.31 K), TT-322004 -9.95 K,
+  PT-329201 -5.81 bar, TT-322010 and AY-322701 signs off. SB693_ldcL on 2efb181 read 4.90 K, 175.70 C, -9.45 K,
+  -5.85 bar.

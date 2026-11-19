@@ -22,20 +22,21 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 ### A-61 — 335P001 stops on LY-324501's L2 on every reduced-load hold of the B-118 rig
 
-*Raised 2026-11-19, session 134 (As-Built §CXLVI.11). Decision 217.* On V1.2's HEAD the rig's held arms latch PC35's
-35.1 and 35.4: 335P001 stops on LY-324501's 5 % L2 and the melt to the granulator falls to 0 t/h, with no precursor in
-the synthesis. It latches on every arm at 74.4-68.9 % (5 980-8 160 s), and on UA as built at 92.3 % (13 460 s) and
-90.5 % (10 140-10 310 s). There is no latch at 111 %, and none on the 0.50-exponent arms at 92.3 and 90.5 %. Session 112's
-tree, before decision 217, has no such stop. The rig moves no unit 324 or 335 handle and does not sample LY-324501.
-At 92.3 % the stop moves the synthesis by at most 0.3 K, and by 0.1 K at the hold's end (§CXLVI.11). The plant
-holds 69 % for hours with 335P001 running (Book2).
+*Raised 2026-11-19, session 134 (As-Built §CXLVI.11, .19). Decisions 217, 224 and 252.* The rig's held arms latch
+PC35's 35.1 and 35.4 when 335P001 stops on LY-324501's 5 % L2, and the melt to the granulator falls to 0 t/h for the
+rest of the hold. On 2efb181 it latches on every arm at 74.4-68.9 % (5 980-8 160 s), and on UA as built at 92.3 %
+(13 460 s) and 90.5 % (10 140-10 310 s); none at 111 %. The plant holds 69 % for hours with 335P001 running (Book2).
+On the merged tree (79fa8ca, decision 252) SB693_ldcL still stops, at 6 030 s, and only after 324F003's seal is
+lost (§CXLVI.19): the leg empties to its heel, the seal admits air, PT-324203 passes 0.269 bar a and LY-324501's
+floor falls under L2. The synthesis is unchanged (rise 4.86 K, TT-322005 175.69 C).
+Established cause: the rig holds the ten design header valves online (GRANULATION-HEADERS). At LIC-324501's 0 %,
+PC35.2.2's E1 floor of 2.8 bar g still draws 67.9 t/h (0.894 of design) through them, above the 69.3 % make of
+54 t/h, so LIC-324501 loses its authority and the leg drains. The plant's operator takes header valves offline
+with the load (instruction I-3); seven or eight valves would hold 69.3 % on E1's range (calculated).
 Acceptance: a 14 400 s hold at 69.3 % with 335P001 running, and the seed to the bit.
-Open: why LY-324501 falls. The candidates are LIC-324501's response to the melt cut, the rig's handling of unit 324,
-and V1's holdup ratio (data gap 4).
-Decision 252 is merged (LY-324501 on AC4's formula, its 20.6 % LRV floor above L2, the stop unlatched): while the
-vacuum holds the stop cannot act, so a stop on that tree means 324F003's seal was lost (§CXLV.9).
-Next step: re-run one 69.3 % hold on the merged tree; if 335P001 still stops, an arm sampling LY-324501, LIC-324501's output and the
-melt flow (§CXLVI.18); then the process engineer's.
+Open, the process engineer's: whether the B-118 rig moves GRANULATION-HEADERS with the load, and the count per load
+(the plant's, or N from E1's range).
+Next step: on that choice, one 69.3 % hold with the header valves set; A-61 closes if 335P001 runs throughout.
 
 ---
 

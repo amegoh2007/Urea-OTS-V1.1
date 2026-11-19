@@ -5283,5 +5283,7 @@ on plant data it settles UA as built at every reduced load by D2 (74.4 % by its 
 90.5 %; 111 % rings on every law. No hold at or below 90.5 % stands D1 or runs without a PC35 latch, so the 75 %
 HIC-329605 probe stays deferred. B-136 (b) gives TT-322004 the plant's sign, 0.8-1.8 times its size; B-126 (b) needs a
 display-resolution seed criterion; N6B shut leaves 0.866 of 322E001's area. 335P001 stops on LY-324501's L2 on every
-reduced-load HEAD arm (A-61; to re-run on decision 252's tree). Nothing built, no decision. Part CXLVI; runs
+reduced-load HEAD arm (A-61). On the merged tree (79fa8ca) it still stops at 69.3 %, after the seal is lost: the
+rig's ten header valves draw 67.9 t/h on E1's 2.8 bar g floor against a 54 t/h make (CXLVI.19).
+Nothing built, no decision. Part CXLVI; runs
 `Tests and Reports\reports\Session_134_b118`.
