@@ -28992,3 +28992,204 @@ engineer's rulings of 2026-11-19 19:30 are decisions 269, 270, 274 and 275. Noth
 `scratch/session-137/score137.py` imports score136 unchanged and replaces only its rise verdict with decision 274's
 departure and adds decision 269's whole-hold minimum (from the ramp's end and from the settle's end, both printed).
 Book2's bands are `desk/book2_136.json`; 100 % is interpolated on the band load means. Its output is §CXLVIII.12.
+
+## CXLIX.2 Step 2: each wave M arm ran what it registered
+
+`scratch/session-137/audit137.py` (output `audit137.txt`) reads every wave M arm, the 92.3 % control R923b included:
+(1) the configuration the run recorded against the file `mkcfg136.py` wrote before launch; (2) each law switch by its
+install line in the run's log; (3) each registered handle at the first sample, the ramp's end and the hold's start
+against its policy. The rig now prints it after every run (`run/go137.sh` writes `runs/<arm>_audit.txt`).
+
+* All 17 recorded configurations equal their registered files; every switch registered is installed and none
+  unregistered (S, B, the stagnant wall, the twelve compartments, the lean rise off, the 2.41 bar lift share, the header
+  rule and the probe; the refit's keq on the K arms only). No arm is re-labelled. The 74.4-68.9 % arms ran their AT trim saturated on its floor (the
+  last bullet): their policy ran as registered, and their verdict, ringing, stands as scored.
+* Schedules applied: HIC-322604 to the bit; PIC-329204, MASTER-329207 and TIC-329005 to the faceplate's step (0.01 bar,
+  0.01 bar, 0.1 C), the rig's command rounded to the published resolution. MASTER-329207 reads 5.010 bar a from the first
+  sample on every arm, N100A included, against the seed's 5.01325: the comparisons with N100A are unaffected.
+* HIC-322605 (the operator's hand station): applied, 51-86 moves; LT-322504 at the hold's start 73.3-78.3 % at the
+  reduced loads against its 80 %, closing at the rig's half-hour horizon.
+* Conditional, not triggered, on all 17 arms: FIC-323418 (LIC-323503's output 36-62 %) and FIC-329402 (LIC-328504's
+  55-60 %) never saturate, so neither override steps.
+* Applied, at a limit: the AT trim on RATIO sits on its 2.0 floor for 49-66 % of the hold at 74.4, 69.3 and 68.9 %, with
+  AT-322701 at 3.06-3.07 against its 2.98-2.99 target; HIC-323605 sits at its 100 % ceiling for 66-100 % of the hold at
+  every reduced load (323F010's level 24-45 % against 60 %) and at its 20 % floor at 111 % (91 % against 60 %); at 111 %
+  HIC-322604 sits on its 71 % ceiling for 72 % of the hold. The policies ran as registered; these trims cannot reach
+  their targets.
+
+## CXLIX.3 A-62 on the Operating Manual
+
+UD-VT-G00-DC-0003 (the merged copy, `Operating Manual and SOP\Helwan Operating Manual meged.pdf`):
+* p. 1-69: FIC-324401 is cascaded and "receives it setpoint under stable conditions from LIC323507"; p. 1-68: the
+  levels in 323D002 "are kept always as low as possible".
+* p. 4-25 (start-up of the evaporation): "Keep the level in the small compartment (I) around 10 %" and put
+  LIC-323507 on automatic, FIC-324401 on cascade.
+* pp. 6-22 to 6-23 (the granulation's turndown): "Slowly reduce the urea solution flow to first stage evaporator" and
+  stop the sprayer headers on the main header's pressure. p. 6-16 (the evaporation's shutdown) reduces the level in
+  323D002 "as far as possible" and the feed to about 45 m3/h on FIC-324401.
+Reading. The manual keeps LIC-323507 on automatic at about 10 % with FIC-324401 on cascade "under stable
+conditions" (p. 1-69); on a load change it moves the evaporator's feed itself: p. 4-43 raises the load "by increasing
+the urea solution feed to the evaporation section", and p. 6-23 reduces it by "Slowly reduce the urea solution flow to
+first stage evaporator". The rig leaves the cascade in command through the ramp. On that reading the rig omits a
+handle the operator moves, as it omitted A-61's header valves: a candidate rig rule is the feed following the load on
+the ramp and the cascade restored once the plant is stable (§CXLIX.5). The loop's tuning is V1's (`main.py`
+State.__init__ and step_sim, `_ctrl_ipd` on LIC-323507, Kc 1.0 t/h per % and Ti 4 030 s, which
+`data/unit_323d002.py` records as V1's own estimate: the loop has no row in the plant DCS table). V1 cannot show a lost
+suction: the suction limit is the rewrite's (B-26's decided divergence), and V1's 1 kg floor makes up the pump's draw;
+the emptying is the loop's, the symptom B-26's. The item's section is the process engineer's to decide.
+
+Probed (wave P, `scratch/session-137/run`, registered before launch; `a62read137.py`). P744 and P689 reproduce U744 and
+U689 to the hold's 1 800 s (0 of 234 300 and 252 450 series leaves differ). 323D002 loses suction at both loads, as at
+69.3 %:
+
+| Load | Ramp end | m_I at ramp end | Suction lost | Drain in / LIC-323507 output at the loss | At the hold's start |
+|---|---|---|---|---|---|
+| 74.4 % | 3 120 s | 7 414 kg | 4 980 s | 63.0 / 79.6 t/h | drain 63.9, output 75.3 t/h, still lost |
+| 68.9 % | 3 780 s | 5 307 kg | 5 000 s | 63.1 / 79.5 t/h | drain 61.1, output 73.6 t/h, still lost |
+| 69.3 % (T693b, §CXLVIII.3) | 3 720 s | — | 4 980 s | — | regains suction at 16 610 s |
+
+The mechanism is the loop's: LIC-323507 at Kc 1.0 t/h per % and Ti 4 030 s answers a level 10 % under its set point
+with 10 t/h of proportional action and then winds down at 10 / 4 030 x 3 600 = 8.9 t/h per hour, while the drain falls
+30 t/h across the ramp; the 9 208 kg at 10 % cannot hold the difference. The output stays 11 t/h above the drain at
+8 520 s.
+
+
+Measured with the operator's feed rule (wave F, registered before launch; `run/rule137.py`, `a62read137_F.txt`): F744
+and F689 are P744 and P689 with FIC-324401 in AUTO on the seed's set point times the ramp's load, the cascade restored
+bumplessly at the ramp's end (FIC-324401 at 69.10 and 64.00 t/h). 323D002 keeps suction in every sample at both loads;
+its holdup never falls under the seed's 9 208 kg, rises to 16 488 and 18 513 kg over the ramp and drains back towards
+its 10 % (LIC-323507 at 14.1 and 17.9 % at the run's end, its output 3.4 and 4.3 t/h above the drain). 324F001's
+lowest level is 30.4 and 28.4 % against 25.8 and 24.8 % without the rule; the rule leaves 2 and 3 header-valve moves;
+the trips seen are the controls' own (the carbamate-deposition flag at 360 s on every arm). The rule is the rig's
+reading of the manual and is proposed for the B-118 rig as decision 253's header rule was (decision 277, proposed);
+nothing is built.
+
+## CXLIX.4 Step 3: which law breaks the 100 % seed (decision 275)
+
+Wave L (`scratch/session-137/run`, `mkcfg137.py`, registered in `registry137.md` before launch): twelve arms at 100 %,
+settle 600 s, hold 14 400 s; X_<law> = N100U less one law, A_<law> = N100A plus that law alone. Every arm's audit is
+clean (configuration equal to its file, switches as registered). Read on `disp137.py` against N100A on the console's
+decimals over 15 000 s (`run/disp137_L.txt`; the 3 600 s preview, `run/disp137_L3600.txt`, named only the two steam
+flows on N100U and is not the verdict):
+
+| Law | Alone (A): tags failing, largest displayed departure, first beyond | Removed from the u set (X): tags failing |
+|---|---|---|
+| S (322E002 closed on its duty, UA pinned) | 16: TT-322011 8.4 K, PV-329207B 3.8, LT-322504 3.2 %, FT-329403 3.0 t/h, AT-322701 0.072; FT-329407 from 320 s, AT-322701 and PV-329207B from 1 800 s | 17: LT-322504 7.9 %, PV-329207B 10.3, FT-329407 6.0 t/h, TT-322007 5.1 K, TT-322015 4.0 K |
+| hold (B-126 (b)'s twelve compartments) | 17: PV-329207B 9.6, LT-322504 8.2 %, FT-329407 5.4 t/h, TT-322007 4.9 K, TT-322006 3.8 K; from 2 550 s | 11: TT-322011 1.2 K, PV-329207B 0.8, FT-329403 0.52 t/h, AT-322701 0.010; FT-329407 from 320 s |
+| B (the re-flash on the top's subcooling) | 5: TT-322011 0.4 K, LT-322504 0.2 %, AT-322701 0.003; all after 9 000 s | 14: FT-329403 0.54 t/h, LT-322504 0.6 %, TT-322015 0.6 K, the reactor's thermowells 0.2-0.3 K |
+| ej (322F001's lift share 2.41 bar) | 5: TT-322011 0.3 K, LT-322504 0.2 %; all after 11 000 s | 6: as N100U's 7 less TT-322004 |
+| lean (322E001's feed-deficit rise off) | 4: TT-322011 0.2 K, AT-322701 0.002; all after 11 000 s | 7: as N100U |
+| wall (the stagnant-reactor wall loss) | none: passes | 7: as N100U |
+
+N100U itself (all six) fails 7 (§CXLVIII.12). On all of disp136's published tags (`run/disp136_L.txt`) the counts
+are A_S 16, A_hold 22, A_B 6, A_ej 6, A_lean 5, A_wall none, N100U 8; X_S 22, X_B 11, X_hold 10, the others 8.
+
+Checks on the same runs (`extra137.py`, `run/extra137.txt`):
+* **The reference wanders.** N100A against its own first sample, on the console's decimals: TT-322011 0.4 K (first
+  beyond one step at 7 550 s), LT-322504 0.2 % (6 190 s), AT-322701 0.003 (11 350 s), FT-329403 0.05 t/h (6 620 s),
+  FT-329407 0.05 t/h (500 s), and HIC-322605 is re-typed six times between 6 610 and 13 810 s (60.00 to 60.02 %). These
+  are N100U's failing tags at N100U's first-beyond times (TT-322011 7 550 s on both), and N100U's departures from
+  N100A every 1 500 s stay within -0.3 to +0.3 K on TT-322011 and 0.3 % on LT-322504, the reference's own wander. The
+  late one-to-four-step failures of N100U and of A_ej, A_B and A_lean are the seed's own wander arriving out of phase
+  between two runs, not a law's drift.
+* **The rig's trims follow any difference.** On every arm the rig's trims depart from N100A's (HIC-323605 within
+  10-490 s, HIC-322602 within 10-1 020 s, RATIO and FIC-328402 later on A_ej, A_B, A_wall and A_lean), and HIC-322605 is re-typed 26-30 times on A_S and
+  A_hold against N100A's 6: what the comparison measures is the plant and the rig's closed trims together.
+* **S alone and the holdup alone grow an oscillation; neither drifts.** Their departures alternate in sign with growing
+  amplitude: A_S on TT-322011 -2.4, -1.4, +4.2, +7.9, -3.4 K at 9 000-15 000 s; A_hold on LT-322504 -0.3, +0.6, +2.2,
+  +1.8, -8.2 %. At 13 500 s both are +2.2 and +3.8 K on TT-322006, the same sign: they do not cancel tag by tag. Together,
+  with the other four, the oscillation stays inside the reference's wander (N100U); without the holdup (X_hold) it grows
+  to 1.0 K on TT-322011 and 0.41 t/h on FT-329407.
+* **The wall loss** differs from N100A at leaf level from 230 s (rounding-size residues, 2e-10 on the column's balance,
+  growing to 1 kg/h of 322E002's steam at 15 000 s) and passes on every published tag: seed-neutral on the console, not
+  to the bit.
+* Which law breaks the seed (decision 275): S and the holdup, each alone, by a growing oscillation past a kelvin from about
+  9 000 s (the first steam-flow departures from 320-2 550 s), past the display step on 16-22 tags. On the u set the residue is
+  the seed's own wander. Decision 259 compares two runs that both wander; a reference that holds its own first sample to
+  the display step would separate a law from the wander (a proposal, decision 276).
+
+## CXLIX.5 Step 4: 322R001's boundary decomposed at unit level
+
+Wave B (registered before launch): B923 = R923b and B693 = U693 with probe137 (`run/probe137.py`) recording the
+column's call every 10 s. Null: B923 against R923b, 0 of 568 800 series leaves differ; the probe recorded one call per
+tick (its last call index x 0.1 s = 18 960 s, the run's end). The decomposition is `boundary137.py` (its docstring
+registers the channels and the plant's boundary); the closure checks are `callcheck137.py`. Unit model: session 136's
+refit forward model (322R001 as built with law B, V1's pinned kinetics, the node balance iterated to convergence);
+on the seed's own call it rises 12.996 K against the engine's 12.999 K.
+
+**92.3 % (B923 over score136's window, 9 513-18 960 s; Book2's 94.2 % band).** `run/boundary137_B923.txt`:
+
+| Channel | Plant (Book2 departures on the seed) | Engine (probe137 mean) |
+|---|---|---|
+| Inlet T (C) | 169.69 | 169.40 |
+| Loop pressure (bar a) | 137.47 | 139.90 |
+| NH3 / C (drive) | 2.572 (3.090) | 2.650 (3.077) |
+| H2O / C (drive) | 0.331 (0.398) | 0.353 (0.415) |
+| Gas CO2 / C | 0.169 | 0.150 |
+| Inerts / C | 0.0204 | 0.0207 |
+| C (kmol/h), CO2 feed (t/h) | 2 651, 50.05 | 2 515, 50.41 |
+| Level | 0.800 | 0.800 |
+
+* The unit model on the plant's boundary rises 13.201 K: a departure of +0.20 K from its seed, Book2's being +0.21 K.
+  On the engine's boundary it rises 13.273 K, a loss of -0.07 K against the plant's boundary; the engine itself rises
+  12.098 K. The boundary the loop delivers accounts for none of the engine's 1.18 K: the channels' single swaps (split
+  -3.16 K, thru +0.21, NC -0.20, HC -0.10, T -0.06, the rest 0.00) sum to -3.31 K, but the split's -3.16 K is undone by
+  the pressure (split with p together +0.08 K, an interaction of +3.24 K, through law B's re-flash), and the channels'
+  shares of a 0.07 K whole are not a reading of the loss.
+* The closure. One engine call re-made from its recorded arguments reproduces its result to the printed digit
+  (x 0.544636; the four node heats). The engine's mean nodes satisfy the node balance on its own heats to 0.06 K. On the
+  engine's mean boundary, frozen, at the engine's own throughput, the column has three fixed points: the engine's own
+  (rise 12.10 K), which a march from it holds for about 20 iterations and then leaves; above it a stable branch at
+  13.3-13.4 K (13.27 K with the throughput live on the overflow, which `steady()` reaches from the engine's nodes and
+  from the seed's alike); below it a stable branch at 11.0-11.2 K. Perturbed by +0.2 K on every node the march goes to
+  13.40 K, by -0.2 K to 11.19 K, by -1.0 K to 11.03 K.
+* Reading: at 92.3 % the engine holds 322R001 on the column's middle, open-loop-unstable fixed point, held there by the
+  loop's response; on its own boundary, frozen, the column would sit 1.2-1.3 K hotter, about where the plant's
+  departure puts it. The rise loss is the branch the loop holds, not a boundary channel. The next unit upstream is not
+  indicated by a channel; what holds the middle point is the loop's feedback on the column's boundary (law B's re-flash
+  on the top's subcooling and 322E002's S are the two terms that move with the top), to be measured with the loop
+  closed one term at a time. The three points and their stability are the unit model's, under a damped march at frozen
+  throughput; the unit model omits the boil cap, the wall loss and the twelve-compartment holdup, so the 1.18 K closure
+  gap may also be one of those terms, untested here.
+
+**69.3 % (B693 over 7 902-21 720 s, three periods of its 4 606 s ringing, averaged; Book2's 69.3 % band).** Null:
+B693 against U693, 0 of 651 600 series leaves differ; one call per tick. `run/boundary137_B693.txt`,
+`run/callcheck137_B693.txt`:
+
+| Channel | Plant | Engine |
+|---|---|---|
+| Inlet T (C) | 169.01 | 167.90 |
+| Loop pressure (bar a) | 131.46 | 135.36 |
+| NH3 / C (drive) | 2.532 (3.042) | 2.817 (3.057) |
+| H2O / C (drive) | 0.331 (0.398) | 0.406 (0.447) |
+| Gas CO2 / C | 0.169 (the seed's; Book2 measures none) | 0.091 |
+| C (kmol/h), CO2 feed (t/h) | 2 008, 37.92 | 1 639, 37.85 |
+
+* Closure: the unit model on the engine's mean boundary rises 6.740 K, the engine 6.763 K (-0.02 K); one call re-made
+  reproduces its result to the printed digit; one fixed point, which the march reaches from the engine's nodes, from the
+  seed's and from offsets of -1.0, -0.2 and +0.2 K alike. The ringing average is a mean over a limit cycle, stated.
+* The unit model on the plant's boundary rises 14.20 K (a departure of +1.20 K; Book2's is -0.22 K, so on the seed's
+  split and H/C the unit model over-predicts the plant by 1.4 K here). Engine boundary less plant boundary: -7.46 K.
+* Single swaps: split -9.15 K (123 % of the loss), NC -0.77 K (10 %), HC -0.37 K (5 %), T -0.20 K (3 %), thru +0.70 K
+  (-9 %), p, inerts and level 0.00; singles sum to -9.79 K. The split's pairs give back 0.9-2.3 K (NC with split
+  -7.58 K, interaction +2.35 K; level with split +1.60 K; inerts +1.16 K; HC +0.91 K).
+* The worst channel is 322E002's split: at 69.3 % the engine delivers 9.1 % of the column's CO2 as gas against the
+  seed's 16.9 %, with its outlet (TT-322010) 1.1 K under Book2's departure. One unit upstream this is the established
+  term of §CVI.1-4 (322E002's flash loses half its CO2 gas per kelvin of TT-322010; the cold branch's term is the gas
+  CO2 from 322E002): the decomposition puts that term first at the column, at 69.3 %, by an order of magnitude.
+
+The two loads differ in kind: at 69.3 % the loss is the boundary's (the split), on a stable column; at 92.3 % the
+boundary costs 0.07 K and the loss is the branch the loop holds the column on. Book2 measures neither the split nor the
+H/C, so the plant's split at 69.3 % is the seed's by assumption: the decomposition names the engine's split as far from
+the seed's, not as far from a measured plant value.
+
+## CXLIX.6 Decisions proposed, and deliverables
+
+| No. | Proposal | Section |
+|---|---|---|
+| 276 | Decision 259's reference is held to its own first sample as well: a law passes when the arm's displayed tags stay within one step of the reference wherever the reference stays within one step of its own start, so that the seed's own wander is not counted against a law | .4 |
+| 277 | The operator's evaporator-feed rule (FIC-324401 on AUTO following the load on the ramp, the cascade restored at its end) rides every B-118 arm in scratch, as the header rule does (decision 253); A-62's section left to the process engineer | .3 |
+
+Scripts, configurations, registry and runs: `Tests and Reports/scratch/session-137` (score137, disp137, audit137,
+extra137, boundary137, callcheck137, a62read137, decisions_proposed137.md, run/ with mkcfg137, go137, cfg137, probe137, rule137 and
+registry137.md). Nothing under `ureasim/` or `Tests and Reports/tests/` changed.

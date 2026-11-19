@@ -5311,10 +5311,12 @@ licensor's 95 % misses by 2.9 K rms. The literature's ejector break gives 1.12 o
 arms left running, unscored. Decisions 268 to 273 proposed; nothing under `ureasim/` changed. Part CXLVIII;
 `Tests and Reports\reports\Session_136_rulings`.
 
-### Session 137 — 2026-11-19: the rulings on the rise and the re-anchor recorded; wave M scored
+### Session 137 — 2026-11-19: the rulings on the rise and the re-anchor; the seed's law audit; 322R001's boundary
 
-The process engineer's rulings of 19:30 recorded as decisions 269 (decision 180's TT-322005 clause over the whole
-hold), 270 (Q-S closed, not built; the lead is 322R001's boundary), 274 (the rise scored as a departure from 100 %)
-and 275 (decision 259 as written). score137 re-scores wave M's seventeen arms: no arm stands; 92.3 % departs -0.90 K
-against the plant's +0.21 K; 90.5 % dips to 179.6 C over the whole hold. On the console's decimals the u law set
-fails decision 259 on 7 tags (N100U, N100M). Part CXLVIII.12 and Part CXLIX; `Tests and Reports\scratch\session-137`.
+The rulings of 19:30 recorded as decisions 269, 270, 274 and 275; wave M re-scored on the departure: no arm stands.
+The audit finds every wave M arm ran its registry. Wave L (each law removed, each alone, 15 000 s): the u set's 7
+failing console tags match N100A's own wander; S alone and the holdup alone each grow a ringing; proposal 276 holds
+the reference to its first sample. Step 4, 322R001 in the unit model on a frozen boundary: at 92.3 % the column has three fixed
+points and the engine sits on the unstable middle (12.10 K against 13.3 K); at 69.3 % 322E002's gas CO2 split
+costs -9.2 K of the -7.5 K loss. A-62: the manual's feed move on a load change (wave F) keeps 323D002's suction;
+proposal 277 puts it on every B-118 arm. Step 6 skipped. Part CXLIX; `Tests and Reports\scratch\session-137`.

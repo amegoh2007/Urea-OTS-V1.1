@@ -31,9 +31,10 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   B-136), Section C none, 4 open data gaps (1, 3, 10, 15). Each waits on a vendor document (Körting) or on one plant
   DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
 * **Session 137** (Part CXLIX, §CXLVIII.12; decisions 269, 270, 274 and 275 on the rulings of 2026-11-19 19:30;
-  nothing built). Wave M scored on the rise departure and decision 180 over the whole hold: no arm stands; 90.5 %
-  dips to 179.6 C. Q-S closed, not built: the reactor's law is cleared, the lead is the boundary the loop delivers.
-  The u law set fails decision 259 on 7 console tags; which law drifts is session 137's audit.
+  276 and 277 proposed; nothing built). No wave M arm stands on the rise departure; wave M ran as registered. The
+  seed's failing tags under the u set match the reference's own wander; S and the holdup each ring alone. 322R001 on
+  its boundary (unit model, frozen): at 92.3 % the engine sits on the unstable middle point (12.10 K; stable 13.3 K);
+  at 69.3 % 322E002's gas CO2 split costs -9.2 K of a -7.5 K loss. A-62: the manual's feed move on a load change keeps 323D002's suction.
 * **Session 136** (Part CXLVIII; decisions 253 to 267 on the rulings, 268 and 271 to 273 proposed). The refit picks
   V1's approach (f 0.58); the ejector break and gap 15 stay open; the T693b trace closes gap 16, raises A-62.
 * **Session 135** (Part CXLVII). The manual's header-valve rule on the B-118 rig (decision 253); data gaps measured, [E]
@@ -70,9 +71,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 138 (137 claimed 2026-11-19, the rulings on the rise and the re-anchor, the seed's law audit) | `docs/history/session-log.md` |
-| Decision | 276 (253 to 267 taken by session 136; 268 to 273 claimed by session 136, proposed, not taken; 269 and 270 taken and 274 to 275 claimed by session 137 on the rulings of 2026-11-19 19:30) | `docs/decisions.md` |
-| As-Built Part | CL (CXLIX claimed by session 137) | the As-Built reference, appended at its end |
+| Session | 138 (137 taken 2026-11-19: the rulings on the rise, the seed's law audit, 322R001's boundary, A-62) | `docs/history/session-log.md` |
+| Decision | 278 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 and 277 claimed by session 137, proposed, not taken) | `docs/decisions.md` |
+| As-Built Part | CL (CXLIX taken by session 137) | the As-Built reference, appended at its end |
 | Handoff Section A | A-63 (A-62 session 136's) | `handoff.md` |
 | Handoff Sections B and C | B-157 (session 134 took none) | `handoff.md` |
 
