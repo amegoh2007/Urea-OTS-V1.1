@@ -28919,3 +28919,76 @@ proposed.md`.
   session.
 * Nothing under `ureasim/` or `Tests and Reports/tests/` changed. The docs and layering tests and `CLAUDE.md` §1 rule
   3's grep were run at close (session log).
+
+## CXLVIII.12 Wave M scored (written by session 137 on the rulings of 2026-11-19 19:30)
+
+*Every wave M arm finished after session 136's close. Read on score136 (decisions 260 to 262), then on score137
+(decisions 269 and 274, §CXLIX.1); runs in `scratch/session-136/run/runs`, scores in `scratch/session-137/rescore137.txt`.*
+
+The rise departure (decision 274): the engine's is the thermowell rise at the hold less the seed's 12.999 K (N100A);
+the plant's is Book2's band rise less 13.675 K, Book2 interpolated to 100 % between its 94.2 % and 111 % band means
+(13.704 K on the band labels). The seed's offset is -0.676 K (finding, printed once). The absolute rise counts for none.
+
+| Arm | Load | Rise TW (K) | Engine dep. | Plant dep. | TT-322005 min after ramp (C) | score136 | score137 |
+|---|---|---|---|---|---|---|---|
+| R923b (control), R923 | 92.3 % | 12.10 | -0.90 | +0.21 | 180.30 | settled, fails rise | fails departure, 180 whole hold |
+| K923 (f 0.58) | 92.3 % | 12.16 | -0.84 | +0.21 | 180.30 | settled, fails rise | the same |
+| Q923 (95 %) | 92.3 % | 12.07 | -0.93 | +0.21 | 180.30 | settled, fails rise | the same |
+| U905, K905 | 90.5 % | 11.40, 11.44 | -1.60, -1.56 | none | 179.6, 179.6 | STANDS | settled, fails 180 whole hold |
+| U693 (control), K693 | 69.3 % | 6.76, 6.96 | -6.24, -6.04 | -0.22 | 172.2, 172.5 | ringing | ringing |
+| Q693 | 69.3 % | 2.43 | -10.57 | -0.22 | 167.0 | ringing | ringing |
+| U744, K744 | 74.4 % | 7.58, 7.97 | -5.42, -5.03 | none | 174.1, 175.3 | ringing | ringing |
+| U689, K689 | 68.9 % | 7.19, 6.87 | -5.81, -6.13 | none | 172.1, 172.4 | ringing | ringing |
+| U111, K111 | 111 % | 14.44, 14.37 | +1.44, +1.37 | -0.30 | 178.4, 179.0 | ringing | ringing |
+
+* No arm stands. 90.5 % stood on score136 0.21 K above TT-322005's 180.6 C floor on the last period only; read over
+  the whole hold after the ramp (decision 269) it dips to 179.6 C and fails. The 92.3 % arms fail on both counts.
+* The departures' sign: the plant's rise grows 0.21 K from 100 to 92.3 % and falls 0.22 K to 69.3 %; the engine's
+  falls 0.9 K at 92.3 % and 6 K at 69.3 %. 90.5, 74.4 and 68.9 % carry no rise criterion (decision 262's scope).
+* The reactor's law does not move the turndown: K moves the rise +0.06 K at 92.3 % and +0.20 K at 69.3 %; Q, the
+  licensor's 95 %, reads 0.03 K under the control at 92.3 % and 4.3 K under it at 69.3 %. Decision 270 closes Q-S, not built.
+* U693 reproduces R693ub to the leaf (0 of 651 600 series leaves differ): FIC-323418's override never steps, because
+  LIC-323503 is not saturated, by the rig's design.
+* At 111 % both arms ring (period 3 400 s) at 185.1 C and fail decision 180's 111 % ranges on TT-322004, TT-322005 and
+  PT-329201; TT-322004 departs +4.67 K (U) and +2.80 K (K) against Book2's +3.69 K; LT-329501 leaves 50 % only here
+  (35.4 and 32.8 %).
+* A-62's proxy: 324F001's level falls 5.7 % in 100 s at 5 080-5 100 s on U744, U693 and U689, the signature of
+  T693b's 323D002 suction loss (§CXLVIII.3); at 92.3, 90.5 and 111 % the largest 100 s fall is 0.3-0.5 %.
+* Decision 259 on the 100 % nulls, every published tag within its display step of N100A over 15 000 s. On the rig's
+  stored decimals (`run/disp136.py`) N100U fails on 8 tags and N100M on 8. On the console's decimals
+  (`data/screen_layout.py`'s `dec`, `scratch/session-137/disp137.py`, displayed values compared):
+
+| Tag (dec) | N100U max displayed difference, first beyond | N100M |
+|---|---|---|
+| AT-322701 (3) | 0.003, 11 350 s | 0.003, 11 350 s |
+| FT-329403 (2) | 0.22 t/h, 3 190 s | 0.12, 3 810 s |
+| FT-329407 (2) | 0.11 t/h, 500 s | 0.05, 500 s |
+| LT-322504 (1) | 0.3 %, 8 230 s | 0.3 %, 11 270 s |
+| PV-329207B (1) | 0.2, 11 750 s | passes |
+| TT-322004 (1) | 0.2 K, 14 450 s | passes |
+| TT-322006 (1) | passes | 0.2 K, 10 s |
+| TT-322007 (1) | passes | 0.2 K, 5 860 s |
+| TT-322011 (1) | 0.4 K, 7 550 s | 0.4 K, 7 550 s |
+
+  On the console both fail on 7 tags. HIC-322605 (0.09 %) and TT-322006 (0.11 K) pass N100U on the console's
+  decimals; TT-322004 fails it at the hold's end. The u law set itself fails decision 259 (decision 275 keeps the
+  criterion as written), so no arm built on it is buildable as it stands; which law drifts is §CXLIX.
+
+# Part CXLIX — Session 137: the rulings on the rise and the re-anchor, the handle audit, the seed's law audit, A-62 and 322R001's boundary (2026-11-19)
+
+*2026-11-19, session 137, on V1.2's HEAD (3517abc) and on session 134's tree252 (decision 252). The process
+engineer's rulings of 2026-11-19 19:30 are decisions 269, 270, 274 and 275. Nothing under `ureasim/` or
+`Tests and Reports/tests/` changed. Scripts and runs: `Tests and Reports/scratch/session-137`.*
+
+## CXLIX.1 The rulings as decisions, and score137
+
+| Ruling | Decision | What it fixes |
+|---|---|---|
+| Q-R (ii) | 274 | The rise is scored as a departure from 100 %, the engine's from its seed, the plant's from Book2 at 100 %, +/- 1.0 K; the absolute printed beside it |
+| Q-S | 270 | 322R001's re-anchor closed, not built; V1's X_INF as built; the refit and the 95 % anchor rejected; the lead is the boundary the loop delivers |
+| 180's whole-hold clause | 269 | TT-322005's minimum read over the whole hold after the ramp |
+| 259 stays | 275 | Decision 259 as written; its failure on the base law set is a finding to trace |
+
+`scratch/session-137/score137.py` imports score136 unchanged and replaces only its rise verdict with decision 274's
+departure and adds decision 269's whole-hold minimum (from the ramp's end and from the settle's end, both printed).
+Book2's bands are `desk/book2_136.json`; 100 % is interpolated on the band load means. Its output is §CXLVIII.12.

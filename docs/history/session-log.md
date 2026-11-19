@@ -5310,3 +5310,11 @@ licensor's 95 % misses by 2.9 K rms. The literature's ejector break gives 1.12 o
 323D002 regaining suction (lost at 4 980 s with or without the rule): gap 16 closed, A-62 raised. Wave M's seventeen
 arms left running, unscored. Decisions 268 to 273 proposed; nothing under `ureasim/` changed. Part CXLVIII;
 `Tests and Reports\reports\Session_136_rulings`.
+
+### Session 137 — 2026-11-19: the rulings on the rise and the re-anchor recorded; wave M scored
+
+The process engineer's rulings of 19:30 recorded as decisions 269 (decision 180's TT-322005 clause over the whole
+hold), 270 (Q-S closed, not built; the lead is 322R001's boundary), 274 (the rise scored as a departure from 100 %)
+and 275 (decision 259 as written). score137 re-scores wave M's seventeen arms: no arm stands; 92.3 % departs -0.90 K
+against the plant's +0.21 K; 90.5 % dips to 179.6 C over the whole hold. On the console's decimals the u law set
+fails decision 259 on 7 tags (N100U, N100M). Part CXLVIII.12 and Part CXLIX; `Tests and Reports\scratch\session-137`.

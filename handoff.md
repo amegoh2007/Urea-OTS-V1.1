@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-19, session 136.
+**Last updated:** 2026-11-19, session 137.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -52,9 +52,12 @@ its inflow through until FIC-324401's output, winding down with LIC-323507's fal
 inflow at 16 610 s, when the delivery steps 4-5 t/h down and the tank refills. The plant holds 69 % for hours with
 no such step (Book2).
 Acceptance: 323D002 keeps suction through every B-118 hold; the 100 % seed to the bit.
-Open: whether V1 shows it; whether it happens at 74.4 and 68.9 % and at the other loads (wave M's arms, read on
-324F001's level and LIC-323507's output, as they finish); why the ramp's draw outruns the inflow.
-Next step: read 323D002's level in wave M's arms (session 137).
+Wave M (§CXLVIII.12): 324F001's level falls 5.7 % in 100 s at 5 080-5 100 s on U744, U693 and U689, T693b's
+signature; not at 92.3, 90.5 or 111 %. FIC-324401's set point is LIC-323507's output, not a rig handle.
+Open: a probe's confirmation at 74.4 and 68.9 %; whether the manual moves LIC-323507 on a turndown (a rig artefact,
+as A-61's header valves were); whether V1 shows it; why the ramp's draw outruns the inflow.
+Next step: a 10 s probe of 323D002 and 324F001 at 74.4 and 68.9 %; the Operating Manual (UD-VT-G00-DC-0003, section
+4, pp. 6-22 to 6-23) on FIC-324401 and the evaporator feed (session 137).
 
 ---
 
@@ -62,19 +65,16 @@ Next step: read 323D002's level in wave M's arms (session 137).
 
 ### B-118 — Below 100 % load the engine holds no steady state on the plant's reactor window
 
-*Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to XCVIII, C, CIII to CVII,
-CX to CXV, CXVII to CXIX, CXXII and CXLVI; decisions 177, 180, 181, 188 and 190.*
+*Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to CXLIX; decisions 177, 180, 181, 188,
+190 and 259 to 275.*
 
-**Problem.** The plant runs for hours at reduced load. The committed engine, ramped from its design
-seed, does not, on every operating policy tried:
-
-* 70 to 85 %: trip 22.1 within 20 to 80 minutes (322E003's sump floods, or it vents and TT-322015
-  passes 110 C), or, with 22.2 removed (decision 189), SV32064 lifts and 21.2, 21.8, 21.10 and 22.1 latch
-  (§CXV.12); where none fires, 322R001 collapses (TT-322005 158-172 C).
-* 90 to 95 %: a cold branch, TT-322005 168-178 C, conversion 36-48 %.
+**Problem.** The plant runs for hours at reduced load. The committed engine, ramped from its design seed, does not:
+at 70-85 % trip 22.1 in 20-80 minutes, or with 22.2 removed (decision 189) SV32064 lifts and 21.x and 22.1 latch
+(§CXV.12), else 322R001 collapses (TT-322005 158-172 C); at 90-95 % a cold branch, TT-322005 168-178 C.
 
 **Acceptance tests (decision 180).** The 100 % design pin held to the bit, and five plant holds on the
-plant's own handles, TT-322005 inside Book2's band (+/- 2 K) and no trip:
+plant's own handles, TT-322005 inside Book2's band (+/- 2 K) over the whole hold (decision 269), the rise's
+departure within 1.0 K of Book2's (decision 274) and no trip:
 
 | Hold | Source | Plant values |
 |---|---|---|
@@ -89,9 +89,8 @@ close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atom
 
 **Established. Do not measure these again; cite the section.**
 
-* The cold branch's term is 322R001's carbamate source, the gas CO2 from 322E002 less the off-gas CO2;
-  322E002's flash loses half its CO2 gas per kelvin of TT-322010; the column's budget closes on every tick
-  (§CVI.1-4). On the holdup bundle it is again the first term to fail at 92.3 % (§CXIV.6).
+* The cold branch's term is 322R001's carbamate source, 322E002's gas CO2 less the off-gas CO2; the flash loses
+  half its CO2 gas per kelvin of TT-322010 (§CVI.1-4); on the holdup bundle it fails first at 92.3 % (§CXIV.6).
 * The low holds' latch (session 95's collapse: 322E002's feed N/C through 3.0 onto the low-N/C branch, a
   recycle of 14-21 minutes, §CVIII.3, §CX.8) is the loop's missing species state: with 322R001's liquor
   carried by species it does not come at 74.4, 69.3 or 68.9 %, and with the product unscaled the hump goes
@@ -100,8 +99,7 @@ close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atom
   322E001's overhead fraction (§XCIV.2); 322E003's liquor, tempered water and condensation margin (§XCIV.3-4,
   §XCV.3); 322E001's feed-deficit bottoms term (§XCVI.2); the ramp's rate and HIC-322605's handling (Part CIV);
   the slip gain at 70 % (§CIII.7); P6 (§CVII); E0 (§CX.8); E1eu (§CXII.7, §CXIV.3); the ratio's floor
-  (§CXII.8); the AT trim's gain (§CXIV.3).
-* Rejected: P5 (§CVI.5). Unbundled (decision 181): the S2 stripper terms and slip gain 0 (§CVII).
+  (§CXII.8); the AT trim's gain (§CXIV.3). Rejected: P5 (§CVI.5); unbundled: the S2 terms, slip gain 0 (§CVII).
 * Boundary facts for every arm. Each handle starts on the engine's design seed and moves as a
   departure with the load (§CVI.5, §CVII.1). FFIC-321404's ratio is on the engine's basis: the
   plant's 2.115 is 2.047-2.053 here (§XCIII.3). HV-322605's anchor is 60.0 % at 100 %, so Book2's
@@ -117,20 +115,11 @@ close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atom
   its movement (§CXVII.9). 322R001 sits at 60 % of its equilibrium by V1's `X_INF`; the licensor gives 95 % (§CXVII.8).
 * 322R001's loop path by path, rise off (§CXVIII.6-11): alone, 322E002's edge (PV) or V1's re-flash at the live
   pressure (ZP) loses 92.3 and 69.3 %, the conversion and its slip amplifying 1.0 K per K; the three pinned, the top
-  stands on its bubble point at 92.3 % and boils at 69.3 % (§CXVIII.8). The 95 % re-anchor halves the 92.3 % loss.
-* Session 109 (§CXIX.6): 322E002's flash target swings 0.16-0.27 inside 1 K and 1.3 bar.
-* Session 112 (Part CXXII); D1: decisions 180 and 196, the rise in 13.05 +/- 1.0 K. B lifts the rise, seed-neutral;
-  Z + B stands D1 at 92.3 % (13.15 K) and, the lean rise on, at 69.3 %, boiling.
-* Session 134 (Part CXLVI), on HEAD, D1 on the last period, D2 its range (§CXLVI.10). S on design references is the
-  design point to the bit at t = 0 (§CXLVI.7). S + B on UA as built settles at 92.3 %, TT-322005 181.5 C, every sign
-  the plant's: it stands on session 112's tree; on HEAD its rise reads 12.03-12.18 K by window on D1's 12.05 K floor
-  (§CXLVI.12, .18). Book2's UA exponent 0.50 rings. No inert or liquid term carries the 3-6 bar (§CXLVI.3); as a
-  clamp it settles UA as built at every reduced load by D2 (74.4 % by rounding, 68.9 % drifting), 7.3-9.8 K cold below
-  90.5 %, where no hold stands D1 or runs without a PC35 latch (A-61). TT-322004 falls with the load, 0.8-1.8 x (§CXLVI.13).
-* Session 135 (§CXLVII.2), on tree252 with the operator's header rule: S + B on UA as built stands D1 at 92.3 % on
-  all five windows (12.09-12.21 K, margin 0.04 K inside a 0.12 K spread; as written over the whole hold decision 180
-  fails, TT-322005 180.3 C), no latch; without the rule it latches 35.4 at 13 660 s. At 69.3 % the rule keeps 335P001
-  running; the synthesis still misses (rise 4.2-5.0 K, TT-322005 172.9-175.8 C).
+  stands on its bubble point at 92.3 % and boils at 69.3 % (§CXVIII.8).
+* Sessions 109-112 (§CXIX.6, Part CXXII): 322E002's flash target swings 0.16-0.27 inside 1 K and 1.3 bar; B lifts the
+  rise, seed-neutral. Session 134 (Part CXLVI): S + B on UA as built settles at 92.3 % on the plant's signs, 12.03-12.18
+  K; no inert or liquid term carries the 3-6 bar (§CXLVI.3); below 90.5 % every hold is 7.3-9.8 K cold or latches PC35
+  (A-61). Session 135 (§CXLVII.2): with the header rule 92.3 % runs latch-free; 69.3 % misses (rise 4.2-5.0 K).
 
 **Bundle A (decision 181), scratch only; `ureasim/` is as built.** P1, 322E002's UA on the battery-limit
 CO2 demand ratio to the power 0.77 (§CVII.1); P4, the wall loss on a stagnant reactor only; the 322F001 lift
@@ -138,15 +127,17 @@ p_disch,eff = p_disch - 2.41 (1 - r^2) (decision 180); `unit_322e001.SLIP_GAIN` 
 §CXIV.6): bundle A passes 92.3 % and latches or leaves the band below it; with B-126 (b)'s holdup the low holds are
 trip-free and 92.3 and 90.5 % latch on the cold branch; 111 % is out of band on both.
 
-* Session 136 (Part CXLVIII), on decisions 259 to 267: re-scored on Book2's thermowell rise no arm stands D1; R923
-  reads 12.10 K against 13.88 +/- 1.0 K, and the seed's own rise is 13.00 K, 0.65 K under Book2's 100.3 % band
-  (§CXLVIII.2). Book2's reductions never pass under 180.6 C (§CXLVIII.4). 322R001 refitted to Book2 with law B meets
-  the plant's flat rise at every anchor; the 100 % profile picks f 0.58, V1's 0.608 within the surface's flatness, and
-  the licensor's 95 % misses it by 2.9 K rms (§CXLVIII.5): the reactor's law is not needed to explain the turndown.
+* Sessions 136-137 (§CXLVIII.5, .12; decisions 269, 270, 274, 275): wave M's 17 arms scored on the rise departure
+  and the whole-hold clause: no arm stands. 92.3 %: engine -0.90 K against the plant's +0.21 K, TT-322005 180.3 C;
+  90.5 %: 179.6 C over the whole hold (it stood on the last period only); 74.4-68.9 % and 111 % ring. **The reactor's
+  law is cleared:** the refit moves the rise 0.06-0.20 K and the 95 % anchor makes it worse; Q-S is closed, not built
+  (decision 270). **The lead is the boundary the loop delivers to 322R001.** The seed's own rise is 13.00 K, 0.68 K
+  under Book2's 100 % (finding). **Decision 259 fails on the base law set:** N100U (the u set) and N100M differ from
+  N100A on 7 console tags each (AT-322701, FT-329403/407, LT-322504, TT-322011, and PV-329207B, TT-322004 or
+  TT-322006/007), so no arm on the u set is buildable until the drifting law is found (§CXLIX).
 
-**Next step.** Score wave M and the T693b trace, both left running by session 136 (§CXLVIII.3, .6), on score136 and
-on the process engineer's Q-R ruling; then decompose 322R001's boundary channel by channel at unit level (session
-137's plan). B-126 and B-136 are measured only inside these arms (decisions 265, 266).
+**Next step.** Audit wave M's handles; find the law that breaks the 100 % seed; decompose 322R001's boundary by
+channel at unit level (§CXLIX). No turndown matrix before the first two. B-126, B-136 only inside these (265, 266).
 
 **B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode: gain 0 removes it at 92.3 %
 on S2 and at 111 % (§XCVIII.3), runs the reactor 12.4 K colder at 92.3 % (§CIII.7), holds nothing on the holdup

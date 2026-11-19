@@ -5,7 +5,7 @@ is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-19, session 136
+**Last updated:** 2026-11-19, session 137
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -30,14 +30,12 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Open.** `handoff.md`: Section A two (A-61, A-62), Section B four (B-118 with B-120 folded in, B-125, B-126 and
   B-136), Section C none, 4 open data gaps (1, 3, 10, 15). Each waits on a vendor document (Körting) or on one plant
   DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
-* **Session 136** (Part CXLVIII; decisions 253 to 267 taken on the process engineer's rulings, 268 to 273 proposed;
-  nothing built). On Book2's thermowell rise (decision 262) no B-118 arm stands D1: R923 12.10 K against 13.88 +/- 1.0 K,
-  the seed's own rise 13.00 K. 322R001 refitted with law B meets Book2's rise at every anchor and the 100 % profile picks
-  V1's own approach (f 0.58), so the reactor's law is not needed to explain the turndown. The literature's ejector break
-  falls short of the plant (no build); gap 15's wet reading is withdrawn and the 44 mm throat bore stands as calculated,
-  unlabelled. The T693b trace puts the 69.3 % feed step on 323D002 regaining suction, not on the header rule: decision
-  253's condition met, gap 16 closed, A-62 raised. **Running, unscored:** wave M's seventeen arms, in
-  `Tests and Reports\scratch\session-136\run\runs`; session 137 scores them.
+* **Session 137** (Part CXLIX, §CXLVIII.12; decisions 269, 270, 274 and 275 on the rulings of 2026-11-19 19:30;
+  nothing built). Wave M scored on the rise departure and decision 180 over the whole hold: no arm stands; 90.5 %
+  dips to 179.6 C. Q-S closed, not built: the reactor's law is cleared, the lead is the boundary the loop delivers.
+  The u law set fails decision 259 on 7 console tags; which law drifts is session 137's audit.
+* **Session 136** (Part CXLVIII; decisions 253 to 267 on the rulings, 268 and 271 to 273 proposed). The refit picks
+  V1's approach (f 0.58); the ejector break and gap 15 stay open; the T693b trace closes gap 16, raises A-62.
 * **Session 135** (Part CXLVII). The manual's header-valve rule on the B-118 rig (decision 253); data gaps measured, [E]
   estimates made; letters and the readback checklist final.
 * **Session 133** (Part CXLV; decision 252, built on branch `v1.2-d252` and merged into `v1.2` after session 134's runs). LY-324501 built on AC4's formula over V1's level with Rosemount's LRV floor, the seed unchanged to the bit; at the design vacuum 335P001's L2 stop cannot act, kept as built (2026-11-19). Researched: 324F003's and the leg's drawings (232 kg at the plant's 50 %), the cooling-water lead ruled out, PT-323204's two decimals, the UF85 pumps' capacity, the Drive copy's hash. The session 114 scratch plan ran in session 134.
@@ -72,9 +70,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 137 (136 claimed 2026-11-19, the rulings and the Q2 matrix) | `docs/history/session-log.md` |
-| Decision | 274 (253 to 267 taken by session 136 on the rulings of 2026-11-19; 268 to 273 claimed by session 136, proposed in Part CXLVIII, not taken) | `docs/decisions.md` |
-| As-Built Part | CXLIX (CXLVIII claimed by session 136) | the As-Built reference, appended at its end |
+| Session | 138 (137 claimed 2026-11-19, the rulings on the rise and the re-anchor, the seed's law audit) | `docs/history/session-log.md` |
+| Decision | 276 (253 to 267 taken by session 136; 268 to 273 claimed by session 136, proposed, not taken; 269 and 270 taken and 274 to 275 claimed by session 137 on the rulings of 2026-11-19 19:30) | `docs/decisions.md` |
+| As-Built Part | CL (CXLIX claimed by session 137) | the As-Built reference, appended at its end |
 | Handoff Section A | A-63 (A-62 session 136's) | `handoff.md` |
 | Handoff Sections B and C | B-157 (session 134 took none) | `handoff.md` |
 

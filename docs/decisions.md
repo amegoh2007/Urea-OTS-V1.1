@@ -1445,3 +1445,25 @@ decision on an item.
 267. **322E002's UA stays as built; the pressure clamp is rejected** (2026-11-19, session 136; ruling 7). Book2's UA
      exponent 0.50 rings at 92.3 % on evidence from one load, and the pressure clamp is Book2's pressure written in
      as a law; neither is a build candidate. As-Built §CXLVI.3, .12, .14.
+269. **Decision 180's TT-322005 clause is read over the whole hold after the ramp** (2026-11-19, session 137; the
+     process engineer's ruling of 19:30 on session 136's proposal). Book2's three load reductions never pass under
+     180.6 C (As-Built §CXLVIII.4), so a trough under the band after the ramp is a miss the plant does not show. The
+     scorer reads TT-322005's minimum and maximum from the ramp's end to the run's end, beside the last period.
+270. **322R001's re-anchor is closed, not built; V1's X_INF stays as built** (2026-11-19, session 137; ruling Q-S on
+     session 136's proposal). Both the refit (f 0.58) and the licensor's 95 % are rejected. Evidence: on Book2's
+     boundary the 95 % anchor misses the 100 % profile by 2.9 K rms (§CXLVIII.5); in wave M Q923 scores worse than
+     K923 and Q693 much worse (2.43 K rise, TT-322005 168.1 C); the refit is V1's value within the fit's flatness,
+     moves the rise +0.06 K at 92.3 % and +0.20 K at 69.3 %, and its 100 % null fails decision 259 from the first
+     sample (TT-322006, TT-322007). No 95 % null ran; its seed failure is calculated from its pin profile, 2.1-2.6 K
+     under the as-built seed's at TT-322006 / 007 (177.13 / 172.25 C against 179.23 / 174.89 C). Finding: desk and loop agree that 322R001's law is not B-118's cause; the
+     lead is the boundary the loop delivers to the reactor.
+274. **D1's rise is scored as a departure from the seed** (2026-11-19, session 137; ruling Q-R (ii)). Engine: the
+     thermowell rise TT-322005 - TT-322010 over decision 260's window, less the same rise on the engine's 100 % design
+     seed. Plant: Book2's rise at the hold's band less Book2's rise interpolated to 100 % between its 94.2 % and 111 %
+     bands. Pass: the engine's departure within +/- 1.0 K of the plant's. It replaces decision 262's absolute band for
+     the verdict; the absolute reading against Book2's band is printed beside every verdict and counts for none. The
+     seed's offset from Book2 at 100 % is printed once as a finding and counted against no arm. Decision 262's scope
+     stands: the 5 November holds (90.5, 74.4, 68.9 %) carry no rise criterion.
+275. **Decision 259 stands as written** (2026-11-19, session 137; the process engineer's ruling of 19:30). Its
+     failure on the base B-118 law set is a finding to trace law by law, not a reason to loosen it; no law that fails
+     it is built.
