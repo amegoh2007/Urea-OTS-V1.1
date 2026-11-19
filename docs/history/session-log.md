@@ -5270,5 +5270,5 @@ AC4 formula on V1's level keeps the seed to the bit, its LRV floor (20.6 %) abov
 lowers the vent and so does not explain stage 1's 0.6 bar a; PT-323204's three decimals are two decided edits; the
 Bran + Luebbe pumps move FIC-335405 to 57 %, nothing else at design. The Drive parts were downloaded and joined to the
 README's hash. Built on branch `v1.2-d252`: LY-324501 on AC4's formula over V1's level, the seed byte-identical at
-600 s; a lost feed now drains 324F003 to its heel before the L2 stop can act. Part CXLV; decision 252; runs
+600 s; a lost feed now drains 324F003 to its heel before the L2 stop can act, kept as built. Part CXLV; decision 252; runs
 `Tests and Reports\reports\Session_133_ly324501`.

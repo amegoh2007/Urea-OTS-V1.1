@@ -27802,7 +27802,7 @@ Measured:
 The consequence §CXLV.2 foresaw is now the engine's: at the design vacuum the console reads about 20.7 % on an empty
 leg, and 335P001's low-level stop on LY-324501 acts only after the seal is lost and PT-324203 rises above 0.269 bar a;
 once the vacuum recovers the floor releases the pumps again. What 335P001 does running on an empty leg (cavitation,
-its own protection) is not modelled.
+its own protection) is not modelled. The process engineer kept this behaviour as built on 2026-11-19 (decision 252).
 
 ## CXLV.10 Checks
 
@@ -27815,5 +27815,5 @@ floor of 19.9 to 22.3 %), `engine/packet` 34, the rest of `engine` 149. The desi
 600 s (CXLV.9). Then, the files that name the stop, the level or B-62 / B-63: `phase7`'s seal-loss, loop-atom,
 deviation, coupled and scenario-runner tests, `control`, and the first evaporator's decided and the pre-evaporator's
 equivalence: 17, 113 and 231 passed, none moved. Not run: `hmi` and the rest of the units' and equivalence files, and the whole suite in
-one pass, which waits for session 134's runs. `pyflakes` clean on the changed modules. No decided class is written for
-decision 252 while its consequence is before the process engineer.
+one pass, which waits for session 134's runs. `pyflakes` clean on the changed modules. Decision 252's class is written in
+`docs/decided-classes.md` now that the process engineer has kept its consequence as built.

@@ -1384,4 +1384,6 @@ decision on an item.
      `SecondEvaporator.ac4_ly`, False in the V1 harnesses. The seed is unchanged to the bit. At the design vacuum the
      L2 stop cannot act: a lost feed drains the separator to its 1 kg heel, the seal's air breaks the vacuum, and only
      then (0.270 bar a) does LY-324501 fall below L2; beside PC35's trips the vacuum recovers and the pumps run again.
+     The process engineer kept that behaviour as built on 2026-11-19 ("Keep as built"): the stop reads LY-324501
+     with its floor and does not latch.
      Data gap 4 stays open on the configured LRV and the leg's walk-down. As-Built §CXLV.9.
