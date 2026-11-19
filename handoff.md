@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-18, session 133.
+**Last updated:** 2026-11-19, session 134.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -20,7 +20,19 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 # Section A — Rewrite issues
 
-*None open.*
+### A-61 — 335P001 stops on LY-324501's L2 on every reduced-load hold of the B-118 rig
+
+*Raised 2026-11-19, session 134 (As-Built §CXLVI.11). Decision 217.* On V1.2's HEAD the rig's held arms latch PC35's
+35.1 and 35.4: 335P001 stops on LY-324501's 5 % L2 and the melt to the granulator falls to 0 t/h, with no precursor in
+the synthesis. It latches on every arm at 74.4-68.9 % (5 980-8 160 s), and on UA as built at 92.3 % (13 460 s) and
+90.5 % (10 140 s). There is no latch at 111 %, and none on the 0.50-exponent arms at 92.3 and 90.5 %. Session 112's
+tree, before decision 217, has no such stop. The rig moves no unit 324 or 335 handle and does not sample LY-324501.
+At 92.3 % the stop moves the synthesis by at most 0.3 K, and by 0.1 K at the hold's end (§CXLVI.11). The plant
+holds 69 % for hours with 335P001 running (Book2).
+Acceptance: a 14 400 s hold at 69.3 % with 335P001 running, and the seed to the bit.
+Open: why LY-324501 falls. The candidates are LIC-324501's response to the melt cut, the rig's handling of unit 324,
+and V1's holdup ratio (data gap 4).
+Next step: one 69.3 % arm sampling LY-324501, LIC-324501's output and the melt flow; then the process engineer's.
 
 ---
 
@@ -29,7 +41,7 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 ### B-118 — Below 100 % load the engine holds no steady state on the plant's reactor window
 
 *Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to XCVIII, C, CIII to CVII,
-CX to CXV, CXVII to CXIX and CXXII; decisions 177, 180, 181, 188 and 190.*
+CX to CXV, CXVII to CXIX, CXXII and CXLVI; decisions 177, 180, 181, 188 and 190.*
 
 **Problem.** The plant runs for hours at reduced load. The committed engine, ramped from its design
 seed, does not, on every operating policy tried:
@@ -84,14 +96,15 @@ close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atom
 * 322R001's loop path by path, rise off (§CXVIII.6-11): alone, 322E002's edge (PV) or V1's re-flash at the live
   pressure (ZP) loses 92.3 and 69.3 %, the conversion and its slip amplifying 1.0 K per K; the three pinned, the top
   stands on its bubble point at 92.3 % and boils at 69.3 % (§CXVIII.8). The 95 % re-anchor halves the 92.3 % loss.
-* Session 109 (§CXIX.6): 322E002's flash target swings 0.16-0.27 inside 1 K and 1.3 bar. Book2's pressure falls about
-  6 bar at 69.3 % beyond its thermowells' (desk); the licensor's bubble point follows the system pressure, the synthesis
-  pressure less the inerts (8.5 bar at the design), which the engine's cap does not subtract (§CXXIII.5).
-* Session 112 (Part CXXII, re-read in §CXXIII.3); D1: decisions 180 and 196, the rise in 13.05 +/- 1.0 K. B lifts the
-  rise and is seed-neutral; S alone moves neither the rise nor the latch and drifts 0.20 K on the seed. Z + B stands D1
-  at 92.3 % (13.15 K). S + B on UA as built at 92.3 % rings (period 2 300-2 400 s, decaying; TT-322005 181.7 C and
-  rising at the end, every sign the plant's): not settled, no verdict. At 69.3 % the result turns on 322E002's UA
-  exponent (as built the top cools to 173.9 C; P1 rises 39-45 K); Z + B with the lean rise on stands but boils 1.8 t/h.
+* Session 109 (§CXIX.6): 322E002's flash target swings 0.16-0.27 inside 1 K and 1.3 bar.
+* Session 112 (Part CXXII); D1: decisions 180 and 196, the rise in 13.05 +/- 1.0 K. B lifts the rise, seed-neutral;
+  Z + B stands D1 at 92.3 % (13.15 K) and, the lean rise on, at 69.3 %, boiling.
+* Session 134 (Part CXLVI), on HEAD, D1 on the last period, D2 its range (§CXLVI.10). S on design references is the
+  design point to the bit at t = 0 (§CXLVI.7). S + B on UA as built settles at 92.3 %, TT-322005 181.5 C, every sign
+  the plant's: it stands on session 112's tree, and on HEAD falls 0.02 K under D1's floor (§CXLVI.12). Book2's UA
+  exponent 0.50 rings. No inert or liquid term carries the pressure's 3-6 bar (§CXLVI.3); as a clamp it settles UA as
+  built at every reduced load, 7.3-9.8 K cold below 90.5 %. No HEAD arm stands; TT-322004 falls with the load on every
+  settled arm, 0.8-1.8 times the plant's (§CXLVI.13). Every HEAD arm below 100 % on UA as built latches PC35 (A-61).
 
 **Bundle A (decision 181), scratch only; `ureasim/` is as built.** P1, 322E002's UA on the battery-limit
 CO2 demand ratio to the power 0.77 (§CVII.1); P4, the wall loss on a stagnant reactor only; the 322F001 lift
@@ -99,9 +112,8 @@ p_disch,eff = p_disch - 2.41 (1 - r^2) (decision 180); `unit_322e001.SLIP_GAIN` 
 §CXIV.6): bundle A passes 92.3 % and latches or leaves the band below it; with B-126 (b)'s holdup the low holds are
 trip-free and 92.3 and 90.5 % latch on the cold branch; 111 % is out of band on both.
 
-**Next step.** Session 114 (`Tests and Reports\reports\Session 114 plan prompt s113.md`), scratch: the desk tracks, S on design-
-point references, S + B at 92.3 % to its settled state, the UA exponent from Book2, the pressure as a clamp, then 69.3 %
-and the other holds. Then the process engineer's choice. B-126 and B-136 held.
+**Next step.** The process engineer's choice on §CXLVI.16: PC35's latch, D2's rounding, the candidate and the clamp;
+then A-61 and the holds below 90.5 % on what is chosen. B-126 and B-136 held.
 
 **B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode: gain 0 removes it at 92.3 %
 on S2 and at 111 % (§XCVIII.3), runs the reactor 12.4 K colder at 92.3 % (§CIII.7), holds nothing on the holdup
@@ -122,8 +134,10 @@ no hold scored alone or on B-126's holdup (§CXII.7, §CXIV.3, §CXIV.6). Step L
 sooner, its split on Book2's departures boils 1.4 t/h at 92.3 %; the split is ill-conditioned at every load
 (§CXIX.6, §CXIX.8). S, the split from the duty with the outlet on the melt's bubble line (§CXXII.3, §CXXII.6): alone
 it moves neither the rise nor the latch at 92.3 or 69.3 %, on UA as built or P1 (on P1 at 69.3 % the top boils 9-11
-t/h); with B-118's B on UA as built and 322E001's lean rise on it stands at 92.3 % (13.24 K). Options: (a) keep as
-built; (b) E1eu, on a seed criterion the process engineer restates; (c) S with B (B-118). Next step: B-118's.
+t/h); with B-118's B on UA as built and 322E001's lean rise on it stands at 92.3 % (13.24 K). S on design references
+(§CXLVI.6-7) is the design point to the bit at t = 0; with B, the lean rise off, on UA as built it settles at 92.3 % on
+every plant sign; on Book2's UA exponent, 0.50 (§CXLVI.2), it rings (§CXLVI.12, .14). Options: (a) keep as built;
+(b) E1eu, on a seed criterion the process engineer restates; (c) S with B (B-118). Next step: B-118's.
 
 ### B-126 — 322R001's 136 t of liquor has no composition
 
@@ -136,7 +150,9 @@ CXIV): (b), the holdup's species in twelve compartments, closes to 6e-14 kmol a 
 (§CXVII.2, §CXVII.6): not a build candidate as measured. The 5 s cycle below N/C 3.0 (A-57, kept as built, decision
 232) runs on this path's missing holdup; a 60 s lag on the overflow slows it (§CXXXIII.4-5). Options: (a) keep as
 built; (b) the bundle with the change that holds 322R001 (B-118), a seed criterion restated first; (c) C2's second
-half; (d) the loop's other holdups (H5).
+half; (d) the loop's other holdups (H5). On V1.2's seed (b) differs in 11 248 leaves and keeps every published tag
+inside its last displayed digit over 600 s: the criterion it needs is a display-resolution one, the process engineer's
+to restate (§CXLVI.8). Every session 134 arm carries it (§CXLVI.12-13).
 
 ### B-136 — Step L3 is not fulfilled: 322E001's bottoms run hot at reduced load
 
@@ -149,9 +165,15 @@ term is V1's feed-deficit rise (§XCVI.2): the unit alone gives 201 C at the pla
 0.7 K/K on the steam is the plant's (§CXVII.3). Option (b) measured on the holdup bundle (§CXVII.6): rise off,
 TT-322004 falls 1.5 K at 92.4 % and 5.5 K at 69.6 %, the hydrolysis stays at 1.0-1.4 times the seed's per unit
 load, and all five holds are lost. Acceptance: the plant's TT-322004, the hydrolysis per tonne at the seed's or
-below, 323D001 at its set point, the 100 % pin to the bit. Lead (§CXLI.7): the plant's notebooks close 322E001's lower shell-condensate block valve at 100 % load and below,
-a handle the model lacks. Options: (a) keep as built, L3 reported as not
-fulfilled; (b) the rise off with the change that holds 322R001 (B-118), never alone. Next step: B-118's.
+below, 323D001 at its set point, the 100 % pin to the bit. With S + B (session 134, §CXLVI.13), (b) gives TT-322004
+-1.7 K at 92.3 %, -2.1 to -2.3 K at 90.5 %, -4.6 K at 74.4 % and -9.5 to -10.4 K at 69.3-68.9 %: the plant's sign,
+0.8-1.8 times its size.
+Lead (§CXLI.7): the plant's notebooks close 322E001's lower shell-condensate block valve at 100 % load and below. On
+the new stripper's GA the outlets are N6A at EL +7154 and N6B at +6554; N6B shut leaves 0.866 of the tubes active
+(calculated, §CXLVI.9). If the design duty is on that area, nothing changes below 100 %; if on the full area, the lean
+rise returns at 74.4 % and below, tried only on a ringing law (§CXLVI.14). Which reading holds is the process
+engineer's. Options: (a) keep as built, L3 reported as not fulfilled; (b) the rise off with the change that holds
+322R001 (B-118), never alone. Next step: B-118's.
 
 ---
 

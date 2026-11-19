@@ -5,7 +5,7 @@ is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-18, session 133
+**Last updated:** 2026-11-19, session 134
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -27,7 +27,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A none, Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
+* **Open.** `handoff.md`: Section A one (A-61), Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
   Section C none, 9 open data gaps. Every data gap waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
 * **Session 133** (Part CXLV; no decision). Researched in scratch, nothing built: LY-324501 on 324F003's and the leg's drawings (the plant's level stands in the leg, 232 kg at 50 %; the LRV floor sits above L2), the cooling-water lead ruled out, PT-323204's two decimals, the UF85 pumps' capacity, the Drive copy downloaded and its hash checked. The session 114 scratch plan runs in session 134.
 * **Session 132** (Part CXLIV; decision 251). V1.2 made. The separators' ejectors break on the plant's 5 November
@@ -51,15 +51,15 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Sessions 117 to 119** (Parts CXXVII to CXXIX; decisions 210 to 217). V1.1 runs and tests without V1 (decision 210);
   322P002's delivery set by hand (decision 212); the seven levels move to their nozzles unit by unit (decision 214,
   B-156); AC4's low-level stops on a 5 % L2 with 2 % hysteresis (decision 217); A-38, A-40, A-41 and A-50 closed.
-* **B-118 in scratch, sessions 99 to 112** (As-Built Parts CX to CXIX and CXXII). Session 99 ran the gap
-  resolution plan (decisions 182 to 188). On bundle A 92.3 % passes decision 180's test and the low holds latch;
-  B-126 (b)'s species holdup removes the low holds' latch and loses 92.3 % on the cold branch (session 103).
-  Session 105 removed trip 22.2 (decision 189) and measured the load-reduction procedure (B-135, B-136). Session
-  108 took 322R001's loop apart by path clamps; no candidate held. Session 112 measured two laws: B, the re-flash on
-  the top's subcooling, lifts the reactor's rise; B with S (322E002 closed on its duty), on UA as built with the
-  stripper's lean rise on, stands at 92.3 % (13.24 K); S alone moves nothing; at 69.3 % D1 stands only with 322E002
-  pinned, and the top boils. The choice is the process engineer's (B-118). Runs: `Tests and Reports\reports\B118_s101` to
-  `B118_s112`.
+* **B-118 in scratch, sessions 99 to 112 and 134** (As-Built Parts CX to CXIX, CXXII and CXLVI). Session 99 ran the
+  gap resolution plan (decisions 182 to 188). On bundle A 92.3 % passes decision 180's test and the low holds latch;
+  B-126 (b)'s species holdup removes the low holds' latch (session 103). Session 105 removed trip 22.2 (decision 189)
+  and measured the load-reduction procedure (B-135, B-136). Session 112 measured the laws B (the re-flash on the top's
+  subcooling) and S (322E002 closed on its duty). Session 134 ran session 114's plan on V1.2: S + B on UA as built
+  settles at 92.3 % on every plant sign and stands on session 112's tree, on HEAD 0.02 K under D1's floor; no HEAD arm
+  stands at any hold; Book2's UA exponent rings; every reduced-load HEAD arm stops 335P001 on LY-324501's L2 (A-61).
+  The choice is the process engineer's (B-118). Runs: `Tests and Reports\reports\B118_s101` to `B118_s112`,
+  `Session_134_b118`.
 * **The console instructions of 2026-11-13** (sessions 106 and 109 to 111; Parts CXVI and CXIX to CXXI). Built:
   328-2's revised slide, 322-1's CO2 FEED panel (decisions 220, 221), START / STOP on every pump icon (decision
   222), V1 read from its copy on D: (decision 223). Session 111 built the melt header from the twelve header
@@ -72,11 +72,11 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 135 (133 this session; 134 claimed by the B-118 side session) | `docs/history/session-log.md` |
-| Decision | 252 (session 133 took none; 253 to 257 claimed by session 134), then 258 | `docs/decisions.md` |
-| As-Built Part | CXLVII (CXLV this session; CXLVI claimed by session 134) | the As-Built reference, appended at its end |
-| Handoff Section A | A-62 (A-61 claimed by session 134) | `handoff.md` |
-| Handoff Sections B and C | B-160 (B-157 to B-159 claimed by session 134) | `handoff.md` |
+| Session | 135 (134 the B-118 side session) | `docs/history/session-log.md` |
+| Decision | 252 (sessions 133 and 134 took none) | `docs/decisions.md` |
+| As-Built Part | CXLVII (CXLVI session 134's) | the As-Built reference, appended at its end |
+| Handoff Section A | A-62 (A-61 session 134's) | `handoff.md` |
+| Handoff Sections B and C | B-157 (session 134 took none) | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers
 here before it writes anything else.

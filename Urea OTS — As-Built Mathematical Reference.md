@@ -27756,3 +27756,413 @@ README's and the local zip's; 297 entries, `zipfile.testzip` clean.
 ## CXLV.8 Checks
 
 The documentation tests (`Tests and Reports/tests/docs`). Nothing under `ureasim/` changed, so the suite was not run.
+
+# Part CXLVI — Session 134: B-118, B-125, B-126 and B-136 on session 114's plan, in scratch (2026-11-19)
+
+*2026-11-18/19, session 134, a side session of session 133, on V1.2's HEAD (2efb181) and on session 112's tree
+(18a7656). Nothing under `ureasim/` or `Tests and Reports/tests/` changed and no decision was taken. Every wave was
+registered before launch (`run/registry134.md`). Scripts, configurations and runs:
+`Tests and Reports\reports\Session_134_b118`.*
+
+## CXLVI.1 The rig on V1.2's HEAD
+
+The tree is `git -c core.autocrlf=false archive 2efb181` with the working copy's `ureasim/thermo` bytes (the node
+stores included, so their keys match) and `Tests and Reports/tests` copied to the tree's root as `tests` (the runner
+imports `tests.phase7.drivers`, which moved under `Tests and Reports` after 18a7656). Session 112's rig
+(`B118_s112\run`) is copied beside it unchanged; `cfg134.py` is `cfg112.py` with `proto134` and `probe134` added.
+A second tree, `git archive 18a7656` with the same thermo bytes, proves the copy.
+
+* **Proof on session 112's tree.** `N100Sp` for 600 s against its archive: 60 common samples, 0 differing leaves.
+  `SB923_luL_s112` (session 112's `SB923_lu` with a 14 400 s hold) against the archived `SB923_lu`: 816 common
+  samples, 10 to 8 160 s, 0 differing leaves.
+* **A rig defect on HEAD.** On HEAD the 100 % seed drifted under the rig from 20 s (b_rxn_K 13.0 to 10.9 K at
+  600 s, e_tadb +9 K, PT-329201 -0.17 bar), where the pure HEAD seed (no prototype, no policy) holds as session
+  112's tree does to the third decimal. Bisected on 300 s arms: the 322F001 lift and proto95 hold, the policy drifts.
+  The cause is decision 235: `command._ratio_set` takes FFIC-321404's set point on FY-321404's DCS formula
+  (ratio_sp = sp / 1.0317), and the rig writes the engine's ratio, so each of its RATIO writes cut the NH3 ratio by
+  3 %. `cfg134.py` converts the rig's set point to the DCS basis on a tree that carries the factor. On HEAD
+  LT-323503 also reads 26.77 % on the seed (decision 233), so FIC-323418's trim takes the seed's reading as its
+  target on every HEAD arm. Every HEAD arm launched before the fix was stopped and discarded.
+* **HEAD's distance.** The fixed rig's 100 % arm against the archived `N100H36`, 600 s: no column past 0.05 K or
+  0.05 bar.
+
+## CXLVI.2 Track 0a: 322E002's UA exponent from Book2
+
+Book2 logs no split. Under S the duty is UA (T_prod - T_shell), T_prod = TT-322010, T_shell the saturation
+temperature at PT-329207 (bar g + 1.01325). With the plant's split held, the duty follows the gas fed, and the gas
+fed follows the load, so UA / UA_ref = (L / L_ref)(dT_ref / dT) and n = ln(UA / UA_ref) / ln(L / L_ref). Bands as
+Part CIII's method (+/- 2.5 % of load, runs of at least 4 samples; `desk/t0a_exponent.py`).
+
+| Band | n | Load % | TT-322010 C | PT-329207 bar g | T_shell C | dT K | UA / UA_100 | exponent |
+|---|---|---|---|---|---|---|---|---|
+| 60.7 | 15 | 61.12 | 167.95 | 4.382 | 154.72 | 13.23 | 0.768 | 0.53 |
+| 69.3 | 29 | 68.99 | 168.05 | 4.397 | 154.83 | 13.22 | 0.867 | 0.38 |
+| 80.4 | 9 | 80.42 | 168.69 | 4.182 | 153.28 | 15.41 | 0.867 | 0.64 |
+| 92.3 | 723 | 92.28 | 168.76 | 4.115 | 152.79 | 15.97 | 0.960 | 0.48 |
+| 100.3 | 11 | 100.45 | 168.99 | 4.048 | 152.30 | 16.69 | 1 | - |
+| 111 | 4 307 | 111.00 | 169.27 | 3.900 | 151.18 | 18.09 | 1.019 | 0.19 |
+
+Read against the engine's design (170.0 C, 151.94 C, 18.06 K) instead of Book2's own 100 % band the exponents are
+inconsistent (0.16 to -0.54), because the plant's 100 % approach (16.69 K) is not the engine's: S is written in
+departures, so the plant's own reference is the one that applies. The exponent carried forward is **0.50**, the
+fit through the origin of ln(UA ratio) on ln(L) over the four bands below 100 % (Book2, `References\DCS
+Trends\Book2.xlsx`, sheet "Basic Data (Two Monthes)", columns TT-322010, PT-329207, UREA-LOAD). Book2 does not fix
+the split itself: the exponent assumes the plant's split stays where it is, which is the licensor's 72 wt % at the
+design (Operating Manual III) and is not logged below it.
+
+## CXLVI.3 Track 0b: the pressure's carriers
+
+**(i) The distance.** On the engine's own lines, as departures from Book2's 100.45 % band (`desk/t0b_pressure.py`):
+322R001's line is 1.879 bar a kelvin at 183 C (0.532 K a bar); 322E002's, composition held, 1.982 bar a kelvin.
+d = (the pressure departure the line gives at the band's thermowell departure) - (PT-329201's departure).
+
+| Band | TT-322005 dep. K | PT-329201 dep. bar | line at TT-322005 bar | d_R bar | TT-322010 dep. K | line at TT-322010 bar | d_E bar |
+|---|---|---|---|---|---|---|---|
+| 60.7 | -0.92 | -6.42 | -1.72 | 4.70 | -1.04 | -2.05 | 4.37 |
+| 69.3 | -1.17 | -8.21 | -2.19 | 6.02 | -0.94 | -1.85 | 6.36 |
+| 80.4 | -0.38 | -4.10 | -0.71 | 3.39 | -0.30 | -0.59 | 3.51 |
+| 92.3 | -0.04 | -3.18 | -0.08 | 3.10 | -0.23 | -0.46 | 2.72 |
+| 111 | -0.04 | +1.47 | -0.08 | -1.55 | +0.28 | +0.56 | -0.91 |
+
+§CXIX.7's 6 bar at 69.3 % and 3 bar at 92.3 % are reproduced on this banding, at both units.
+
+**(ii) The inerts.** The design off-gas carries 57.83 of 963.76 kmol/h of inerts, 6.000 mol %, 8.48 bar of 141.30:
+a system pressure of 132.82 bar a, the licensor's figure (§CXXIII.5). Carried by the inerts alone, the top's inert
+pressure would have to fall to 8.48 - d_R: 2.46 bar at 69.3 % (about 1.8 mol %) and 5.38 bar at 92.3 % (about
+3.9 mol %). The inert feed rides with the CO2 and falls with the load, so the off-gas would have to rise to about
+2 200 kmol/h at 69.3 % `[I]`, more than twice the design's, where every arm's off-gas dries as the load falls
+(§CXXIII.3: 22.4 to 1.0 t/h at 69.3 % on UA as built). The inerts carry the distance only against the direction
+the arms move.
+
+The law was prototyped anyway (`proto134` key `Bsys`, CXLVI.6) and is unstable on the 100 % seed with law B: the
+inert fraction of the tick before lowers the cap, the capped top lowers B's bubble pressure, B's effective pressure
+rises, the off-gas falls and the inert fraction rises again. Applied to the cap and to B it runs away on a two-tick
+mode in 2.1 s; applied to the cap alone it runs away monotonically in 25 s (TT-322005 38.5 C, the off-gas all
+inerts). It was not run on any arm.
+
+**(iii) The liquid.** The engine's own Extended UNIQUAC bubble pressure (`thermo.vle.bubble_p_bara`) of 322R001's
+design overflow at 183 C is 40.4 bar a, out of its domain at the HP loop (the module's own note: no absolute HP-loop
+bubble pressure reaches the engine), so only its departures are read (`desk/t0b_liquid.py`): +4.87 bar per unit of
+the overflow's N/C, -0.067 bar per 1 % more water, -0.091 bar per 1 % more of the CO2 converted. Book2's AY-322701
+stands -0.055 under its 100 % band at 69.3 % and +0.004 at 92.3 %: -0.27 and +0.02 bar. Water and conversion are not
+logged; to carry 6 bar the conversion would have to rise by about 66 % of the CO2 `[I]`. No liquid term carries
+the distance on the engine's own thermodynamics.
+
+**Reading.** No single carrier, and no sum of the three, accounts for 6 bar at 69.3 % and 3 bar at 92.3 % under D4:
+the inerts go the wrong way on the arms and their law is unstable, the liquid's shares are an order of magnitude
+short. The pressure is carried as a clamp only (CXLVI.6, CXLVI.10).
+
+## CXLVI.4 Track 0c: what leads the 92.3 % ring
+
+Cross-correlation of each signal, less its linear trend, with b_rxn_K after the ramp's end plus 600 s, on session
+112's archived series (`desk/t0c_ring.py`; a positive lead means the signal leads):
+
+| Signal | SB923_lu lead s (corr) | SB923_lur lead s (corr) |
+|---|---|---|
+| TT-322010 (S's outlet) | +530 (+0.93) | +740 (+0.92) |
+| the melt's N/C | +750 (-0.87) | +1 010 (-0.86) |
+| conversion | +440 (-0.87) | +520 (-0.88) |
+| LT-322504 | +270 (+0.86) | +480 (+0.75) |
+| PT-329201 | -240 (+0.84) | -100 (+0.82) |
+| 322E002's CO2 gas fraction | -1 360 (-0.56) | +860 (-0.69) |
+| TT-322004 | -1 230 (-0.60) | +230 (-0.74) |
+
+The melt's N/C leads, then 322E002's outlet (which S puts on the melt's bubble line), then the conversion, then the
+rise; the pressure follows. 322E001's bottoms and 322E002's split give no consistent lead between the two arms.
+The autocorrelation gives 2 140 s for SB923_lu, 2 090 s for SB923_lur and 2 140 s for the seed's own N100H36 (3 600 s
+of record, a weak estimate); the 92.3 % ring is the seed's mode amplified, not a new mode `[I]`.
+
+## CXLVI.5 Track 0d: law B on 322R001's first call
+
+The design top stream (overflow plus off-gas, `data.unit_322r001`) split as `reactor.py` splits it, the off-gas CO2
+against the design's 197.69 kmol/h (`desk/t0d_bfirst.py`):
+
+| Loop pressure | V1 (as built) | B at subcooling 0 | 0.5 K | 1 K | 2 K | 5 K |
+|---|---|---|---|---|---|---|
+| design | 1.000 | 1.000 | 0.860 | 0.713 | 0.397 | 0.000 |
+| -2 bar | 1.282 | 1.000 | 1.000 | 1.000 | 0.732 | 0.000 |
+| -4 bar | 1.543 | 1.000 | 1.000 | 1.000 | 1.000 | 0.092 |
+| -8 bar | 2.012 | 1.000 | 1.000 | 1.000 | 1.000 | 0.810 |
+
+V1 releases 28 % more CO2 gas per 2 bar lost; B never releases more than the design's (its floor) and absorbs the
+whole off-gas CO2 by 5 K of subcooling at the design pressure: about 28 % of the off-gas CO2 a kelvin near the
+bubble line.
+
+## CXLVI.6 The laws as built (scratch only, `run/proto134.py`)
+
+Nothing under `ureasim/` changed; each law rebinds a module-level name on its one caller (§CXVIII.13).
+
+* **SD, law S on design-point references.** 322E002's target is recompiled from proto112's S (§CXXII.1) so that it
+  returns its references exactly when its inputs equal theirs:
+  T_bub solves `bubble_p_322e002(T_bub, N/C, H/C) = p_loop` (+ d_E(L) under the clamp);
+  T_prod = T_prod,des + (T_bub - T_bub,des);
+  f = [(UA / UA_des)(T_prod - T_shell) / (T_prod,des - T_shell,des)] / (n / n_des);
+  phi_k = clip(phi_k,des + (1 - phi_k,des)(1 - f), 0, 1) for each distributing species.
+  T_prod,des = 170.0 C, T_shell,des = STEAM_TSAT_C, UA_des = UA_KJHK; phi_des, n_des (the gas CO2 fed) and the
+  melt's N/C and H/C are taken from the unit's first call, which is asserted to be the design point bit for bit
+  (t_shell, t_prod_prev and p_loop equal to their constants). "pinned" is UA as built; "p1" takes proto95's
+  UA_des . demand^n with n = 0.50 (CXLVI.2).
+* **B**, 322R001's re-flash on the top's subcooling (proto112, §CXXII.2), unchanged, its floor on.
+* **Bsys**, the inerts (CXLVI.3 (ii)): dp_in = y_in (p_loop + dP_boil,des) - y_in,des P_offgas,des, the cap at
+  p_loop - dp_in and B on the same. Zero at the design point. Unstable; not run on an arm.
+* **pclamp**, a clamp on plant data, not a candidate: the cap and B see p_loop + d_R(L), S's bubble line
+  p_loop + d_E(L), linear in the CO2 demand between Book2's bands (CXLVI.3 (i)), 0 at 100 %, held beyond the end
+  bands.
+
+Candidate "n" (the engineer's list, item 3) is SD p1 (n 0.50) + B + B-126 (b)'s twelve compartments + B-136 (b)
+(322E001's lean rise off) + the 322F001 lift (lf 2.41) + bundle A's stagnant wall loss. Candidate "d" is the same
+on UA as built (SD pinned).
+
+## CXLVI.7 The 100 % seed: S on design references is bit-identical at t = 0, not a null over an hour
+
+* **t = 0.** PR_seedS: SD's first call is the design point exactly, so S returns T_prod,des and phi_des bit for bit
+  at the seed (the engineer's item 1). The as-built seed is not itself a bitwise fixed point (t_prod 169.9987 C at
+  tick 1, PR_seed), so no law can hold every leaf after the first tick.
+* **N1_SD** (SD pinned alone) against N100H36L, 3 600 s: 15 columns past 0.05 K / 0.05 bar; the first e_tadb at
+  210 s (max +0.62 K), then b_rxn_K (max -0.28 K), purge_t_out -1.2 K, b_carb_K -0.32 K, pic203_op +1.1, pic202_op
+  +0.5. The control itself drifts (b_rxn_K 13.0 to 13.25 K, phi 0.2036 to 0.2045, as the archived N100H36 to
+  13.17 K); SD holds b_rxn_K at 12.94-12.98 K and phi at 0.2036. SD's departure is the control's drift stopped.
+* **N1_SDnB** (candidate "n") against N100H36L, 7 200 s: settled, b_rxn_K last-period range 0.08 K (mean 13.15 K),
+  TT-322005 flat at 183.00 C; the control rings (range 0.59 K, period 2 400 s). 19 columns past the standard; no
+  published tag beyond its display digit (TT-322004, TT-322013, TT-322015 0.1 K; PIC-329204's output 0.1); the
+  largest e_tadb +0.86 K, b_rxn_K +0.34 K (the control's ring), pic203_op +4.2, pic202_op +3.1.
+
+## CXLVI.8 B-126 (b) on V1.2's seed: the criterion it needs
+
+NB_103 (the twelve compartments, at the outflow) against NB_as on the fixed rig, 600 s, nothing else changed:
+11 248 sampled leaves differ from 10 s (the compartments' storage terms); not bit-identical. The published tags move
+inside their display resolution: TT-322005, TT-322004, TT-322010 and LT-322504 0, AY-322701 +0.001, PT-329201
+-0.0003 bar; b_rxn_K -0.020 K, e_tadb at most 0.08 K, the boil-off -6 kg/h. The seed criterion B-126 (b) needs is
+therefore a display-resolution one: every published tag within its last displayed digit of the as-built seed over
+600 s, the internal leaves free. That restatement is the process engineer's.
+
+## CXLVI.9 B-136: the lower shell-condensate block valve on the new stripper's drawing
+
+`stripper.py` line 298 writes 322E001's lean rise as raw_load = dT_steam,des (m_des / m_live - 1). Condensate held on
+the shell side floods the lower tubes; an active-area fraction a multiplies the design capacity:
+raw_load = dT_steam,des (a m_des / m_live - 1). At a = 1 it is as built; at a = m_live / m_des it is zero, B-136 (b).
+
+* **The operating manual** (UD-VT-G00-DC-0003 p. 70, `Operating Manual and SOP\Helwan Operating Manual meged.pdf`):
+  a condensate level can be held on the HP heat exchanger's shell side to minimise biuret and hydrolysis, at one of
+  two levels, chosen on the biuret analysis at the initial start-up.
+* **The new stripper's GA** (`Soft copy\New Stripper\6355_Rev.6_STAC Review.pdf`, Stamicarbon / Officine Luigi
+  Resta, rev 6; read on the rendered page): two DN150 PN63 condensate outlets, N6A at EL +7154 and N6B at EL +6554,
+  600 mm apart, the lower tubesheet's face 204 mm under N6B; 6 000 mm tubesheet to tubesheet; 2 950 tubes of
+  6 863 mm.
+* **Calculated:** with the lower valve (N6B) shut the condensate stands to N6A, 804 mm over the lower tubesheet, and
+  the active fraction is 1 - 804 / 6 000 = 0.866; with it open, 0.966.
+
+The plant's notebook (§CXLI.7) shuts the lower valve "at 100 % load and below". Two readings follow:
+
+* If the licensor's design duty already has the valve shut, the model's design capacity is that area. The lead then
+  changes nothing below 100 %, and above 100 % it opens 15.5 % more area.
+* If the duty is on the full area, the area steps to 0.866 as the load crosses 100 %: raw_load = -0.062 at 92.3 %
+  and +0.250 at 69.3 %, where as built it is +0.083 and +0.443.
+
+Which reading holds is for the process engineer. The second is bracketed with the key `area: "n6a"` (CXLVI.14). At
+92.3 % a m_des / m_live is 0.938, so raw_load is negative and 322E001 sits on its feed-spike branch, not on the lean
+rise: neither the 120 s smoke at 99.5 % nor a 92.3 or 90.5 % arm tests the valve. With a = 0.866 only 74.4, 69.3 and
+68.9 % reach the lean branch (a m_des / m_live - 1 = +0.164, +0.250, +0.257).
+
+## CXLVI.10 How the arms are read
+
+score134 (`run/score134.py`) wraps session 108's score108. It reads every arm on two criteria and the sign table.
+
+* **D2, settled.** Over the last full period of the slowest mode, b_rxn_K's range must be at most 0.3 K and
+  TT-322005's at most 0.2 K. The period is the mean spacing of same-kind turning points of b_rxn_K. The turning
+  points come from a 7-sample smoothing, at least 400 s apart. An arm that fails D2 is RINGING and gets no verdict.
+* **D1, stands.** D1 needs four things:
+  - the arm is settled;
+  - decision 196 passes;
+  - decision 180's clauses pass on the last period's samples;
+  - the rise, b_rxn_K's mean over that same period, is 13.05 +/- 1.0 K.
+* **Decision 180 as written** is also printed: the whole hold's minimum and maximum, and every latch. PC35's 35.1
+  and 35.4 are printed beside the verdict and not counted in it (CXLVI.11).
+* **Signs.** The sign table is session 108's PLANT departures, with Book2's 111 % band added
+  (`desk/t0a_bands.json`). The departures are read on the same last period as the rise. PT-329201's and TT-322004's
+  departures are printed beside Book2's.
+
+**Two scorer corrections were made after the first reading (2026-11-19).** Both verdicts are archived:
+`run/score_matrix_v1_prelatch_window.txt` holds the first reading and `run/score_matrix.txt` the corrected one.
+
+* **The window.** On an arm latched on unit 35, score108 took its window as the 600 s before the latch. On the
+  low holds that window falls about 2 300 s after the ramp, mid-transient. score134 now passes score108 the last
+  period on every arm latched on unit 35 alone. Decision 180 as written still sees the first latch of any unit.
+  The correction moves the low-load signs and departures, for example SB693_ldcL's TT-322004 from -6.34 to -9.45 K.
+  It changes no verdict.
+* **D2's comparison.** The comparison was made in floating point. A TT-322005 range of two display steps,
+  180.9 - 180.7 = 0.2000000000000284, failed "at most 0.2 K". Both ranges are now rounded to 1e-6. This moves three
+  arms from RINGING to settled: SB923_ldcL, SBd905LL and SB693_ldcL. Each of the three sits exactly at the
+  tolerance. SBd905LL's last TT-322005 swings, 0.2, 0.3, 0.3 and 0.2 K, do not decay: it settles at the tolerance,
+  not on a decayed mode.
+
+## CXLVI.11 A HEAD finding outside B-118: 335P001 stops on LY-324501's L2 at reduced load
+
+Several HEAD arms latch PC35's 35.1 and 35.4:
+
+* every "d" arm below 100 %;
+* every arm at 74.4 % and below.
+
+335P001 stops on LY-324501's L2 (decision 217; `second_evaporator.py` line 560). The melt to the granulator falls
+to 0 t/h, with no precursor in the synthesis columns. The latch times are:
+
+* 92.3 %: 13 460 s; 15 320 s with the clamp;
+* 90.5 %: 10 140 s;
+* 74.4 %: 6 190 to 8 160 s;
+* 69.3 %: 5 980 to 7 110 s;
+* 68.9 %: 6 060 to 7 040 s;
+* none on the "n" arms at 92.3 and 90.5 %, to 18 960 and 11 940 s;
+* none at 111 %.
+
+Session 112's tree holds no such stop (verified on `tree112`'s `second_evaporator.py`). `ureasim/` is unchanged
+between 2efb181 and HEAD. The rig's policy moves no unit 324 or 335 handle, and LY-324501 is not sampled. The
+latch is observed and its cause is not established (gap row 4, §CXLV.2).
+
+**Its effect on the synthesis at 92.3 %.** Measured on SB923_luL (HEAD) less SB923_luL_s112 (session 112's tree,
+the same law):
+
+| Window | b_rxn_K K | TT-322005 K | p_syn bar | TT-322004 K |
+|---|---|---|---|---|
+| 1 800 s before the latch | -0.04 | -0.00 | -0.00 | -0.02 |
+| 1 800 s after it | +0.29 | +0.16 | +0.01 | +0.00 |
+| the hold's last 1 800 s | -0.05 | -0.10 | -0.01 | -0.09 |
+
+At 92.3 % the latch moves the synthesis by at most 0.3 K, and by 0.1 K at the hold's end. At 74.4 % and below,
+the latch falls 2 200 to 3 400 s after the ramp. There, every reading is of a plant with 335P001 stopped, and the
+92.3 % measurement does not bound it.
+
+## CXLVI.12 92.3 %: S + B on UA as built settles; on HEAD it fails the rise; the Book2 exponent rings
+
+All readings are on the last period. Book2 at 92.3 %: TT-322005 -0.40 K, TT-322004 -1.40 K, TT-322010 -0.42 K,
+PT-329201 -3.20 bar.
+
+| Arm | Law | t_end s | rise K | TT-322005 C | b_rxn_K range K | TT-322004 K | PT-329201 bar | Reading |
+|---|---|---|---|---|---|---|---|---|
+| SB923_luL_s112 | session 112's tree, S + B, UA as built | 18 960 | 12.14 | 181.58 | 0.16 | -1.70 | -0.70 | STANDS; decision 180 as written fails on an early trough of 180.20 C |
+| SB923_luL | the same on HEAD | 18 960 | 12.03 | 181.49 | 0.20 | -1.76 | -0.72 | settled, fails the rise (D1's floor 12.05); 35.x at 13 460 s |
+| SB923_ldL | SD pinned + B on HEAD | 18 960 | 12.03 | 181.51 | 0.20 | -1.75 | -0.72 | the same law as SB923_luL to rounding |
+| SB923_ldcL | "d" + the clamp | 18 960 | 11.07 | 182.26 | 0.24 | -1.70 | -0.70 | settled at D2's tolerance, fails the rise; TT-322010 +1.00 K, the sign off; 35.x at 15 320 s |
+| SB923_lnL | candidate "n" (SD p1, n 0.50) | 18 960 | 12.42 | 181.55 | 10.17 | -4.80 | -0.80 | RINGING, period 6 900 s, swings about 11 K |
+| SB923_lncL | "n" + the clamp | 18 960 | 12.19 | 183.15 | 1.43 | -1.64 | -0.70 | RINGING, decaying (TT-322005 swings 2.5, 1.6, 1.2, 0.4 K) |
+
+**Item 1 is answered.**
+
+* On UA as built, S + B rings past the 2 300-2 400 s mode, which decays (swings 0.4, 0.4, 0.3, 0.1 K).
+* It settles at TT-322005 181.5-181.6 C, inside Book2's 182.6 +/- 2.0 C, and every sign is the plant's.
+* On session 112's tree it stands. On HEAD it falls 0.02 K under D1's floor, after the 35.x latch. Its distance
+  from session 112's tree is -0.11 K on the rise, -0.09 K on TT-322005 and -0.02 bar on PT-329201: the size of
+  the latch's effect measured in CXLVI.11.
+* The magnitudes are not the plant's. TT-322005 sits 1.1 K under Book2's band centre. PT-329201 falls 0.7 bar
+  against 3.2 bar.
+
+**The clamp on "d"** lifts TT-322005 0.75 K and lowers the rise 0.96 K. It turns TT-322010's departure positive,
+against the plant's -0.42 K.
+
+**The 0.50 exponent** turns the decaying mode into a sustained one of about 6 900 s. The clamp damps it but does not
+settle it in 18 960 s. With the clamp, TT-322005 sits 0.5 K over the plant's band centre.
+
+## CXLVI.13 The other holds
+
+Readings are on the last period, with the hold as run. "Not settled within the hold" marks an arm whose last swing
+decays and whose hold was 7 200 s. Book2's departures at 69.3 %: TT-322005 -1.30 K, TT-322004 -5.70 K,
+TT-322010 -1.18 K, PT-329201 -7.90 bar.
+
+| Load | Arm | Law | hold s | rise K | TT-322005 C | b_rxn_K range K | TT-322004 K | PT-329201 bar | Reading |
+|---|---|---|---|---|---|---|---|---|---|
+| 90.5 | SBd905L | "d" | 7 200 | 11.22 | 180.75 | 2.23 | -2.87 | -1.23 | not settled within the hold |
+| 90.5 | SBd905LL | "d" | 14 400 | 11.29 | 180.79 | 0.24 | -2.27 | -1.03 | settled at the tolerance, fails the rise; every sign the plant's |
+| 90.5 | SBdc905L | "d" + clamp | 14 400 | 10.31 | 181.40 | 0.08 | -2.10 | -1.04 | settled, fails the rise; TT-322010 sign off |
+| 90.5 | SBn905L | "n" | 7 200 | 15.15 | 182.39 | 2.06 | -2.00 | -1.10 | RINGING |
+| 90.5 | SBn905cL | "n" + clamp | 7 200 | 10.68 | 182.56 | 1.52 | -2.34 | -1.25 | RINGING; TT-322010 sign off |
+| 74.4 | SBd744L | "d" | 7 200 | 9.82 | 177.35 | 3.08 | -4.62 | -4.29 | not settled within the hold (last swing 0.19 K) |
+| 74.4 | SBdc744L | "d" + clamp | 14 400 | 2.51 | 173.23 | 0.19 | -4.60 | -4.62 | settled on one 8 900 s period (TT-322005 range 0.200 K); fails the rise; TT-322010 and AY-322701 signs off |
+| 74.4 | SBn744L | "n" | 7 200 | 8.75 | 175.71 | 39.55 | -23.74 | -4.29 | RINGING |
+| 74.4 | SBn744cL | "n" + clamp | 7 200 | 13.28 | 177.41 | 16.18 | -8.20 | -4.38 | RINGING |
+| 69.3 | SB693_ldL | "d" | 14 400 | 3.95 | 171.92 | 3.30 | -9.85 | -5.22 | RINGING |
+| 69.3 | SB693_ldcL | "d" + clamp | 14 400 | 4.90 | 175.70 | 0.25 | -9.45 | -5.85 | settled; fails decision 180 (179.5-183.5 C) and the rise; TT-322010 and AY-322701 signs off |
+| 69.3 | SB693_lnL | "n" | 14 400 | 61.01 | 180.79 | 32.47 | -8.62 | -4.12 | RINGING |
+| 69.3 | SB693_lncL | "n" + clamp | 14 400 | 5.94 | 179.88 | 8.98 | -16.17 | -5.28 | RINGING |
+| 68.9 | SBd689L | "d" | 7 200 | 8.75 | 176.25 | 2.92 | -6.57 | -5.42 | not settled within the hold (last swing grew, 3.0 K) |
+| 68.9 | SBdc689L | "d" + clamp | 14 400 | 4.94 | 175.75 | 0.11 | -10.44 | -5.89 | settled after a 0.3 K drift over 10 000 s; fails the rise; TT-322010 and AY-322701 signs off |
+| 68.9 | SBn689L | "n" | 7 200 | 5.06 | 176.64 | 7.67 | -29.94 | -5.18 | RINGING |
+| 68.9 | SBn689cL | "n" + clamp | 7 200 | 6.30 | 174.49 | 12.96 | -19.59 | -5.70 | RINGING |
+| 111 | SBd111L | "d" | 14 400 | 19.35 | 184.86 | 19.29 | +6.24 | +3.59 | RINGING; boils 2.5 t/h; every 111 % band fails |
+| 111 | SBdc111L | "d" + clamp | 14 400 | 17.71 | 181.72 | 34.26 | +6.03 | +3.85 | RINGING; every 111 % band fails |
+| 111 | SBn111L | "n" | 7 200 | 23.30 | 184.58 | 8.71 | +6.57 | +2.98 | RINGING |
+| 111 | SBn111cL | "n" + clamp | 7 200 | 29.10 | 183.83 | 6.70 | +8.10 | +3.10 | RINGING |
+
+**Reading.**
+
+* **No HEAD arm stands D1.** Seven HEAD arms settle: SB923_luL / ldL, SB923_ldcL, SBd905LL, SBdc905L, SBdc744L,
+  SB693_ldcL and SBdc689L. Their rises are 12.03, 11.07, 11.29, 10.31, 2.51, 4.90 and 4.94 K, and every one fails
+  the rise.
+* **Below 90.5 %, "d" with the clamp is the only law that settles** (wave F adds 74.4 and 68.9 %; SBdc744L on a
+  single 8 900 s period at the tolerance). It settles cold: TT-322005 sits 7.3 to 9.8 K under the seed, where the
+  plant's sits 1.3 K under.
+* **"d" without the clamp rings** at 69.3 % on a 14 400 s hold (3.3 K). It is not settled within 7 200 s at 74.4
+  and 68.9 %.
+* **No arm holds 111 %.**
+
+**TT-322004 (the engineer's item 3) falls with the load on every settled arm.** The departures are -1.70 to -1.76 K
+at 92.3 % (Book2 -1.40 at 94.2 %), -2.10 and -2.27 K at 90.5 %, -4.60 K at 74.4 %, -9.45 K at 69.3 % and
+-10.44 K at 68.9 % (Book2 -5.70 at 69.3 %). The sign is the plant's; the magnitude is 0.8 to 1.8 times the nearer
+Book2 band's. The "n" arms ring through -8 to -30 K.
+
+## CXLVI.14 The brackets
+
+* **The UA exponent.** Only 92.3 % gives an equal-hold comparison. There, n 0.50 rings with a 10.2 K range where
+  UA as built settles with 0.20 K. At 90.5 % both ring within 7 200 s. n 0.38 and 0.25 (SB693_n38L, SB693_n25L)
+  ran only at 69.3 %, where "d" itself does not settle without the clamp. They ring (21.7 and 36.2 K ranges, rises
+  1.67 and 0.43 K) and do not discriminate the exponent. The finding that Book2's exponent rings rests on 92.3 %
+  alone.
+* **The area, the valve's second reading (SB693_lnaL, `area: "n6a"`, 69.3 %).** It ran on candidate "n", which
+  itself rings at 69.3 % with a rise of 61 K. It rings with a period of 1 182 s, and TT-322004 stands +15.2 K over
+  the seed against Book2's -5.7 K. This shows only that at a = 0.866 the lean rise left (+0.25) lifts TT-322004 on
+  "n". No "d" + area arm was run. The arm neither confirms nor rules out the second reading; which reading holds
+  is the process engineer's (CXLVI.9).
+* **The clamp.** On "n" it ran at all six loads and settles none. On "d" it ran at all six (wave F: `SBdc905L`,
+  `SBdc744L`, `SBdc689L`, `SBdc111L`, 14 400 s holds) and settles every reduced load; none stands D1, and 111 % rings
+  (34.3 K range).
+
+## CXLVI.15 What was not run
+
+* SB923_lnaL (the area at 92.3 %): stopped. 92.3 % is on the feed-spike branch (CXLVI.9).
+* A "d" + area arm at 69.3 %.
+* SB923_lurL (S + B + the lean rise on), SB693_lpL, and the Bsys arms (unstable on the seed, CXLVI.3 (ii)).
+* Track 5's L2 steps.
+* The exponent at 74.4, 68.9 and 111 %.
+
+## CXLVI.16 What is the process engineer's
+
+The engineer's four items, as they stand:
+
+1. **S + B to its settled state at 92.3 %.** Answered (CXLVI.12). On UA as built it settles in Book2's TT-322005
+   band, with every sign the plant's. It stands D1 on session 112's tree, and on HEAD falls 0.02 K under the
+   rise's floor after PC35's latch.
+2. **322E002's UA exponent and the pressure clamp.** Book2 gives 0.50 (CXLVI.2), and it rings at 92.3 %
+   (CXLVI.14). The clamp ran on the exponent at all six loads and settles none. On UA as built it settles all five
+   reduced loads, none standing D1, the three below 90.5 % 7.3 to 9.8 K cold on TT-322005; 111 % rings
+   (CXLVI.12-13).
+3. **The candidate with B-126 (b), B-136 (b), the 322F001 lift and the area lead.**
+   - B-126 (b) is in every arm. Its seed criterion has to be a display-resolution one (CXLVI.8).
+   - B-136 (b) gives TT-322004 the plant's sign at every settled hold, at 0.8-1.8 times its size (CXLVI.13).
+   - The area lead turns on which reading of the block valve holds (CXLVI.9); it was tried on "n" only (CXLVI.14).
+4. **The matrix.** CXLVI.12-13 and wave F; the report is in `Tests and Reports\reports\Session_134_b118`.
+
+Choices for the process engineer, none taken by this session:
+
+* Whether PC35's latch counts against a hold. Counted, no reduced-load HEAD arm on UA as built passes decision
+  180 as written. Its cause is A-61.
+* Whether D2's rounding to the display step stands (CXLVI.10).
+* Whether D1's floor is read on the last period. On session 112's tree S + B stands at 12.14 K; on HEAD it fails
+  at 12.03 K, a margin the size of the latch's effect (CXLVI.11).
+* The candidate, if any. S + B on UA as built is the only law that settles at 92.3 and 90.5 %. None settles on the
+  plant's TT-322005 below 90.5 % without the clamp. The clamp is plant data, not physics (CXLVI.3).
+* Which reading of 322E001's lower condensate valve holds (CXLVI.9).
+
+## CXLVI.17 Checks
+
+* The rig is proved on session 112's tree to 0 differing leaves (CXLVI.1).
+* Every wave was registered before launch, with its readings: `run/registry134.md`.
+* The documentation tests (`Tests and Reports/tests/docs`) pass. Nothing under `ureasim/` or `Tests and Reports/tests`
+  changed, so the suite was not run.
