@@ -27814,6 +27814,6 @@ evaporation plant 45 (the six shipped exercises restore with `ac4_ly` filled, ea
 floor of 19.9 to 22.3 %), `engine/packet` 34, the rest of `engine` 149. The design seed's snapshot byte-identical at
 600 s (CXLV.9). Then, the files that name the stop, the level or B-62 / B-63: `phase7`'s seal-loss, loop-atom,
 deviation, coupled and scenario-runner tests, `control`, and the first evaporator's decided and the pre-evaporator's
-equivalence: 17, 113 and 231 passed, none moved. Not run: `hmi` and the rest of the units' and equivalence files, and the whole suite in
-one pass, which waits for session 134's runs. `pyflakes` clean on the changed modules. Decision 252's class is written in
+equivalence: 17, 113 and 231 passed, none moved. Then, once session 134's runs had ended, the
+whole suite on 7510caf in nine parallel groups (`hmi` included): 8 437 passed, none failed or skipped. `pyflakes` clean on the changed modules. Decision 252's class is written in
 `docs/decided-classes.md` now that the process engineer has kept its consequence as built.
