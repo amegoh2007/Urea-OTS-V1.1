@@ -73,7 +73,7 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 | Series | Next | Where it is written |
 |---|---|---|
 | Session | 135 (134 the B-118 side session) | `docs/history/session-log.md` |
-| Decision | 252 (sessions 133 and 134 took none) | `docs/decisions.md` |
+| Decision | 253 (252 session 133's, on the unmerged `v1.2-d252`; session 134 took none) | `docs/decisions.md` |
 | As-Built Part | CXLVII (CXLVI session 134's) | the As-Built reference, appended at its end |
 | Handoff Section A | A-62 (A-61 session 134's) | `handoff.md` |
 | Handoff Sections B and C | B-157 (session 134 took none) | `handoff.md` |

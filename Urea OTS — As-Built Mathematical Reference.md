@@ -28167,3 +28167,31 @@ Choices for the process engineer, none taken by this session:
 * Every wave was registered before launch, with its readings: `run/registry134.md`.
 * The documentation tests (`Tests and Reports/tests/docs`) pass. Nothing under `ureasim/` or `Tests and Reports/tests`
   changed, so the suite was not run.
+
+## CXLVI.18 The 92.3 % margin on D1's floor, audited on the window
+
+`run/audit923.py` reads the rise (b_rxn_K's mean) of the 92.3 % S + B arms on five windows ending at the hold's end
+(18 960 s), and its drift over the last three periods by least squares. D1's floor is 12.05 K.
+
+| Arm | Period s | Last period | Last 1 800 s | Last 3 600 s | Last 2 periods | Last 3 periods | Drift K / 1 000 s |
+|---|---|---|---|---|---|---|---|
+| SB923_luL_s112 (session 112's tree) | 2 262 | 12.136 | 12.114 | 12.177 | 12.213 | 12.206 | -0.013 |
+| SB923_luL (HEAD) | 2 499 | 12.027 | 12.062 | 12.054 | 12.161 | 12.179 | -0.025 |
+| SB923_ldL (HEAD, SD pinned) | 2 500 | 12.028 | 12.065 | 12.056 | 12.165 | 12.180 | -0.024 |
+
+* **On HEAD the verdict turns on the window.** The rise reads 12.03 to 12.18 K, on both sides of the floor; on the
+  last period alone it fails by 0.02 K, on every other window it passes, by 0.004 to 0.13 K. On session 112's tree
+  every window passes (12.11 to 12.21 K). The 0.02 K shortfall is smaller than the spread of the windows (0.15 K)
+  and is not a finding against the law on its own.
+* **The difference between the trees is real but small.** HEAD's rise minus session 112's, sample by sample:
+  -0.05 K on the mean before the 35.x latch (5 000-13 460 s, the two in different phase: periods 2 499 and 2 262 s),
+  +0.18 K over the 2 500 s after it, and -0.13 K (-0.33 to +0.01 K) over the last 3 000 s. Both rises still fall
+  slowly at the hold's end, HEAD's twice as fast (about 0.06 K a period).
+* **No hold at or below 90.5 % meets D1, and none holds without a unit 35 latch.** Every settled arm there fails the
+  rise (10.31 to 11.29 K at 90.5 %, 2.51 to 4.94 K at 74.4-68.9 %), and every one latches PC35's 35.1 and 35.4
+  (A-61). No low-load candidate therefore holds a steady state without a trip, and the HIC-329605 step probe at
+  75 % load (§CXLV.4) stays deferred.
+* **A-61 and decision 252.** These runs are on V1.2's HEAD, where LY-324501 reads V1's level and the L2 stop acts
+  at 5 %. Decision 252, on the unmerged branch `v1.2-d252` (session 133), makes LY-324501 AC4's formula with
+  Rosemount's LRV floor (20.6 % at the design vacuum) and keeps the stop unlatched; there the stop cannot act until
+  the vacuum breaks. A-61's latch is therefore to be re-measured on that tree before its cause is sought on HEAD's.

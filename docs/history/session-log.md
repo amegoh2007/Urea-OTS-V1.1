@@ -5275,10 +5275,11 @@ README's hash. Nothing built, no decision. Part CXLV; runs `Tests and Reports\re
 
 A side session of 133, on V1.2's HEAD and session 112's tree, in scratch only. S on design references is the design
 point to the bit at t = 0. S + B on UA as built settles at 92.3 % (TT-322005 181.5 C, every sign the plant's): it
-stands D1 on session 112's tree and on HEAD falls 0.02 K under the rise's floor after PC35's latch. Book2's 322E002
-UA exponent is 0.50 and rings at 92.3 %. No inert or liquid term carries the pressure's 3-6 bar; as a clamp on plant
-data it settles UA as built at every reduced load by D2 (74.4 % by its rounding only), 7.3-9.8 K cold below 90.5 %, and 111 % rings on every law. No HEAD
-arm stands D1. B-136 (b) gives TT-322004 the plant's sign at every settled hold, 0.8-1.8 times its size. B-126 (b)
-needs a display-resolution seed criterion. 322E001's N6A / N6B outlets put the lower valve's area at 0.866. 335P001
-stops on LY-324501's L2 on every reduced-load HEAD arm (A-61). Nothing built, no decision. Part CXLVI; runs
+stands D1 on session 112's tree; on HEAD its rise reads 12.03-12.18 K by window on the floor's 12.05 K. Book2's
+322E002 UA exponent is 0.50 and rings at 92.3 %. No inert or liquid term carries the pressure's 3-6 bar; as a clamp
+on plant data it settles UA as built at every reduced load by D2 (74.4 % by its rounding only), 7.3-9.8 K cold below
+90.5 %; 111 % rings on every law. No hold at or below 90.5 % stands D1 or runs without a PC35 latch, so the 75 %
+HIC-329605 probe stays deferred. B-136 (b) gives TT-322004 the plant's sign, 0.8-1.8 times its size; B-126 (b) needs a
+display-resolution seed criterion; N6B shut leaves 0.866 of 322E001's area. 335P001 stops on LY-324501's L2 on every
+reduced-load HEAD arm (A-61; to re-run on decision 252's tree). Nothing built, no decision. Part CXLVI; runs
 `Tests and Reports\reports\Session_134_b118`.

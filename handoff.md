@@ -32,7 +32,9 @@ holds 69 % for hours with 335P001 running (Book2).
 Acceptance: a 14 400 s hold at 69.3 % with 335P001 running, and the seed to the bit.
 Open: why LY-324501 falls. The candidates are LIC-324501's response to the melt cut, the rig's handling of unit 324,
 and V1's holdup ratio (data gap 4).
-Next step: one 69.3 % arm sampling LY-324501, LIC-324501's output and the melt flow; then the process engineer's.
+Next step: once `v1.2-d252` merges (decision 252: LY-324501 on AC4's formula, its 20.6 % LRV floor above L2, the stop
+unlatched), re-run one 69.3 % hold; if 335P001 still stops, an arm sampling LY-324501, LIC-324501's output and the
+melt flow (§CXLVI.18); then the process engineer's.
 
 ---
 
@@ -101,10 +103,10 @@ close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atom
   Z + B stands D1 at 92.3 % (13.15 K) and, the lean rise on, at 69.3 %, boiling.
 * Session 134 (Part CXLVI), on HEAD, D1 on the last period, D2 its range (§CXLVI.10). S on design references is the
   design point to the bit at t = 0 (§CXLVI.7). S + B on UA as built settles at 92.3 %, TT-322005 181.5 C, every sign
-  the plant's: it stands on session 112's tree, and on HEAD falls 0.02 K under D1's floor (§CXLVI.12). Book2's UA
-  exponent 0.50 rings. No inert or liquid term carries the pressure's 3-6 bar (§CXLVI.3); as a clamp it settles UA as
-  built at every reduced load by D2 (74.4 % by its rounding only, 68.9 % still drifting), 7.3-9.8 K cold below 90.5 %. No HEAD arm stands; TT-322004 falls with the load on every
-  settled arm, 0.8-1.8 times the plant's (§CXLVI.13). Every HEAD arm below 100 % on UA as built latches PC35 (A-61).
+  the plant's: it stands on session 112's tree; on HEAD its rise reads 12.03-12.18 K by window on D1's 12.05 K floor
+  (§CXLVI.12, .18). Book2's UA exponent 0.50 rings. No inert or liquid term carries the 3-6 bar (§CXLVI.3); as a
+  clamp it settles UA as built at every reduced load by D2 (74.4 % by rounding, 68.9 % drifting), 7.3-9.8 K cold below
+  90.5 %, where no hold stands D1 or runs without a PC35 latch (A-61). TT-322004 falls with the load, 0.8-1.8 x (§CXLVI.13).
 
 **Bundle A (decision 181), scratch only; `ureasim/` is as built.** P1, 322E002's UA on the battery-limit
 CO2 demand ratio to the power 0.77 (§CVII.1); P4, the wall loss on a stagnant reactor only; the 322F001 lift
