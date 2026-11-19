@@ -5298,3 +5298,14 @@ gaps 4, 5, 9, 10, 12 and 14 measured and prepared to close as built; [E] estimat
 D1's band is the seed's, the plant's rise measured 13.4-13.9 K. The decision packet, the Körting and Foxboro Eckardt
 letters, the LV-324501A step test and the DCS readback checklist written. Decisions 253 to 257 proposed, none taken;
 nothing under `ureasim/` changed. Part CXLVII; `Tests and Reports\reports\Session_135_gaps`.
+
+### Session 136 — 2026-11-19: the process engineer's rulings recorded; 322R001 refitted to Book2; the Q2 matrix launched
+
+The rulings on session 135's packet recorded as decisions 253 to 267, `handoff.md` rewritten on them, data gap rows 4,
+5, 9, 12 and 14 deleted. score136 (decisions 259 to 262) re-scores waves H and H2: no arm stands D1; R923 reads 12.10 K
+on the thermowells against Book2's 13.88 +/- 1.0 K, the seed itself 13.00 K. Book2's reductions never pass under
+180.6 C. 322R001 refitted with law B meets Book2's flat rise at every anchor; the profile picks f 0.58, V1's own, the
+licensor's 95 % misses by 2.9 K rms. The literature's ejector break gives 1.12 of the plant's 1.82: no build. The
+44 mm bore confirmed as OD less two printed walls, unlabelled as the throat; gap 15's wet reading withdrawn on Book2. The T693b trace and wave M's seventeen
+arms left running, unscored. Decisions 268 to 273 proposed; nothing under `ureasim/` changed. Part CXLVIII;
+`Tests and Reports\reports\Session_136_rulings`.

@@ -1387,3 +1387,61 @@ decision on an item.
      The process engineer kept that behaviour as built on 2026-11-19 ("Keep as built"): the stop reads LY-324501
      with its floor and does not latch.
      Data gap 4 stays open on the configured LRV and the leg's walk-down. As-Built §CXLV.9.
+253. **The operator's header-valve rule is the B-118 rig's handle, taken conditionally** (2026-11-19, session 136;
+     the process engineer's ruling 6 on session 135's packet, `Tests and Reports\reports\Session 136 plan prompt -
+     rulings and Q2 matrix.md` Part A). The rig moves GRANULATION-HEADERS by the Operating Manual's rule
+     (UD-VT-G00-DC-0003 pp. 4-40, 4-41, 4-43, 6-22, 6-23), read in bar g on E1's two ends: a valve off when
+     PIC-335201's PV is under 3.0 bar g with LIC-324501's output at 0 %, on when it is over 3.5 bar g with LV-324501B
+     open, with the rig's 300 s dwell and no shedding while LY-324501 rises (As-Built §CXLVII.1-2). The rule is not
+     built into `ureasim/`. Data gap 16 closes, as "the count is the rule's output", only once R693b's feed step is
+     traced to a cause that is not the rule (session 136's Part C step 2); until then it stays open.
+254. **An engineering estimate may stand in for a vendor datum, tagged [E]** (2026-11-19, session 136; ruling 8). An
+     estimate from open literature or standard practice, bounded by a sensitivity run, may stand in for a datum the
+     archives do not give until the datum arrives. It is tagged [E] wherever it is cited, and the data-gap row stays
+     open on the vendor's or the plant's datum unless a decision closes it. As-Built §CXLVII.6-10.
+255. **Data gaps 5 and 14 close as built** (2026-11-19, session 136; ruling 8). Gap 5: nothing sets
+     `trip_84_8_healthy` and no malfunction reaches it, so TRIP_84_8's L2 has no consumer and cannot change a run.
+     Gap 14: LVSL-324501A at 0, 2 or 5 % of stroke moves trip 35.4's heal by 0 to 4.3 s on an operator-held restart,
+     the running stroke never under 72.7 %; the stand-in stays 0 %. The readback checklist's rows 6 and 22 become
+     checks. As-Built §CXLVII.3-4.
+256. **Data gap 4 closes on the two sources' agreement** (2026-11-19, session 136; ruling 8). LT-324501's range is
+     -700 to 900 mbar on Uhde's data sheet UD-MR-G00-EC-0136 p. 3 and on Rosemount's factory record
+     UD-MR-G00-DZ-0012-002 p. 76; the functional diagram 324-FF-0002's -800 mbar is set aside, as decision 252 did.
+     LY-324501 stays as built on decision 252. The readback's row 11 becomes a check. As-Built §CXLV.1-9, §CXLVII.5.
+257. **Data gaps 9 and 12 close as built on sensitivity; data gap 10 stays open** (2026-11-19, session 136; ruling 8).
+     Gap 9: on the engine's loop lambda tunings settle a UF85 step in 30-66 s against V1's 94.5 s, none
+     overshooting, so FIC-335405 keeps V1's 100 per t/h and 15 s. Gap 12: any LV-324501A lag in 0.5-2 s sits inside
+     the 5 November trend's 4 s resolution, so the 1 s stand-in stays. Gap 10 is not closed: a scale change of up to
+     1.11 on LIC-329505's display is visible to a trainee, so the proposal's premise fails there; it closes on the
+     readback's row 10. As-Built §CXLVII.7-9.
+258. **Session 135's documents stand as measurements and proposals, nothing decided** (2026-11-19, session 136;
+     ruling 0). Session 135's four documents were committed on `v1.2` as 676f567 before session 136 began; that
+     commit is the record and is not amended. Decisions 253 to 257 are taken by session 136, on the rulings above.
+259. **The seed criterion: every published tag within its display step over 14 400 s** (2026-11-19, session 136;
+     ruling 1a (ii)). A candidate law keeps the 100 % seed when every published tag stays within its last displayed
+     digit over a 14 400 s hold, the longest hold the B-118 matrix uses, on the display-step check of As-Built
+     §CXLVI.8; the design pin's printed numbers are unchanged.
+260. **D1's rise is read as a three-period mean, ±1.0 K, with a drift limit** (2026-11-19, session 136; ruling 1b).
+     The rise is the mean over the run's last three periods of its slowest visible mode, the tolerance kept at
+     ±1.0 K (not widened by the window spread), and the arm must drift less than 0.05 K per 1 000 s over the same
+     three periods.
+261. **PC35's latch counts** (2026-11-19, session 136; ruling 1c (i)). From session 136 every B-118 arm runs with the
+     header rule (decision 253) on, and a PC35 latch fails the arm as any other trip does.
+262. **D1's rise band is Book2's measured rise on the thermowells** (2026-11-19, session 136; ruling 1d (ii)). At
+     each Book2 load the band is Book2's rise TT-322005 - TT-322010 at that load, ±1.0 K, read on the thermowells,
+     not on `b_rxn_K`. The 5 November holds (90.5, 74.4, 68.9 %) are scored on TT-322005's band alone until the
+     readback's row 21 is read.
+263. **322R001's approach to equilibrium and 322E001's feed-deficit rise are measured together, before any build**
+     (2026-11-19, session 136; ruling 2 (ii), with one change). The two divergences from V1 are measured together,
+     with B-126 (b), S + B on UA as built and the header rule, on decisions 259 to 262. 322R001 is re-anchored by
+     refitting V1's reactor law to Book2, not by setting the licensor's 95 % by hand. Nothing is built into
+     `ureasim/` on this decision; a build waits on its own decision under `CLAUDE.md` §5 rule 6.
+264. **B-125 is measured as S with B, inside B-118** (2026-11-19, session 136; ruling 3 (c)). 322E002's saturation
+     law is carried as law S beside law B in the B-118 arms; B-125 stays open and nothing is built.
+265. **B-126 is measured as the twelve-compartment species holdup, on decision 259** (2026-11-19, session 136;
+     ruling 4 (b)). Every B-118 arm carries it; B-126 stays open and nothing is built.
+266. **B-136 is measured with the feed-deficit rise off, only together with decision 263** (2026-11-19, session 136;
+     ruling 5 (b)). Never alone; B-136 stays open and nothing is built.
+267. **322E002's UA stays as built; the pressure clamp is rejected** (2026-11-19, session 136; ruling 7). Book2's UA
+     exponent 0.50 rings at 92.3 % on evidence from one load, and the pressure clamp is Book2's pressure written in
+     as a law; neither is a build candidate. As-Built §CXLVI.3, .12, .14.
