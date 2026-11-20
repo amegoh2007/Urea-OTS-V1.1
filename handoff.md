@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-20, session 140.
+**Last updated:** 2026-11-20, session 141.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -20,44 +20,7 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 # Section A — Rewrite issues
 
-### A-61 — 335P001 stops on LY-324501's L2 on every reduced-load hold of the B-118 rig
-
-*Raised 2026-11-19, session 134 (As-Built §CXLVI.11, .19); measured with the operator's rule, session 135
-(§CXLVII.1, .2). Decisions 217, 224, 252, 277, 281 and 283; decision 253 taken conditionally on step 2's trace (session 136).* Without the rule the rig's held arms latch PC35's
-35.1 and 35.4 when 335P001 stops on LY-324501's 5 % L2: on 2efb181 every arm at 74.4-68.9 % and UA as built at 92.3
-and 90.5 %; on the merged tree (79fa8ca) SB693_ldcL at 6 030 s and SB923_luL at 13 660 s (35.4). The plant holds 69 %
-for hours with 335P001 running (Book2).
-Established cause: the rig holds the ten design header valves online; at LIC-324501's 0 % E1's 2.8 bar g floor still
-draws more than the make, so the leg drains (§CXLVI.19).
-Acceptance (decisions 281, 283): SB693_ldcL252's base with the header rule, its predictive guard (a valve off only if
-P (N / (N - 1))^2 stays at or below 4.0 bar a, on only if P (N / (N + 1))^2 stays at or above 2.5 bar a) and the feed
-rule, 14 400 s at 69.3 %: 335P001 runs to the end; no PC35 latch; at most one reversal of the header count in any
-3 600 s after the ramp; the header inside 2.5-4.0 bar a for at least 95 % of the hold.
-Established (§CXLVII.2): with the manual's rule on the rig (a valve off below 3.0 bar g with X at 0 %, on above
-3.5 bar g with LV-324501B open; bar g, §CXLVII.1), 335P001 runs every 69.3 % and 92.3 % hold to its end with no
-latch, with the rig's 300 s dwell and level guard, and the 100 % seed is unchanged to the bit: the acceptance is
-met in scratch. A 900 s dwell is too slow
-(SB693_ldcL252 still stopped, 7 020 s); a 300 s dwell with no shedding while LY-324501 rises holds the raw level
-above 27 %. At 92.3 % the rule takes one valve off and S + B on UA as built then stands D1 (rise 12.17 K).
-Traced (§CXLVIII.3): the 69.3 % feed step (51.0 to 46.5 t/h at 16 610 s) is 323D002 regaining suction (A-62, closed by decision 279), with
-no recycle and no shed in the 10 610 s before it; decision 253's condition is met and data gap 16 is closed.
-Decision 281's closing run (§CLI.2), the header rule and the feed rule together, 14 400 s at 69.3 %: 335P001 runs
-to the end and no PC35 latch fires, but the header count changes direction seven times after the ramp (6 <-> 7 on a
-2 400-3 000 s cycle from 14 280 s, on the leg's recycle cycle through LV-324501B); it ends on 7, time-weighted 6.80
-(6.44 from 14 280 s), against the calculated 6.9-8.1. Criterion 3 fails; A-61 stays open. The control without the
-feed rule (R693b, its 323D002 starved of suction, LIC-323507 at 0 %) moved 10 -> 6 with no reversal; on the ringing
-base the header rule alone hunted 6 to 8 with six reversals (§CXLVII.2). So on this pair the feed rule adds the
-hunting, against the ruling's premise. The dwell and the guard are the rig's choices, not the manual's.
-Decision 283's guard (§CLII.2): the arithmetic holds (1.36 from seven to six; E1's 3.8 / 2.8 = 1.357 carries every
-step down to eight -> seven and fails from seven -> six downward). Page 4-43 prints the 3-3.5 bar band for the urea
-melt main header (no unit) and the 2.5-4.0 bar abs guide figure "at granulator main header", 1.49-2.99 bar g, below
-E1's 2.8 bar g floor (§CXLVII.1). Read in bar a the guard blocks every shed: A61a keeps ten valves and LV-324501A is
-latched shut at 3 520 s (PC35.4, the raw level drained to 2 %; criteria 2 and 3 fail). Read in bar g it blocks no move (A61g equals A61_693 in every leaf; seven reversals, three in one 3 600 s; inside 2.5-4.0
-bar a 44 % of the hold, bar g 100 %): criterion 3 fails. On the replay's moves every
-addition is blocked only by a lower bound above 2.90 bar g, every shed passes only with an upper one of 3.86 or more;
-E1's own ends would block both the six -> seven additions and the seven -> six sheds, holding seven while the level
-drains. Next step: the process engineer's units and place for the guard's bounds. The rules are not built into
-`ureasim/`.
+*None open.*
 
 ---
 
@@ -65,8 +28,8 @@ drains. Next step: the process engineer's units and place for the guard's bounds
 
 ### B-118 — Below 100 % load the engine holds no steady state on the plant's reactor window
 
-*Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to CLII; decisions 177, 180, 181, 188,
-190 and 259 to 284.*
+*Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to CLIII; decisions 177, 180, 181, 188,
+190, 259 to 284, 286 and 288.*
 
 **Problem.** The plant runs for hours at reduced load. The committed engine, ramped from its design seed, does not:
 at 70-85 % trip 22.1 in 20-80 minutes, or with 22.2 removed (decision 189) SV32064 lifts and 21.x and 22.1 latch
@@ -113,15 +76,14 @@ close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atom
   re-flash alone loses 92.3 and 69.3 %, the three pinned the top stands at 92.3 % and boils at 69.3 %.
 * Sessions 109-112, 134, 135 (§CXIX.6, Part CXXII, §CXLVI.3, §CXLVII.2): B lifts the rise (§CL.2); S + B on UA as
   built settles at 92.3 % on the plant's signs, 12.03-12.18 K; no inert or liquid term carries the 3-6 bar; below
-  90.5 % every hold is 7.3-9.8 K cold or latches PC35 (A-61); with the header rule 92.3 % runs latch-free, 69.3 %
-  misses (rise 4.2-5.0 K).
+  90.5 % every hold is 7.3-9.8 K cold or latches PC35 (A-61, closed by decision 287 on the header rule); with the
+  header rule 92.3 % runs latch-free, 69.3 % misses (rise 4.2-5.0 K).
 
 **Bundle A (decision 181), scratch only.** P1 (322E002's UA on the CO2 demand ratio^0.77), P4 (the wall loss on a
 stagnant reactor), the 322F001 lift p_disch - 2.41 (1 - r^2), slip gain 4.0: passes 92.3 %, latches or leaves the band
 below; with B-126 (b) the low holds are trip-free, 92.3 and 90.5 % cold; 111 % out of band (§CXII.10, §CXIV.6).
 
-* Sessions 136-137 (§CXLVIII.5, .12, §CXLIX, §CL.2): no wave M arm stands; the reactor's law cleared; the seed's
-  rise 0.68 K under Book2's 100 %.
+* Sessions 136-137 (§CXLVIII.5, .12, §CXLIX, §CL.2): no wave M arm stands; the seed's rise 0.68 K under Book2's 100 %.
 * 322R001 on the engine's step, boundary frozen (§CL.3, retracting §CXLIX.5 at 92.3 %): one stable root at every load,
   the engine on it (92.3 % 12.097 K; 69.3 % 6.739 K). Not the reactor's branch selection (decision 280; loop-level
   multiplicity untested); the loss is the boundary, 322E002's split first: 92.3 % -1.10 K (split alone -2.51 K),
@@ -130,14 +92,16 @@ below; with B-126 (b) the low holds are trip-free, 92.3 and 90.5 % cold; 111 % o
   share fits the rise; the thermowells read 0.171-0.180 at 94.2 % on law B, not identifiable at 69.3 %: not a datum.
   322E002 at unit level (§CLI.5): its NTU-quench outlet (1.2 K off Book2's departure at 94.2 %, 8.5 K at 69.3 %) sets
   its share; no closure can be scored. The seed's share is not taken as the plant's (decision 284).
-* The boil cap's gap (§CLII.3): `reactor_boil.liquor_bubble_t_c` (decision 102) is composition- and inert-blind on
-  PI-322E002's 23 kJ/mol, 0.532 K/bar; Book2's TT-322005 moves 0.12-0.14 K/bar with PT-329201 across bands, 0.01-0.28
-  within: the top does not follow the cap. Fits: a flatter line (87 kJ/mol, every band within 0.4 K) or the same slope
-  with a 3.5 K margin at design. Inerts lower the bubble point (licensor, p. 1-16): not the cause [I].
+* The boil cap (§CLII.3, Part CLIII; decisions 286, 288): `reactor_boil.liquor_bubble_t_c` (decision 102), 23 kJ/mol,
+  0.532 K/bar, is rejected by Book2 inside every band but 80.4 % (n 10); fits: (a) a flatter line, 87 kJ/mol (0.14,
+  held but at 69.3 %, which follows no line), or (b) the slope with a 3.5 K design margin. Inerts: not the cause. The
+  engine's Extended UNIQUAC puts the top's liquor at 40 bar a, not 141.3, so it weighs on neither. On the 100 % seed over
+  3 600 s (a) equals N100A; (b) removes N100A's 30-120 kg/h top boil, two flows two steps off. At 92.3 and 69.3 % with
+  law B's inverse unchanged both act only in the ramp: through `node_boil` point 2.4 does not discriminate.
 
-**Next step.** The process engineer's call on the cap (a flatter slope or a design margin, a new mechanism, both in
-§CLII.3); then the reduced-load decomposition on it. The plant's 322E002 split stays gap 17 (row 30). Decision 277's rule rides every
-arm; B-126, B-136 inside (265, 266).
+**Next step.** The process engineer's choice between (a) and (b), on §CLIII's both sides; the bubble line at 125-150 bar
+needs published data (the literature search the engineer commissions). The plant's 322E002 split stays gap 17 (row 30).
+Decision 277's rule rides every arm; B-126, B-136 inside (265, 266).
 
 **B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode (§XCVIII.3, §CIII.7, §CXIV.7,
 §CXVII.6); the gain stays 4.0.
@@ -210,31 +174,34 @@ Next step: B-118's.
 
 ### B-157 — The as-built 100 % seed is not stationary over 15 000 s
 
-*Raised 2026-11-20, session 138 (As-Built §CXLIX.4, §CL.2, §CL.3; decisions 278, 285).* N100A, the design seed with every
-B-118 law off, wanders from its own first sample on the console's decimals: TT-322011 0.4 K (beyond one step at
-7 550 s), LT-322504 0.2 % (6 190 s), AT-322701 0.003 (11 350 s), FT-329403 0.05 t/h (6 620 s), FT-329407 0.05 t/h
-(500 s), HIC-322605 re-typed six times (60.00 to 60.02 %). Under decision 278 the wander is the reference every law is
-paired against.
-Established: on AT-322701 and TT-322011 the arms X_ej, X_wall and X_lean hold flat where N100A moves (§CL.2). 322R001's
-open-loop relaxation does not reproduce it: on the seed's frozen first-step boundary the column has one stable root
-(12.94 K, e-fold about 3 600 s) and relaxes toward it, its top leaving the boil cap by 15 000 s, while N100A's
-thermowells hold the cap and drift up 0.01-0.05 K (§CL.3). The reactor multiplicity the session 138 plan offered as
-the mechanism does not exist (decision 280). Ruled out (§CLI.6): the seed's 0.06 K offset from its step's root; placed
-on the root (P100) the seed is kicked (six tags off N100A from 10-90 s, the top back on the cap by 600 s), not cured.
-Ranked (§CLI.6): on the console's decimals FT-329407 leaves first (500 s), then LT-322504, FT-329403, TT-322011 and
-AT-322701 (6 190-11 350 s); raw onsets are degenerate (every unit by 20 s), and no unit is named as the origin.
-Traced (§CLII.4): the engine is deterministic (two processes and another day agree in every leaf over 600 and 3 000 s);
-P100n's x_* keys were terms94's reference taken from place139's Newton iterate, runner output read by nothing. Unit
-329's seed is on its own steady state (residuals 1e-11 kg/h, integrals zero); FT-329407 is PV-329207B's swing export
-and follows 322E002's raise (-14.9 kg/h by 1.2 s, then the loop's 2 700-3 000 s mode). At the second tick every
-input of 322E002 the loop produces moves, 322F001's discharge most (CO2 -1.7e-4, H2O +1.5e-4). 322E003's sump at
-t = 0: it takes 57 591.25 kg/h and 322F001 draws 57 561.32 (+29.93 kg/h), and the seed's discharge composition is not
-what the sump hands on from the seed's overflow (a step at near-constant mass). Neither is shown to drive the wander
-(the sump's time constant about 240 s); no other unit's first tick was read.
+*Raised 2026-11-20, session 138 (As-Built §CXLIX.4, §CL.2, §CL.3, §CLI.6, §CLII.4, §CLIII.6; decisions 278, 285, 289).*
+N100A, the design seed with every B-118 law off, wanders from its own first sample on the console's decimals: TT-322011
+0.4 K (beyond one step at 7 550 s), LT-322504 0.2 % (6 190 s), AT-322701 0.003 (11 350 s), FT-329403 0.05 t/h (6 620 s),
+FT-329407 0.05 t/h (500 s), HIC-322605 re-typed six times (60.00 to 60.02 %). Under decision 278 the wander is the
+reference every law is paired against.
+Established: the engine is deterministic (§CLII.4); unit 329 follows 322E002's raise; 322R001's frozen-boundary root
+lies 0.06 K under the seed's top and the seed placed on it is kicked, not cured (P100, §CLI.6); no reactor multiplicity
+(decision 280).
+The first tick, unit by unit (§CLIII.6): the largest residual is 322R001's. Its seed profile is the fixed point of
+`reactor.KINETICS` at 228.46 m3/h (the PFD's 990 kg/m3); the step runs `PINNED_KINETICS` at the anchor's 227.50 m3/h,
+which keeps the extent and the 13.000 K rise but shifts the per-node heat (+0.009, +0.043, -0.007, -0.045 K). V1 has
+the same pairing; the port reproduces it. The top node's own balance is 183.045 C, the cap (decision 102, the rewrite's)
+clips it and the top boils 29.93 kg/h on the first tick: that boil is 322E003's +29.93 kg/h sump excess and 322F001's
+composition step (§CLII.4), LT-322504 -5.5e-5 %/s, PT-329201 -2.25e-6 bar/s. With the cap released every synthesis
+residual goes; what remains: 323C003's pressure (+2.3e-4 bar/s, on PIC-323202) and 323E003's (+6.6e-5 bar/s, on
+PIC-323203), the reactor profile's own relaxation (LT-322504 2.5 steps linear), the vacuum train's tears alternating
+tick to tick, one-tick initialization leaves. C100b, no boil from the first tick, still moves FT-329407 at 540 s
+(N100A 500 s): the boil is not what moves the first mover. Not shown: that any one residual drives the wander.
+Ruled out: re-seeding on the step's root (P100). Open options, none built: (2) one joint re-solve of the profile and
+A2 at 227.50 m3/h (design vectors: top 183.000, lower nodes -0.010 to -0.046 K, A2 +0.15 %), a re-anchor of V1's
+back-solve, untested on the live step; (3) the wander accepted as the as-built reference.
 Acceptance: the mechanism named, a seed that holds every displayed tag within one step of its first sample over
 15 000 s or the wander accepted as the plant's, the process engineer's call (decision 285: re-seeding is theirs).
-Next step: every synthesis unit's first-tick mass and composition balance on the seed, then whether removing them
-removes the wander (a scratch seed); the process engineer's call on re-seeding.
+Next step: the engineer's choice among (2) and (3); before any seed criterion can be met, the LP side's 323C003 and
+323E003 pressure residuals and the vacuum train's tear alternation are audited as their own origins.
+Question to the engineer (§CLIII.6): the seed's boil breaks decision 102's stated premise (`reactor_boil`: at the
+design seed nothing flashes; its docstring also says 0.75 K/bar for 0.532): a rewrite defect (Section A) or V1's
+pairing carried under the cap (here)?
 
 ---
 

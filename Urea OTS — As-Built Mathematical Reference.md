@@ -29766,3 +29766,309 @@ Decisions 283 to 285 taken (§CLII.1). Handoff: A-61 rewritten on §CLII.2 (open
 (deterministic; unit 329 a follower; 322E003's sump's mass and composition off at t = 0); data gap 17 notes decision
 284. Not run: step 4 (322E002's S sign with the loop's boundary frozen; the broken ejector, data gap 1); step 2.4's
 literature comparison (no tabulated data in `References\`). Suite: the uncapped full suite, run in the background from the session's start, passed (8 437 passed, exit 0; `suite_full.txt`); the subset gate (docs, layering, snapshot, data-gap stand-ins) passed after the last edit (75, exit 0). No test reads the five living documents.
+
+# Part CLIII — Session 141: the rulings as decisions 286 to 289, A-61 closed, the boil cap's two candidates discriminated, the seed's first tick audited (2026-11-20)
+
+Scripts and output: `Tests and Reports/scratch/session-141` (`run/registry141.md`, written before each launch; `run/`,
+`desk/`). Nothing under `ureasim/` or `Tests and Reports/tests/` changed. Every rig run is on session 134's tree252
+(git archive 79fa8ca; `ureasim` identical to HEAD), runner chain cfg141 -> cfg140 -> cfg139 -> ... -> opt_run95
+(`run/go141.sh`); cfg141 installs `run/cap141.py` when a config names it, which rebinds
+`reactor_boil.liquor_bubble_t_c`, read at call time by `node_boil` alone, to the cap's own form with a chosen dH and
+margin (dH 23 000 J/mol and margin 0 is the function as built). The desk audits drive the bare engine
+(`build_plant()` and `Scheduler.tick()`) with no rig law on. Step 4 of the plan (322E002's sign under S, the broken
+ejector) was not run.
+
+## CLIII.1 Step 0 and the rulings
+
+Session 140's five documents were committed as c23ddd3 and pushed (7717d94..c23ddd3), the record files alone staged.
+One correction to session 140's chat report, not to a document: its open-items table labelled data gap 10 K2; the
+gap waits on the plant DCS readback (checklist row 10), so its label is K1. `handoff.md`'s row 10 already says
+checklist row 10, and no K label appears in any of the five documents (grep); the labels live in the plan prompts
+and the final reports. The uncapped full suite was started at the session's start (`suite_full.txt`). The process
+engineer's rulings of 2026-11-20 are decisions 286 (the session 140 plan's inert hypothesis refuted, its sign the
+plan's error), 287 (A-61 closed on criteria 1 and 2, criterion 3 and the guard withdrawn), 288 (B-118's cap: the
+candidates discriminated before a choice) and 289 (B-157: the seed's first tick audited unit by unit).
+
+## CLIII.2 A-61 closed (decision 287)
+
+A-61 is closed on A61g (§CLII.2) with decision 253's rule as built in the rig: a header valve off below 3.0 bar g on
+PIC-335201 with X at 0 %, on above 3.5 bar g with LV-324501B open. Page 4-43 of UD-VT-G00-DC-0003 prints two bands for
+two headers: 2.5-4.0 bar abs at the granulator main header, downstream and not modelled separately, and 3-3.5 bar for
+the urea melt main header, PIC-335201's; the identification with PIC-335201 and the unit of the 3-3.5 bar band are the
+engineer's reading, the page prints neither. On A61g 335P001 ran to the end of the 14 400 s hold, no PC35 latch fired,
+and the header lay inside 2.5-4.0 bar g for 100 % of the hold. The 6 <-> 7 hunting (§CLI.2, §CLII.2) is a known limit
+of the rig's scratch operator, a discrete rule whose band is narrower than one valve's step; the rig is not the
+product. Nothing is built into `ureasim/`; the rule stays a rig rule (`headerrule135`).
+
+## CLIII.3 B-118 point 2.1: the engine's Extended UNIQUAC bubble line at the reactor top
+
+`desk/uq141.py` (the grid, `vle_grid`), `desk/uq141b.py` (direct node solves, `vle_grid._node_activities`, seeded by
+continuation in T). The composition is 322R001's design overflow (N/C 2.9998, the PFD's H2O/CO2 and urea); N/C moved
+by NH3 alone to 3.19, 3.22 and 3.25 (Book2's AY-322701 at 92.3 and 69.3 %), H2O/CO2 held at 2.475.
+
+**The model's level is 100 bar off the reactor's.** At the design composition the liquor's bubble pressure is
+40.36 bar a at 183 C, where the cap's anchor (and the plant) has the top at its bubble point under 141.3 bar a. The
+engine records the same failure of level and uses the package for slopes only: `liquor_saturation` notes that the model
+puts PFD 207's bubble point at 40 bar a and lifts its logarithmic slope onto the stream's own pressure
+(`B_207_PER_BAR`, on this same composition at 183 C), and `carbamate_condenser` puts the 322E002 melt at 44.37 bar a
+against the plant's 144.2 and adds its rise rather than multiplying it. The desk's 40.36 bar is that number, so the
+composition is on the engine's basis; the package does not describe the HP melt's absolute bubble pressure. So the
+grid does not reach the synthesis pressure: `bubble_t_c` at 125-150 bar returns its 240.000 C clamp with `in_grid` False at every N/C. The
+engine's Extended UNIQUAC cannot place the top's bubble point at 125-150 bar, so it gives no absolute bubble
+temperature there and no dT/dP over 125-150 bar. What it gives is the slope where it reaches, about 40-48 bar a:
+
+| Source | dlnP/dT (1/K) | effective dH (kJ/mol) | dT/dP on the cap's form at 141.3 bar a (K/bar) |
+|---|---|---|---|
+| grid, design N/C | 0.0203 | 35.1 | 0.349 |
+| grid, N/C 3.19 / 3.22 / 3.25 | | | 0.336 / 0.334 / 0.332 |
+| direct solves, design N/C, 182.5-185 C (P 43-46 bar, 8 % above the grid) | | 45 | 0.27 |
+| direct solves, N/C 3.22 | | 47-48 | 0.26 |
+| the cap as built (decision 102, PI-322E002) | | 23 | 0.532 |
+| candidate (a) | | 87 | 0.141 |
+
+The grid's derivative kinks at its T nodes (168, 183, 197 C), so the direct solves are the better slope. Carried to
+141 bar on the cap's Clausius-Clapeyron form, an extrapolation in pressure by a factor of three and not a measurement
+at the synthesis pressure, the package's slope is 0.26-0.35 K/bar, and raising N/C from 3.0 to 3.22 raises its
+bubble pressure about 5.4 % at fixed T (about -2 K on the same form). Taken from a model whose level misses the
+reactor's by a factor of 3.5, neither number is evidence for either candidate [I]. The absolute
+level at 140.7 bar and the slope there need published data (Lemkowitz et al., Kawasumi, Isla et al., Voskov and
+Voronin's Table 9), which neither `References\` nor the soft-copy archive tabulates (§CLII.3); the process engineer
+commissions that search.
+
+## CLIII.4 B-118 point 2.2: TT-322005 against PT-329201 inside each Book2 band
+
+`desk/band141.py`. Book2 samples every 16.8 min. Fits T ~ P and T ~ P + AY in each band; the confidence intervals
+by naive OLS, by AR(1) effective n, and by a block bootstrap (blocks of 6 inside contiguous runs). PT-329201's spread
+inside each band is 46-185 times its 0.01 bar resolution, so no slope is resolution-limited.
+
+Inside means inside both the AR(1) interval and the block-bootstrap one.
+
+| Band | n | slope T ~ P (K/bar), AR(1) CI; bootstrap CI | R² | 0.532 | 0.349 | 0.27 | 0.14 |
+|---|---|---|---|---|---|---|---|
+| 60.7 % | 15 | +0.095, -0.107..+0.296; +0.024..+0.253 | 0.25 | out | out | out | in |
+| 69.3 % | 32 | +0.012, -0.055..+0.080; -0.048..+0.066 | 0.01 | out | out | out | out |
+| 80.4 % | 10 | +0.276, -0.102..+0.654; no bootstrap (runs too short) | 0.46 | in | in | in | in |
+| 94.2 % | 706 | +0.182, +0.110..+0.255; +0.131..+0.210 | 0.30 | out | out | out | in |
+| 100.3 % | 29 | +0.093, -0.041..+0.226; -0.028..+0.221 | 0.15 | out | out | out | in |
+| 111 % | 4 312 | +0.109, -0.025..+0.243; +0.060..+0.158 | 0.02 | out | out | out | in |
+
+With AY-322701 added (T ~ P + AY) the slopes barely move; 60.7 % then holds 0.27, and 80.4 % (R² 0.77, AR(1) CI
++0.146..+0.416) rejects 0.532 and 0.14 and holds 0.349 and 0.27. dT/dAY is negative in every band (-0.11 to -4.63 K
+per unit N/C). Reading: the cap's 0.532 K/bar is rejected in every band but the ten-sample 80.4 % on T ~ P. The
+package's slope (0.27-0.349, §CLIII.3, of no evidential weight) is rejected at 69.3, 94.2, 100.3 and 111 %, held only
+at 80.4 % (and at 60.7 % with AY). Candidate (a)'s 0.14 is held in every band but 69.3 % (and 80.4 % with AY). A top held on one bubble line would
+follow PT-329201 inside each band at that line's slope; at 69.3 % Book2's top follows no line tested. A top standing
+subcooled under its bubble line, candidate (b)'s picture, is set by the heat balance and need not follow P at all;
+69.3 %'s flat slope fits that, and the other bands' 0.09-0.18 is then read as a common cause through the load, which
+the fit cannot exclude. Book2 alone does not decide between the candidates [I].
+
+## CLIII.5 B-118 point 2.3: each candidate's cost to the design pin
+
+`run/cfg/{D600n,C100a,C100b}.json`, scored by `run/score141.py` against N100A on the console's decimals
+(temperatures 1, AT-322701 3, the FT tags 2). The seed's uncapped top, TT-322010 + b_rxn_K - b_loss_K, is 183.045 C at
+the first tick (§CLIII.6) and 183.009-183.246 C over N100A's 15 000 s: the cap binds on every N100A sample (b_cap_K
+0.048-0.184 K, the boil 32-123 kg/h).
+
+**D600n** (the cap141 null: dH 23 000, margin 0, D600a's 600 s): equal to D600a in every leaf (17 220 series, 2 460
+verify, 89 seed-budget). The rebinding is exact.
+
+**C100a** (candidate (a), dH 87 000, the anchor kept; settle 600 + hold 3 000 s): the first tick is identical to
+N100A's, since p_syn is exactly 140.7 bar a there and the anchor holds; every console tag stays within one display step
+of N100A's over 0-3 600 s. Candidate (a) costs the pin nothing over 3 600 s and passes decision 278's paired test over
+that window; the cap still binds and the top still boils.
+
+**C100b** (candidate (b), dH 23 000, margin 3.5 K): no boil from the first tick. The top node is 183.0006 C at 10 s,
+183.0215 at 600 s, 183.0329 at 1 800 s and 183.0260 at 3 600 s, so TT-322005 displays 183.0 throughout and the pin's
+reactor temperature holds. But the loop loses the boil N100A returns to it, and FT-329407 (from 500 s) and FT-329403
+(from 2 320 s) sit two display steps off N100A within 3 600 s: candidate (b) fails decision 278's paired test over
+the window. The registered prediction (TT-322005 at 183.1-183.2 C by 3 600 s) was wrong; the top rose 0.03 K, not
+0.1-0.25. On rank139's registered onset rule (beyond one step of a tag's own first sample) FT-329407 leaves at
+500 s on N100A and 540 s on C100b, and no other console tag leaves inside 3 600 s on either; removing the boil is not
+shown to delay the wander.
+
+**The gate used for point 2.4, and the second reading.** The plan passes to point 2.4 the candidates that pass point 2.3,
+"each candidate's cost to the design pin". Both Cb holds were launched on the reading that the pin is the design
+values the console shows (TT-322005 at 183.0 C, the thermowells and the loop's design flows at the seed), which C100b
+keeps on its reactor and loses on two flows by two steps; on decision 278's paired test C100b fails, and on that
+reading Cb923 and Cb693 lie outside the plan's point 4 and may be set aside. Both readings go to the engineer. A
+second point bears on it: N100A itself boils 30-120 kg/h at the top, which the design point does not (V1's balance
+has no flash, and `reactor_boil`'s docstring states that at the design seed nothing flashes). Candidate (b)'s
+departure from N100A is the removal of that boil: read against the reference it fails, read against the design
+point it restores the no-boil top.
+
+Three uncapped tops, reconciled: 183.045 C is the first tick's node balance on the seed's boundary (§CLIII.6);
+182.94 C is the root of the reactor's step on the boundary frozen at that first step (§CL.3), the column relaxing
+toward it with an e-fold of about 3 600 s; 183.03 C is C100b's top inside the live loop, where the boundary moves
+with the reactor.
+
+## CLIII.6 B-157 point 3: the seed's first tick, unit by unit
+
+`desk/tick141.py` (the cap as built), `desk/tick141b.py` (the synthesis and 323 units' arguments and results, ticks
+1-3), `desk/tick141c.py` (the cap released, margin 50 K). The audit flattens PlantState (1 754 leaves), wraps each
+schedule step's `run` to capture its arguments and results, and ranks every leaf that moves at the first tick by its
+linear 15 000 s excursion. With the cap as built 145 leaves move at tick 1, 315 at tick 2, 405 at tick 3; with it
+released 142, 307 and 400.
+
+**The largest residual: 322R001's top boils on the first tick.** The seed's node profile is
+`REACT_NODE_SS_DES_C` (= `reactor.NODE_PROFILE_DES`), the exact fixed point of `reactor.KINETICS` at VDOT_DES_M3H
+228.4615 m3/h, the PFD overflow on the constant 990 kg/m3; there the profile less its own rise is zero at every node.
+The step runs `PINNED_KINETICS` at the live 227.4997 m3/h (REACT_ANCHOR_VDOT, the overflow on
+`liquid_density` of the profile's mean), which reproduces the design extent 1 302.27 kmol/h and the 13.000 K total
+but distributes the heat differently: the seed's per-node rises 0.721, 4.172, 4.336 and 3.772 K against the step's
+0.712, 4.128, 4.343 and 3.817 K (sum 13.000), differences +0.009, +0.043, -0.007, -0.045 K. With the pinned kinetics
+at 228.46 m3/h the sum would be 13.054 K. The top node's own steady state is therefore 183.045 C; the cap clips it to
+183.000 (b_cap_K 0.0449, b_stor_K -0.0449) and 29.93 kg/h boils on the first tick.
+
+**V1 has the same pairing; the boil is the rewrite's.** V1's `main.py` solves `REACT_NODE_SS_DES` once, by
+`reactor.thermal_kinetic_fixed_point` on `_react_vdot_m3h` (the constant `REACT_OVERFLOW_RHO` 990 kg/m3; line 5478); the
+boot pin (lines 12116-12267) re-calibrates A2 and the biuret pre-exponential on the live capture and builds
+`REACT_KIN_ANCHOR` on `T_node = REACT_NODE_SS_DES` with `vdot = REACT_M_OVERFLOW_DES / liquid_density(mean of the
+profile)`, its comment noting "a DIFFERENT density basis", and does not reassign the profile; the cache restore
+(line 12430) writes back the profile `_collect_pin` stored, the same one. So V1 seeds the fixed point of one flow and
+steps on kinetics anchored at another, and the port reproduces it (`reactor.NODE_PROFILE_DES`, `PINNED_KINETICS`,
+`REACT_ANCHOR_VDOT_M3H`). V1's `reactor.py` has no ceiling (a grep finds no flash or boil there, only the bubbles' mass
+transfer), and `reactor_boil`'s docstring says the same of V1's node balance: in V1 the top's 0.045 K excess stands as
+a temperature [I]. The rewrite's cap (decision 102, a decided divergence) turns it into the first tick's 29.93 kg/h
+boil. Not a port defect. But it contradicts decision 102's stated premise: `reactor_boil`'s docstring says that at the
+design seed the top stands exactly on its bubble point and nothing flashes, "the seed is V1's to the bit", and the
+engine boils 29.93 kg/h on the first tick (the docstring also gives the bubble law's slope as 0.75 K/bar where its
+equation gives 0.532). Nothing is edited. The question goes to the engineer: is the seed's boil a defect of the
+rewrite's cap (decision 102's premise broken, a Section A item) or a consequence of V1's pairing carried under it
+(B-157's)?
+
+**What the boil moves.** The boil leaves the reactor's liquid: m_in = M_DES + FRESH_FRAC m_surge (FRESH_FRAC about
+0.308) gives dm -8.99 kg/h at tick 1 and about -29 kg/h once the lag closes; LT-322504 falls -5.5e-5 %/s. The boil
+joins the off-gas to 322E003, whose sump gains +29.93 kg/h (level +1.08e-4 %/s): session 140's sump excess
+(§CLII.4 (i)) is this boil, to the hundredth of a kg/h. Its composition reaches 322F001's discharge at the second
+tick, session 140's composition step (§CLII.4 (ii)). PT-329201 falls -2.25e-6 bar/s.
+
+**The first tick, as built, ranked** (`desk/tick141.txt`; the linear 15 000 s excursion of each leaf's first-tick
+rate, in the console's display steps where the leaf is displayed; a linear extrapolation, not a prediction, and not
+a bound, since a leaf's second-tick rate can be larger than its first, LT-322504's -6.36e-5 against -5.51e-5 %/s):
+
+| Unit | Residual at the first tick | Rate (tick 1; tick 2) | 15 000 s linear | Cause |
+|---|---|---|---|---|
+| 323C003 | pressure | +2.29e-4; +1.95e-4 bar/s | 3.4 bar, 343 steps (on PIC-323202) | LP side, not the reactor |
+| 323E003 | pressure | +6.6e-5; +5.8e-5 bar/s | 1.0 bar, 99.5 steps (on PIC-323203) | LP side, not the reactor |
+| 322E003 | sump holdup and level | +29.93 kg/h; level +1.08e-4 %/s | +1.6 %, 16 steps | the reactor's first-tick boil |
+| 322E003 | overflow composition | CO2 -6.7e-4, H2O +3.1e-4 per s, then a ninth of it | a step | the boil, at 322F001's discharge by tick 2 |
+| 322R001 | nodes 0, 1, 2 | -8.3e-5, -5.8e-5, +9.8e-6 K/s | -1.25, -0.87, +0.15 K | the profile on the pinned kinetics |
+| 322R001 | top node | clipped at 183.000 C, 29.93 kg/h boiled | | the profile's top share, under the cap |
+| 322R001 | LT-322504 | -5.51e-5; -6.36e-5 %/s | -0.83 %, 8 steps | the boil leaving the liquid |
+| PT-329201 | p_syn | -2.25e-6; -2.10e-6 bar/s | -0.034 bar | the boil's mass, through the loop |
+| 323C003 | temperature | +1.22e-4 K/s | +1.8 K, 18 steps | with its pressure |
+| 322E001 | level | -5.8e-6; +2.5e-5 %/s | its sign changes at tick 2 | the loop's response |
+| 322C001 | pressure | +2.6e-6; -6.7e-5 bar/s | its sign changes at tick 2 | the loop's response |
+| vacuum train | tears m_719, t_719, 706, 708 | alternating sign tick to tick | | a two-tick mode at the tear |
+| 323D002, 324E001, 324E002, 321 | a loop PV, a temperature, a lag, the make-up (+0.054 t/h) | one tick | | initialization |
+
+Initialization leaves (sic_b.pv, ffic_b.pv, the totalizer, the timers, m_in_lag, the PIDs' e_prev) are excluded.
+Other first-tick balances: 322F001 balanced to the bit (42 762.054 + 57 561.317 = 100 323.371 kg/h); 322E001 to
+0.09 kg/h, its sump dm -1.64 kg/h; 322E002's holdup dm 0 at tick 1, -4.76 kg/h at tick 2.
+
+**Released** (`desk/tick141c.txt`, the cap at a 50 K margin): the boil's residuals go: 322E003's sump excess and
+composition, the reactor overflow's step, 322F001's carb_frac step (1e-15 relative), 322C001's, and the p_syn drift
+(+1.9e-7 bar/s instead). The profile's own relaxation stays, and its top is no longer clipped: the top node +6.0e-5 K/s
+(+0.91 K, 9 steps), node 0 -8.3e-5 K/s (-1.25 K, 12 steps), LT-322504 -1.65e-5 %/s (2.5 steps). 323C003's and
+323E003's pressures and 322E001's level are identical with the cap as built and released: they do not come from the
+reactor.
+
+**Do they explain N100A's wander?** In part, and not shown in whole. LT-322504's -5.5e-5 %/s crosses one 0.1 % step in
+about 1 800 s linearly, where N100A's LT-322504 leaves at 6 190 s: the loops and lags slow it. FT-329407, N100A's
+first mover (500 s), follows 322E002's raise through unit 329 (§CLII.4); C100b removes the boil from the first tick
+and FT-329407 still leaves at 540 s, so the boil is not what moves it. C100b does not remove the profile's own
+relaxation on the pinned kinetics, and nothing tested removes the LP-side residuals, so neither is excluded.
+AT-322701 (11 350 s), TT-322011 (7 550 s) and FT-329403 (6 620 s) come through the loop's 2 700-3 000 s mode, not one
+unit's balance [I].
+
+**The offset's desk fixed points** (`desk/fp141.py`, `desk/fp141.txt`; the calibration's own sweep, 400 damped
+passes, on the PFD design vectors). `KINETICS` at 228.46 m3/h returns the seed to the bit. `PINNED_KINETICS` at the
+anchor's 227.50 m3/h: nodes 170.712, 174.855, 179.202, 183.011 C, extent 1 301.49 kmol/h (the pin's 1 302.27 holds
+only on the live capture's feed, which is not the design vectors: V1's own two operating points). `PINNED_KINETICS` at
+228.46: top 183.047, extent 1 299.05. The joint solve at 227.50, A2 relaxed: 170.711, 174.847, 179.191, 183.000 C
+(-0.010, -0.046, -0.037, 0.000 K from the seed), extent 1 302.27, A2 4.4263e12 against `PINNED_KINETICS`' 4.4195e12
+(+0.15 %). On the live boundary the step's own root is §CL.3's, its top 182.94 C.
+
+**Fixes proposed, none built, each the process engineer's.**
+
+1. Re-seed on the step's own root. This is session 139's P100 (§CLI.6), already measured: the seed is kicked, six tags
+   leave N100A from 10-90 s and the top is back on the cap by 600 s. Ruled out; session 141 adds why the 0.06 K offset
+   exists (V1's density-basis pairing) and that the cap turns its top share into the 29.93 kg/h.
+2. One joint re-solve of the profile and the kinetics at the flow the step runs (the anchor's 227.50 m3/h), so the
+   seed and the step are one fixed point: on the design vectors it keeps 183.000 C and 1 302.27 kmol/h, moves the lower
+   thermowells by at most 0.046 K and A2 by 0.15 %. A re-anchor of V1's back-solve in both the profile and A2, a decided
+   divergence (`CLAUDE.md` §5 rule 6), with a re-pin of the seed and the design-pin tests. Whether the live step then
+   stands still on its first tick is untested: the step runs on the live capture's feed, not the design vectors.
+   Re-anchoring the kinetics alone at the profile's 228.46 m3/h does not serve, because the step runs at 227.50
+   whatever the anchor, and V1 records that the other point left the overflow CO2 1.29 kmol/h off.
+3. Or accept the wander as the as-built reference (decision 278 already pairs against it).
+
+Fix 2 removes the reactor's residual only. The LP side's 323C003 and 323E003 pressures (on their PICs) and the vacuum
+train's tear alternation are separate origins, each to be audited on its own before a seed criterion of one display
+step over 15 000 s can be met. Whether removing the reactor's residual removes the wander is untested; C100b removes
+the boil but not the profile's offset, and FT-329407 still leaves at 540 s.
+
+## CLIII.7 B-118 point 2.4: the candidates at 92.3 and 69.3 %
+
+`run/cfg/{K,Ca,Cb}{923,693}.json`, registered in `run/registry141.md` before launch; all six exited 0. Base: session
+137's B923 and B693 (S + B on UA as built, the holdup, the ejector lift, the stagnant wall, the lean rise off,
+decision 253's header rule, no pclamp), decision 277's feed rule added; K the cap as built, Ca candidate (a), Cb
+candidate (b); law B keeps its registered 23 kJ/mol inverse in all three. Paired by `run/pair141.py`
+(`runs/pair141.txt`), scored by score137 through `run/score141h.py` (`runs/score137_141.txt`). `b_t_bub` carries
+each candidate from the first minute (at 60 s 183.000, 183.000 and 186.500 C; at 92.3 %'s end 182.638, 182.904 and
+186.138 C). No trip latched in any arm (the carbamate-deposition flag only, as on B923 and B693); nothing refused. The
+feed rule acted as `session-137/run/rule137.py` defines it: FIC-324401 in AUTO on the seed's set point times the ramp's
+load every 60 s through the ramp, then the cascade restored at the first check after it (960 s, 3 720 s; all three
+commands accepted in every arm); by design it acts on nothing in the hold.
+
+| Arm | boil max, in the ramp / after it (kg/h) | last boil | TT-322005 after the ramp, min-max (end) | subcooling after the ramp | riseTW | score137 |
+|---|---|---|---|---|---|---|
+| K923 | 1 691 / 2 073 | 1 830 s | 180.27-182.84 (181.54) | 0.00-2.10 K | 12.128 | settled; fails drift (0.0586 K/ks), rise departure, 180 whole hold |
+| Ca923 | 1 438 / 1 635 | 1 730 s | 180.24-182.96 (181.53) | 0.00-2.59 K | 12.136 | settled; fails rise departure, 180 whole hold (drift 0.0073) |
+| Cb923 | 0 | none | 180.11-184.42 (181.53) | 1.64-5.75 K | 12.085 | settled; fails rise departure, 180 whole hold (drift 0.0476) |
+| K693 | 3 790 / 3 545 | 4 760 s | 171.10-180.74 (171.65) | 0.00-9.09 K | 6.572 | ringing, 3 180 s |
+| Ca693 | 2 587 / 1 622 | 4 300 s | 169.94-182.40 (171.87) | 0.00-12.24 K | 6.637 | ringing, 3 102 s |
+| Cb693 | 583 / 276 | 3 840 s | 170.71-184.25 (172.56) | 0.00-12.70 K | 6.562 | ringing, 3 085 s |
+
+Paired against K (largest difference over the run, then at the end): at 92.3 % Ca differs by at most 0.5 K on
+TT-322005 (1 720 s), 0.39 t/h on FT-329407 and 0.4 % on LT-322504, Cb by 1.9 K (1 520 s), 1.13 t/h and 0.9 %; at the end Ca
+is within one display step of K on every paired tag but FT-329407 (0.02 t/h, two steps), and Cb is two steps off on
+FT-329403 (0.02 t/h) and five on FT-329407 (0.05 t/h). At 69.3 % Ca differs by up to 2.1 K,
+4.07 t/h on FT-329403 and 4.6 % on LT-322504, Cb by up to 3.6 K and 5.05 t/h, and at the end by 0.2 and 0.9 K on
+TT-322005: the ringing's phase, not a new state.
+
+**TT-322005 and Book2's band** (decision 269, the whole hold after the ramp). No arm enters it for the whole hold. At
+92.3 % every arm is inside 180.6-184.6 C for 93-94 % of the samples after the ramp and ends at 181.53 C, inside, but
+dips to 180.1-180.3 C after the settle's end (score137's minimum from the settle equals it); at 69.3 % every arm collapses to 170-172 C, 4-9 % of the samples inside
+179.5-183.5 C.
+
+**Reading.** As registered: the candidates act while the cap binds, in the ramp and the early settle, and the holds
+converge on the control's state (92.3 %) or ring on its cycle (69.3 %); neither candidate brings TT-322005 into
+Book2's band over the hold, and neither moves score137's rise or ringing verdict. Two differences from the
+registration: the arms differ from K from the first tick (10 s), not from the ramp's first boil, since p_syn leaves
+140.7 bar a at once and each cap then sits elsewhere; and K923's last-period drift (0.0586 K per 1 000 s) fails the
+0.05 limit where Ca923 (0.0073) and Cb923 (0.0476) pass, a verdict word moved by the ramp's history, not a held state [I].
+Law B kept its registered 23 kJ/mol inverse in all six arms, so these holds test `node_boil`'s cap alone. On that
+test point 2.4 cannot discriminate the candidates: once the ramp ends the top stands under every cap tested, so the
+cap's slope or margin in `node_boil` does not decide the hold. Whether a candidate carried into law B's inverse
+would, is not tested (a third mechanism, registered as not run) [I].
+
+## CLIII.8 Point 2.5: which candidate the physics supports
+
+Neither is established. For (a): Book2's within-band slope holds 0.14 K/bar in five of six bands, and (a) costs the
+100 % seed nothing over 3 600 s. Against (a): 69.3 % follows no bubble line; the 87 kJ/mol is a fit, not a property. The
+engine's Extended UNIQUAC weighs on neither side: its level misses the reactor's by 100 bar (§CLIII.3). For (b): a subcooled top need not follow P, which 69.3 % shows; (b) removes the seed's off-design
+first-tick boil (§CLIII.6). Against (b): it fails decision 278's paired test against N100A on two flows within
+3 600 s; the 3.5 K is a fit to Book2's bands, not a datum. At reduced load neither changes the hold through `node_boil` (§CLIII.7; law B not re-pointed). The
+choice is the process engineer's (decision 288), with the bubble line at 125-150 bar from the literature the engineer
+commissions as the discriminating datum [I].
+
+## CLIII.9 Decisions, items and deliverables
+
+Decisions 286 to 289 taken (§CLIII.1). Handoff: A-61 deleted (decision 287); B-118 rewritten on §CLIII.3-8 (the choice
+between (a) and (b) the engineer's; through `node_boil` point 2.4 does not discriminate); B-157 rewritten on §CLIII.6 (the question on decision 102's premise; the first tick's
+largest residual named, V1's pairing, the fixes and their costs; the LP side's residuals open). Not run: step 4
+(322E002's S sign; the broken ejector, data gap 1): the plan ran it only if budget remained, and the machine was
+held by point 2.4's six holds until 13:55 with the record still to close. Nothing under `ureasim/` or
+`Tests and Reports/tests/` changed. Suite: the uncapped full suite, run from the session's start, passed (8 437
+passed, exit 0; `suite_full.txt`).

@@ -1532,3 +1532,40 @@ decision on an item.
      re-seed is the process engineer's question. Session 140 (As-Built §CLII.4): the engine is deterministic across
      processes; the null's keys were a runner hook's reference; unit 329's seed is at its own steady state; at t = 0
      322E003's sump takes 29.93 kg/h more than 322F001 draws and hands on another composition than the seed's.
+286. **The session 140 plan's inert hypothesis is refuted, and its sign was the plan's error** (2026-11-20, session
+     141; the process engineer's ruling). Inerts lower the condensables' partial pressure and so lower the bubble
+     temperature; they do not raise it. The licensor says the same (UD-VT-G00-DC-0003 p. 1-16), and closing 322R001's
+     boil-cap gap on the inerts would need 1.1-2.9 times the design off-gas (As-Built §CLII.3). Recorded as the plan's
+     mistake, as decision 280 recorded the multiplicity.
+287. **A-61 closes on criteria 1 and 2; criterion 3 and the predictive guard are withdrawn** (2026-11-20, session 141;
+     the process engineer's ruling). The plan read the wrong header. Page 4-43 of UD-VT-G00-DC-0003 prints two bands
+     for two headers: 2.5-4.0 bar abs "at granulator main header", downstream, which the engine does not model
+     separately, and 3-3.5 bar for "the urea melt main header", which is PIC-335201's header. The rule's bounds are
+     therefore 3.0-3.5 bar g on PIC-335201: bar g is the faceplate's convention (decision 183), and these bounds lie
+     inside E1's own 2.8-3.8 bar g span. That is decision 253's rule as built in the rig. The page itself prints
+     neither the identification with PIC-335201 nor the unit of the 3-3.5 bar band (As-Built §CLII.2); both are the
+     engineer's reading. The predictive guard of decision 283 is withdrawn: it blocked nothing in bar g, and in bar a
+     it drained the leg. Criterion 3 of decision 283 was the plan's over-reach. A-61's purpose was that the B-118 rig
+     holds a reduced load with 335P001 running and no PC35 latch, and A61g meets it: the pump ran, no latch fired,
+     and the header was inside 2.5-4.0 bar g for 100 % of the hold. The 6 <-> 7 hunting is a property of a discrete
+     rule whose band is narrower than one valve's step (§CLII.2), recorded as a known limit of the rig's scratch
+     operator; it touches no trainee, since the rig is not the product. A-61 is closed on A61g with the rule as
+     decision 253 states it. Nothing is built into `ureasim/`.
+288. **B-118's boil cap: no choice between the two candidates before they are discriminated** (2026-11-20, session 141;
+     the process engineer's ruling). The flatter bubble line (about 87 kJ/mol) and the cap's slope with a design
+     margin (3.5 K) fit Book2 equally well (§CLII.3); which is physical is decided first, from the engine's own
+     Extended UNIQUAC, Book2's within-band behaviour and each candidate's cost to the design pin, with at most two
+     reduced-load holds a candidate and neither built. Both are new mechanisms (`CLAUDE.md` §5 rule 7), so the choice
+     goes to the engineer measured on both sides. Session 141 (As-Built §CLIII.3-8): the engine's UNIQUAC puts the top's liquor
+     at 40 bar a, not 141.3, and weighs on neither; Book2 rejects the cap's slope; (a) costs the 100 % seed nothing over
+     3 600 s, (b) removes its top boil and moves two flows; through `node_boil` neither moves a reduced-load hold (law B
+     not re-pointed). Neither is established.
+289. **B-157: the seed's first tick is audited unit by unit before any re-seed question** (2026-11-20, session 141;
+     the process engineer's ruling). Session 140 found 322E003's sump off its balance at t = 0 and 322F001's
+     discharge composition stepping at the second tick, so the seed is not a steady state for at least one unit, and
+     small first-tick residuals integrate over 15 000 s. Every synthesis and recirculation unit's first-tick residual
+     (mass, species, energy, each holdup's d/dt) is tabulated and ranked by the displayed tag it would move, the
+     cause of the largest named, and a fix proposed per residual with its cost, none built: a re-anchor of a V1
+     back-solve is a decided divergence and a re-seed moves the PFD pin, both the engineer's. Session 141 (As-Built
+     §CLIII.6): the largest residual is 322R001's top boiling 29.93 kg/h on the first tick, V1's profile and kinetics
+     anchored at two flows under the rewrite's cap; the LP side's 323C003 and 323E003 pressures are separate residuals.

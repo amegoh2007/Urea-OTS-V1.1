@@ -5353,3 +5353,13 @@ the boil cap's 0.53 K/bar (Book2 0.12-0.14): a flatter line or a design margin, 
 them the opposite sign), desk only. B-157: the engine is deterministic across processes; the null's keys were a runner hook's;
 unit 329 follows 322E002's raise; 322E003's sump is off its mass and composition balance at t = 0. Step 4 not run.
 Part CLII; `Tests and Reports\scratch\session-140`.
+
+### Session 141 — 2026-11-20: decisions 286-289; A-61 closed; the boil cap's candidates; the seed's first tick
+
+Session 140 committed (c23ddd3) and pushed; gap 10's chat label corrected to K1. Rulings recorded as decisions 286 (the
+inert hypothesis refuted, the plan's sign error), 287 (A-61 closed on A61g, the header rule as built), 288 (the cap's
+candidates discriminated first) and 289 (B-157: the first tick audited). B-118: the engine's Extended UNIQUAC puts the top's
+liquor at 40 bar a, not 141.3, and weighs on neither candidate; Book2 rejects the cap's 0.532 inside every band but one; (a) costs the 100 % pin nothing over 3 600 s, (b) removes the seed's top boil and moves two flows two
+steps; at 92.3 and 69.3 % neither moves the hold through `node_boil` (law B not re-pointed). B-157: the seed's top boils 29.93 kg/h on the first tick (V1's profile and kinetics anchored at two
+flows; the cap the rewrite's), which is session 140's 322E003 sump excess; the LP side's 323C003 and 323E003 pressures
+are separate residuals. Step 4 not run. Part CLIII; `Tests and Reports\scratch\session-141`.
