@@ -109,7 +109,7 @@ def liquor_bubble_t_c(p_syn_bara: float) -> float:
     Process utility
     ---------------
     The ceiling on the four thermowells: a liquor hotter than this flashes down to it. It rides
-    the loop pressure, 0.75 K per bar at design, so a falling loop flashes the reactor's liquor
+    the loop pressure, 0.532 K per bar at design (As-Built §CLIII), so a falling loop flashes the reactor's liquor
     and a rising one lets it hold more carbamate — the reactor's pressure and top temperature are
     tied as on the plant.
 
