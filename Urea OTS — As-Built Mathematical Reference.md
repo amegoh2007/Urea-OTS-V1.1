@@ -30336,3 +30336,210 @@ synthesis source; B-118, B-125 and data gap 17 on §CLIV.6-7. Nothing built beyo
 committed alone (392561b, not pushed). Not done: the plan's step 5 (S's opposite signs on 322E002; the broken-ejector
 state and gap 1). Suite: the uncapped full suite, run from the session's start on the docstring change, passed (8 437
 passed, exit 0; `suite_docstring.txt`); the layering grep prints nothing.
+
+# Part CLV — Session 143: the rulings as decisions 294 and 295, (b) alone on the as-built seed, law B's floor in the holds, the class proposal, B-157's LP side (2026-11-20)
+
+Scripts and output: `Tests and Reports/scratch/session-143` (`run/registry143.md`; `run/`, `floor143.py`, `lp143.py`,
+`class143.txt`). Nothing under `ureasim/` or `Tests and Reports/tests/` changed. Every rig run is on session 134's
+tree252 (git archive 79fa8ca), runner chain cfg143 -> cfg142 -> cfg141 -> ... -> opt_run95 (`run/go143.sh`); cfg143
+installs `run/probe143.py` (323F010's and 324E001's steps, by rebinding) when a config names it. Steps 3 and 4 read
+the runs of sessions 135, 136, 140 and 142 where those already hold the answer. Step 5 of the plan (S's signs on
+322E002, the broken ejector and gap 1) was not run.
+
+## CLV.1 Step 0 and the rulings
+
+Session 142's five documents were committed as 0a10330 and pushed with 392561b (5dac02d..0a10330). The rulings of
+2026-11-20 are decisions 294 (A-63's fix to test is (b), the cap with a 3.5 K [E] design margin, alone; it
+supersedes decision 290's clause naming the re-solve) and 295 (the cap-released share stays model-conditional; data
+gap 17 stays on row 30; no inverse runs until law B's floor is understood).
+
+## CLV.2 Step 2: (b) alone on the as-built seed, 15 000 s (A-63)
+
+Arm B143: N142's configuration (N100A, bit-equal) with session 141's `cap141` at dH 23 000 J/mol and a 3.5 K margin
+(T_cap 186.500 C at 140.7 bar a); no re-solve. Gate: its first 3 600 s are bit-equal to session 141's C100b (0 of the
+leaves differ in 360 samples). Scored by session 142's `score142.py` against N142 (`run/runs/B143_vs_N142.txt`); the
+pin is each console tag's display against the PFD's printed value (TT-322005 183.0, TT-322004 172.0, TT-322010 170.0,
+TT-322013 187.0, AT-322701 3.000, FT-329403 60.85, PT-329201 140.7, FT-329407 16.71) or, for the tags the PFD does not
+print, against N100A's first sample.
+
+**The boil.** None on any of the 1 500 samples; the top 183.0006-183.0688 C, its margin to the (b) cap 3.4335-3.4994 K.
+The top moves under 1e-3 K a tick, so a 3.43 K minimum margin also excludes a boil between samples and at the first
+tick. N100A boils on every sample (32.5 kg/h at 10 s, 122.7 kg/h at most, 310.5 kg in all).
+
+**The pin.** "Within its last digit" is read as at most one display step from the design value, the score's
+threshold, for every tag alike. The first sample is at 10 s. Display steps at most (first time beyond one step),
+B143 against N100A on the same score:
+
+| Tag | B143 | N100A | Reading |
+|---|---|---|---|
+| TT-322005 (P) | 1 (183.1 from 11 170 s) | 0 | within; the top free of the clip |
+| AT-322701 (P) | 1 | 3 (11 350 s) | within |
+| FT-329403 (P) | 4 (10 220 s) | 5 (6 620 s) | fails |
+| FT-329407 (P) | 6 (540 s); 16.71 at 10 s | 6 (320 s); 16.70 at 10 s | fails; the LP side's (B-157) |
+| LT-322504 | 2 (7 520 s) | 2 (6 190 s) | fails |
+| TT-322011 | 2 (11 900 s) | 4 (7 550 s) | fails |
+| TT-322006 | 0 | 1 | within |
+
+The score covers 27 tags (the 19 console tags and 8 others); the design-pin test's own list was not cross-checked
+against it. Every other tag stays within one step, as in N100A. The gate fails on FT-329403 and FT-329407 among the
+printed values and on LT-322504 and TT-322011 among the others; each is a failure N100A shows earlier or as large.
+FT-329407's first sample straddles a display edge: at the first tick of the as-built arm stream 932 is 16 707.0 kg/h
+(session 142's P0s probe), 2 kg/h above the 16.705 edge; at 10 s N100A shows 16.70 and B143 16.71, a difference of a
+few kg/h that is (b)'s (the engine is deterministic). B143's first tick was not probed.
+
+**Not settled at 15 000 s.** The top holds 183.025-183.034 C to 10 000 s, then steps to 183.047-183.068 C from 11 000 s
+with x_conv (+3.2e-4 from the first sample, N100A -3.5e-5); its own balance (TT-322010 + rise - loss) runs 183.012-
+183.088 C. N100A's uncapped balance reaches 183.248 C, which would display 183.2. "TT-322005 within one step" holds for
+this window only.
+
+**What (b) changes, against a control.** L143 (§CLV.5), a 2.48 kg/h perturbation on the LP side that keeps the boil,
+also shrinks the 15 000 s ranges against N100A: AT-322701 0.002 (B143 0.002, N100A 0.005), FT-329403 0.05 (0.05,
+0.06), TT-322011 0.3 K (0.2, 0.7), LT-322504 0.2 % (0.4, 0.4), FT-329407 0.05 (0.06, 0.07) t/h. On one 15 000 s
+realisation of the wander, a range is set by its phase, and on one control (L143; RS142 is a second) a small perturbation moves that phase, so only what B143 changes
+beyond L143 is credited to (b) (`run/runs/L143_attrib.txt`): 322E002's duty (departure rms 8.4 kW, L143 20.9, N100A
+29.2; range 24.5, 55.2, 79.6 kW) and x_conv (rms 1.7e-4, 2.2e-4, 3.1e-4). Inside N100A these two follow its boil
+(correlation -0.89 and +0.92), a co-movement, not a proof of cause. AT-322701, FT-329403 and TT-322011 differ from
+N100A no more than L143 does, so their smaller wander is not shown to be the boil's removal. FT-329407 and LT-322504
+are not the boil's (B143's own departure dominates; correlation with N100A's boil -0.36, -0.07). TT-322005's step is
+(b)'s own. Decision 278's paired test against N100A fails on AT-322701 (4 steps from 11 130 s), FT-329403 (5, 2 320 s),
+FT-329407 (6, 500 s), LT-322504 (4, 8 280 s) and TT-322011 (6, 5 900 s); L143 fails it on the same five tags,
+from 8 700-10 800 s (FT-329407 4 steps from 8 730 s).
+
+**Proposal.** None. The plan's condition for proposing (b) as A-63's fix and B143 as N100B, decision 278's new
+reference, is a pass, and the gate fails. The engineer's options: (1) take (b) on zero boil with the gate restated
+against N100A's own wander (no tag worse than N100A, TT-322005 within one step), knowing the top had not levelled by
+15 000 s; (2) hold (b) until B-157's remaining wander, which (b) does not cause, is named.
+
+## CLV.3 Step 3: law B's floor
+
+**As built (scratch).** Law B was defined in session 109 (§CXIX.8), built in session 112's `proto112.py` and measured
+there (§CXXII); it has never been in the engine. With T_top the capped top node of the last tick and p_loop this
+tick's PT-329201:
+
+    P_bub(T_top) = OFFGAS_P_DES . exp[-(dH_vap / R)(1 / T_top - 1 / T_des)]    the inverse of liquor_bubble_t_c
+    raw          = SYN_P_DES . (p_loop + BOIL_DP_DES_BAR) / P_bub(T_top)
+    p_eff        = min(max(raw, SYN_P_DES), P_HI)                             floor 140.7, bound 180 bar a
+    split_ratio  = hp_k_ratio(out_total, T_des, p_eff, T_des, SYN_P_DES)
+
+dH_vap is `BUB_DHVAP_JMOL` (23 kJ/mol), T_des `reactor_boil.BOIL_T_DES_C` (183.000 C), SYN_P_DES 140.7 bar a, P_HI
+`thermo.vle.VALID_PRESSURE_BARA[1]`. What the floor was for (§CXIX.8): T_top is the last tick's node and p_loop this
+tick's, so on a falling pressure raw dips just under SYN_P_DES by one tick's lag; floored, B never sends a cold
+reactor more than the design gas share. On the cap as built, top <= T_bub(p_loop + dP_des) on the same 23 kJ/mol
+line, which is raw >= SYN_P_DES; so outside the one-tick lag the floor can bind only when the top stands on the cap.
+
+**In the engine's own holds** (`floor143.py` on the sampled `p112_b_raw`, `p112_b_floor_n`, `p112_b_calls`;
+`floor143.txt`):
+
+| Arm (load) | Window | Ticks floored | raw (bar a) | Margin to the cap (K) | e_gas_co2 / b_feed_co2 |
+|---|---|---|---|---|---|
+| R923b (92.3 %) | ramp + settle, 0-4 560 s | 17 372 of 45 500 (38.2 %) | 140.70-144.54 | 0.000-2.012; 0.000 at every floored sample | 0.183 |
+| R923b | hold, 4 560-18 960 s | 0 of 143 900 | 142.30-144.61 | 0.846-2.045 | 0.176 |
+| U693 (69.3 %) | ramp + settle, 0-7 320 s | 41 260 of 73 100 (56.4 %) | 140.70-149.51 | 0.000-4.462; 0.000 at every floored sample | 0.175 |
+| U693 | hold, 7 320-21 720 s | 0 of 143 900 | 146.50-156.90 | 2.978-7.953 | 0.099 |
+| A61g (69.3 %) | ramp + settle | 11 288 of 73 100 (15.4 %), between samples | 140.70-153.28 | 0.001-6.349 | 0.145 |
+| A61g | hold | 0 of 143 900 | 153.30-155.43 | 6.355-7.373 | 0.097 |
+
+The floor never binds in any hold. It binds only in the ramps: on R923b and U693 at samples where the top stands on
+the cap (margin 0.000 K), on A61g (pclamp on) in 127 sample intervals from 860 to 2 120 s with the top within 0.0007-
+0.017 K of the cap at the bracketing samples. That is the cap's own clip seen through law B. While it binds in the
+ramps, 322E002's gas CO2 over the column's CO2 feed (`e_gas_co2 / b_feed_co2`) averages 0.209 (R923b) and 0.211
+(U693) at the binding samples, against 0.166 and 0.128 at the free ones. In the holds law B is free and above its floor
+(raw 146-157 bar a at 69.3 %, a subcooled top sending less gas than the design split), and the same ratio is
+0.097-0.099; on U693 over §CL's own window (7 902-21 720 s) it is 0.0994, where §CL's gas CO2 / C reads 0.091 on the
+bit-equal B693, so the two quantities differ in their denominator and only the ratio's own values are compared here.
+The floor is not what holds 322E002's share low at turndown, and no floor-off arm was run (the plan's condition). It
+matters only in the inverse: there the cap was released by 50 K, the fitted tops stood 1.7-3.8 K above the as-built cap
+and so above law B's own line, raw fell below SYN_P_DES, and the floor set the split (§CLIV.6). The inverse's roots lie
+where the as-built cap forbids the top to stand.
+
+**Under (b), law B's line unshifted** (session 141's Cb923 and Cb693, both rig rules on; K923 and K693 their
+controls with the cap as built): Cb923 floors 23 117 of 45 500 ramp ticks with raw down to 137.27 bar a while the top
+stands 1.6-5.7 K under the (b) cap, inside the margin and above law B's line (K923: 17 693, raw at least 140.70, the
+margin 0.000-2.068 K); Cb693 floors 48 790 of 73 100 (raw to 134.29; K693 47 089, raw at least 140.70). Neither floors a
+tick in its hold. So under (b) the floor binds wherever the top uses the margin, where under the cap as built it binds
+only on the cap, and the 100 % seed's top (183.01-183.07 C under (b)) would floor a law B arm throughout [I] (no law B arm
+ran at 100 % under (b)). Decision 293's
+note applies: law B is re-referenced to the margin, or the arm mixes two lines. Raising law B's line (+0, +3.5, +5 K)
+was not run: the holds never reach the floor, and decision 295 stops inverse runs.
+
+## CLV.4 The class question (proposal only, not applied)
+
+`docs/decided-classes.md` was grepped for margin, saturation, boil, bubble, ceiling and flash. No class states a
+margin on a limit at the design point. The nearest are decisions 97 and 135 (the saturation fraction), 102 (the node at
+most at its bubble point), 105 (a condensing liquor held to its own bubble pressure) and 145 (an instrument capped at
+the flash threshold); each places the limit and none sets its distance from the design point. Draft line for the
+engineer:
+
+    a saturation or boiling limit anchored on the design operating point carries a sourced margin; a zero margin is a
+    defect
+
+Search scope: the callers of the three synthesis-loop limit functions (`liquor_bubble_t_c`, `saturation_fraction`,
+`liquor_bubble_p_bara`), not every unit. A grep of `ureasim/units` for bubble, boil and saturat also hits the
+evaporators (`holdup_boil`, `boil_at`), the LP stages (`liquor_stage.bubble_t`, which puts each stage exactly on its
+bubble point at design by construction), 323C003, 323F004, the desorbers, the absorbers and the steam network; those
+were not classified. Where it would apply among the three, each evaluated on N142 (N100A, the as-built seed) over 15 000 s (`class143.txt`):
+
+| Unit | Limit | At the seed |
+|---|---|---|
+| 322R001 | `reactor_boil.liquor_bubble_t_c`, the boil cap (decision 102) | margin 0.0000 K on all 1 500 samples; boiling on all 1 500 (A-63) |
+| 322E002 | `liquor_saturation.saturation_fraction` on PI-322E002, design head 3.5 bar (decisions 97, 135; B-125) | on the slope on 827 of 1 500 samples, f 0.99911-1.0, deficit 0-0.058 bar |
+| 322E003 sump | the same function on `scrubber.liquor_bubble_p_bara`, design head 0 (`synthesis_loop.py:194`) | on the slope on 1 197 of 1 500 samples, f 0.99932-1.0, deficit 0-0.044 bar |
+
+Not listed: the LP stages' bubble points (`liquor_stage.bubble_t`, decisions 38, 54, 115), which boil by design, the
+PFD printing them on their bubble line, so a margin there would contradict the PFD; 322E003's condensing temperature
+(`scrubber_shell.condensing_temperature_c`), a driving force, not a limit; decision 145's PI-322E002, an indication.
+Whether 322E003's sump, which the PFD prints leaving at the loop's own 140.7 bar a, is on its bubble line by design
+or by V1's anchoring is the engineer's question; the draft applies to it as worded.
+
+## CLV.5 Step 4: B-157's LP side
+
+**323P001's flow (m308, PFD 308, 323D001's carbamate to 322E003 under LIC-323502 -> SIC-323901).** The 390 s onset is
+a display edge: the seed's 36 835.19 kg/h shows 36.84 t/h at 0.19 kg/h above the 36.835 edge, and the first sample
+below it is at 390 s (RS142 140 s, 0.18 kg/h above). The 7 steps (range 107 kg/h over 15 000 s) are the closure: LIC-323502 holds
+323D001 within 0.035 % and passes its inflow to the pump, and the inflow follows the synthesis wander, the stripper's
+drain (correlation 0.62; drain range 380 kg/h) and x_conv (-0.71). On the re-solved seed RS142 the drain's range is
+145 kg/h and m308's 61 kg/h, 4 steps: A-63's share. The LP first-tick residual is not its cause (PL keeps the onset at
+380 s), and nothing points to a tear.
+
+**323F010's level.** 2 steps on N142 and on RS142 (onset 1 140 s; RS142 1 620 s). The rig's trim on HIC-323605 (policy
+`trim`, cv f010_level, target 60) holds it: the level is anticorrelated with HIC-323605 (-0.76, -0.71) and on N142
+follows x_conv (+0.81). Its first sample, 60.0008, shows 60.0 with 0.051 above the 59.95 edge. The cause is the
+closure, the rig's operator trim against the synthesis wander; neither the first-tick residual nor a tear.
+
+**CP_S208_DES is V1's anchor.** V1 `main.py:2640`: `R323_CP_S208_DES = urea_soln_cp(W_S208["Urea"], R323_FEED_DES_T_C)`,
+on `W_S208`, PFD 208's printed row normalised (55.85 % printed, 0.5586676 on the five solution species). The rewrite
+ports it (`data/unit_323c003.py:278`). The full-precision value: stream table 208 prints only wt % to two decimals, the
+molar flow (3 992.24 kmol/h) and the mass flow (130 582 kg/h), and no energy row; the printed row gives 3 992.233
+kmol/h, so the row closes on its molar flow to 2e-6 and pins nothing finer than its printed digit (the printed total
+resolves a urea-for-water trade of about 0.0002 points, and the other species trade freely). The seed's own stripper bottoms are 0.5584095
+normalised (55.8377 % on the printed basis): 0.012 points below the printed 55.85 on its own basis, 2.4 times the
+print's half-step, and 0.026 normalised, the rest being the inerts' normalisation. The residual is the seed's stripper
+bottoms standing off PFD 208's printed row (the 1750 MTPD stream table only; no vendor heat and mass balance was
+searched for a finer row), not the row's rounding, so §CLIV.4's "printed-row rounding" is corrected
+here. No PFD value removes it; only an anchor on the seed's own bottoms does (session 142's PL), a re-anchor of a V1
+back-solve and so a decided divergence. Its effect over 15 000 s, arm L143 (that anchor alone, `run/runs/L143_vs_N142.txt`): 323D001's pressure
+within 0.0025 bar of N142 (prediction 1, 1e-4 bar, held only over session 142's 1 200 s), its display 3.20 throughout;
+PT-323201 4.096-4.102 bar a; m308 4 steps (N142 7), 323F010's level 1 (N142 2), onsets 380 and 1 170 s (prediction 2
+holds). The synthesis tags differ in pairs from 8 700-10 800 s (AT-322701 3, FT-329403 4, TT-322011 3, LT-322504 3,
+FT-329407 4 steps), and their 15 000 s ranges shrink against N100A's (§CLV.2): the perturbation moves the wander's phase and does not remove it. Below
+display at the LP side's own tags: a record-and-keep item, not a fix.
+
+**FT-329407's first mover** (E0 = P0s as built, ERL = PRLs with both residuals removed, 900 s, `probe143`;
+`run/runs/E_trace.txt`). 323F010's feed, 323F004's drain (101 492 kg/h at 106.0 C), arrives colder and leaner by
+450 s: -0.067 to -0.070 K and urea -1.5e-4 (E0), -0.092 to -0.103 K and urea -2.1e-4 (ERL), NH3 +3.4e-5 to +5.0e-5,
+water +3e-5 to +4e-5. 323E010's duty rises +6.8 kW (E0) and +10.8 kW (ERL) by 900 s; the feed's sensible deficit
+(m cp dT on cp 3.0) is 5.7 and 8.7 kW, about 80 % of it. 323F010's product follows (TT-323010 -0.010 to -0.017 K,
+urea -9e-5 to -1.2e-4), so 324E001's feed arrives 0.011-0.017 K colder and leaner and its duty rises +5.3 and +6.5
+kW. The chests' draw is 323F010's inlet, 323F004's drain, not m308 (a separate branch, to 322E003) and not 323F010's
+level; the move is larger with both residuals removed, so it is neither residual's. That 323C003's bottoms relaxation
+(§CLIV.4: urea -2.65e-6, CO2 +1.3e-6 per s) is what 323F004 passes on is consistent with the sign and remains [I]:
+323F004's own step was not probed.
+
+## CLV.6 Decisions, items and deliverables
+
+Decisions 294 and 295 taken; the class of §CLV.4 proposed, not appended to `docs/decided-classes.md`. A-63: (b) alone
+measured, its gate failed on B-157's wander, the engineer's choice (§CLV.2). B-118: law B's floor named and ruled
+out as the turndown lead (§CLV.3). B-125: the class proposed. B-157: m308's and 323F010's causes named (the
+closures), the cp anchor V1's and its residual the seed's stripper bottoms, not the row's rounding (correcting
+§CLIV.4), the heaters' draw traced to 323F010's inlet (§CLV.5). Not done: step 5. Scripts and runs stay in
+`Tests and Reports/scratch/session-143`, to be archived as `Tests and Reports/reports/Session_143_b118`.

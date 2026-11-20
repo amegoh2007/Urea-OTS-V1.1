@@ -1592,3 +1592,18 @@ decision on an item.
      liquor's bubble line at 125-150 bar (`Tests and Reports\reports\Bubble line research\`). Law B's re-flash uses
      the same 23 kJ/mol line as the cap: a later candidate that changes the cap's slope changes law B's line with it,
      or the test mixes two bubble lines (session 141's point 2.4 holds changed the cap alone).
+294. **A-63's fix to test is (b), the cap with a design margin, alone, without the re-solve** (2026-11-20, session
+     143; the process engineer's ruling). Session 142 settled the mechanism: the joint re-solve removes the first
+     tick's boil, but the boil returns from 30 s (to 50.7 kg/h), so it is not a seeding accident; it comes from the
+     cap's anchoring, which puts the cap exactly on the design top temperature with zero margin, so that any
+     perturbation of the loop grazes it. V1 has no cap and does not boil at design, and decision 102's premise is that
+     nothing flashes at the design seed: a margin makes that premise true and restores V1's behaviour at design while
+     the cap stays as protection. The re-solve would re-anchor a V1 value (a divergence) to fix what the margin already
+     fixes; the smaller change is preferred. This supersedes decision 290's clause that the fix to test is the re-solve
+     "not the cap". The margin is 3.5 K [E] in the interim (session 140's candidate (b)); its final value comes from the
+     bubble-line literature report (decision 293 stands). The test is the design pin on its printed values over
+     15 000 s on the as-built seed, with zero boil throughout. As-Built Part CLV.
+295. **The cap-released share stays model-conditional, and the inverse waits on law B's floor** (2026-11-20, session
+     143; the process engineer's ruling). At every fitted root of session 142's cap-released inverse law B sits at its
+     floor, so the fit is set by a model clause, not by Book2 (§CLIV.6). Data gap 17 stays on the readback's row 30,
+     and no further inverse runs are made until law B's floor is understood. As-Built Part CLV.

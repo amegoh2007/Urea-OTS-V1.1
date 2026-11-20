@@ -5376,3 +5376,15 @@ move is 323E010's and 324E001's chests. Cap released, the reactor inverse reads 
 and 0.165-0.174 at 69.3 % [I], but only with law B at its floor at every fit: not a datum, not B-125's target; gap 17
 stays on the readback. Step 5 not run. Part CLIV;
 `Tests and Reports\scratch\session-142`.
+
+### Session 143 — 2026-11-20: decisions 294-295; (b) alone on the as-built seed; law B's floor; B-157's LP side
+
+Session 142 committed (0a10330) and pushed with 392561b. Rulings recorded as decisions 294 (A-63's fix to test is (b),
+the cap with a 3.5 K [E] margin, alone; supersedes 290's re-solve clause) and 295 (the cap-released share stays
+model-conditional; no inverse runs until law B's floor is understood). B143, (b) alone over 15 000 s: no boil, margin
+at least 3.43 K; the pin gate fails on FT-329403, FT-329407, LT-322504 and TT-322011, each as N100A or worse there;
+TT-322005 183.1 from 11 170 s; against the control L143, (b)'s own share is 322E002's duty and x_conv. No proposal.
+Law B's floor binds in no hold (R923b, U693, A61g), only with the top on the cap; under (b) unshifted it binds in the
+margin. A class for zero-margin design limits proposed (322R001's cap, 322E002's and 322E003's saturation laws).
+B-157: m308 and 323F010 are closures on the synthesis wander; CP_S208_DES is V1's, its residual the seed's bottoms;
+the heaters' draw is 323F004's drain. Step 5 not run. Part CLV; `Tests and Reports\scratch\session-143`.
