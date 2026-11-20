@@ -29563,3 +29563,206 @@ and B-125 rewritten on §CLI.4-5; B-157 on §CLI.6 (the placed seed ruled out); 
 rewritten on LIC-329504 and LIC-329503 (§CLI.3). Not run: step 5 (the broken-ejector state, gap 1). Suite: the subset
 gate passed (75, after the documents too); the uncapped full suite, run after step 0, passed (8 437 passed, exit 0, 1 h 24 min;
 `suite_full.txt`). b616557 was pushed on the subset gate and a full run timed out at 32 % with no failure.
+
+# Part CLII — Session 140: the rulings as decisions 283 to 285, A-61's predictive guard, the composition of 322R001's boil-cap gap, B-157's determinism and first mover (2026-11-20)
+
+Scripts and output: `Tests and Reports/scratch/session-140` (`run/registry140.md`, written before each launch except E20 and E20s;
+`run/`, `desk/`, `pages/`). Nothing under `ureasim/` or `Tests and Reports/tests/` changed. Every rig run is on session
+134's tree252 (git archive 79fa8ca; `ureasim` identical to HEAD), runner chain cfg140 -> cfg139 -> cfg138 -> ... ->
+opt_run95 (`run/go140.sh`); cfg140 puts headerrule140 in place of headerrule135 and installs the read-only probes
+probe140, probe140b and probe140c when a config names them. Step 4 of the plan (322E002's sign under S, the broken-ejector state)
+was not run.
+
+## CLII.1 Step 0 and the rulings
+
+Session 139's five documents, with §CLI.7's correction, were committed as 7717d94 and pushed (b616557..7717d94);
+`git diff --stat` equalled `git diff --ignore-cr-at-eol --stat` (5 files, 266 / 47). The uncapped full suite was
+started in the background at the session's start (`suite_full.txt`). The process engineer's rulings of 2026-11-20 are
+decisions 283 (A-61's predictive header rule and the new criterion 3), 284 (B-118: the seed's 322E002 share is not the
+plant's) and 285 (B-157: traced before it is accepted or fixed).
+
+## CLII.2 A-61: the arithmetic, the bounds' units, the guard on decision 281's run
+
+**The arithmetic holds** (`run/a61_replay140.txt`). On the header law, flow proportional to N sqrt(P) with P in bar g
+(§CXLVI.19; the sprayers discharge to atmosphere), one valve at a fixed make moves the header by (N / (N - 1))^2:
+1.3611 from seven to six, and 3.0 bar g becomes 4.083 bar g; the manual's band ratio 3.5 / 3.0 is 1.1667. This is
+§CXLVII.1's finding. E1's own span, 3.8 / 2.8 = 1.3571, carries one valve's step down to eight -> seven (1.3061) and
+fails from seven -> six downward (1.3611, 1.44, ...): below eight no two adjacent counts' draw ranges overlap with
+LV-324501B shut, so a make between them is carried by LV-324501B's recycle, or a rule that adds a valve whenever
+LV-324501B opens and sheds one whenever X reaches 0 cycles. The arithmetic alone does not show that the hunting is not the feed rule's: R693b and A61_693 still differ only
+by that rule (§CLI.2).
+
+**The bounds' units.** Page 4-43 of UD-VT-G00-DC-0003 (read on the rendered page, `pages/dc0003_p4-43.png`) prints
+two figures at two places: "Maintain urea melt main header pressure between 3 - 3.5 bar" (no unit printed), and among
+the guide figures for the urea melt "pressure 2.5 - 4.0 bar abs (at granulator main header)", 1.487-2.987 bar g.
+Whether the granulator main header is PT-335201's header is not stated on the page. PIC-335201 holds the header at E1 = 2.8-3.8 bar g (3.81-4.81 bar a) on PC35.2.2, and §CXLVII.1 rejected the guide
+figures as a trigger for this reason. Read in bar a: from E1's floor ten -> nine predicts 3.484 bar g, above 2.987, so
+no valve can come off at any count the header has (twelve at most); the 100 % seed's own header, 3.5 bar g = 4.51 bar a, lies
+outside the new criterion's 2.5-4.0 bar a, and the header is inside it only with X under 9.3 %. Read in bar g (2.5-4.0
+bar g), PIC-335201's whole range lies inside the band, so its pressure part is met by construction.
+
+**The guard replayed on A61_693's eleven moves** (desk, no run). Bar g: every move passes (the tightest, seven -> six at
+14 280 s, predicts 3.823 <= 4.0; six -> seven at 15 420 s predicts 2.779 >= 2.5): the guard blocks nothing, and the run
+must be A61_693 to the bit. Bar a: every shed is blocked and the three six -> seven additions pass. A61_693 scored on the
+new criterion 3 (`run/score140.py`): seven reversals after the ramp, at most three in any 3 600 s (18 120, 19 320 and
+20 760 s), the closest two 840 s apart (9 060 and 9 900 s): it fails.
+
+**Runs** (registered before launch; headerrule140, the guard on decision 253's triggers, a blocked move logged and its
+persist counter kept):
+
+| Arm | Reading | Result |
+|---|---|---|
+| D600g | 100 % seed, guard on, 600 s | equal to D600a in every leaf (17 220 series, 2 460 verify, 89 seed-budget): no move called, the guard inert |
+| A61g | bar g, 2.5 / 4.0 | equal to A61_693 in every leaf (675 492 series, 118 080 verify, 113 seed-budget, 240 move leaves): 335P001 runs, no latch; seven reversals after the ramp, at most three in any 3 600 s; the header inside 2.5-4.0 bar a 44.1 % of the hold (635 of 1 440 10 s samples, on E1 from LIC-324501's output, not PT-335201; `run/score140.py`), inside 2.5-4.0 bar g 100 %: criterion 3 fails |
+| A61a | bar a, 1.487 / 2.987 bar g | every shed blocked (29, from 1 800 s, predicted 3.484 then 3.457 bar g), ten valves throughout; X at 0 and E1 at 2.8 bar g from 2 040 s, the raw level draining 7 % to 2 % over 3 400-3 520 s; at 3 520 s PC35.4 latches, LV-324501A shuts and the melt goes to recycle to the end; the 10 s probe's 335P001 stop flag stays clear, but seal air flows at 3 500-3 510 s, so whether 335P001 stopped first is not resolved; no reversal; the header inside the band 0 % of the hold in either reading (the rule log's PV 0 from 3 600 s, before the hold begins at 7 320 s): criteria 2 and 3 fail |
+
+Reading: as worded in bar a the guard returns the rig to the drain §CXLVI.19 found (ten valves at E1's floor drawing more than the make), and the latch comes at 3 520 s, earlier than the registry's guess of about 6 000 s; even without the latch the header could not be inside 2.5-4.0 bar a for 95 % of the hold, since E1 is there only with X under 9.3 %. Read in bar g the guard is inert on this run and criterion 3 fails on the reversals alone, its pressure part met by construction. Neither reading meets decision 283's acceptance.
+
+The lower bound blocks additions, the upper sheds. On the replay's own moves: every addition is blocked only by a lower
+bound above 2.90 bar g (seven -> eight at 9 060 s predicts 2.899), the six -> seven ones by one above 2.78; every shed
+passes only with an upper bound of at least 3.86 bar g (seven -> six at 16 560 s predicts 3.852). E1's own ends, 2.8 /
+3.8 bar g, would block the six -> seven additions and the seven -> six sheds alike and hold seven with X at 0, the
+level draining. Not run; the bounds' units and place are the process engineer's. A-61 stays open.
+
+## CLII.3 B-118: what 322R001's boil-cap gap is made of
+
+`desk/cap140.py` (`cap140.txt`), on session 136's Book2 bands (`book2_136.json`); the band pressure is the seed's
+140.70 bar a plus PT-329201's departure from the 100.3 % band, as inv139.
+
+**1. The cap as built.** `reactor_boil.liquor_bubble_t_c`, decision 102 (2026-10-14, handoff B-92; decisions 45 / 48's
+class), not V1's:
+
+    1 / T_bub = 1 / 456.15 K - (R / 23 000 J/mol) . ln((P + 0.600) / 141.30),   P = PT-329201 [bar a]
+
+anchored on the pinned 183 C top node under the off-gas line's 141.3 bar a (PFD 207; the 0.600 bar head A-13's
+subtraction of the two design pressures). The slope is PI-322E002's melt bubble law's (`data.unit_322e002.BUB_DHVAP_JMOL`,
+"the effective NH3-dominated vaporisation enthalpy of the carbamate melt", which the module says the stripper's free-NH3
+desorption shares): 0.532 K/bar at design (R T^2 / (dH P)). The cap takes the total pressure only: no inert, no
+composition term. Two notes, not edited: the function's docstring says 0.75 K per bar, the equation gives 0.532; and
+decision 102 is the rewrite's, so the slope is no V1 anchor.
+
+**2. The gap in pressure terms** (the cap's own law inverted for Book2's TT-322005):
+
+| Band | Load % | P bar a | Book2 TT-322005 C | cap C | gap K | P the cap needs bar a | dP bar | p_in needed bar [I] | off-gas needed kmol/h [I] |
+|---|---|---|---|---|---|---|---|---|---|
+| 60.7 | 61.13 | 133.72 | 181.66 | 179.22 | +2.44 | 138.20 | +4.48 | 3.85 | 1 233 |
+| 69.3 | 69.21 | 131.46 | 181.48 | 177.97 | +3.52 | 137.87 | +6.41 | 1.90 | 2 788 |
+| 80.4 | 79.91 | 136.48 | 182.12 | 180.73 | +1.39 | 139.06 | +2.58 | 5.80 | 1 092 |
+| 94.2 | 92.64 | 137.47 | 182.60 | 181.27 | +1.33 | 139.95 | +2.48 | 5.96 | 1 242 |
+| 100.3 | 100.98 | 140.70 | 182.67 | 183.00 | -0.33 | 140.08 | -0.62 | 9.06 | 911 |
+| 111.0 | 110.94 | 141.99 | 182.65 | 183.69 | -1.04 | 140.05 | -1.95 | 10.39 | 881 |
+
+The cap's composition-blindness means the band's AY-322701 does not enter it. dP is §CXLVI.3 (i)'s distance on the
+absolute form. The last two columns re-anchor the cap on the condensables' pressure (P_top - p_in, the design's 8.48 bar
+of inerts inside the anchor): p_in is the inert pressure that would let the top stand at Book2's temperature, and the
+off-gas total is the inert feed (57.83 kmol/h at design, scaled by the load) over that fraction.
+
+**3. The inerts.** The licensor gives the sign: "With a higher inert percentage in the top of the reactor the system
+pressure will be lower for a given synthesis pressure, so that the bubble point will be at a lower temperature"
+(UD-VT-G00-DC-0003, Section 1, p. 1-16; read on the rendered page, `pages/dc0003_p1-16.png`). A two-phase top with
+inerts stands below the total-pressure bubble point, not above it. On a cap anchored at the design's 8.48 bar of inerts
+(6.000 mol % of 963.76 kmol/h, PFD; §CXLVI.3 (ii)), a hotter top at a reduced band needs the inert pressure to fall: to
+1.90 bar at 69.3 % and 5.96 bar at 94.2 %, an off-gas total of 2 788 and 1 242 kmol/h, 2.9 and 1.3 times the design,
+where every arm's off-gas dries with the load (§CXXIII.3). At steady state the vent's opening does not set the top's
+inert fraction: the vent passes what the CO2 brings, and the fraction is the inert feed over the off-gas total. A
+throttled HIC-322604 raising the inert share would widen the gap, not close it. The inerts do not explain it; the
+cap-alone inert law's run-away in 25 s (§CXLVI.3 (ii)) was not repeated, and no condensables cap was run.
+
+**4. The bubble law's slope.** Book2's own T-P relation, TT-322005 on PT-329201:
+
+| Fit | n | slope K/bar | R^2 |
+|---|---|---|---|
+| within 60.7 % / 69.3 % / 80.4 % / 94.2 % / 100.3 % / 111 % (+/- 2.5 % load) | 15 / 32 / 10 / 706 / 29 / 4 312 | 0.095 / 0.012 / 0.276 / 0.182 / 0.093 / 0.109 | 0.25 / 0.01 / 0.46 / 0.30 / 0.15 / 0.02 |
+| across the six band means | 6 | 0.124 | 0.88 |
+| across the five band means 60.7-100.3 % | 5 | 0.144 | 0.91 |
+
+On the cap's form a slope of 0.124-0.144 K/bar is an effective enthalpy of 85-99 kJ/mol; the cap's 23 kJ/mol gives
+0.532 K/bar, about four times steeper. Within every band the plant's top moves at most half the cap's rate with the
+loop pressure, with low R^2: the top does not ride the cap's bubble line. The engine's own Extended UNIQUAC bubble
+pressure of the design overflow (`thermo.vle.bubble_p_bara`, departures only, §CXLVI.3 (iii)) gives d ln P / dT 0.0203
+/K at 183 C, 35.1 kJ/mol (30.5 at 178 C, 41.2 at 188 C), 0.349 K/bar on the cap's form. The licensor's diagrams (pp.
+1-30 to 1-32) are at one pressure and carry no slope; the published bubble-point data (Lemkowitz et al., Kawasumi,
+Isla et al.; Voskov and Voronin's Table 9) are cited in `References\Sources` only as figures or by reference, so no
+literature slope is quoted. On the cap's anchor, the departures from the 100.3 % band:
+
+| Band | dP bar | Book2 dT K | cap, 23 kJ/mol | 53.3 kJ/mol (the module's FLASH_DH) | 87 kJ/mol |
+|---|---|---|---|---|---|
+| 60.7 | -6.98 | -1.01 | -3.78 | -1.64 | -1.01 |
+| 69.3 | -9.24 | -1.19 | -5.03 | -2.18 | -1.34 |
+| 80.4 | -4.22 | -0.55 | -2.27 | -0.98 | -0.60 |
+| 94.2 | -3.23 | -0.07 | -1.73 | -0.75 | -0.46 |
+| 111.0 | +1.29 | -0.02 | +0.69 | +0.30 | +0.18 |
+
+The band means vary with load in composition and conversion as well as pressure, so the across-band slope is an
+apparent sensitivity, not a measured bubble line [I].
+
+**5. Reading.** The inerts do not explain the 1.3-3.5 K: the licensor gives them the opposite sign, and they carry it
+only if the off-gas rises to 1.1-2.9 times the design. What the desk shows is that the plant's top does not follow the
+cap's 0.532 K/bar: within bands it moves 0.01-0.28 K/bar, across bands 0.12-0.14. Two candidates fit that, and the
+desk does not separate them: (a) a flatter bubble line, the cap's anchor kept (about 87 kJ/mol puts every band's
+departure within 0.4 K of Book2's, where 23 kJ/mol misses by 1.7-3.8 K); (b) the cap's 0.532 K/bar kept with a margin
+at design, the top standing at least 3.5 K under its bubble point at 100 % (which clears every band). The licensor's
+"183 C if the path covered is 95 %" (p. 1-16) is the approach to equilibrium, not a bubble margin, so it decides
+neither. Either is a new mechanism (decision 102's class fixes the ceiling, not its slope or margin) and goes to the
+process engineer with both sides as above; neither was built or run. Step 2.4 of the plan (the bubble law against the
+published data) is not done: no tabulated bubble point of Lemkowitz et al., Kawasumi, Isla et al. or Voskov and Voronin
+is in `References\` (Sources and the gap-resolution notes searched) or in the soft-copy archive's References, only figures and citations: `Gaps solution.md` cites Voskov and Voronin's Table 9 (the bubble pressure at 160, 180 and 200 C over L 2.5-5.5 and W 0-1) without its values; the engine's own
+Extended UNIQUAC slope stands in. Every value is a desk inference on
+Book2's band means and the cap's own form [I]. The one share result session 139 gave, beside the seed's 0.169: the
+thermowells read 0.171-0.180 at 94.2 % on law B, insensitive to every bound tested (0.002), not identifiable at 69.3 %
+(§CLI.4) [I]; decision 284 keeps the seed's share a stand-in.
+
+## CLII.4 B-157: determinism and the first mover
+
+**The null's keys** (session 139's P100n, §CLI.6). Its seed budget differs from N100A's in b_t_old (the Newton root's
+nodes, 182.9386 C at the top, against the seed's 183.0000), b_stor_K (1 578 K), b_resid and the x_* keys. Cause:
+cfg139 installs place139 first, so terms94, installed later in the chain, wraps place139's step; place139's Newton
+solve calls `ReactorInventory.step` on its rig, through terms94's wrapper, which overwrites `LAST["t_old"]` with the
+solve's last iterate after terms94 has recorded the real tick's; terms94's `SEED` then takes the root's nodes as the
+conversion decomposition's reference, and every later x_* sample is computed against it. Nothing reads them back: the
+readers of `terms94.LAST` and `SEED` (cfg112, cfg134, proto94, proto_s101, opt_run95 / 105) write runner output only,
+and P100n's plant state equals N100A's in all 118 080 verify leaves. Harmless runner output. Laws S (proto112) and the
+design-reference cell of proto134 also take a first-call capture, so a dry step through them would bias their
+references the same way; only place139 makes a dry step, in P100 and P100n alone.
+
+**Determinism, directly.** D600a and D600b, N100A's config cut to 600 s, run at once in two processes: 0 of 17 220
+series, 2 460 verify and 89 seed-budget leaves differ. D600a against session 136's N100A (another process, another day)
+over 0-300 s: 0 of 7 860 leaves differ; L3000 (probe140 on) against N100A over 0-3 000 s: 0 of 78 600. A61g against A61_693 (another process, headerrule140 in place of headerrule135, inert on every move) over 0-21 720 s with the laws on: 0 of 675 492 series, 118 080 verify, 113 seed-budget and 240 move leaves. The engine is deterministic with the rig's laws on too; the paired comparisons since decision 278 stand.
+
+**Unit 329 on N100A** (L3000, probe140 every 10 s, the first 20 ticks each). The seed is on its own steady state at the
+first tick: the three vapour residuals 1e-11 kg/h, every controller integral zero, PV-329207B at its 55.97 % bias.
+FT-329407 is PV-329207B's export (stream 932), the LP header's swing user, so it takes the header's residual. The first
+mover is 322E002's raise (the draw on 322D001's water): -0.83 kg/h at the second tick, -14.9 kg/h by 1.2 s; the LP
+residual reaches -8.94 kg/h at 1.4 s, the header -0.0002 bar, and leg B's PI throttles the export, -21 kg/h by 280 s;
+on rank139's rule (one displayed 0.01 t/h step) L3000's FT-329407 leaves its first sample at 500 s, as on N100A. Over 0-3 000 s the raise runs the
+loop's 2 700-3 000 s mode (-31.7 kg/h at most, -17.1 at 3 000 s), 322E001's condensing +17 kg/h, the LP users +4.0
+(918 -3.8, 926 +8.5), and the export -20.5 kg/h; 963, 960 and PV-329207A stay shut, the make-up 916 follows the drum
+(-28 kg/h), leg B's integral stays under 0.21 bar s. Unit 329 follows the synthesis; it is not the origin.
+
+**The synthesis at its second tick** (E20, probe140b on 322E002's arguments, every tick of the first 20 s). At the
+first tick 322E002 sees the design to the bit; at the second, every argument the loop's other units produce has moved:
+322F001's discharge CO2 -3.87 kg/h (-1.7e-4), H2O +1.80 (+1.5e-4), NH3 +2.09, urea -0.013; 322E001's top gas CO2
+-0.049 kmol/h (-2.6e-5), NH3 -0.23; its top gas -0.000003 K; PT-329201 -0.0000002 bar. 322E002's outlet falls 0.0013 K
+and its duty 0.97 kW in that tick. The largest relative first-tick departure among them is 322F001's discharge, whose
+suction is 322E003's liquor, the unit session 139's t10 ranking put first (§CLI.6).
+
+**322E003's sump at the first tick** (E20s, probe140c on `ScrubberSump.step`, every tick of the first 5 s). Two findings.
+(i) The mass: on the seed's first tick the sump takes 57 591.25 kg/h of the scrubber's overflow and 322F001 draws
+57 561.32, so the sump gains +29.93 kg/h (0.05 %), its 3 837.422 kg holdup rising 0.0008 kg and its level 1.1e-5 % a
+tick; nothing else in the sump is off (no recondensed backlog until the fourth tick, no pulse, nothing held). (ii) The
+composition: at the second tick 322F001's discharge steps at near-constant mass (CO2 -3.87, H2O +1.80, NH3 +2.09 kg/h)
+while the suction rises only 0.012 kg/h a tick; its urea falls by 0.99948, exactly the tick's suction over the
+overflow (57 561.32 / 57 591.25), and its CO2 lands within 0.2 kg/h of the overflow's CO2 at that ratio. So the
+seed's discharge composition is not what the sump hands on from the seed's own overflow: a composition step at the
+tear, separate from (i). Neither is shown to drive the 2 700-3 000 s wander: the sump's time constant is about 240 s
+(3 837 kg over 57 561 kg/h), and §CLI.6 read this unit's first-tick movement as settling. No other unit's first-tick
+balance was read, so these are the first found, not shown to be the only ones [I]. Whether to re-seed is the process
+engineer's (decision 285).
+
+## CLII.5 Decisions, items and deliverables
+
+Decisions 283 to 285 taken (§CLII.1). Handoff: A-61 rewritten on §CLII.2 (open on the bounds' units); B-118 on §CLII.3
+(the top does not follow the cap's slope: a flatter line or a design margin, the engineer's); B-157 on §CLII.4
+(deterministic; unit 329 a follower; 322E003's sump's mass and composition off at t = 0); data gap 17 notes decision
+284. Not run: step 4 (322E002's S sign with the loop's boundary frozen; the broken ejector, data gap 1); step 2.4's
+literature comparison (no tabulated data in `References\`). Suite: the uncapped full suite, run in the background from the session's start, passed (8 437 passed, exit 0; `suite_full.txt`); the subset gate (docs, layering, snapshot, data-gap stand-ins) passed after the last edit (75, exit 0). No test reads the five living documents.

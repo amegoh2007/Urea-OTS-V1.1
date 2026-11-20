@@ -5,7 +5,7 @@ is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-20, session 139
+**Last updated:** 2026-11-20, session 140
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -30,13 +30,12 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Open.** `handoff.md`: Section A one (A-61), Section B five (B-118 with B-120 folded in, B-125, B-126, B-136 and
   B-157), Section C none, 5 open data gaps (1, 3, 10, 15, 17). Each waits on a vendor document (Körting) or on one plant
   DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
-* **Session 139** (Part CLI; decisions 280 to 282 on the rulings of 2026-11-20; nothing built). A-61's closing run
-  keeps 335P001 running with no latch, but the header count hunts 6 <-> 7 (criterion 3 fails; A-61 open). No share
-  fits Book2's rise under the boil cap; the thermowells read the seed's share at 94.2 %, not a datum (gap 17 open,
-  row 30 on LIC-329504 / 503). 322E002's quench outlet sets its share. B-157's placed seed: a kick, not a cure.
-* **Session 138** (Part CL; decisions 277 to 279; 276 rejected). On the engine's own 322R001 step the column has one
-  stable fixed point at every load: the rise loss is its boundary, 322E002's gas-CO2 split first (data gap 17).
-  Decision 259 is a paired test (278); the seed's own wander is B-157. A-62 closed (279).
+* **Session 140** (Part CLII; decisions 283 to 285; nothing built). A-61's predictive guard: in its printed bar a it
+  blocks every shed (LV-324501A latched), in bar g it changes nothing; open on the bounds' units. 322R001's top does
+  not follow the boil cap's 0.53 K/bar (Book2 0.12-0.14): a flatter line or a design margin, not the inerts. The
+  engine is deterministic; 322E003's sump is off its balance at t = 0 (B-157), unit 329 a follower.
+* **Sessions 138, 139** (Parts CL, CLI; decisions 277 to 282). One stable 322R001 root at every load, the loss its
+  boundary; A-61's closing run hunts 6 <-> 7; no share fits under the boil cap (gap 17, row 30); B-157 raised.
 * **Sessions 135 to 137** (Parts CXLVII to CXLIX; decisions 253 to 275). The manual's header-valve rule on the B-118
   rig (253); the refit picks V1's approach; no wave M arm stands; the T693b trace closed gap 16; the letters and the
   readback checklist made.
@@ -72,9 +71,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 140 (139 taken 2026-11-20: the rulings as decisions 280-282, A-61's closing run, the reactor as 322E002's meter) | `docs/history/session-log.md` |
-| Decision | 283 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138; 280 to 282 by session 139) | `docs/decisions.md` |
-| As-Built Part | CLII (CLI taken by session 139) | the As-Built reference, appended at its end |
+| Session | 141 (140 taken 2026-11-20: decisions 283-285, A-61's guard, the boil cap's slope, B-157's first mover) | `docs/history/session-log.md` |
+| Decision | 286 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138; 280 to 282 by session 139; 283 to 285 by session 140) | `docs/decisions.md` |
+| As-Built Part | CLIII (CLII taken by session 140) | the As-Built reference, appended at its end |
 | Handoff Section A | A-63 (A-62 session 136's, closed by decision 279) | `handoff.md` |
 | Handoff Sections B and C | B-158 (B-157 session 138's) | `handoff.md` |
 

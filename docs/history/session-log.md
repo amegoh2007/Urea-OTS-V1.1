@@ -5342,3 +5342,14 @@ Book2 logs their outputs, with no differential; row 30 rewritten. The reactor in
 cap; the thermowells read 0.171-0.180 at 94.2 % (not a datum). 322E002 at unit level: the quench outlet sets the
 share; no closure scored. B-157: FT-329407 leaves first (500 s); the placed seed kicks, not cures. Step 5 not run.
 Part CLI; `Tests and Reports\scratch\session-139`.
+
+### Session 140 — 2026-11-20: decisions 283-285; A-61's predictive guard; the boil cap's slope; B-157's first mover
+
+Session 139 committed (7717d94) and pushed. Rulings recorded as decisions 283 (A-61's predictive header guard and new
+criterion 3), 284 (the seed's 322E002 share is not the plant's) and 285 (B-157 traced before accepted or fixed).
+A-61: the arithmetic holds, but the guide figures as printed in bar a lie under E1's floor: the guard blocks every
+shed and LV-324501A latches (A61a); read in bar g it blocks nothing (A61g). B-118: the reactor top does not follow
+the boil cap's 0.53 K/bar (Book2 0.12-0.14): a flatter line or a design margin, not the inerts (the licensor gives
+them the opposite sign), desk only. B-157: the engine is deterministic across processes; the null's keys were a runner hook's;
+unit 329 follows 322E002's raise; 322E003's sump is off its mass and composition balance at t = 0. Step 4 not run.
+Part CLII; `Tests and Reports\scratch\session-140`.

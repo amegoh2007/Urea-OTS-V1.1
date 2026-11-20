@@ -1507,3 +1507,28 @@ decision on an item.
      rewritten on the first tag that exists; if none exists, the reactor inverse is the only route. Session 139: (1)
      has no meter; (2) exists, LIC-329504 and LIC-329503, both logged in Book2; row 30 is rewritten on them.
      As-Built §CLI.3.
+283. **A-61's header rule becomes predictive, and criterion 3 is replaced** (2026-11-20, session 140; the process
+     engineer's ruling). The header passes the melt as N sqrt(P) (As-Built §CXLVI.19), so at a fixed make one valve
+     moves the header by (N / (N - 1))^2, 1.36 from seven to six, wider than the manual's 3.0-3.5 bar g band, and a
+     band-only rule must hunt when the make needs a fractional count. The ruling: a valve comes off only if the
+     predicted pressure after removal, P (N / (N - 1))^2, stays at or below the guide figures' upper end, and goes on
+     only if the predicted pressure after addition stays at or above their lower end, the guide figures being 2.5-4.0
+     bar a (UD-VT-G00-DC-0003 p. 4-43); the fractional remainder is carried by PIC-335201 and LV-324501B. Criterion 3
+     becomes: at most one reversal of the header count in any 3 600 s after the ramp, and the header pressure inside
+     2.5-4.0 bar a for at least 95 % of the hold; criteria 1 and 2 of decision 281 stand. The guard is applied on top
+     of decision 253's triggers. Session 140 (As-Built §CLII.2): the arithmetic holds, but the bounds as written in bar a
+     lie below E1's 2.8 bar g floor (3.81 bar a), which §CXLVII.1 had already found; read in bar a the guard blocks
+     every shed, and read in bar g it blocks no move of decision 281's run. Run, the guard on decision 253's
+     triggers: in bar a the rig keeps ten valves and LV-324501A shuts on PC35.4 at 3 520 s; in bar g the run is
+     decision 281's to the bit. A-61 stays open on the units of the bounds.
+284. **B-118: the seed's 322E002 gas share is not taken as the plant's** (2026-11-20, session 140; the process
+     engineer's ruling). Session 139 found a more fundamental limit than the share (322R001's boil cap below Book2's
+     TT-322005 at every reduced band, As-Built §CLI.4), so the share is not the binding term; the seed's 0.169 stays a
+     stand-in (data gap 17). The thermowell reading at 94.2 %, 0.171-0.180 on law B, is recorded as an inference
+     beside it, not as data.
+285. **B-157: the wander is neither accepted nor fixed until it is traced** (2026-11-20, session 140; the process
+     engineer's ruling). The null's differing diagnostic keys are traced first, because every paired comparison since
+     decision 278 relies on the engine being deterministic; then the first mover's balance, term by term. Whether to
+     re-seed is the process engineer's question. Session 140 (As-Built §CLII.4): the engine is deterministic across
+     processes; the null's keys were a runner hook's reference; unit 329's seed is at its own steady state; at t = 0
+     322E003's sump takes 29.93 kg/h more than 322F001 draws and hands on another composition than the seed's.
