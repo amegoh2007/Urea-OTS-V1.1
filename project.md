@@ -5,7 +5,7 @@ is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-20, session 141
+**Last updated:** 2026-11-20, session 142
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -27,16 +27,15 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A none, Section B five (B-118 with B-120 folded in, B-125, B-126, B-136 and
+* **Open.** `handoff.md`: Section A one (A-63), Section B five (B-118 with B-120 folded in, B-125, B-126, B-136 and
   B-157), Section C none, 5 open data gaps (1, 3, 10, 15, 17). Each waits on a vendor document (Körting) or on one plant
   DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
-* **Session 141** (Part CLIII; decisions 286 to 289; nothing built). A-61 closed on the header rule as built (287).
-  B-118's cap: Book2 rejects its slope; the engine's UNIQUAC is 100 bar off the reactor's level; (a) costs the 100 % pin
-  nothing over 3 600 s, (b) removes the seed's top boil and moves two flows; through 322R001's boil neither moves a reduced-load hold. B-157: the seed's top boils
-  29.93 kg/h on the first tick, V1's profile and kinetics anchored at two flows, the cap the rewrite's.
-* **Sessions 138 to 140** (Parts CL to CLII; decisions 277 to 285). One stable 322R001 root at every load, the loss its
-  boundary; no share fits under the boil cap (gap 17, row 30); the top does not follow the cap's slope; the engine is
-  deterministic; B-157 raised.
+* **Session 142** (Part CLIV; decisions 290 to 293; one docstring line built). A-63: the seed's top boil is the
+  rewrite's cap clipping V1's 0.045 K. The joint re-solve gives a clean first tick but boils again from 30 s; (b) on it
+  passes. B-157's LP residuals are a printed-row rounding. Cap released, the share 0.165-0.174 [I] rests on law B's floor.
+* **Sessions 138 to 141** (Parts CL to CLIII; decisions 277 to 289). One stable 322R001 root at every load, the loss its
+  boundary; no share fits under the boil cap (gap 17, row 30); Book2 rejects the cap's slope, candidates (a) and (b);
+  A-61 closed (287); B-157 raised on the seed's first tick.
 * **Sessions 135 to 137** (Parts CXLVII to CXLIX; decisions 253 to 275). The manual's header-valve rule on the B-118
   rig (253); the refit picks V1's approach; no wave M arm stands; the T693b trace closed gap 16; the letters and the
   readback checklist made.
@@ -72,10 +71,10 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 142 (141 taken 2026-11-20: decisions 286-289, A-61 closed, the boil cap's candidates, the seed's first tick) | `docs/history/session-log.md` |
-| Decision | 290 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138; 280 to 282 by session 139; 283 to 285 by session 140; 286 to 289 by session 141) | `docs/decisions.md` |
-| As-Built Part | CLIV (CLIII taken by session 141) | the As-Built reference, appended at its end |
-| Handoff Section A | A-63 (A-62 session 136's, closed by decision 279) | `handoff.md` |
+| Session | 143 (142 taken 2026-11-20: decisions 290-293, A-63 raised, the joint re-solve, the cap-released inverse) | `docs/history/session-log.md` |
+| Decision | 294 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138; 280 to 282 by session 139; 283 to 285 by session 140; 286 to 289 by session 141; 290 to 293 by session 142) | `docs/decisions.md` |
+| As-Built Part | CLV (CLIV taken by session 142) | the As-Built reference, appended at its end |
+| Handoff Section A | A-64 (A-63 session 142's) | `handoff.md` |
 | Handoff Sections B and C | B-158 (B-157 session 138's) | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers

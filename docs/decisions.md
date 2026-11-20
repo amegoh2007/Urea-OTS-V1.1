@@ -1569,3 +1569,26 @@ decision on an item.
      back-solve is a decided divergence and a re-seed moves the PFD pin, both the engineer's. Session 141 (As-Built
      §CLIII.6): the largest residual is 322R001's top boiling 29.93 kg/h on the first tick, V1's profile and kinetics
      anchored at two flows under the rewrite's cap; the LP side's 323C003 and 323E003 pressures are separate residuals.
+290. **The seed's top boil is a rewrite defect: A-63** (2026-11-20, session 142; the process engineer's ruling). V1 has
+     the 0.045 K mismatch between its node profile (the fixed point at 228.46 m3/h) and its kinetics (anchored at
+     227.50 m3/h), but V1 has no ceiling and does not boil at its design seed. The boil exists only because the
+     rewrite's cap (decision 102) clips that mismatch, and decision 102's own premise is that nothing flashes at the
+     design seed, so the premise fails on the rewrite's tree. That is Section A by the tracker's definition, an issue
+     the rewrite created: A-63. B-157 keeps the wander and cites A-63 as its synthesis source; the LP side's residuals
+     (323C003, 323E003) stay in B-157. The fix to test is the joint re-solve of the profile and the kinetic anchor at
+     the live flow, not the cap; widening the cap's tolerance to swallow 0.045 K would be a silently widened clamp
+     (`CLAUDE.md` §5 rule 5) and is not an option. As-Built Part CLIV.
+291. **The cap's docstring is corrected to its equation's slope** (2026-11-20, session 142; the process engineer's
+     ruling). `reactor_boil.liquor_bubble_t_c` stated 0.75 K/bar where its equation gives 0.532 K/bar at design
+     (§CLIII); a comment that misstates its equation is a defect under `CLAUDE.md` §2. The docstring now states
+     0.532 K/bar, citing §CLIII; no code line changed; committed on its own.
+292. **Candidate (b)'s failure on the 100 % seed is set aside** (2026-11-20, session 142; the process engineer's
+     ruling). Session 141's (b) failed the paired test against N100A only by removing N100A's top boil, the rewrite's
+     artefact (decision 290). (b) is judged again on the re-solved seed, where neither side boils at the first tick
+     (§CLIV.3: it passes decision 278's paired test against the re-solved reference over 3 600 s).
+293. **No choice between the boil cap's candidates (a) and (b) before the literature report** (2026-11-20, session
+     142; the process engineer's ruling). The engine's Extended UNIQUAC is off by a factor of 3.5 in level at 183 C
+     (40 against 141.3 bar a) and cannot arbitrate; the engineer commissions a literature search on the synthesis
+     liquor's bubble line at 125-150 bar (`Tests and Reports\reports\Bubble line research\`). Law B's re-flash uses
+     the same 23 kJ/mol line as the cap: a later candidate that changes the cap's slope changes law B's line with it,
+     or the test mixes two bubble lines (session 141's point 2.4 holds changed the cap alone).

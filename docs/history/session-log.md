@@ -5363,3 +5363,16 @@ liquor at 40 bar a, not 141.3, and weighs on neither candidate; Book2 rejects th
 steps; at 92.3 and 69.3 % neither moves the hold through `node_boil` (law B not re-pointed). B-157: the seed's top boils 29.93 kg/h on the first tick (V1's profile and kinetics anchored at two
 flows; the cap the rewrite's), which is session 140's 322E003 sump excess; the LP side's 323C003 and 323E003 pressures
 are separate residuals. Step 4 not run. Part CLIII; `Tests and Reports\scratch\session-141`.
+
+### Session 142 — 2026-11-20: decisions 290-293; A-63 raised; the joint re-solve; the cap-released inverse
+
+Session 141 committed (5dac02d) and pushed. Rulings recorded as decisions 290 (the seed's top boil a rewrite defect,
+A-63), 291 (the cap's docstring corrected to 0.532 K/bar, committed alone), 292 ((b)'s 100 % failure set aside) and
+293 (no choice between (a) and (b) before the literature report). The joint re-solve of 322R001's profile and kinetic
+anchor at the live 227.50 m3/h gives a clean first tick, but over 15 000 s the top boils again from 30 s (maximum
+50.7 kg/h) and the correlates still move: not offered as a divergence. (b) on it passes the paired test over 3 600 s.
+B-157: 323C003's and 323E003's residuals are CP_S208_DES anchored on PFD 208's printed row, sub-display; FT-329407's
+move is 323E010's and 324E001's chests. Cap released, the reactor inverse reads 322E002's share 0.169-0.172 at 94.2 %
+and 0.165-0.174 at 69.3 % [I], but only with law B at its floor at every fit: not a datum, not B-125's target; gap 17
+stays on the readback. Step 5 not run. Part CLIV;
+`Tests and Reports\scratch\session-142`.
