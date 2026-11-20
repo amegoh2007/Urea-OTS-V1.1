@@ -29389,3 +29389,177 @@ stationary over 15 000 s); B-118's 322R001 bullet and next step rewritten on §C
 readback checklist gains rows 29 (LIC-323507's tuning) and 30 (the LP header's flows at 92 % and 69 %). Step 3 of the
 plan (B and S closed one at a time on the middle point; the broken-ejector state; gap 1) was not run: its premise, the
 middle point, is retracted.
+
+# Part CLI — Session 139: the rulings as decisions 280 to 282, A-61's closing run, 322R001 as the meter for 322E002's gas share, 322E002's closures at Book2's bands, B-157's onsets (2026-11-20)
+
+Scripts and output: `Tests and Reports/scratch/session-139` (`registry139.md`, written before each launch;
+`results139.md`; `out/`; `run/`). Nothing under `ureasim/` or `Tests and Reports/tests/` changed. Every rig run is on
+session 134's tree252 (git archive 79fa8ca; `git diff 79fa8ca HEAD -- ureasim` is empty), runner chain cfg139 ->
+cfg138 -> cfg137 -> cfg136 -> cfg135 -> opt_run95 (`run/go139.sh`, the audit after every run). Step 5 of the plan (the
+broken-ejector state, data gap 1) was not run.
+
+## CLI.1 Step 0 and the rulings
+
+Session 138's record was committed as b616557 and pushed (24a316d..b616557). `git diff --stat` equalled
+`git diff --ignore-cr-at-eol --stat`: no line-ending churn (the plan's +3 257 / -314 did not reproduce; the diff was 5
+files, 284 / 55, with `scenarios/teaching_cases.md` 306 / 55). Scenarios are read as `*.json` only
+(`tests/test_snapshot.py`, `engine/session.py`). Local identity set from 24a316d's author. The full suite, capped at
+3 000 s, timed out at 32 % with no failure; session 138's subset (docs, layering, data-gap stand-ins, snapshot) passed,
+75 in 30.13 s; the PyQt6 grep printed nothing.
+
+The process engineer's rulings of 2026-11-20 are decisions 280 (322R001's multiplicity refuted, the plan's hypothesis),
+281 (A-61 closes on one run, four criteria) and 282 (gap 17's route must exist before it is listed).
+
+## CLI.2 A-61's closing run (decision 281)
+
+Arm A61_693: session 135's R693b (SB693_ldcL252 with decision 253's header rule, dwell 300 s, LY-rise guard 0.2 %)
+plus decision 277's feed rule (check 60 s) and probe136. Load 69.3 %, ramp 0.5 %/min; the rig's ramp ends at 3 720 s
+(registered 3 684 s; the rig rounds to the minute, the same moves), settle 3 600 s, hold 14 400 s.
+
+| Criterion (decision 281) | A61_693 |
+|---|---|
+| 335P001 runs to the end | met: its stop flag never set; raw leg level 34.0-70.6 % over the hold |
+| no PC35 latch | met: no trip recorded |
+| at most one direction change of the header count after the ramp | **failed: seven** |
+| the count it lands on, beside the calculated 6.9-8.1 | 7 at the run's end; time-weighted 6.80 over the hold, 6.44 from 14 280 s |
+
+Header moves: 10 -> 9 at 1 800 s and 9 -> 8 at 3 120 s on the ramp; then 8 -> 7 at 7 740 s, 7 -> 8 at 9 060, 8 -> 7
+at 9 900, 7 -> 6 at 14 280, 6 -> 7 at 15 420, 7 -> 6 at 16 560, 6 -> 7 at 18 120, 7 -> 6 at 19 320, 6 -> 7 at 20 760 s.
+From 14 280 s the count hunts 6 <-> 7 on a 2 400-3 000 s cycle; the count at the run's end is the cycle's phase. The
+feed rule's 62 replies were all accepted; the cascade was restored at 3 720 s on FIC-324401 at 64.46 t/h.
+
+Control: R693b, the same base without the feed rule (session 135), moved 10 -> 9 -> 8 -> 7 at 5 400 / 5 700 / 6 000 s
+and 7 -> 6 at 17 340 s, with no reversal. The ruling's premise, that the 6-versus-7 question came from the feed step
+decision 277 removes, does not hold on the rig: with the feed rule 323D002 keeps its suction (LIC-323507 PV 15-20 %,
+against T693b's 0 %), FIC-324401 and LIC-323507 trend rather than cycle (one crossing), and the recycle through
+LV-324501B cycles 0-7 707 kg/h with a period of about 3 450 s, the leg level at about 2 935 s; the header count hunts
+on that cycle. RATIO on its floor (71 % of the hold) and HIC-323605 at its ceiling are present in R693b too.
+Hold values: TT-322005 175.7-176.5 C, rise 4.8-5.9 K (Book2 181.5 C; B-118 not met, as §CXLVII.2).
+A-61 stays open; the reading is the process engineer's.
+
+## CLI.3 Gap 17's route (decision 282)
+
+1. **The make-up to 322D001A/B (stream 916): no meter.** Uhde's unit 329 loop summary (UD-MR-329-EC-0001 rev 01,
+   pp. 1-2, the loop list) lists no flow loop on stream 916 (329P001A/B to 322D001A/B through LV-329504). Route 1 does
+   not exist.
+2. **The drums' level valves: exist.** LV-329504 (loop L 329504, on stream 916) and LV-329503 (loop L 329503, stream
+   913, the cascade of 329D009's condensate, itself 322E001's steam 901, FT-329403) are on the P&ID with their sheets
+   (§LIII.3). Read on the rendered pages this session, each agreeing with §LIII.3: the loop summary p. 83 (LV-329504:
+   LP condensate, DN 50, 7.3 / 20.9 / 31.3 m3/h at 959 kg/m3, p1 10.8 / 10.5 / 10.0, p2 4.6 / 5.0 / 7.8 bar a, 100 C,
+   fail closed) and p. 81 (LV-329503: DN 100, 28.3 / 59.5 / 72.9 m3/h at 883-892 kg/m3, p1 10.7 / 9 / 8.7, p2
+   4.8 / 5.2 / 7.2 bar a, 175-184 C, fail closed); Flowserve STAN 0522419-0 (UD-MR-G00-DZ-0048-002 p. 130, pos. 69,
+   LV-329503: V726, DN 100, kvs 100, parabolic plug, characteristic L, linear; p. 132, pos. 70, LV-329504: DN 50,
+   kvs 40, modified equal percentage); the sizing sheet (DZ-0048-003 p. 70, pos. 70): kv 20.67 at 78 % stroke on the
+   maximum flow only. No rangeability is printed.
+   Book2 logs both controllers' outputs (`out/book2_lv139.txt`; columns 128-134, the 111 % band lost to a blank cell):
+
+   | Book2 band | 100.3 % | 94.2 % | 80.4 % | 69.3 % | 60.7 % |
+   |---|---|---|---|---|---|
+   | LIC-329504 output [%] | 40.7 | 39.1 | 40.5 | 33.3 | 34.8 |
+   | LIC-329503 output [%] | 66.3 | 65.7 | 62.7 | 57.4 | 53.1 |
+
+   LIC-329504's PV holds 49.9-50.1 % in every band, so 322D001's make is 916 + 913's liquid - 959 at constant level
+   (the PFD closes 914 + 916 - 959 + 915 = 917 to 1 kg/h). Turning an output into a flow needs each valve's differential
+   in service and its rangeability. Book2 logs PT-329207, downstream of both, but neither inlet pressure: the loop list
+   (EC-0001 p. 3, read on the page) has P 329205 and P 329254 on 329D009 and P 329257 / P 329258 on 329P001A/B's
+   discharge, none in Book2's header. A desk estimate on the sheets' pressures (`route139.py`) is not recorded.
+3. Not reached (route 2 exists).
+
+Readback row 30 is rewritten on LIC-329504 and LIC-329503 with those inlet loops (decision 282).
+
+## CLI.4 Step 2: 322R001 as the meter for 322E002's gas share
+
+Instrument: session 138's map138 rig (the engine's `ReactorInventory.step`, the boundary frozen, the root by Newton on
+F^600(x) - x), law B as every B-118 arm carries it, vdot frozen (`inv139.py`). The boundary is the seed's first call
+moved by Book2 (every step [I]): C and the CO2 feed by FY-322403's ratio to the 100.3 % band, N/C and l_drive by
+AY-322701's (or by FY-321401 / FY-322403), the inlet by TT-322010's departure, the pressure by PT-329201's, vdot by the
+load; H/C, inerts and the level the seed's. The share s (gas CO2 / (322E002's tube-side feed CO2 + gas CO2)) is scanned
+0-0.30 in steps of 0.03 and bisected on each target. Session 136's Book2 bands (`book2_136.json`) hold none at 92.3 %; the
+94.2 % band, the nearest, stands for the 92.3 % hold, beside which the engine's B923 share is quoted.
+
+* **The converged decompositions** are §CL.3's (session 138, 39 calls, none unconverged): 92.3 % -1.104 K (the split
+  alone -2.511 K), 69.3 % -7.458 K (-8.028 K). Not re-run.
+* **Null.** The engine boundaries' hidden shares are recovered exactly: B923 0.15000, B693 0.09049.
+* **The rise cannot be fitted.** On the boil cap (`reactor_boil.liquor_bubble_t_c`, 0.532 K/bar, composition-blind)
+  at Book2's pressure the top lies below Book2's TT-322005 at every reduced band: 94.2 % -1.33 K, 80.4 % -1.39 K,
+  69.3 % -3.52 K, 60.7 % -2.44 K (100.3 % +0.33 K, 111 % +1.04 K). This is §CXLVI.3's 3-6 bar distance; here it
+  blocks the inverse: no share fits the rise, absolute or as a departure, at any reduced band.
+* **The intermediate thermowells** (departures on the seed's nodes):
+
+  | Band | TT-322006 | TT-322007 | TT-322008 | note |
+  |---|---|---|---|---|
+  | 100.3 % | 0.1691 | 0.1691 | 0.1691 | method check, seed 0.16916 |
+  | 111 % | 0.139 | 0.103 | 0.068 | the profile's shape off |
+  | 94.2 % | 0.1713 | 0.1731 | 0.1803 | |
+  | 80.4 % | 0.173 | 0.184 | 0.221 | |
+  | 69.3 % | above the cap | 0.190-0.192 | 0.238-0.244 | nodes 2-4 on the cap |
+  | 60.7 % | above the cap | | | |
+
+* **Identifiability.** At 94.2 %, H/C at its bounds (0.256, 0.406), inerts x0.5 and x2, N/C by the feeds instead of
+  AY-322701, and vdot live each move a thermowell's share by at most 0.002; with law B off no node reaches its target.
+  At 69.3 % the nodes sit on the cap (law B off 0.231, 0.271): not identifiable.
+
+Reading: at 94.2 % the thermowells read 0.171-0.180 on law B, the spread between thermowells larger than every
+bound tested; consistent with the seed's 0.169 and above the engine's 0.150 (B923) and 0.0905 (B693). The reading
+rests on law B and on the cap, which misses Book2's top, so it is not a datum (decision 282's route and the plan's
+condition). Data gap 17 stays open at both loads. No turndown matrix was run.
+
+## CLI.5 Step 3: B-125's closures at Book2's bands (unit level)
+
+`e002_139.py`: the engine's first `CondenserHoldup.step` at the design seed, its arguments captured, stepped 600 s on
+them, then 3 600 s on each band's arguments moved by Book2 (every step [I]): the stripper's top gas and 322F001's
+discharge by FY-322403's ratio, the discharge's NH3 by AY-322701's, TT-322013 and TT-322012 by their departures, the
+shell's saturation by TT-329001's, PT-329201 by its. Closures: as built; S (`proto112.apply_s_first({"S":
+"pinned"})`, §CXXII.3); E1eu (`proto_e1`, R 4.5, margin 4.38 bar, §CXII.2). Variant "outlet held": as built and E1eu
+with the NTU quench's result replaced by the seed's TT-322010 plus Book2's TT-322010 departure, so the saturation
+deficit, the split and the duty all see Book2's outlet. Seed 0.16916 on every closure; last-600 s drift under 2e-6.
+
+| Closure | 111 % | 94.2 % | 80.4 % | 69.3 % | 60.7 % |
+|---|---|---|---|---|---|
+| as built | 0.227 | 0.106 | 0.015 | 0.008 | 0.005 |
+| E1eu | 0.226 | 0.105 | 0.015 | 0.008 | 0.005 |
+| S | 0.162 | 0.211 | 0.170 | 0.241 | 0.158 |
+| as built, outlet held | 0.167 | 0.224 | 0.246 | 0.294 | 0.242 |
+| E1eu, outlet held | 0.167 | 0.205 | 0.225 | 0.274 | 0.209 |
+
+* The unit's own outlet departs from Book2's (+0.26 / -0.31 / -0.28 / -0.99 / -1.14 K): as built and E1eu +0.90 /
+  -1.54 / -5.91 / -9.52 / -11.86 K; S +0.52 / -1.74 / -1.96 / -4.53 / -3.80 K. The outlet temperature is the
+  controlling term: as built over-condenses on the NTU quench's outlet (duty per unit load 1.14 at 94.2 %; S 0.89;
+  held 0.86 as built, 0.91 E1eu).
+* With the outlet held the saturation law separates the closures: as built 0.957 at 94.2 % and 0.895 at 69.3 %,
+  E1eu 1.0 and 0.956, the share 0.019-0.033 apart. Unheld, the saturation stays at 0.99-1.0 and the two coincide,
+  so the saturation law is not ruled out: it is masked by the quench's own outlet.
+* No plant-implied share exists to score against (§CLI.4), so no closure is ranked as meeting one. At 94.2 % the held
+  closures (0.205-0.224) and S (0.211) lie above the thermowell readings (0.171-0.180); as built (0.106) below.
+* Unexplained: at unit level S raises the share at the reduced bands, where S in the loop lowered it (B923 0.150,
+  B693 0.0905). No engine null was run for the unit rig.
+
+## CLI.6 Step 4: B-157, where N100A's wander starts, and the placed seed
+
+**Onsets on N100A** (`rank139.py` on session 136's run, 15 000 s, 10 s samples; registered). Display onset, one
+console step of the first sample: FT-329407 500 s (329 steam), LT-322504 6 190 s, FT-329403 6 620 s, TT-322011
+7 550 s, AT-322701 11 350 s. Raw onsets (1e-6 and 1e-4 relative) are degenerate: every unit moves by 20 s. Added after
+registration and unregistered: each key's t10 (its first sample at 10 % of its own maximum departure) puts 322E003's
+keys first (median 60 s; amplitudes 0.04-12.5 kg/h), then 324/335's drain 110 s, 322F001 190 s, 322R001 240 s. That
+is each unit's first-tick settling, not the wander's origin; no unit is named as the origin.
+
+**P100** (place139, registered): at the first 322R001 step the nodes are set to the seed's own frozen-boundary root,
+12.938 K (residual under 1e-4 K, |mu| under 1), nothing else moved. Reading: **kick, not cure.** Against its own first
+sample P100 departs first on AT-322701 (70 s), FT-329407 (80 s), TT-322011 (90 s), FT-329403 (170 s), LT-322504
+(540 s); the top returns to the 183.0 C cap by 600 s and TT-322006 to N100A's by 3 000 s; against N100A it fails 6
+tags from 10-90 s (decision 278). The seed's 0.06 K offset from its step's root is not the mechanism.
+
+**P100n, the null (place false): failed as registered.** The display comparison passes and the plant state is equal
+(0 of 118 080 leaves differ), but 7 500 series leaves differ, all in the sampler's conversion decomposition (x_comp,
+x_d_comp, x_d_res, x_d_temp, x_res). Cause not traced. The suspect is place139's dry step and Newton solve (on a
+copy, suction 0.0) passing through session 105's `terms94` hooks, which keep the last reaction call (`LAST`) and fill
+the decomposition's reference (`SEED`) once; the keys are runner-only diagnostics (session 105's `cmp_rig105.py` lists
+them as runner keys), and the plant is untouched.
+
+## CLI.7 Decisions, items and deliverables
+
+Decisions 280 to 282 taken (§CLI.1). Handoff: A-61 rewritten on decision 281's run (criterion 3 failed; open); B-118
+and B-125 rewritten on §CLI.4-5; B-157 on §CLI.6 (the placed seed ruled out); data gap 17's row and readback row 30
+rewritten on LIC-329504 and LIC-329503 (§CLI.3). Not run: step 5 (the broken-ejector state, gap 1). Suite: the subset
+gate passed (75, after the documents too); the uncapped full suite, run after step 0, passed (8 437 passed, exit 0, 1 h 24 min;
+`suite_full.txt`). b616557 was pushed on the subset gate and a full run timed out at 32 % with no failure.

@@ -5331,3 +5331,14 @@ engine on it (92.3 % 12.097 K, closure -0.001 K); session 137's three points wer
 retracted. Corrected 92.3 % decomposition: -1.10 K, the split first (-2.51 K alone). Step 1.3 not run (no upper root).
 Step 2: no Book2 steam is a proxy for 322E002's duty; the split stays the seed's by assumption (data gap 17). B-157
 raised: the as-built seed wanders, not through 322R001. Step 3 skipped. Part CL; `Tests and Reports\scratch\session-138`.
+
+### Session 139 — 2026-11-20: the rulings as decisions 280-282; A-61's closing run; 322R001 as 322E002's meter
+
+Session 138's documents committed (b616557) and pushed; no line-ending churn. The rulings recorded as decisions 280
+(322R001's multiplicity refuted, the plan's hypothesis), 281 (A-61 closes on one run) and 282 (gap 17's route must
+exist). A-61's run, both rules on: 335P001 runs, no latch, but the header count reverses seven times (6 <-> 7); A-61
+open, the feed rule adding the hunting against the control. Gap 17: no make-up meter; LIC-329504 / 503 exist and
+Book2 logs their outputs, with no differential; row 30 rewritten. The reactor inverse fits no share under the boil
+cap; the thermowells read 0.171-0.180 at 94.2 % (not a datum). 322E002 at unit level: the quench outlet sets the
+share; no closure scored. B-157: FT-329407 leaves first (500 s); the placed seed kicks, not cures. Step 5 not run.
+Part CLI; `Tests and Reports\scratch\session-139`.

@@ -1488,3 +1488,22 @@ decision on an item.
      teaching_cases.md`: a load reduction without the feed reduction drains 323D002 in about 20-30 minutes), and
      LIC-323507's tuning page is added to the DCS readback checklist (row 29), since the drain's rate rests on its
      estimated Kc 1 and Ti 4 030 s (V1's; the loop has no row in the DCS table). As-Built §CL.1.
+280. **The 322R001 multiplicity hypothesis is closed as refuted** (2026-11-20, session 139; the process engineer's
+     ruling). On its engine step 322R001 is single-valued at 100, 92.3 and 69.3 % (As-Built §CL.3). The hypothesis
+     (the plant on the reactor's high branch, the engine on its middle point) was the session 138 plan's, not the
+     builder's, and the record says so wherever it is cited; the three points it rested on were session 137's damped
+     iteration's cycle, retracted (§CL.3). Loop-level multiplicity is not covered. As-Built §CLI.1.
+281. **A-61 closes on one run** (2026-11-20, session 139; the process engineer's ruling). SB693_ldcL252's base,
+     settled at 69.3 %, with the header rule (decision 253) and the feed rule (decision 277) together, held
+     14 400 s. A-61 closes if all of these hold: 335P001 runs to the end; no PC35 latch fires; the header count
+     changes direction at most once after the ramp; and the count it lands on is reported beside the calculated
+     6.9-8.1. The ruling's premise is that the 6-versus-7 question came from the feed step decision 277 removes, so
+     the count with both rules on is the answer and the old trace is not read again. Run in session 139 (A61_693):
+     the first two criteria are met, the third fails (seven direction changes), so A-61 stays open. As-Built §CLI.2.
+282. **Data gap 17's route must exist before it is listed** (2026-11-20, session 139; the process engineer's ruling).
+     The readback row for gap 17 names only a tag physically on the P&ID. Checked in order: (1) the boiler-feed-water
+     make-up to 322D001A/B (the steam make being about the make-up less the blowdown); (2) the drums' level-control
+     valve outputs with their sheets' Cv; (3) the LP header's balance, if its other users are metered. The row is
+     rewritten on the first tag that exists; if none exists, the reactor inverse is the only route. Session 139: (1)
+     has no meter; (2) exists, LIC-329504 and LIC-329503, both logged in Book2; row 30 is rewritten on them.
+     As-Built §CLI.3.

@@ -5,7 +5,7 @@ is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-20, session 138
+**Last updated:** 2026-11-20, session 139
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -30,16 +30,16 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Open.** `handoff.md`: Section A one (A-61), Section B five (B-118 with B-120 folded in, B-125, B-126, B-136 and
   B-157), Section C none, 5 open data gaps (1, 3, 10, 15, 17). Each waits on a vendor document (Körting) or on one plant
   DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
-* **Session 138** (Part CL; decisions 277 to 279 on the rulings of 2026-11-20; 276 rejected; nothing built). On the
-  engine's own 322R001 step, boundary frozen, the column has one stable fixed point at every load and the engine sits
-  on it: the rise loss is not 322R001's branch selection but its boundary, 322E002's gas-CO2 split first.
-  Session 137's three points were its damped iteration's period-4 cycle (retracted). Book2 cannot fix the split (data
-  gap 17). Decision 259 is a paired test (278); the seed's own wander is B-157. A-62 closed (279).
-* **Session 137** (Part CXLIX; decisions 269, 270, 274 and 275). No wave M arm stands on the rise departure; S and the
-  holdup each ring the seed alone; A-62's manual feed move keeps 323D002's suction. Its 92.3 % reactor reading is §CL.3's.
-* **Sessions 135 and 136** (Parts CXLVII, CXLVIII; decisions 253 to 267). The manual's header-valve rule on the B-118
-  rig (253); the refit picks V1's approach (f 0.58); the ejector break and gap 15 stay open; the T693b trace closed gap
-  16; data gaps' [E] estimates, the letters and the readback checklist made.
+* **Session 139** (Part CLI; decisions 280 to 282 on the rulings of 2026-11-20; nothing built). A-61's closing run
+  keeps 335P001 running with no latch, but the header count hunts 6 <-> 7 (criterion 3 fails; A-61 open). No share
+  fits Book2's rise under the boil cap; the thermowells read the seed's share at 94.2 %, not a datum (gap 17 open,
+  row 30 on LIC-329504 / 503). 322E002's quench outlet sets its share. B-157's placed seed: a kick, not a cure.
+* **Session 138** (Part CL; decisions 277 to 279; 276 rejected). On the engine's own 322R001 step the column has one
+  stable fixed point at every load: the rise loss is its boundary, 322E002's gas-CO2 split first (data gap 17).
+  Decision 259 is a paired test (278); the seed's own wander is B-157. A-62 closed (279).
+* **Sessions 135 to 137** (Parts CXLVII to CXLIX; decisions 253 to 275). The manual's header-valve rule on the B-118
+  rig (253); the refit picks V1's approach; no wave M arm stands; the T693b trace closed gap 16; the letters and the
+  readback checklist made.
 * **Session 133** (Part CXLV; decision 252, built on branch `v1.2-d252` and merged into `v1.2` after session 134's runs). LY-324501 built on AC4's formula over V1's level with Rosemount's LRV floor, the seed unchanged to the bit; at the design vacuum 335P001's L2 stop cannot act, kept as built (2026-11-19). Researched: 324F003's and the leg's drawings (232 kg at the plant's 50 %), the cooling-water lead ruled out, PT-323204's two decimals, the UF85 pumps' capacity, the Drive copy's hash. The session 114 scratch plan ran in session 134.
 * **Session 132** (Part CXLIV; decision 251). V1.2 made; the separators' ejectors break on the 5 November bracket.
 * **Sessions 129 to 131** (Parts CXL to CXLIII; decisions 249, 250). Built: PC21's page-20 timers as ABB TOFF elements
@@ -72,9 +72,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 139 (138 taken 2026-11-20: the rulings as decisions, 322R001's fixed points on the engine's step, 322E002's gas share) | `docs/history/session-log.md` |
-| Decision | 280 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138) | `docs/decisions.md` |
-| As-Built Part | CLI (CL taken by session 138) | the As-Built reference, appended at its end |
+| Session | 140 (139 taken 2026-11-20: the rulings as decisions 280-282, A-61's closing run, the reactor as 322E002's meter) | `docs/history/session-log.md` |
+| Decision | 283 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138; 280 to 282 by session 139) | `docs/decisions.md` |
+| As-Built Part | CLII (CLI taken by session 139) | the As-Built reference, appended at its end |
 | Handoff Section A | A-63 (A-62 session 136's, closed by decision 279) | `handoff.md` |
 | Handoff Sections B and C | B-158 (B-157 session 138's) | `handoff.md` |
 
