@@ -5320,3 +5320,14 @@ the reference to its first sample. Step 4, 322R001 in the unit model on a frozen
 points and the engine sits on the unstable middle (12.10 K against 13.3 K); at 69.3 % 322E002's gas CO2 split
 costs -9.2 K of the -7.5 K loss. A-62: the manual's feed move on a load change (wave F) keeps 323D002's suction;
 proposal 277 puts it on every B-118 arm. Step 6 skipped. Part CXLIX; `Tests and Reports\scratch\session-137`.
+
+### Session 138 — 2026-11-20: the rulings as decisions; 322R001's fixed points on the engine's own step; 322E002's gas share
+
+Session 137's documents committed and pushed first. The rulings recorded as decisions 277 (the feed rule on every
+B-118 arm), 278 (decision 259 a paired test; proposal 276 rejected) and 279 (A-62 closed: training value; the teaching
+case in `scenarios/teaching_cases.md`, readback rows 29 and 30). Wave L stands on the paired test; only A_lean fails on
+phase alone. Step 1: on `ReactorInventory.step` with the loop's boundary frozen, one stable root at every load and the
+engine on it (92.3 % 12.097 K, closure -0.001 K); session 137's three points were its damped march's period-4 cycle,
+retracted. Corrected 92.3 % decomposition: -1.10 K, the split first (-2.51 K alone). Step 1.3 not run (no upper root).
+Step 2: no Book2 steam is a proxy for 322E002's duty; the split stays the seed's by assumption (data gap 17). B-157
+raised: the as-built seed wanders, not through 322R001. Step 3 skipped. Part CL; `Tests and Reports\scratch\session-138`.

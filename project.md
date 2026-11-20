@@ -5,7 +5,7 @@ is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-19, session 137
+**Last updated:** 2026-11-20, session 138
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -27,18 +27,19 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A two (A-61, A-62), Section B four (B-118 with B-120 folded in, B-125, B-126 and
-  B-136), Section C none, 4 open data gaps (1, 3, 10, 15). Each waits on a vendor document (Körting) or on one plant
+* **Open.** `handoff.md`: Section A one (A-61), Section B five (B-118 with B-120 folded in, B-125, B-126, B-136 and
+  B-157), Section C none, 5 open data gaps (1, 3, 10, 15, 17). Each waits on a vendor document (Körting) or on one plant
   DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
-* **Session 137** (Part CXLIX, §CXLVIII.12; decisions 269, 270, 274 and 275 on the rulings of 2026-11-19 19:30;
-  276 and 277 proposed; nothing built). No wave M arm stands on the rise departure; wave M ran as registered. The
-  seed's failing tags under the u set match the reference's own wander; S and the holdup each ring alone. 322R001 on
-  its boundary (unit model, frozen): at 92.3 % the engine sits on the unstable middle point (12.10 K; stable 13.3 K);
-  at 69.3 % 322E002's gas CO2 split costs -9.2 K of a -7.5 K loss. A-62: the manual's feed move on a load change keeps 323D002's suction.
-* **Session 136** (Part CXLVIII; decisions 253 to 267 on the rulings, 268 and 271 to 273 proposed). The refit picks
-  V1's approach (f 0.58); the ejector break and gap 15 stay open; the T693b trace closes gap 16, raises A-62.
-* **Session 135** (Part CXLVII). The manual's header-valve rule on the B-118 rig (decision 253); data gaps measured, [E]
-  estimates made; letters and the readback checklist final.
+* **Session 138** (Part CL; decisions 277 to 279 on the rulings of 2026-11-20; 276 rejected; nothing built). On the
+  engine's own 322R001 step, boundary frozen, the column has one stable fixed point at every load and the engine sits
+  on it: the rise loss is not 322R001's branch selection but its boundary, 322E002's gas-CO2 split first.
+  Session 137's three points were its damped iteration's period-4 cycle (retracted). Book2 cannot fix the split (data
+  gap 17). Decision 259 is a paired test (278); the seed's own wander is B-157. A-62 closed (279).
+* **Session 137** (Part CXLIX; decisions 269, 270, 274 and 275). No wave M arm stands on the rise departure; S and the
+  holdup each ring the seed alone; A-62's manual feed move keeps 323D002's suction. Its 92.3 % reactor reading is §CL.3's.
+* **Sessions 135 and 136** (Parts CXLVII, CXLVIII; decisions 253 to 267). The manual's header-valve rule on the B-118
+  rig (253); the refit picks V1's approach (f 0.58); the ejector break and gap 15 stay open; the T693b trace closed gap
+  16; data gaps' [E] estimates, the letters and the readback checklist made.
 * **Session 133** (Part CXLV; decision 252, built on branch `v1.2-d252` and merged into `v1.2` after session 134's runs). LY-324501 built on AC4's formula over V1's level with Rosemount's LRV floor, the seed unchanged to the bit; at the design vacuum 335P001's L2 stop cannot act, kept as built (2026-11-19). Researched: 324F003's and the leg's drawings (232 kg at the plant's 50 %), the cooling-water lead ruled out, PT-323204's two decimals, the UF85 pumps' capacity, the Drive copy's hash. The session 114 scratch plan ran in session 134.
 * **Session 132** (Part CXLIV; decision 251). V1.2 made; the separators' ejectors break on the 5 November bracket.
 * **Sessions 129 to 131** (Parts CXL to CXLIII; decisions 249, 250). Built: PC21's page-20 timers as ABB TOFF elements
@@ -71,11 +72,11 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 138 (137 taken 2026-11-19: the rulings on the rise, the seed's law audit, 322R001's boundary, A-62) | `docs/history/session-log.md` |
-| Decision | 278 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 and 277 claimed by session 137, proposed, not taken) | `docs/decisions.md` |
-| As-Built Part | CL (CXLIX taken by session 137) | the As-Built reference, appended at its end |
-| Handoff Section A | A-63 (A-62 session 136's) | `handoff.md` |
-| Handoff Sections B and C | B-157 (session 134 took none) | `handoff.md` |
+| Session | 139 (138 taken 2026-11-20: the rulings as decisions, 322R001's fixed points on the engine's step, 322E002's gas share) | `docs/history/session-log.md` |
+| Decision | 280 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138) | `docs/decisions.md` |
+| As-Built Part | CLI (CL taken by session 138) | the As-Built reference, appended at its end |
+| Handoff Section A | A-63 (A-62 session 136's, closed by decision 279) | `handoff.md` |
+| Handoff Sections B and C | B-158 (B-157 session 138's) | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers
 here before it writes anything else.

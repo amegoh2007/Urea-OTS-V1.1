@@ -29110,6 +29110,8 @@ Checks on the same runs (`extra137.py`, `run/extra137.txt`):
 
 ## CXLIX.5 Step 4: 322R001's boundary decomposed at unit level
 
+*Retracted in part by §CL.3 (session 138): the three fixed points at 92.3 %, the boundary's 0.07 K, the 1.18 K closure gap and the middle-point reading were the damped march's period-4 cycle; the corrected 92.3 % decomposition is §CL.3's. The 69.3 % part stands.*
+
 Wave B (registered before launch): B923 = R923b and B693 = U693 with probe137 (`run/probe137.py`) recording the
 column's call every 10 s. Null: B923 against R923b, 0 of 568 800 series leaves differ; the probe recorded one call per
 tick (its last call index x 0.1 s = 18 960 s, the run's end). The decomposition is `boundary137.py` (its docstring
@@ -29193,3 +29195,197 @@ the seed's, not as far from a measured plant value.
 Scripts, configurations, registry and runs: `Tests and Reports/scratch/session-137` (score137, disp137, audit137,
 extra137, boundary137, callcheck137, a62read137, decisions_proposed137.md, run/ with mkcfg137, go137, cfg137, probe137, rule137 and
 registry137.md). Nothing under `ureasim/` or `Tests and Reports/tests/` changed.
+
+# Part CL — Session 138: the rulings as decisions, wave L on the paired test, 322R001's fixed points on the engine's own step, 322E002's gas share from the steam (2026-11-20)
+
+Scripts and output: `Tests and Reports/scratch/session-138` (`registry138.md`, `results138.md`, `out/`). Nothing under
+`ureasim/` or `Tests and Reports/tests/` changed. Step 1.3's arms (`run/`) were built and not run (§CL.3).
+
+## CL.1 The rulings as decisions; A-62 closed
+
+The process engineer's rulings of 2026-11-20 on session 137's proposals are decisions 277 to 279:
+
+* 277: proposal 277 as written: the operator's evaporator-feed rule (FIC-324401 on AUTO following the load on the ramp,
+  the cascade under LIC-323507 restored at its end; `scratch/session-137/run/rule137.py`) rides every B-118 arm in
+  scratch, as decision 253's header rule does.
+* 278: proposal 276 rejected; decision 259 is read as a paired comparison, |arm(t) - ref(t)| <= one display step at
+  every sample over 15 000 s, a phase shift reported where it is the cause (§CL.2). The reference's own wander is B-157.
+* 279: A-62 closed as not a product defect. On the engine 323D002 drains and 323P003 loses suction 4 980-5 000 s from
+  the start of a ramp to 69-74 % when the feed reduction of Operating Manual p. 6-23 is skipped (§CXLIX.3); that is the
+  plant's consequence of a missed operator step. The teaching case is `scenarios/teaching_cases.md` (read by people
+  only; the engine and `test_snapshots` list only `*.json` there). LIC-323507's tuning page is row 29 of the DCS
+  readback checklist, because the drain's rate rests on V1's estimate (Kc 1.0 t/h per %, Ti 4 030 s).
+
+## CL.2 Wave L on the paired test, and what makes each failure
+
+`session-137/disp137.py` already reads the paired test: at each shared sample it rounds the arm and N100A to the
+console's decimals and compares them at the same time. Wave L's verdicts (`session-137/run/disp137_L.txt`, §CXLIX.4)
+are therefore its scores under decision 278, unchanged: A_wall passes, the other eleven arms fail. Unrounded, A_wall's
+largest departure is exactly one step on AT-322701, FT-329403, FT-329407, LT-322504 and TT-322011 (`out/extra138.txt`,
+1 500 samples). The runs' series are stored at the console's decimals, so this re-check ran on the stored values
+and cannot see below them: A_wall passes on the boundary of the test.
+
+Phase reader (`phase138.py`, registered before it ran): for each failing (arm, tag), the deviations of both runs from
+their own means over 2 000-15 000 s; the lag in +/- 3 000 s maximizing their correlation; the amplitude ratio A =
+sd(arm) / sd(N100A). A phase shift: shifted maximum within one step, correlation >= 0.7, A in 0.8-1.25.
+(`out/phase138.txt`; "A 0.00": the arm is flat on the window, "A inf": N100A is flat, "corr -2.00" a flat-series
+sentinel.)
+
+| Arm | Reading |
+|---|---|
+| A_lean | 4 tags fail by one step on a phase shift of 40-90 s, A 0.98-1.11: the only arm that fails on phase alone |
+| A_ej, A_B | the wander damped (A 0.57-0.76, lag 0-330 s): an amplitude difference |
+| A_S, A_hold | an oscillation 20-110 times N100A's amplitude (§CXLIX.4's growing oscillation) |
+| X_S, X_hold, X_B | amplitude: A 1.2-110 on most tags (X_B's TT-322011 0.23) |
+| X_ej, X_wall, X_lean | AT-322701 and TT-322011 fail with the arm flat (A 0) where N100A wanders 0.003 and 0.4 K; the steam flows A 2-4 |
+
+So on the paired test the residue of the u set (N100U and the X arms that keep S and the holdup) is not N100A's wander
+out of phase: on AT-322701 and TT-322011 those arms hold still and N100A moves. The as-built seed's own wander is the
+finding of B-157.
+
+## CL.3 Step 1: 322R001's fixed points on the engine's own step
+
+**The rig** (`map138.py`, driver `run138.py`, registered in `registry138.md`). The map is
+`reactor_inventory.ReactorInventory.step` itself: the reaction call `reactor_322r001` (law B's re-flash when
+installed), `node_dtdt`, the boil cap `node_boil`, the holdup and the throughput, nothing re-implemented. The boundary
+the loop delivers is frozen: 322E002's product (feed by species, gas CO2, TT-322010), the CO2 feed, HIC-322605, the loop
+pressure of the tick before, the N/C and H/C drives pinned at the call, the level and the liquor mass pinned after every
+tick; the throughput (vdot) either the step's own ("live") or pinned at the engine's mean ("frozen"). Fixed points are
+the roots of F^600(x) - x on the four node temperatures (60 s), by Newton on a finite-difference Jacobian, which
+converges on unstable roots as well as stable ones; stability from the eigenvalues mu of dF^600/dx, e-fold time
+60 s / ln(1 / |mu|max).
+
+**Null.** On the seed's first-step boundary the rig follows the full engine's first 300 s within 0.003 K on every node
+(`out/seedtrace_noB.txt`).
+
+**Boundaries.** Seed: the first engine step. B923: probe137's calls over 9 513-18 960 s (session 137's B923, the 92.3 %
+hold). B693: probe137 over 7 902-21 720 s (three periods of the 69.3 % ringing).
+
+**Roots** (`out/map_*`, `out/march_B923.txt`, `out/march_seed.txt`):
+
+| Boundary | Law B | vdot | Roots (rise TT-top less inlet) | Stability |
+|---|---|---|---|---|
+| seed | on | frozen | 12.996 K | stable, e-fold 635 s |
+| seed | off (as built) | frozen | 12.938 K | stable, slowest mu 0.983 per 60 s (e-fold about 3 600 s) |
+| B923 | on | frozen | 12.097 K (engine 12.098 K) | stable; mu 0.58, 0.82 and a complex pair 0.906 at 0.111 rad per 60 s: e-fold 608 s, period 3 386 s |
+| B923 | on | live | 12.079 K | stable |
+| B923 | off | either | none in 4-16 K (Newton heads to 9.1 K, residual 0.2 K) | - |
+| B693 | on | frozen | 6.739 K (engine mean 6.763 K) | stable, e-fold 906 s |
+| B693 | on | live | 8.386 K | stable |
+| B693 | off | either | a collapse root at -13 K | - |
+
+Law B off on B923 and B693 is a counterfactual: those boundaries were delivered by a law-B arm. The live throughput is
+the rig's own (220 and 196 m3/h against the engine's 210 and 155 at 92.3 and 69.3 %), so the frozen rows are the
+faithful ones. Marches of 4 h at 0.1 s from the B923 root shifted by -2, -1, -0.2, +0.2, +1 and +2 K on every node all return to
+12.097 K by 4 800 s; session 137's +0.2 K march to 13.40 K does not recur on the engine's step.
+
+**The one-dimensional map** (`out/map138.svg`, law B on, throughput frozen): rise in to rise out through one reaction
+call and the node balance settled on its heats, then the boil cap. One crossing at each load; the slope at the crossing
+is -6.1 at 92.3 % (law B's re-flash: a hotter top flashes more CO2 and loses reaction heat) and -0.38 at 69.3 %.
+
+**Single instants and interpolations** (`rows138.py`, `out/rows_*`): 11 single probe137 rows at 92.3 % (every 900 s)
+and 24 at 69.3 % (every 600 s) each give one stable root (69.3 %: 3.7-9.4 K across the ring, e-fold 740-911 s). On
+boundaries interpolated linearly seed to B923 to B693 (an interpolation, not an engine run) there is one stable root at
+every point and no fold.
+
+**Session 137's three points were an artefact** (`cycle138.py`, `out/cycle138.txt`, `out/steady137_check.txt`). Its
+unit model iterated the column by a damped march, x <- 0.7 x + 0.3 f(x). With the map's slope -6.1 the relaxed
+multiplier is 0.7 + 0.3 (-6.1) = -1.13, outside the unit circle: the iteration does not converge, and it settles on a
+period-4 cycle 11.03 / 13.39 / 11.19 / 13.17 K. Its "stable branches" at 11.0-11.2 and 13.3-13.4 K were phases of that
+cycle, picked by the start; its "unstable middle point" at 12.10 K is the one fixed point. At damping 0.1 both starts
+converge to 12.097 K. `steady()` (damping 0.3, 400 iterations, convergence not checked) returned 11.066 or 13.273 K by
+the parity of its iteration count. **Retracted from §CXLIX.5:** the three fixed points at 92.3 %, the boundary's 0.07 K
+cost, the 1.18 K closure gap and the reading that the loop holds the column on an unstable middle point. §CXLIX.5's
+69.3 % decomposition stands (there the map's slope is -0.38 and the damped march converges).
+
+**The corrected 92.3 % decomposition** (`boundary138.py`: session 137's `boundary137` with `steady()` at damping 0.1,
+6 000 iterations, every call checked and converged; `out/boundary138_B923.txt`). The unit model rises 13.201 K on the
+plant's boundary and 12.097 K on the engine's (engine 12.098 K, closure -0.001 K): the boundary costs -1.104 K.
+
+| Channel swapped alone (engine's value on the plant's boundary) | Rise change |
+|---|---|
+| 322E002's gas-CO2 split (0.150 against the plant's 0.169, the seed's by assumption) | -2.511 K |
+| NH3 / C | -0.199 K |
+| H2O / C | -0.104 K |
+| inlet T | -0.060 K |
+| throughput | +0.208 K |
+| pressure, inerts, level | 0.00 |
+
+The split with the pressure together gives -1.351 K, an interaction of +1.159 K through law B's re-flash. 69.3 %
+(§CXLIX.5, unchanged): loss -7.458 K, split alone -8.028 K.
+
+**Audit of session 136's desk refit** (`refit138check.py`, decision 270's evidence): of 22 `steady()` calls with law B,
+4 did not converge, all at the 111 % band (values 12.97-13.08 K against a converged 12.96-12.97 K); without law B one,
+at 111 %. Every other load converged. The refit's verdict (f 0.58, V1's approach within the fit's flatness) and decision
+270 stand; its 111 % rise carries about 0.1 K of iteration noise.
+
+**Reading (step 1.4).** On the engine's own 322R001 step, with the boundary the loop delivers frozen, the column has one
+stable fixed point at every load examined, and the engine sits on it (closure -0.001 K at 92.3 %, -0.02 K at 69.3 %).
+The reactor offers no upper branch for the loop to fail to reach: the rise loss is not 322R001's branch selection. The
+boundary is itself the loop's, so whether the closed loop has more than one steady state is untested here (step 1.3
+needed an upper reactor root to place and had none). On the reactor the loss is the boundary the loop delivers, 322E002's gas-CO2 split first at both loads (-2.5 K at 92.3 %, -8.0 K at 69.3 %, on the
+plant's split taken as the seed's). Step 1.3, the closed-loop test from the upper root, was registered conditional on an
+upper root existing and was not run. No turndown matrix was run.
+
+**The seed's relaxation against N100A** (`out/march_seed.txt`). On the seed's frozen first-step boundary, law B off,
+the rig relaxes slowly from the seed's nodes (rise 13.00 K) toward its root at 12.94 K: TT-322007 / 006 / 005 fall
+174.866 to 174.824, 179.221 to 179.149 and 183.000 to 182.939 C over 15 000 s, the top leaving the boil cap. N100A's
+thermowells do the opposite: TT-322007 174.874-174.906 C, TT-322006 179.230-179.277 C, TT-322005 on the cap at 183.0 C
+throughout. The as-built seed starts 0.06 K above its own step's root (13.00 against 12.94 K), slowest e-fold about
+3 600 s; whether that offset, fed through the loop, starts N100A's wander is untested. Marches from the seed's root shifted by -2 to +2 K all head to 12.94 K within 4 h (the positive ones held
+on the boil cap at 13.00 K for 1-1.5 h first): one root here too. N100A's 15 000 s wander is not the reactor's own relaxation on a frozen boundary (B-157).
+
+## CL.4 Step 2: 322E002's gas-CO2 share from the steam it makes
+
+Tag services, read first (§XCVIII.2, §LVI.1): FY-329403 / FT-329403 is MP stream 901 to 329D005 and 322E001's shell;
+PIC-329204 is 329D005's MP header; 322E002 raises LP steam into 322D001A/B (PT-329207, TT-329001 on the LP header), and
+FT-329407 is the header's export to 320MT02, one of its several outlets (960 and 963 enter the header, PV-329207A vents
+it, the LP users draw on it; none logged in Book2). Book2 logs no direct measure of 322E002's steam. The vendor archive
+was searched for a steam-make meter on 322D001A/B or 322E002: the only hit is F 329404, "CPL fr. 322E002 HP carb. Cond."
+(UD-MR-329-EC-0001 rev 01, OCR page 16; 3.4 bar g, 147 C, 3-6 m3/h, line 50-CPL1-329048), a small condensate line not
+in Book2. The 29-06-2025 trends hold no steam-make tag.
+
+**Chain, every step an inference [I]** (`steam138.py`, registered before the proxy was computed). With C the CO2 into
+322R001 (liquid and gas), G the gas CO2 into 322E002 (322E001's top), g = s C its uncondensed part and Q its duty:
+
+    [I1]  Q = k (G - g)                       the duty proportional to the CO2 condensed
+    [I2]  G = G0 L,  C = C0 L                 G and C scale with the load L (the CO2 feed's departure)
+    [I3]  k, G0, g0 = s0 C0 from the seed     Book2 measures none of them
+    then  Q / Q0 = (G - s C) / (G0 - s0 C0) = L (G0 - s C0) / (G0 - s0 C0)
+          s(L) = s0 - ((G0 - g0) / C0) (q - 1),   q = (Q / Q0) / L
+    [I4]  Q's departure read from a logged steam x:  q_x = (x / x0) / L
+
+On the seed s0 = 0.16917, g0 = 489.7 kmol/h, C0 = g0 / s0 = 2 894.8 kmol/h, G0 = 1 885.3 kmol/h (STRIP_TOP at
+15 000 s), so (G0 - g0) / C0 = 0.4821; Q0 = 62 572 kW.
+
+**Validation on the engine first** (B923 and B693 against probe137's known shares):
+
+| Load | Known s | C / C0 (I2 says L) | s from the duty | s from FT-329407 | s from FY-329403 |
+|---|---|---|---|---|---|
+| 92.3 % | 0.1500 | 0.869 | 0.1511 (+0.001) | 0.1936 (+0.044) | 0.1738 (+0.024) |
+| 69.3 % | 0.0905 | 0.566 | 0.1102 (+0.020) | 0.3685 (+0.278) | 0.1905 (+0.100) |
+
+The duty chain holds on the engine within the registered 0.02 of C although C falls faster than the load ([I2] is off
+by 6 and 18 %, the errors cancelling inside the chain). Neither logged steam is a proxy for the duty: FT-329407 and
+FY-329403 both miss by more than 0.02 at 69.3 %, so the registered condition for using a proxy on Book2 fails.
+
+**Book2** (bands of `book2_136.json`): FT-329407 is a swing outlet, not a measure of 322E002's make: medians 7 879 kg/h
+at 100.3 %, 6.6 kg/h at 94.2 % (235 of 685 samples under 1 kg/h) and 10 962 kg/h at 69.3 % (`out/extra138.txt`).
+FY-329403 per unit load is q 0.991 at 94.2 % and 1.000 at 69.3 %; on the chain that would read s 0.174 and 0.169, but
+the proxy failed its validation. **Result:** Book2 cannot fix 322E002's gas-CO2 share at 92.3 or 69.3 %; the plant's
+split in §CL.3 and §CXLIX.5 stays the seed's by assumption. Data gap 17 holds it, closing on the readback checklist's
+row 30 (the LP header's and 322D001A/B's flows at 92 % and 69 %).
+
+**Cross-check on TT-322010 fails as well.** Under the S law 322E002's outlet sits on the melt's bubble line (about 23
+kJ/mol, about 0.5 K per bar with the composition held): the pressure term alone gives TT-322010 -1.64 K at 137.47 bar a
+and -4.77 K at Book2's 131.46 bar a, from 170.00 C; the plant's TT-322010 falls 0.31 K at 94.2 % and 0.99 K at 69.3 %.
+On the engine the same term is -2.73 K at 135.36 bar a against the engine's own -2.10 K. A share cannot be read from
+TT-322010 on this law: the plant's outlet does not follow the bubble line's pressure term.
+
+## CL.5 Decisions, items and deliverables
+
+Decisions 277 to 279 taken (§CL.1). Handoff: A-62 deleted (decision 279); B-157 raised (the as-built seed is not
+stationary over 15 000 s); B-118's 322R001 bullet and next step rewritten on §CL.3; data gap 17 raised (§CL.4). The DCS
+readback checklist gains rows 29 (LIC-323507's tuning) and 30 (the LP header's flows at 92 % and 69 %). Step 3 of the
+plan (B and S closed one at a time on the middle point; the broken-ejector state; gap 1) was not run: its premise, the
+middle point, is retracted.

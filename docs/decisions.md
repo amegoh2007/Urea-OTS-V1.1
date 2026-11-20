@@ -1467,3 +1467,24 @@ decision on an item.
 275. **Decision 259 stands as written** (2026-11-19, session 137; the process engineer's ruling of 19:30). Its
      failure on the base B-118 law set is a finding to trace law by law, not a reason to loosen it; no law that fails
      it is built.
+277. **The operator's evaporator-feed rule rides every B-118 arm in scratch** (2026-11-20, session 138; the process
+     engineer's ruling on session 137's proposal, taken as written). On the CO2 ramp FIC-324401 is put in AUTO with its
+     set point the seed's set point times the ramp's load; at the first check after the ramp ends LIC-323507 is put to
+     MAN on FIC-324401's set point, then to AUTO, and FIC-324401 back to CAS (bumpless). It is applied as the header-valve
+     rule is (decision 253): in the rig, through the engine's own `r323_ctrl_set` command, nothing under `ureasim/`
+     changed. Source: Operating Manual UD-VT-G00-DC-0003 pp. 1-69, 4-43 and 6-23; As-Built §CXLIX.3.
+278. **Decision 259 is read as a paired comparison; proposal 276 is rejected** (2026-11-20, session 138; the process
+     engineer's ruling). Skipping a tag wherever the reference has wandered hides the times and tags where a law's own
+     drift would show. Instead the arm and the reference start from the same seed on the deterministic engine, and at
+     every sample each displayed tag of the arm stays within one display step of the reference at the same time,
+     |arm(t) - ref(t)| <= one display step, over 15 000 s. A law that shifts the phase of a slow wander fails even at the
+     reference's amplitude; that counts as a real difference, and the phase shift is reported when it is the cause. The
+     reference's own wander from its seed is a finding, raised as its own handoff item (B-157). As-Built §CL.2.
+279. **A-62 is closed as not a product defect** (2026-11-20, session 138; the process engineer's ruling). 323D002 losing
+     suction on the B-118 rig's low holds is what the plant would do if the operator skipped Operating Manual p. 6-23,
+     "slowly reduce the urea solution flow to first stage evaporator"; the rig skipped it and decision 277 fixes the rig.
+     In the product it is the correct consequence of a missed operator step, so it is training value and is not
+     engineered away. Recorded with the closure: the teaching case is noted for the instructor (`scenarios/
+     teaching_cases.md`: a load reduction without the feed reduction drains 323D002 in about 20-30 minutes), and
+     LIC-323507's tuning page is added to the DCS readback checklist (row 29), since the drain's rate rests on its
+     estimated Kc 1 and Ti 4 030 s (V1's; the loop has no row in the DCS table). As-Built §CL.1.
