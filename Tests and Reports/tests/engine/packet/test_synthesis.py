@@ -33,8 +33,9 @@ def test_the_feeds_and_the_stripper_at_design(design):
     co2 = p["CO2_FEED"]
     assert co2["Load"] == 100.0 and co2["XV_322902"] is True and co2["PIC_mode"] == "AUTO"
     steam = p["STRIP_322E001"]["steam"]
-    # 39 399 kW after the tenth tick: the reactor's top node stands on its bubble point at the seed
-    # and flashes some 30 kg/h of its liquor (handoff B-92), which the stripper's feed carries.
+    # 39 400 kW after the tenth tick: the reactor's ceiling stands 3.5 K over its top at the seed
+    # (decision 301), so the top flashes nothing (39 399 kW before, its 33 kg/h flash carried by the
+    # stripper's feed, handoff B-92).
     assert DUTY_DES_KW == 39400.0 and steam["duty_kW"] == pytest.approx(DUTY_DES_KW, abs=1.0)
     assert steam["kgh"] == round(design.results["322E001"].strip_kgh, 0)
     assert p["STRIP_322E001"]["LIC_322501"]["mode"] in ("AUTO", "MAN", "CAS")

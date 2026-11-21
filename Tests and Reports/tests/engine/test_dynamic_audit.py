@@ -68,6 +68,12 @@ REVERSAL_FLOOR_BAR = 1.0e-7
 #: general floor must stay below it (the process engineer's answer of 2026-11-07, session 91).
 MEMO_CHATTER_BAR = 0.012e-3
 
+#: Decision 306 (2026-11-21, session 145): with the reactor ceiling's margin (decision 301) the fast shutdown's
+#: drain rings 323F010 by +/-0.15 to 0.24 mbar, period about three ticks, decaying, from tick 210 to 272, then
+#: settles; accepted as decision 163's memo ring, the size it measured under a feed surge (+/-0.22 mbar). In
+#: that audit a step on 323F010 counts as ringing only above this ceiling until the ring's end tick.
+SHUTDOWN_RING_BAR, SHUTDOWN_RING_END_TICK = 0.3e-3, 300
+
 
 def _plant(settle: int = 20) -> Scheduler:
     sched = Scheduler(*build_plant())
@@ -148,13 +154,13 @@ def test_the_holdups_close_on_their_own_flows(disturbed):
 def test_the_loop_books_what_its_holdups_hold(disturbed):
     """The accumulation each synthesis holdup publishes, which PT-329201's node takes as the loop's
     liquid growth, sums over the minute to the holdup's own change: no uncompensated drift between
-    what the node books and what the vessels hold (322E001's sump lost 316.584 kg; 316.590 before
+    what the node books and what the vessels hold (322E001's sump lost 317.974 kg (316.584 before the reactor ceiling's margin, decision 301); 316.590 before
     LI-323502 read between its taps, decision 219, 2026-11-16; 317.36 with the balanced Neldiscs on
     the chord, before decision 170, 2026-11-06)."""
     for tag, booked in disturbed.booked.items():
         change = disturbed.end[tag] - disturbed.start[tag]
         assert booked == pytest.approx(change, abs=1.0e-6), tag
-    assert disturbed.end["322E001"] - disturbed.start["322E001"] == pytest.approx(-316.584,
+    assert disturbed.end["322E001"] - disturbed.start["322E001"] == pytest.approx(-317.974,
                                                                                     abs=1e-3)
 
 
@@ -348,7 +354,8 @@ def test_a_fast_shutdown_with_lv_322501_wide_open_stays_stable():
     passes: no step faults; no pressure node rings — never more than two successive reversals of
     its step (decision 78; on 323F010 above decision 163's accepted memo chatter, 0.012 mbar, which a
     third reversal stays below: since decision 178 the blow-through parks PT-323204 on a memo pressure-bin
-    edge, 0.50585 bar a, and it alternates there by 0.00015-0.0003 mbar); stage 1's and stage 2's fixed points settle, or stage 2 takes its
+    edge, 0.50585 bar a, and it alternates there by 0.00015-0.0003 mbar; up to tick 300 the drain's ring, below
+    0.3 mbar, is decision 306's); stage 1's and stage 2's fixed points settle, or stage 2 takes its
     bracketed root (decision 144), on every tick; and the blow-through lifts SV32351 / SV32352 at
     their 6.01 bar a set (B-114: 35 ticks lifted, PT-323201 to 6.0205)."""
     sched = Scheduler(*build_plant())
@@ -373,13 +380,15 @@ def test_a_fast_shutdown_with_lv_322501_wide_open_stays_stable():
         steps = [b - a for a, b in zip(xs, xs[1:])]
         floor = MEMO_CHATTER_BAR if name == "323F010" else REVERSAL_FLOOR_BAR
         run = longest = fine_run = 0
-        for a, b in zip(steps, steps[1:]):
-            run = run + 1 if a * b < 0.0 and min(abs(a), abs(b)) > floor else 0
+        for i, (a, b) in enumerate(zip(steps, steps[1:])):
+            ring = name == "323F010" and i < SHUTDOWN_RING_END_TICK
+            run = run + 1 if a * b < 0.0 and min(abs(a), abs(b)) > (SHUTDOWN_RING_BAR if ring else floor) else 0
             longest = max(longest, run)
             fine_run = fine_run + 1 if a * b < 0.0 and min(abs(a), abs(b)) > REVERSAL_FLOOR_BAR else 0
             if fine_run > 2 and name == "323F010":
-                # Decision 163's chatter: below the floor it is not counted, and it stays below it.
-                assert max(abs(a), abs(b)) < MEMO_CHATTER_BAR, name
+                # Decision 163's chatter: below the floor it is not counted, and it stays below it;
+                # decision 306's drain ring stays below its own ceiling until it ends.
+                assert max(abs(a), abs(b)) < (SHUTDOWN_RING_BAR if ring else MEMO_CHATTER_BAR), name
         assert longest <= 2, name
     lifted = [s for s in seen if s[3]]
     assert lifted and max(s[0]["PT-323201"] for s in seen) >= SV32351_SET_BARA

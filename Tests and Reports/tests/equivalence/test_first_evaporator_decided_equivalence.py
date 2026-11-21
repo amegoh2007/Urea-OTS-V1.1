@@ -104,9 +104,9 @@ def test_the_vacuum_on_span_decided_divergence(v1):
     has cut the air to 15.07 kg/h and the vacuum is at 0.3153 bar a and still falling."""
     _, hist = _both(v1, h._step(v1, 5), 6000, "gains", sp={"PIC_324202": 0.30})
     assert hist[5999]["P"] == (pytest.approx(0.32976, abs=1e-5),
-                               pytest.approx(0.31534, abs=1e-5))
+                               pytest.approx(0.31576, abs=1e-5))
     assert hist[5999]["fa"] == (pytest.approx(20.888, abs=1e-3),
-                                pytest.approx(15.075, abs=1e-3))
+                                pytest.approx(15.020, abs=1e-3))
 
 
 def test_pv_324202_on_its_vendor_trim_decided_divergence(v1):
@@ -114,10 +114,10 @@ def test_pv_324202_on_its_vendor_trim_decided_divergence(v1):
     50 %, the port the modified equal-percentage trim from 61.07 %: the same stroke admits less
     air, and after ten minutes the vacuum is 0.0024 bar deeper."""
     _, hist = _both(v1, h._step(v1, 5), 6000, "valve", sp={"PIC_324202": 0.30})
-    assert hist[5999]["fa"] == (pytest.approx(15.806, abs=1e-3),
-                                pytest.approx(15.075, abs=1e-3))
-    assert hist[5999]["P"] == (pytest.approx(0.31772, abs=1e-5),
-                               pytest.approx(0.31534, abs=1e-5))
+    assert hist[5999]["fa"] == (pytest.approx(15.783, abs=1e-3),
+                                pytest.approx(15.020, abs=1e-3))
+    assert hist[5999]["P"] == (pytest.approx(0.31792, abs=1e-5),
+                               pytest.approx(0.31576, abs=1e-5))
 
 
 def test_the_barometric_leg_above_its_heel_decided_divergence(v1):
@@ -128,7 +128,7 @@ def test_the_barometric_leg_above_its_heel_decided_divergence(v1):
     assert parted is None
     assert hist[3999]["M"] == (1.0, 1.0)
     assert hist[3999]["leg"] == (pytest.approx(1254.399, abs=1e-3), 0.0)
-    assert sum(r["made"] for r in hist) == pytest.approx(17.496, abs=1e-3)
+    assert sum(r["made"] for r in hist) == pytest.approx(17.494, abs=1e-3)
 
 
 def test_the_inlet_line_delivers_the_live_flow_decided_divergence(v1):
@@ -144,17 +144,19 @@ def test_the_inlet_line_delivers_the_live_flow_decided_divergence(v1):
 
 @pytest.mark.parametrize("name, over, p, fa", [
     ("design", {}, (0.33, 0.33), (21.0, 21.0)),
-    ("motive halved", {"motive": 195.0}, (0.38788, 0.31878), (6.333, 28.180)),
-    ("323C005 at 1.9 bar a", {"pd": 1.9}, (0.33, 0.33908), (21.0, 16.929)),
+    ("motive halved", {"motive": 195.0}, (0.38788, 0.53047), (6.333, 0.000)),
+    ("323C005 at 1.9 bar a", {"pd": 1.9}, (0.33, 0.53047), (21.0, 0.000)),
 ])
 def test_the_pull_off_the_design_anchored_map_decided_divergence(v1, name, over, p, fa):
     """B-61, decided 2026-10-01. At design both pull PFD 706's 72 kg/h at 0.33 bar a — V1's
     line by construction, 324F002's map on its design anchor — and PV-324202 sits at its
     61.07 %. Halve the motive: V1 halves its pull and the vacuum rises to 0.388 bar a after ten
-    minutes, PIC-324202 shutting the bleed to 6.3 kg/h; the map, still critical, pulls a little
-    more and the vacuum deepens to 0.319, the bleed opening to 28.2. Back 323C005 up to 1.9 bar a:
-    V1 does not notice; the ejector passes its break (critical to 1.31 bar a) and the vacuum
-    rises to 0.339 with the bleed throttled to 16.9."""
+    minutes, PIC-324202 shutting the bleed to 6.3 kg/h; the map, its nozzle at 2.05 bar a below
+    the plant's lost stroke, breaks and the vacuum is lost: 0.530 bar a, the bleed shut. Back
+    323C005 up to 1.9 bar a: V1 does not notice; the ejector, critical only to 1.01 bar a, passes
+    its break and the vacuum is lost the same way. Before decision 251 (the break on the plant's
+    bracket, 2026-11-18) the map was still critical at half motive, the vacuum deepening to 0.319
+    with the bleed at 28.2, and at 1.9 bar a it held 0.339 with the bleed at 16.9."""
     _, hist = _both(v1, h._step(v1, 5, **over), 6000, "B-61")
     r = hist[5999]
     assert r["P"] == (pytest.approx(p[0], abs=1e-5), pytest.approx(p[1], abs=1e-5))
@@ -183,7 +185,7 @@ def test_the_held_melt_boils_decided_divergence(v1):
     assert hist[5999]["T"] == (pytest.approx(151.9360, abs=1e-4),
                                pytest.approx(151.9360, abs=1e-4))
     assert hist[5999]["urea"] == (pytest.approx(0.94301, abs=1e-5),
-                                  pytest.approx(0.97073, abs=1e-5))
+                                  pytest.approx(0.97065, abs=1e-5))
 
 
 def test_pv_329203_on_its_vendor_trim_decided_divergence(v1):

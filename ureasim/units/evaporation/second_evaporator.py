@@ -70,6 +70,11 @@ Where this stage departs from V1 — each a decided divergence, run both ways in
     LY-324501 below L2 (decision 217; MOTCON IC2, As-Built §CXIX.2): the header has no pumps from
     L2 until the level clears it by the hysteresis (stand-ins, `data.low_level_stops`). PC35's trips
     clamp LIC-324501 at 100 % on 35.1 and act on the header (decision 228).
+  * **LY-324501 on AC4's formula** (decision 252): the level LIC-324501, the console and the L2
+    stop read is V1's holdup ratio with LT-324501's LRV floor, max(level, LY_floor(PT-324203))
+    (`melt_leg_transmitter`), about 20.7 % at the design vacuum, where V1 reads the ratio alone. So
+    at the vacuum the L2 stop cannot act: a lost feed drains the separator to its heel, and the stop
+    acts once the seal's air has raised PT-324203 above 0.269 bar a. The seal air reads the holdup.
 
 PV-329212 runs on its vendor trim (decision 23's class, decided 2026-10-14): Metso's DN 80
 balanced Neldisc, Cv 150, its printed capacities and Valmet's S-Disc shape between them as its curve
@@ -96,16 +101,12 @@ from ureasim.core.node import backward_euler_pressure, vapour_volume_m3, vessel_
 from ureasim.core.numeric import clamp
 from ureasim.core.signal import first_order_lag
 from ureasim.core.units_of_measure import ABSOLUTE_ZERO_C
-from ureasim.data.control_valves import PV_329212
 from ureasim.data.low_level_stops import L2_HYST_PCT, L2_PCT
 from ureasim.data.unit_324 import (
     E001_W_UREA_DES,
     E003_LAMBDA_KJKG,
     E003_LAMBDA_STEAM_KJKG,
     E003_LIQUOR,
-    E003_OP_DES_PCT,
-    PV_329212_OP_DES_PCT,
-    PV_329212_XT,
     E003_PCHEST_DES_BARA,
     E003_Q_DES_KW,
     E003_T_DES_C,
@@ -113,7 +114,6 @@ from ureasim.data.unit_324 import (
     E003_W_UREA_DES,
     E005_INLET_DES_KGH,
     F003_FA_DES_KGH,
-    F003_LEVEL_SP_PCT,
     F003_M_DES_KG,
     F003_M_FLOOR_KG,
     F003_M_FULL_KG,
@@ -124,25 +124,15 @@ from ureasim.data.unit_324 import (
     F003_P_MIN_BARA,
     F003_RHO_L,
     F003_VOL_M3,
-    LIC_324501_KC,
-    LIC_324501_OP_DES_PCT,
-    LIC_324501_TI_S,
-    LV_324501A_OP_DES_PCT,
     MELT_A_UREA_WATER_K,
-    PIC_324203_KC,
-    PIC_324203_TI_S,
-    PIC_329212_KC,
-    PIC_329212_TI_S,
     PT_LOOP_MAXIT,
     PT_LOOP_TOL,
     PV_324203_OP_DES_PCT,
-    TIC_324002_KC,
-    TIC_324002_TI_S,
     V2_DES_KGH,
     W_S401,
 )
 from ureasim.data.unit_329 import P_MP_BARA
-from ureasim.data.unit_335 import HEADER_VALVES_DES, LIC_324501_X_DES_PCT
+from ureasim.data.unit_335 import HEADER_VALVES_DES
 from ureasim.thermo import iapws
 from ureasim.thermo.domains import NONVOLATILE
 from ureasim.thermo.empirical import urea_soln_cp
@@ -153,7 +143,16 @@ from ureasim.units.evaporation.condenser_node import inlet_kmolh
 from ureasim.units.evaporation.ejector_map import suction_capacity_kgh
 from ureasim.units.evaporation.holdup_boil import holdup_boil
 from ureasim.units.evaporation.leg_seal import seal_air_kgh
+from ureasim.units.evaporation.melt_leg_transmitter import ly_324501
 from ureasim.units.evaporation.melt_route import MeltRoute, melt_route, melt_split, selector_drain
+from ureasim.units.evaporation.second_evaporator_loops import (  # noqa: F401 (re-exported)
+    PV_329212_CHEST,
+    V1_CHEST,
+    lic_324501,
+    pic_324203,
+    pic_329212,
+    tic_324002,
+)
 from ureasim.units.evaporation.stage_fixed_point import bisected_fixed_point
 from ureasim.units.evaporation.vacuum_condenser import (
     condensate_back_pressure,
@@ -175,61 +174,6 @@ W_EQ_FLOOR = 1e-6
 HEAT_CAPACITY_FLOOR_KJK = 1e-6
 FLOW_FLOOR_KGH = 1e-6
 DT_FLOOR_S = 1.0e-9
-
-
-# ======================================================================================
-# The four controllers, seeded as V1 seeds them, on the table's gains per cent of span
-# ======================================================================================
-
-def tic_324002() -> ProcessLoop:
-    """TIC-324002, the melt-temperature master: its output is the chest-pressure DEMAND [bar a]
-    handed to PIC-329212 as a remote set point."""
-    return ProcessLoop(
-        tag="TIC-324002", Kc=TIC_324002_KC, Ti=TIC_324002_TI_S, Td=0.0, act=+1.0,
-        op=E003_PCHEST_DES_BARA, sp=E003_T_DES_C,
-        pv=E003_T_DES_C, pv1=E003_T_DES_C, pv2=E003_T_DES_C,
-        op_lo=0.0, op_hi=P_MP_BARA, sp_lo=0.0, sp_hi=200.0)
-
-
-#: PV-329212 as the port runs it, on its vendor's trim (DN 80 balanced Neldisc, Cv 150, from 54.68 %; decided 2026-10-14; the S-Disc shape since decision 170),
-#: and as V1 runs it, linear from V1's stroke — which the equivalence harness keeps.
-PV_329212_CHEST = ChestValve(PV_329212_OP_DES_PCT, PV_329212.characteristic, PV_329212_XT)
-V1_CHEST = ChestValve(E003_OP_DES_PCT)
-
-
-def pic_329212(valve: ChestValve = PV_329212_CHEST) -> ProcessLoop:
-    """PIC-329212, the 324E003 chest-pressure slave, in CASCADE under TIC-324002: its output is
-    the PV-329212 stroke [%], seeded on ``valve``'s design stroke."""
-    return ProcessLoop(
-        tag="PIC-329212", Kc=PIC_329212_KC, Ti=PIC_329212_TI_S, Td=-1.0, act=+1.0, mode="CAS",
-        op=valve.op_des_pct, sp=E003_PCHEST_DES_BARA,
-        pv=E003_PCHEST_DES_BARA, pv1=E003_PCHEST_DES_BARA, pv2=E003_PCHEST_DES_BARA,
-        op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=P_MP_BARA)
-
-
-def pic_324203() -> ProcessLoop:
-    """PIC-324203, the 324F003 vacuum: reverse acting, a pressure under its set point admits
-    more false air. Its output is the PV-324203 stroke [%]."""
-    return ProcessLoop(
-        tag="PIC-324203", Kc=PIC_324203_KC, Ti=PIC_324203_TI_S, Td=-1.0, act=+1.0,
-        op=PV_324203_OP_DES_PCT, sp=F003_P_DES_BARA,
-        pv=F003_P_DES_BARA, pv1=F003_P_DES_BARA, pv2=F003_P_DES_BARA,
-        op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=1.0)
-
-
-def lic_324501(vendor: bool = True, ac4: bool = True) -> ProcessLoop:
-    """LIC-324501, the melt level: direct acting. On AC4 PC35.2 its output X sets PIC-335201's set
-    point and LV-324501B's stroke, seeded where the set point is the design header, 35 % (decision
-    224); with ``ac4`` False it is the stroke the route selector hands to one valve, seeded at
-    LV-324501A's design stroke on its vendor trim (decision 150), or V1's 75 % with ``vendor``
-    False."""
-    seed = (LIC_324501_OP_DES_PCT if not vendor
-            else LIC_324501_X_DES_PCT if ac4 else LV_324501A_OP_DES_PCT)
-    return ProcessLoop(
-        tag="LIC-324501", Kc=LIC_324501_KC, Ti=LIC_324501_TI_S, Td=-1.0, act=-1.0,
-        op=seed, sp=F003_LEVEL_SP_PCT,
-        pv=F003_LEVEL_SP_PCT, pv1=F003_LEVEL_SP_PCT, pv2=F003_LEVEL_SP_PCT,
-        op_lo=0.0, op_hi=100.0, sp_lo=0.0, sp_hi=100.0)
 
 
 @dataclass
@@ -395,6 +339,10 @@ class SecondEvaporator:
     #: carries this switch and never the stand-in; False, V1's, is no stop.
     l2_stop: bool = True
     p001_stopped: bool = False
+    #: LY-324501 on AC4's formula, LT-324501's LRV floor applied to the level (decision 252); it
+    #: is LIC-324501's measurement, the published level and the L2 stop's input. False is V1's
+    #: level alone, which the equivalence harnesses keep.
+    ac4_ly: bool = True
 
     def step(self, loops: SecondEvaporatorLoops, feed_kgh: float, feed_t_c: float,
              feed_w: dict, p_mp_bara: float, p_motive_bara: float, p_discharge_bara: float,
@@ -549,7 +497,7 @@ class SecondEvaporator:
         m_709 = E005_INLET_DES_KGH + (m_vap + m_boil - V2_DES_KGH) + (air_in - F003_FA_DES_KGH)
 
         # ----- LIC-324501 and the drain: the melt header (AC4), or V1's selector --------------
-        level = clamp(m_pre / F003_M_FULL_KG * 100.0, 0.0, 100.0)
+        level = ly_324501(m_pre / F003_M_FULL_KG * 100.0, self.p_bara, self.ac4_ly)
         level_op = loops.level.step(level, dt, hold=trips.lic_324501_hold_pct)
         # The drain takes only the melt above the 1 kg floor (decision 11's class).
         m_402_avail = (max(m_pre - F003_M_FLOOR_KG, 0.0) / max(dt, DT_FLOOR_S) * 3600.0
@@ -594,7 +542,8 @@ class SecondEvaporator:
 
 __all__ = [
     "P_MP_LAG_KEY", "EJECTOR_TAG", "W_EQ_FLOOR", "HEAT_CAPACITY_FLOOR_KJK", "FLOW_FLOOR_KGH",
-    "DT_FLOOR_S", "tic_324002", "pic_329212", "pic_324203", "lic_324501", "SecondEvaporatorLoops",
+    "DT_FLOOR_S", "tic_324002", "PV_329212_CHEST", "V1_CHEST", "pic_329212", "pic_324203", "lic_324501",
+    "SecondEvaporatorLoops",
     "leg_urea_strength", "false_air_kgh", "SecondEvaporatorResult",
     "SecondEvaporator",
 ]

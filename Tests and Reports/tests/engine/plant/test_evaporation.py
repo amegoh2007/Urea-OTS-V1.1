@@ -108,3 +108,40 @@ def test_a_save_made_before_the_trips_loads_with_them_healthy():
     s = Scheduler(sch, back)
     _run(s, 1.0)
     assert back.units[TRIPS_35].actions == HEALTHY_35
+
+
+#: Decision 251: the motive valves' strokes and what the separators' loops do 300 s after each step
+#: from the seed run 60 s (measured: 64 % 0.330 bar a / 61.1 %; 55 % 0.349 / 52.5 %, PT-323204 0.465;
+#: 40 % 0.129 / 92.5 %; 38 % 0.150 / 87.3 %).
+MOTIVE_STEPS = [
+    ("hic9605_set", 64.0, "E001", "PIC_324202", "PT_324202", False),
+    ("hic9605_set", 55.0, "E001", "PIC_324202", "PT_324202", True),
+    ("hic9606_set", 40.0, "E003", "PIC_324203", "PT_324203", False),
+    ("hic9606_set", 38.0, "E003", "PIC_324203", "PT_324203", True),
+]
+
+
+@pytest.mark.parametrize("kind, op, stage, pic, pt, lost", MOTIVE_STEPS,
+                         ids=[f"{k}_{o:.0f}" for k, o, *_ in MOTIVE_STEPS])
+def test_the_motive_valves_hold_and_lose_the_vacuums_on_the_plants_bracket_decision_251(
+        kind, op, stage, pic, pt, lost):
+    """Decision 251, As-Built §CXLIV.3. On the plant, 5 November 2026, HIC-329605 held 324F001's
+    vacuum at 64 % and lost it at 55 %, HIC-329606 held 324F003's at 40 % and lost it at 38 %. At
+    the held stroke the bleed takes the step and the vacuum stays; at the lost stroke the
+    separator's pressure rises and its PIC closes the bleed, and stage 1's loss reaches 323F010
+    (PT-323204), whose vapour 324E002 condenses beside 324F001's."""
+    s = Scheduler(*build_plant())
+    _run(s, 60.0)
+    seed = _packet(s)
+    _cmd(s, type=kind, op=op)
+    _run(s, 300.0)
+    p = _packet(s)
+    p0, p1 = seed["EVAP_324"][stage][pt], p["EVAP_324"][stage][pt]
+    op0, op1 = seed["EVAP_324"][stage][pic]["op"], p["EVAP_324"][stage][pic]["op"]
+    if lost:
+        assert p1 - p0 > 0.015 and op0 - op1 > 4.0
+    else:
+        assert abs(p1 - p0) <= 0.003 and abs(op1 - op0) <= 1.5
+    if kind == "hic9605_set":
+        t0, t1 = seed["RECIRC_323"]["F010"]["P_bara"], p["RECIRC_323"]["F010"]["P_bara"]
+        assert (t1 - t0 > 0.003) if lost else (abs(t1 - t0) <= 0.001)

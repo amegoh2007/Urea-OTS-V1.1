@@ -1,10 +1,11 @@
-# project.md — Urea Plant OTS, Version 1.1
+# project.md — Urea Plant OTS, Version 1.2
 
-**Working directory:** `D:\Work\Urea Simulator V1.1`
+**Working directory:** `D:\Work\Urea Simulator V1.2`, git branch `v1.2`, a copy of V1.1 at commit 5ddc107; V1.1
+is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-18, session 130
+**Last updated:** 2026-11-21, session 145
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -22,41 +23,43 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   Trips 35.1, 35.3 and 35.4 act on the header as AC4 PC35 draws them (decision 228). LI-323502, LI-323503 and
   LI-323501, LI-328503, LI-328505 and LI-328504 read between their taps (decisions 219, 233, 241, 243, 244, 246); B-156
   closed on those six, LT-329501 is data gap 15 (decision 248). PC21's timers run AC4's minutes (decisions 229, 231).
-  FY-321404 is shown and set on the DCS's formula (decision 235).
+  FY-321404 is shown and set on the DCS's formula (decision 235). 322R001's boil cap stands 3.5 K [E] above its
+  bubble line (decision 301), so the design seed's top no longer boils.
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
 * **Open.** `handoff.md`: Section A none, Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
-  Section C none, 9 open data gaps. Every data gap
-  waits on a vendor document or on one plant DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
-* **Session 130** (Parts CXLI, CXLII). The open gaps researched by seven `/research-deep` agents. Found and built (decisions 249,
-  250; Part CXLII): PC21's page-20 timers are ABB TOFF elements, so 21.2 is lost 5 min / 15 min / 5 s after its causes,
-  and FY-322403's trip is the schedule's 8 500 Nm3/h, not V1's 5 %. CLAMPREF 0 confirmed;
-  LV-324501A's booster withdraws §CXL.4's bound; rows 1, 3, 4, 9, 10, 15 narrowed. Session 129 (Part CXL) researched
-  the same rows inline (reports: `Tests and Reports\reports\Session_129_gaps`, `Session_130_gaps`).
-* **Sessions 121 to 128** (Parts CXXXI, CXXXIII to CXXXIX; decisions 219, 230, 232 to 235, 239 to 248). B-156 closed:
-  six levels between their taps, LT-329501 data gap 15; data gaps 2, 8 and 11 closed; 322P002's field delivery to
-  FI-322402's 40 m3/h; FY-321404 on the DCS's formula; A-57, B-127, A-59, B-135 and A-60 closed as built. The gap
-  surveys: `Tests and Reports\reports\Session_123_gaps`, `Session_128_gaps`.
-* **Session 120** (Part CXXX; decisions 218 and 228). Every file the simulator uses lives in its folder; the suite,
-  the reports and the scratch live in `Tests and Reports` sub-folders, and saved exercises in the git-ignored
-  `exercises` (decision 218). Trips 35.1, 35.3 and 35.4 are built with four overrides on 324-1b; the seed's leaves
-  are unchanged to the bit (decision 228, B-146 closed; stand-ins in data gaps 5 and 14). Researched, nothing built:
-  the DCS's FFIC-321404 formula is sourced and checked on Book2 (B-128), the CO2 line stands 5 bar over the loop on
-  the plant (B-135); A-58 and A-59 raised; then PC21's timers moved to AC4's minutes, A-58 closed (Part CXXXII).
-* **Sessions 117 to 119** (Parts CXXVII to CXXIX; decisions 210 to 217). V1.1 runs and tests without V1 (decision 210);
-  322P002's delivery set by hand (decision 212); the seven levels move to their nozzles unit by unit (decision 214,
-  B-156); AC4's low-level stops on a 5 % L2 with 2 % hysteresis (decision 217); A-38, A-40, A-41 and A-50 closed.
-  Scratch: `Tests and Reports\reports\Session_118_research`, `Session_119_build`.
-* **B-118 in scratch, sessions 99 to 112** (As-Built Parts CX to CXIX and CXXII). Session 99 ran the gap
-  resolution plan (decisions 182 to 188). On bundle A 92.3 % passes decision 180's test and the low holds latch;
-  B-126 (b)'s species holdup removes the low holds' latch and loses 92.3 % on the cold branch (session 103).
-  Session 105 removed trip 22.2 (decision 189) and measured the load-reduction procedure (B-135, B-136). Session
-  108 took 322R001's loop apart by path clamps; no candidate held. Session 112 measured two laws: B, the re-flash on
-  the top's subcooling, lifts the reactor's rise; B with S (322E002 closed on its duty), on UA as built with the
-  stripper's lean rise on, stands at 92.3 % (13.24 K); S alone moves nothing; at 69.3 % D1 stands only with 322E002
-  pinned, and the top boils. The choice is the process engineer's (B-118). Runs: `Tests and Reports\reports\B118_s101` to
-  `B118_s112`.
+  Section C none, 5 open data gaps (1, 3, 10, 15, 17). Each waits on a vendor document (Körting) or on one plant
+  DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
+* **Session 145** (Part CLVII; decisions 301 to 306). Built: the boil cap's 3.5 K margin with its three-sided test;
+  N100B (bit-equal to B144) the paired reference; A-63 and B-157 closed. Book2: drum pressure moves 322E002's outlet
+  (TT-322010 +4.4 K/bar at 94.2 %), the gas share under 0.01-0.03 per bar, against law S's 0.37 [I]. At 69.3 % neither
+  S at 4.557 bar g (rings, settles 184.2 C) nor Book2's 4.397 bar g holds the band. Three seed bounds, 918's tolerance
+  and 323F010's shutdown ring restated on the margin (304 to 306).
+* **Sessions 138 to 144** (Parts CL to CLVI; decisions 277 to 300). One stable 322R001 root at every load; no share
+  fits under the boil cap (gap 17); A-61 closed (287); A-63 raised (290) and its fix (b) measured to 30 000 s; PIC-329207
+  sourced as 322E002's handle; B-118's stop rule after session 146 (300).
+* **Sessions 135 to 137** (Parts CXLVII to CXLIX; decisions 253 to 275). The manual's header-valve rule on the B-118
+  rig (253); the refit picks V1's approach; no wave M arm stands; the T693b trace closed gap 16; the letters and the
+  readback checklist made.
+* **Sessions 129 to 133** (Parts CXL to CXLV; decisions 249 to 252). PC21's timers as ABB TOFF elements; FY-322403's
+  trip at 8 500 Nm3/h; V1.2 made; LY-324501 built on AC4's formula, the seed unchanged to the bit.
+* **Sessions 121 to 128** (Parts CXXXI, CXXXIII to CXXXIX; decisions 219, 230, 232 to 235, 239 to 248). B-156 closed;
+  data gaps 2, 8, 11 closed; A-57, B-127, A-59, B-135, A-60 closed as built. Surveys: `Session_123_gaps`, `Session_128_gaps`.
+* **Session 120** (Parts CXXX, CXXXII; decisions 218, 228). Every file the simulator uses lives in its folder, the
+  suite, reports and scratch in `Tests and Reports` (decision 218). Trips 35.1, 35.3 and 35.4 built, the seed to the
+  bit (decision 228; data gaps 5, 14). FFIC-321404's formula sourced (B-128); PC21's timers on AC4's minutes.
+* **Sessions 117 to 119** (Parts CXXVII to CXXIX; decisions 210 to 217). V1.1 runs without V1 (decision 210); AC4's
+  low-level stops on a 5 % L2 (decision 217); the levels to their nozzles (decision 214); A-38, A-40, A-41, A-50 closed.
+* **B-118 in scratch, sessions 99 to 112 and 134** (As-Built Parts CX to CXIX, CXXII and CXLVI). Session 99 ran the
+  gap resolution plan (decisions 182 to 188). On bundle A 92.3 % passes decision 180's test and the low holds latch;
+  B-126 (b)'s species holdup removes the low holds' latch (session 103). Session 105 removed trip 22.2 (decision 189)
+  and measured the load-reduction procedure (B-135, B-136). Session 112 measured the laws B (the re-flash on the top's
+  subcooling) and S (322E002 closed on its duty). Session 134 ran session 114's plan on V1.2: S + B on UA as built
+  settles at 92.3 % on every plant sign and stands on session 112's tree, on HEAD 0.02 K under D1's floor; no HEAD arm
+  stands at any hold; Book2's UA exponent rings; every reduced-load HEAD arm stops 335P001 on LY-324501's L2 (A-61).
+  The choice is the process engineer's (B-118). Runs: `Tests and Reports\reports\B118_s101` to `B118_s112`,
+  `Session_134_b118`.
 * **The console instructions of 2026-11-13** (sessions 106 and 109 to 111; Parts CXVI and CXIX to CXXI). Built:
   328-2's revised slide, 322-1's CO2 FEED panel (decisions 220, 221), START / STOP on every pump icon (decision
   222), V1 read from its copy on D: (decision 223). Session 111 built the melt header from the twelve header
@@ -69,11 +72,11 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 131 | `docs/history/session-log.md` |
-| Decision | 251 | `docs/decisions.md` |
-| As-Built Part | CXLIII | the As-Built reference, appended at its end |
-| Handoff Section A | A-61 | `handoff.md` |
-| Handoff Sections B and C | B-157 | `handoff.md` |
+| Session | 146 (145 taken 2026-11-21: decisions 301-306, the boil cap's margin built, A-63 and B-157 closed, Book2's steam-pressure gain, law S at two pressures) | `docs/history/session-log.md` |
+| Decision | 307 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138; 280 to 282 by session 139; 283 to 285 by session 140; 286 to 289 by session 141; 290 to 293 by session 142; 294 and 295 by session 143; 296 to 300 by session 144; 301 to 306 by session 145) | `docs/decisions.md` |
+| As-Built Part | CLVIII (CLVII taken by session 145) | the As-Built reference, appended at its end |
+| Handoff Section A | A-64 (A-63 session 142's) | `handoff.md` |
+| Handoff Sections B and C | B-158 (B-157 session 138's) | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers
 here before it writes anything else.
