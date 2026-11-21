@@ -28,8 +28,8 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 ### B-118 — Below 100 % load the engine holds no steady state on the plant's reactor window
 
-*Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to CLVII; decisions 177, 180, 181, 188,
-190, 259 to 284, 286, 288, 290 to 293, 295 to 301 and 303.*
+*Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to CLVIII; decisions 177, 180, 181, 188,
+190, 259 to 284, 286, 288, 290 to 293, 295 to 301, 303 and 307 to 309.*
 
 **Problem.** The plant runs for hours at reduced load. The committed engine, ramped from its design seed, does not:
 at 70-85 % trip 22.1 in 20-80 minutes, or with 22.2 removed (decision 189) SV32064 lifts and 21.x and 22.1 latch
@@ -88,17 +88,20 @@ close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atom
   collapse to 163 C and settles hot, 184.2 C, share 0.249, rise 18.0 K, TT-322010 1.8 K under the control. Neither is
   in band over the hold.
 
-**Stop rule (decision 300).** If no arm holds 74.4-68.9 % with TT-322005 in band by the end of session 146, the engineer
-decides between physics and a labelled empirical trim under 90 % (a decided divergence); session 147 brings the measured
-case for each.
+**Stop rule (decision 300), measured (Part CLVIII).** No arm holds 74.4-68.9 % in band. Option 1: T146 (decision
+309; load-scaled UA, tempered split) fails at unit level, its outlet and share slopes tied (dT/dP = 7 - 45 ds/dP at the
+design boundary), so no n <= 1 meets Book2's pair (§CLVIII.3). Option 2: E146 (the flash target, UA and the outlet
+blended to the NTU-held closure below 90 %, on S + B) is bit-identical to S + B at and above 90 %; at 69.3 and 74.4 % it
+sits on the boil cap (rise departure +1.85 and +2.46 K) with 322E001 starved (steam 16 t/h, TT-322004 136 C); its
++0.2 bar step moves TT-322010 and the share in the plant's direction, and the stepped twin latches four trips at 20 930 s
+(§CLVIII.6). The S + B seed fails decision 278 against N100B and grows (§CLVIII.6). Neither meets decision 180.
 
-**Open options** (the engineer's): a tempered 322E002 closure on the plant's slopes (TT-322010 +2.4 to +4.4 K/bar,
-share under 0.01-0.03 per bar), a new mechanism measured in §CLVII.4-5 and not built; law B's form under the margin
-(the departure form, the only seed-neutral reading, §CLVII.5).
+**Open options** (the engineer's, decision 300): physics (a shell coupling weaker than n = 1, or a new mechanism; gap
+17); or a labelled trim: E-U alone on the closure as built (one touch point, never run in the loop), or E146 at reduced
+strength with 322E001's steam and TT-322004 as acceptance terms. Law B stays in its departure form (decision 307).
 
-**Next step.** Session 146: the stop rule's two cases (decision 300), the best arm and its distance from Book2 on the
-physics, and a labelled empirical trim below 90 % with what it would touch. The margin's final value on the literature
-report (decision 293). Gap 17 stays on row 30. Decision 277's rule rides every arm; B-126, B-136 inside (265, 266).
+**Next step.** The engineer's choice under decision 300; session 147 measures that case only. The margin on the
+literature report (293); gap 17 on row 30; decision 277's rule on every arm; B-126, B-136 inside (265, 266).
 
 **B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode (§XCVIII.3, §CIII.7, §CXIV.7,
 §CXVII.6); the gain stays 4.0.
@@ -135,7 +138,8 @@ Located (§CLVI.2, unit level [I], on a boundary S made): on U693's turndown bou
 does not answer 322E002's steam pressure, the plant's handle (share 0.004, +0.008 per bar; the NTU quench 3.6-4.0 K over
 the shell), where at the design boundary it answers 0.12 per bar; S answers 0.37 per bar. Target (§CLVII.4, [I], Book2's
 regression): the plant's outlet TT-322010 +4.4 K/bar at 94.2 % (boot +3.5..+5.8), +2.4 pooled 69.3-100.3 %, its gas
-share under 0.01-0.03 share/bar; S has no outlet term and overshoots in the loop (§CLVII.5). Next step: B-118's.
+share under 0.01-0.03 share/bar; S has no outlet term and overshoots in the loop (§CLVII.5). Under E-U at 69.3 % the
+law binds (0.894 to 0.944; §CLVIII.4, §CLVIII.6). Next step: B-118's.
 
 ### B-126 — 322R001's 136 t of liquor has no composition
 

@@ -1682,3 +1682,17 @@ decision on an item.
      at zero it does not. The size is decision 163's memo ring under a feed surge (+/-0.22 mbar), below PT-323204's
      resolution. The audit counts a 323F010 step as ringing only above 0.3 mbar until tick 300, and decision 163's
      0.012 mbar after it. Measured, not traced: the mechanism is not isolated. As-Built Part CLVII.
+307. **Law B's form under the 3.5 K boil-cap margin: the departure form** (2026-11-21, session 146; the process
+     engineer's ruling). In B-118's scratch arms law B keeps its line through 183 C at the seed's top
+     (`reactor_boil.BOIL_T_DES_C`, `_INV_DES`) and takes the cap's slope, so its p_eff at t = 0 is the design pressure
+     (140.7 bar a, measured in session 146); the literal shift of B's line by the margin (147.35 bar a at the seed) is
+     rejected. Scratch only; law B is not built. As-Built Parts CLVII.5 and CLVIII.4.
+308. **Decision 303's citation corrected** (2026-11-21, session 146; the process engineer's ruling). The rig's
+     departure basis for PIC-329207 is As-Built §CVI.5 and §CVII.1, in place of the ruling's "decision 196" (the
+     relief-lift rule). Decision 306 stands as recorded; its 323F010 ring is attributed on magnitude only, untraced.
+     As-Built Part CLVIII.1.
+309. **The tempered two-channel 322E002 closure authorized for scratch measurement only** (2026-11-21, session 146;
+     the process engineer's ruling): T146, a load-scaled shell conductance UA (m_dot / m_dot0)^n with a mass-transfer
+     tempered flash target, design-anchored, measured at unit level before any in-loop arm, one candidate, no second
+     physics variant. Measured: no member with n <= 1 meets the plant's two slopes at either boundary, so no in-loop
+     arm ran. Not built. As-Built Part CLVIII.3.

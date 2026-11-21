@@ -30985,3 +30985,284 @@ only seed-neutral reading); the tempered 322E002 closure as a new mechanism. Ful
 322E001's tube-ceiling run, collected before its re-pin (the cap at tick 2 177, 2 180 before decision 301); it
 passes on its own re-run with the packet test (`tubes2.txt`), and the whole decided file with `units/synthesis`
 re-runs green on the final tree (`eqdec5.txt`). The PyQt6 layering grep prints nothing.
+
+# Part CLVIII — Session 146: the rulings as decisions 307 to 309, B-118's stop-rule measurements (decision 300): T146 at unit level, E146 in the loop (2026-11-21)
+
+Scripts and output: `Tests and Reports/scratch/session-146` (`registry146.md`, written before any unit or in-loop output
+and amended before the first in-loop E146 arm; `seedref146.py`, `proto146.py`, `e002_146.py`, `table146.py` with
+`unit/` and `out/`; `book2_levels146.py`; `run/` with `cfg146.py`, `go146.sh`, `make146.py`, `gate146.py`,
+`step146.py`, `score146h.py`). Archived to `Tests and Reports/reports/Session_146_b118_stop_rule`. Nothing under
+`ureasim/` or `Tests and Reports/tests/` changed.
+
+## CLVIII.1 Step 0 and the rulings
+
+Session 145 was already committed as e58014f and pushed (`v1.2` level with `origin/v1.2`) when the session opened, so
+step 0's suite ran as a retrospective gate on that untouched tree: 8 438 passed in 5 789 s, exit 0 (`suite146.txt`). The PyQt6 layering grep prints nothing.
+The rulings of 2026-11-21 are decisions 307 (law B's departure form under the 3.5 K margin), 308 (decision 303's
+citation, As-Built §CVI.5 and §CVII.1 for decision 196) and 309 (the tempered two-channel 322E002 closure authorized
+for scratch measurement). Decision 306 stands as recorded, its 323F010 ring attributed on magnitude only (untraced).
+
+## CLVIII.2 The design references of 322E002's first call
+
+`seedref146.py` on tree145: the engine's first 322E002 call runs on the module's design throughput to the bit
+(m_dot 250 638.934971 kg/h, ratio 1.0; NTU = UA / (m_dot cp) = 3.212088); its flash target differs from
+`FRAC_GAS_DES` by one unit in the last place (CO2 0.203600000000001 against 0.2036). Every prototype of this session
+anchors on the first call (subscript 0), as session 112's law S does, so the design point is exact at t = 0 by
+construction.
+
+## CLVIII.3 T146 at unit level (decision 309): no member passes
+
+The closure, two source-line rebindings inside `carbamate_condenser_322e002`, law S absent:
+
+    UA      = UA_KJHK . (m_dot / m_dot0) ** n
+    phi_eq' = phi_eq0 + alpha_mt . (hpcc_flash_split(feed, T_prod_prev, p_loop) - phi_eq0)     each distributing species
+
+the film lag, the gate, the saturation fraction and the NTU quench otherwise the unit's own. Method: e002_144.py's
+frozen boundaries, the seed's own first call stepped 600 s (the design boundary, the stand-in for Book2's 94.2 % band as
+in §CLVII.4) and U144's snapshots at 7 500, 9 000 and 10 800 s (69.3 %, made by S + B at 4.347 bar g); each boundary
+relaxed 1 800 s at its own shell pressure and at +/- 0.1 bar (t_shell = tsat(p)); slopes the central difference; share
+r / (1 + r). Design residual at t = 0: 0.0 on every member. The null (n 0, alpha 1) reproduces the closure as built
+to the bit.
+
+| n | alpha_mt | design: dTT-322010/dP (K/bar) | design: ds/dP (share/bar) | 69.3 %: dTT-322010/dP | 69.3 %: ds/dP | 69.3 %: share | 69.3 %: TT-322010 (C) | 69.3 %: sat (min) |
+|---|---|---|---|---|---|---|---|---|
+| as built (0) | 1 | +1.380 | +0.130 | +7.07 | +0.0053 | 0.0046 | 158.24 | 1.000 |
+| 0.50 | 0.10 / 0.20 / 0.30 | +4.33 / +3.50 / +2.93 | +0.064 / +0.083 / +0.096 | +6.98 / +6.95 / +6.91 | +0.0015 / +0.0035 / +0.0060 | 0.155 / 0.142 / 0.128 | 162.9 / 163.2 / 163.4 | 1.000 |
+| 0.70 | 0.10 / 0.20 / 0.30 | the same | the same | +6.62 / +6.17 / +5.65 | +0.013 / +0.030 / +0.051 | 0.158 / 0.147 / 0.138 | 166.5 / 166.8 / 167.0 | 1.000 |
+| 0.85 | 0.10 / 0.20 / 0.30 | the same | the same | +3.68 / +3.19 / +2.82 | +0.088 / +0.102 / +0.112 | 0.187 / 0.187 / 0.188 | 168.9 / 168.9 / 168.9 | 0.954-0.959 |
+| 1.00 | 0.10 / 0.20 / 0.30 | the same | the same | +3.38 / +2.92 / +2.55 | +0.068 / +0.076 / +0.082 | 0.227 / 0.232 / 0.236 | 170.7 / 170.4 / 170.2 | 0.900-0.919 |
+| 0.50, 1.00 | 1 | +1.380 | +0.130 | +6.29, +1.30 | +0.052, +0.103 | 0.022, 0.249 | 165.1, 169.5 | 1.000, 0.944 |
+| Book2 [I] | | 94.2 %: +4.39 (boot +3.45..+5.82) | <= +0.005..+0.031 | 69.3 %: +0.97 (spans 0); pooled +2.44 | <= +0.036 | (gap 17) | 168.06 +/- 0.31 | |
+
+Every row fails the gate; the design residual at t = 0 is 0.0 on every row; the null (n 0, alpha 1) gives the as-built
+rows to the bit (`unit/table_T.txt`; the sat-1 lines in `unit/table_T_s1.txt`).
+
+Read against the gate (TT-322010 +2.4 to +4.4 K/bar and the share 0.005 to 0.030 share/bar at both boundaries):
+
+* At the design boundary m_dot = m_dot0, so n does not act: alpha alone sets the pair, (4.33, 0.064), (3.50, 0.083),
+  (2.93, 0.096) K/bar and share/bar for alpha 0.1, 0.2, 0.3, against as built (1.38, 0.130). The saturation fraction
+  binds there (0.990 to 0.996 at +0.1 bar) and adds share slope; held at 1 the pairs are (5.23, 0.044), (4.08, 0.070),
+  (3.34, 0.087), (1.48, 0.128): a line, dT/dP = 7.2 - 45 ds/dP. On it the share bound 0.03 leaves the outlet at 5.9
+  K/bar or above, past Book2's +4.4.
+* At 69.3 % the members that reach Book2's outlet level (n 0.85 and 1.0: TT-322010 168.9 to 170.7 C against Book2's
+  168.1) carry share slopes of 0.068 to 0.112 share/bar, two to four times Book2's bound; the members whose share slope
+  is inside the bound (n 0.5, 0.7) over-quench (TT-322010 162.9 to 167.0 C) with outlet slopes of 6.2 to 7.0 K/bar. With
+  sat 1 the lines are dT/dP = 6.9 - 36 ds/dP (n 0.85) and 6.9 - 52 ds/dP (n 1.0).
+* The registered prediction holds: the NTU quench of the tempered flash cannot reach Book2's pair (+4.4 K/bar of
+  outlet with at most 0.03 share/bar) at either boundary; the closure's two channels are tied by the quench's
+  algebra, dT_prod = (1 - e) dT_shell + e dT_adb with e = exp(-NTU), and the exotherm term moves with the share. Book2's
+  pair needs a weaker shell coupling than any n <= 1 gives at 69.3 % (extrapolated, [I]: the line's coefficient
+  reaches the 83 K/share the pair needs near n = 1.3) and is out of reach at the design boundary for every n.
+
+Hard stop (the second prompt's step 2b.4): no in-loop T146 arm was run and no second physics variant was built. Option
+1's measured case is this table with session 145's in-loop arms (§CLVII.5).
+
+## CLVIII.4 E146's unit candidates and its form
+
+Fully on (w = 1), at U144's 69.3 % boundaries, +/- 0.2 bar (`unit/table_E.txt`):
+
+| Candidate | touch point | share | TT-322010 (C) | dTT-322010/dP (K/bar) | dshare/dP (share/bar) | sat |
+|---|---|---|---|---|---|---|
+| as built | none | 0.0046 | 158.24 | +7.07 | +0.0053 | 1.000 |
+| E-S, d_phi 0.199 [E] | an additive CO2 offset on the flash target | 0.168 | 157.32 | +7.07 | +0.0031 | 1.000 |
+| E-U | UA (m_dot / m_dot0): NTU held at design | 0.249 | 169.50 | +1.30 | +0.103 | 0.944 |
+| Book2, 69.3 % band | | (gap 17) | 168.06 +/- 0.31 | +0.97 (CI spans 0) | <= 0.036 | |
+
+Neither meets the registered selection. E-S is excluded on decision 274: with TT-322010 11 K under Book2's, TT-322005 in
+band and the rise within 1.0 K cannot both hold. E-U lands on Book2's outlet level with no fitted number; its share is
+S145's 0.249, its share slope 0.10 (a quarter of S's 0.37, three times Book2's bound).
+
+E146 as run (registry amendment, before any in-loop arm): the closure as built without S has no stack recorded
+standing at 92.3 % or on the 100 % seed, so E146 keeps law S + B untouched where w = 0 and blends to E-U below 90 %:
+
+    w(L)   = 0 (L >= 0.90),  0.5 (1 + cos(pi (L - 0.85) / 0.05)) (0.85 < L < 0.90),  1 (L <= 0.85)
+             L = FY-322403 / design, CO2FeedLine.step's load_pct of the tick before
+    phi_eq = phi_S + w (hpcc_flash_split(feed, T_prod_prev, p_loop) - phi_S)        each species
+    UA     = UA_KJHK (m_dot / m_dot0) ** w
+    T_prod = T_S + w (T_quench(UA) - T_S)
+
+[E/TRIM, decision 300], three touch points in `carbamate_condenser_322e002` (the flash target, the shell conductance,
+the outlet); w = 0 is a branch that returns S's values untouched; S's hooks run on every call. No reactor temperature
+is set.
+
+Short gates (`run/gate146.py`): Z1 (E146 installed) against Z0 (Cb693's stack at 100 %, 600 s): 0 leaves differ in 60
+samples, w > 0 on 0 ticks. Z2: +0.2 bar on MASTER-329207 in [200, 400) s arrives at 210 s (5.01 to 5.21 bar a) and
+reverts at 420 s (19 commands); the prototype's clock is the rig's t_s; law B's p_eff at t = 0 is 140.7 bar a, the
+design pressure (the floor; raw 140.6989).
+
+## CLVIII.5 Book2's absolute levels by band
+
+`book2_levels146.py`, session 136's bands (+/- 2.5 % UREA-LOAD):
+
+| Band (+/- 2.5 % UREA-LOAD) | n | TT-322010 (C) | TT-322005 (C) | rise (K) | PT-329207 (bar g) |
+|---|---|---|---|---|---|
+| 60.7 % | 15 | 167.89 +/- 0.33 | 181.66 +/- 0.25 | 13.77 | 4.390 |
+| 69.3 % | 32 | 168.06 +/- 0.31 | 181.48 +/- 0.24 | 13.43 | 4.357 |
+| 74.4 % | 3 | 168.00 +/- 0.39 | 181.47 +/- 0.18 | 13.47 | 4.153 |
+| 80.4 % | 10 | 168.76 +/- 0.12 | 182.19 +/- 0.40 | 13.43 | 4.195 |
+| 92.3 % | 740 | 168.74 +/- 0.34 | 182.58 +/- 0.33 | 13.84 | 4.110 |
+| 94.2 % | 706 | 168.72 +/- 0.35 | 182.59 +/- 0.31 | 13.87 | 4.107 |
+| 100.3 % | 29 | 169.12 +/- 0.26 | 182.63 +/- 0.27 | 13.51 | 4.015 |
+| 111.0 % | 4 312 | 169.28 +/- 0.22 | 182.65 +/- 0.33 | 13.37 | 3.899 |
+
+The plant's outlet falls only 1.1 K from 100.3 to 69.3 % and its rise stays at 13.4-13.9 K in every band; the 74.4 %
+band has 3 samples (the 5 November ramp, not Book2's dwell).
+
+## CLVIII.6 E146 in the loop
+
+The arms ran on session 145's Cb693 chain (`go146.sh`: tree252 through cfg146 to cfg141), with this stack:
+
+* cap141, dH 23 000 J/mol and margin 3.5 K;
+* law S pinned, plus law B in the departure form (decision 307);
+* the twelve-compartment holdup, lean rise off, the ejector lift and the stagnant wall;
+* decision 253's header rule and decision 277's feed rule;
+* E146 (SU) added by proto146.
+
+The handle laws are Cb693's at 69.3 %, U744's at 74.4 %, Cb923's at 92.3 % and the seed's at 100 %. Each reduced-load
+arm ran the ramp at 0.5 %/min, a 3 600 s settle and a 14 400 s hold. The 100 % arm ran 14 400 s. Output is in
+`run/runs/`: `step146.txt`, `score137_146.txt`, `disp146_E146_100.txt`, `growth146_E146_100.txt`, `abs146_E146_693.txt`,
+`runaway146.txt` and `upset146.txt`. Rise departures below are score137's (decisions 269 and 274).
+
+**Deviation from the prompt's option B.** The prompt asked for one named touch point, zero footprint at and above
+90 %, and E146_100 clean against N100B. What ran has three touch points (the flash target, UA and the outlet) and sits
+on the unbuilt S + B stack. Its zero footprint is relative to that scratch stack; against N100B it fails decision 278
+on 6 tags (below). The single-touch E-U on the closure as built was never run in the loop. This deviation is the
+process engineer's to rule on.
+
+**Zero footprint at L >= 0.90, relative to the S + B stack.**
+
+* E146_100 against F146_100, its twin without proto146: 0 leaves differ in 360 samples (3 600 s), and w > 0 on 0 of
+  144 000 ticks.
+* E146_923 against Cb923 (session 141): 0 leaves differ in 1 896 samples (18 960 s), and w > 0 on 0 ticks.
+* So the trim is absent at and above 90 %, and the chain reproduces session 141's run.
+
+**The base at 100 % (decision 278).** E146_100 is the S + B stack's own seed. Compared with N100B on the console's
+decimals, it fails on 6 tags (first beyond the display step at 1 420 to 13 640 s):
+
+| Tag | Departure |
+|---|---|
+| FT-329403 | 0.23 t/h |
+| FT-329407 | 0.10 t/h |
+| LT-322504 | 0.5 % |
+| PV-329207B | 0.2 % |
+| TT-322004 | 0.3 K |
+| TT-322011 | 0.2 K |
+
+The departure grows hour by hour:
+
+* FT-329403 peak to peak: 0.03, 0.06, 0.12 and 0.32 t/h (N100B: 0.01, 0.00, 0.04, 0.01).
+* TT-322004 peak to peak: 0, 0, 0.1 and 0.4 K (N100B flat).
+* score137 reads it as ringing, with a period of 4 045 s.
+
+The oscillation is the S + B stack's: with w = 0 on every tick the trim is absent, so it is not E146's. By citation it
+is §CXLIX.4's growing oscillation of law S on the seed, still present with the whole stack on the 3.5 K margin
+(§CL.2's small residue was measured on the stack before the margin). No twin with S off ran on this stack, so the
+attribution to law S is by citation, not measured here.
+
+| Arm | TT-322005 hold min-max (C), share in 179.5-183.5 | hold mean / end (C) | TT-322010 hold mean (C) | rise departure (K); Book2's | gas share hold mean | TT-322004 hold mean (C) | score137 | trips latched |
+|---|---|---|---|---|---|---|---|---|
+| E146_923 (= Cb923) | 180.1-184.4, 94.2 % | 181.53 / 181.5 | 169.44 | -0.91; +0.21 | 0.149 | 169.9 | settled; fails the rise departure and the 180 C whole hold | none |
+| E146_744 | 184.2-184.8, 0.0 % | 184.37 / 184.6 | 169.13 | +2.46; (3 samples) | 0.216 | 147.0 (138-141 late) | ringing, 1 656 s (0.1 K peak to peak in the last 4 606 s) | none |
+| E146_693 | 183.4-184.3, 1.7 % | 183.90 / 183.4 | 169.18 | +1.85; -0.22 | 0.235 | 144.6 (135-141 late) | ringing, 2 679 s (0.9 K) | none |
+| E146_693u (+0.2 bar step) | 183.6-196.1, 0.0 % | 184.55 / 190.3 | 168.57 | +4.96; -0.22 | 0.250 | 143.1 | ringing, 2 480 s | 21.2, 21.8, 21.10 and 22.1 at 20 930 s |
+| Book2, 69.3 % / 74.4 % | 181.48 +/- 0.24 / 181.47 | | 168.06 / 168.00 | | (gap 17) | (§C.2) | | |
+
+**Where the top sits.** At 69.3 % and 74.4 %, TT-322005 lies on 322R001's boil ceiling:
+
+* At 69.3 %: the last-4 606 s mean is 184.06 C, against the ceiling's 184.08 C at the loop's 136.2 bar a.
+* At 74.4 %: the mean is 184.54 C, against 184.57 C at 137.1 bar a.
+
+The top boils 8.1 t/h at 69.3 %. The reactor's off-gas runs 15 to 19 t/h, against K145's 1 to 3 t/h. E146 lifts the
+top off the control's collapsed branch (K145 ends at 172.6 C) by 11 to 12 K, onto the 3.5 K margin [E]. Its temperature
+there is the cap's, not the trim's balance.
+
+322E002 itself runs at these levels:
+
+* outlet 169.2 C, near Book2's 168.1 C;
+* gas share 0.235 (the seed's is 0.169);
+* saturation fraction 0.894, so B-125's law binds.
+
+**What it costs downstream.** At 69.3 %, over the last 3 600 s, against K145 (`abs146_E146_693.txt`):
+
+| Quantity | E146_693 | K145 |
+|---|---|---|
+| 322R001 overflow | 110.7 t/h | 152.6 t/h |
+| stripper feed | 149 t/h | 190 t/h |
+| TT-322013 | 152.3 C | 180.3 C |
+| 322E001 steam | 16.4 t/h | 42.5 t/h |
+| FT-329403 | 19.4 t/h | 40.1 t/h |
+| TT-322004 | 136.4 C | 163.5 C |
+| 322E002 LP steam | 47.5 t/h | 83.8 t/h |
+| FT-329407 | 1.9 t/h | 7.7 t/h |
+| biuret at the bottoms | 0.78 wt % | 0.18 wt % |
+
+The stripper solidification flag rises at 16 110 s. From 17 000 s, 322E001's level swings between 2 and 100 % and the
+unit holds solids (1 642 kg at 19 800 s). E146_693 recovers by the end of the run; E146_693u does not.
+
+**The operator's step.** E146_693u against E146_693, with +0.2 bar on PIC-329207's set point in [14 400, 16 200) s.
+PV follows within 300 s (+0.18 to +0.21 bar). Over the step:
+
+| Quantity | Response | Book2 |
+|---|---|---|
+| TT-322010 | +0.3 to +0.4 K (+1.5 to +2.0 K/bar) | +0.97 K/bar at 69.3 % (interval spans 0); +2.4 pooled |
+| TT-322005 | 0.0 to +0.1 K, one display digit, held by the ceiling (the ceiling moves 0.53 K per bar of loop pressure; the loop rose 0.10 to 0.13 bar during the step) | |
+| loop pressure | +0.06 bar at 300 s, +0.10 to +0.13 bar from 600 s | |
+| gas share | +0.015 to +0.019 (+0.08 to +0.095 share/bar) | about one third of that (bound 0.03) |
+| 322E002 LP steam | -2.1 to -2.6 t/h | |
+| FT-329403 | +2.3 t/h at the step | |
+| FT-329407 | -1.4 to -1.8 t/h | |
+
+The signs of TT-322010, the share and 322E002's steam match the plant: higher drum pressure, less condensation, a
+hotter outlet. TT-322005's move is one display digit, held by the cap, so the prompt's "TT-322005 positive" is not
+shown. At the release, PV, TT-322010 and TT-322005 return to within one display step by 16 800 s, without ringing;
+FT-329403 by 17 700 s; FT-329407 stays +0.95 to +1.3 t/h above the base through 18 000 s and +0.5 t/h at 18 300 s.
+
+The two arms then part:
+
+1. 322E001's solidification flag rises at 16 110 s in the unstepped arm and at 18 440 s in the stepped arm.
+2. In the stepped arm the level reaches 100 %, holding 5.9 t and then 10.4 t of solids, and the steam falls to 0.
+3. The loop climbs to 159.5 bar a, and TT-322005 reaches 196.1 C.
+4. Trips 21.2, 21.8, 21.10 and 22.1 latch at 20 930 s, 4 730 s after the release.
+
+The unstepped arm passes through its own excursion (level to 100 %, 1.6 t held at 19 800 s) and survives it. One pair
+shows only that the stepped arm latches four trips and the unstepped arm does not; the mechanism is untraced. Both
+arms run a starved stripper at 136 C.
+
+**Not run.**
+
+* 68.9 %: the second prompt lists 100, 69.3 and 74.4 % and the step. At 69.3 and 74.4 % the arm sits on the ceiling with
+  the stripper starved, and 68.9 % lies below both.
+* T146 in the loop: hard stop at unit level (§CLVIII.3).
+
+## CLVIII.7 The decision 300 comparison
+
+Option 2 as measured deviates from the prompt's option B: it has three touch points, not one, and its zero footprint at
+and above 90 % is relative to the unbuilt S + B stack, which fails decision 278 against N100B (§CLVIII.6). The
+single-touch E-U on the closure as built was not run in the loop.
+
+| | Option 1, physics: T146 at unit level, plus the best in-loop physics arms (session 145's, on S + B) | Option 2, the labelled trim below 90 %: E146 is S + B above 90 %, blended to the NTU-held closure below |
+|---|---|---|
+| Closure | T146: no member with n <= 1 meets both of Book2's slopes at either boundary. The outlet and share slopes are tied: dT/dP = 7 - 45 ds/dP (design) | E-U below 85 %, a half-cosine to S + B over 85-90 % |
+| 100 % seed | S + B stack: decision 278 fails on 6 tags, and the failure grows (FT-329403 0.03 to 0.32 t/h per hour) | bit-identical to the S + B stack (w > 0 on 0 ticks), so the same failure |
+| 92.3 % | Cb923 settles but fails the rise departure (-0.91 K; Book2 +0.21) and the whole-hold band (180.1 C in the ramp) | bit-equal to Cb923 |
+| 74.4 % | not run (no physics arm stands at 69.3 %) | 184.2-184.8 C on the boil ceiling, 0.7-1.3 K above Book2's band; rise +2.46 K; TT-322004 147 C; no trip |
+| 69.3 % | K145: 170.7-184.3 C, end 172.6, rise -6.44 K. P145: 168.3-184.3, rise -5.06. S145: 163.3-184.5, settles at 184.2, rise -2.55. All ring | 183.4-184.3 C on the ceiling (1.7 % in band); rise +1.85 K; TT-322010 169.2 C (Book2 168.1); share 0.235; TT-322004 136 C; 322E001 steam down 61 %; a solids excursion; no trip in 21 720 s |
+| 68.9 % | not run | not run |
+| PIC-329207 +0.2 bar | S: TT-322010 0 K/bar at unit level; -1.8 K against the control in S145 | TT-322010 +1.5 to +2.0 K/bar, share +0.08 to +0.095 per bar, LP steam -2.6 t/h, in the plant's direction; TT-322005 +0.0 to +0.1 K (one digit, held by the cap); released without ringing. The stepped arm latches four trips 4 730 s after the release, during a 322E001 excursion; mechanism untraced |
+| Distance from Book2 at 69.3 % (hold min-max of TT-322005 against Book2's 181.48 C) | K145 -10.8 to +2.8 K; S145 -18.2 to +3.0 K | E146 +1.9 to +2.8 K; rise departure 2.07 K, beyond decision 274's 1.0 K |
+| Touch points | 322E002's UA and flash target (unit level only) | 322E002's flash target, UA and outlet, behind w(L); retired on gap 17 (checklist row 30) |
+| Unclosed | Book2's pair (+4.4 K/bar with at most 0.03 share/bar) needs a weaker shell coupling than any n <= 1 gives; gap 17 | the top on the 3.5 K cap; 322E001 starved; the S + B base's oscillation on the seed |
+
+Neither option meets decision 180's acceptance at any reduced-load hold. Both cases of the stop rule are now measured.
+
+## CLVIII.8 Decisions, items and deliverables
+
+* Decisions 307, 308 and 309 are recorded in `docs/decisions.md`. Decision 300's choice between options 1 and 2 stays
+  with the process engineer, on this Part's comparison.
+* B-118: the stop rule's measurements are complete for the physics family T146 and for the trim E146. Two findings
+  block any build on the S + B stack:
+  * the growing oscillation on the 100 % seed (§CLVIII.6);
+  * at 69.3 % under E146, a top on the cap with 322E001 starved.
+* B-125: the saturation fraction binds under E-U at 69.3 % (0.894 to 0.944).
+* Nothing under `ureasim/` or `Tests and Reports/tests/` changed. The full suite (8 438 passed) is the session's gate.
+* Archive: `Tests and Reports/reports/Session_146_b118_stop_rule`.

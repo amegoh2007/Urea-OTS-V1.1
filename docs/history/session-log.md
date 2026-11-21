@@ -5410,3 +5410,14 @@ per bar, between law B's 0.008 and law S's 0.37, recorded as B-125's target [I].
 and settles at 184.2 C, Book2's 4.397 bar g no better; neither holds the band. The suite's consequences of the margin
 ruled as decisions 304 (three seed bounds restated), 305 (918 within 0.025 %) and 306 (323F010's shutdown ring as
 decision 163's). Part CLVII; `Tests and Reports\reports\Session_145_b118`.
+
+### Session 146 — 2026-11-21: decisions 307-309; B-118's stop rule measured (T146 at unit level, E146 in the loop)
+
+Suite on the session 145 tree: 8 438 passed. Rulings as decisions 307 (law B's departure form), 308 (decision 303's
+citation) and 309 (the tempered two-channel 322E002 closure, scratch only). T146 (UA (m/m0)^n, tempered split) fails
+the unit gate at both boundaries: the outlet and share slopes lie on one line, so no n <= 1 meets Book2's pair; hard
+stop, no in-loop arm. E146, a trim below 90 % blending the flash target, UA and the outlet from S + B to the NTU-held
+closure, is bit-identical to S + B at and above 90 %; at 69.3 and 74.4 % it sits on the boil cap (rise departure +1.85
+and +2.46 K) with 322E001 starved; its +0.2 bar step answers in the plant's direction, the stepped twin trips at
+20 930 s. The S + B seed fails decision 278 and grows. Nothing built; decision 300's choice is the engineer's.
+Part CLVIII; `Tests and Reports\reports\Session_146_b118_stop_rule`.
