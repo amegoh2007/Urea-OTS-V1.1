@@ -1607,3 +1607,38 @@ decision on an item.
      143; the process engineer's ruling). At every fitted root of session 142's cap-released inverse law B sits at its
      floor, so the fit is set by a model clause, not by Book2 (§CLIV.6). Data gap 17 stays on the readback's row 30,
      and no further inverse runs are made until law B's floor is understood. As-Built Part CLV.
+296. **A-63's gate is dominance over the as-built engine, and the top settled** (2026-11-20, session 144; the process
+     engineer's ruling). Decision 294's gate, every displayed design value within its last digit over 15 000 s, cannot
+     be passed: N100A, the as-built engine, fails it on the same tags, earlier or by more (§CLV.2), so the gate tested
+     B-157's wander, not A-63's fix. A-63's acceptance is now four conditions: (1) the design pin to its printed
+     digits at t = 0; (2) zero boil at 322R001's top over the run; (3) at every sample, every displayed tag no further
+     from its printed design value than N100A is at the same time, plus one display step (dominance); (4) the top
+     settled. B143's top was still rising at 15 000 s, so condition 4 needs B143 and N100A both to 30 000 s. If B143's
+     top levels off inside one display step of 183.0 C, A-63 is accepted on (b) at 3.5 K [E]: (b) is then built, its
+     equivalence test asserting both sides (`CLAUDE.md` section 5, rule 6), and the run's seed becomes the reference
+     N100B. If the top keeps climbing, (b) trades a boil for a drift: its rate is reported, A-63 stays open and the
+     margin waits on the literature value (decision 293). The margin is the product's only: the rig's law B is scratch,
+     and a rig run with (b) re-references law B to the same margin (decision 292: one bubble line). Supersedes
+     decision 294's gate; its choice of (b) alone stands. As-Built Part CLVI.
+297. **The zero-margin class is adopted as "find and measure", not "apply"** (2026-11-20, session 144; the process
+     engineer's ruling). Section 5, rule 7 of `CLAUDE.md` applies a decided class to every unit without re-asking;
+     applied that way, an [E] margin would spread unmeasured. The class line reads: a saturation or boiling limit
+     anchored on the design operating point with zero margin is a defect; each instance is listed, and its margin is
+     sourced or measured per unit before it is built. It covers 322R001's boil cap (A-63), 322E002's saturation law
+     (B-125) and 322E003's sump saturation (§CLV.4). The other units' bubble and boil relations are classified when
+     they are next touched. As-Built Part CLVI.
+298. **Law B's floor is closed as a lead** (2026-11-20, session 144; the process engineer's ruling). It never binds
+     in a hold (0 of 143 900 ticks in each of R923b, U693 and A61g, §CLV.3). The low gas share at turndown,
+     0.097-0.099 against the seed's 0.169, comes from elsewhere, and session 144's step 2 looks for it in 322E002's
+     response to its steam pressure. As-Built Part CLVI.
+299. **B-157 is time-boxed** (2026-11-20, session 144; the process engineer's ruling). What is left is a
+     sub-display chain at 100 %: the synthesis wander passes through 323D001's level loop and 323F004's drain to
+     323E010 and FT-329407. One more probe is made, on 323F004. If the chain ends in the synthesis wander that A-63's
+     fix shrinks, B-157 closes on A-63's build as "the remaining wander is documented and below display except
+     FT-329403 and FT-329407", those two named with their rates. B-157 gets no further session of its own.
+     As-Built Part CLVI.
+300. **A stop rule for B-118's low holds** (2026-11-20, session 144; the process engineer's ruling). If no arm holds
+     74.4-68.9 % with TT-322005 in band by the end of session 146, the process engineer decides between continuing
+     on physics and a labelled empirical trim for loads under 90 %, built as a decided divergence, so that trainees
+     get reduced-load operation while the physics stays open. The session after 146 brings the measured case for
+     each. As-Built Part CLVI.

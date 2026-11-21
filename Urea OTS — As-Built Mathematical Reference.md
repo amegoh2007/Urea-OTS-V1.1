@@ -30543,3 +30543,223 @@ out as the turndown lead (§CLV.3). B-125: the class proposed. B-157: m308's and
 closures), the cp anchor V1's and its residual the seed's stripper bottoms, not the row's rounding (correcting
 §CLIV.4), the heaters' draw traced to 323F010's inlet (§CLV.5). Not done: step 5. Scripts and runs stay in
 `Tests and Reports/scratch/session-143`, to be archived as `Tests and Reports/reports/Session_143_b118`.
+
+# Part CLVI — Session 144: the rulings as decisions 296 to 300, 322E002's steam-pressure handle, A-63's long run and dominance, B-157's last probe (2026-11-20)
+
+Scripts and output: `Tests and Reports/scratch/session-144` (`run/registry144.md`; `run/`, `e002_144.py`,
+`f004_144.py`, `rig144.py`, `pages/`). Nothing under `ureasim/` or `Tests and Reports/tests/` changed. Every rig run is
+on session 134's tree252 (git archive 79fa8ca; against HEAD its `ureasim` differs only in decision 291's docstring),
+through `run/cfg144.py`, which installs `run/probe144.py` and then the chain the config names: session 143's
+`cfg143.py` (N142 / B143's) or session 136's `cfg136.py` (U693's).
+
+## CLVI.1 Step 0 and the rulings
+
+Session 143's five documents were committed as 415078b and pushed (0a10330..415078b). The rulings of 2026-11-20 are
+decisions 296 (A-63's gate restated: the pin at t = 0, zero boil, sample-wise dominance over N100A plus one display
+step, the top settled; B143 and N100A to 30 000 s), 297 (the zero-margin class adopted as "find and measure"; its line
+appended to `docs/decided-classes.md`, and `CLAUDE.md` section 5 rule 7 carries the exception and the count, 107),
+298 (law B's floor closed as a lead), 299 (B-157 time-boxed on one 323F004 probe) and 300 (B-118's stop rule at the end
+of session 146).
+
+## CLVI.2 Step 2: 322E002's steam pressure as the turndown handle (B-118, B-125)
+
+**The source (2.1).** `References\` (every subfolder: the `.md` and `.docx` files and, as text, all 81 PDFs) and then
+the vendor archive (`/soft-copy-search`: its index of the Operating Manual and the Soft copy) were searched. Two Uhde
+pages state the handle and its direction, each rendered and read:
+* UD-VT-G00-DC-0003 rev 00, Part III, p. 1-54 (`References\Sources\Manual.pdf`, PDF page 54): changing the pressure in
+  the steam drums by PIC329207 changes the boiler water's boiling temperature, the temperature difference across
+  322E002, the heat exchanged and so the carbamate reaction; p. 1-55: the steam pressure is normally set so that part of
+  the NH3 and CO2 does not condense, and the correct rate of condensation is indicated by TI322005, 183 C in normal
+  operation.
+* The same document, p. 5-7, section 5.2.1.7 (`Soft copy\10\UD-VT-G00-DC-0003_DC_00_006.pdf`, PDF page 7, a scan read
+  from the rendered page): with the N/C ratio correct, a low reactor top temperature may be due to a low pressure in
+  the steam drums, so that too much NH3 and CO2 condense in 322E002 and too little in the reactor. Section 5.2.1.8
+  (p. 5-8, from the index) gives the converse: too high a drum pressure, too little condensation, the excess gas to
+  322E003 and a rising synthesis pressure. Start-up p. 4-28 uses the same loop to hold PI329201 near 141 bar.
+
+No page gives a gain (K of reactor temperature, or a condensation fraction, per bar); the archive's text holds no such
+figure, and the secondary notes (`scenarios\Scenarios5.md`, the Gaps Closure documents) are qualitative. The gain is
+not a datum, and none is derived here.
+
+**The rig (2.2)** (`rig144.py`; `rig144.txt`, the 36 hold arms of sessions 135 to 141). Every B-118 arm moves the
+master set point of PIC-329207 by Book2's departure from the seed: 5.01325 bar a (4.000 bar g) at the seed, 5.07 bar a
+(4.057 bar g) at 92.3 % against Book2's 4.11 bar g, 5.26 bar a at 74.4 %, and 5.36 bar a (4.347 bar g) at 69.3-68.9 %
+against Book2's 4.398 bar g (the set point is held to two decimals). The header follows it: PT-329207's hold mean is
+within 0.006 bar of the set point on every 14 400 s hold (0.0055 on C923, under 0.002 on the rest; range
++/- 0.03-0.05 bar), 0.007 high on the 1 380 s R693, and -0.013 to +0.005 bar on the 1 800 s F and P arms. 322E002's shell receives the header's saturation, `tsat_c(p_lp)`: 151.94 C at the seed, 152.38 C at
+92.3 %, 154.46-154.53 C at 69.3 % (Book2's absolute 4.398 bar g would give 154.84 C). In those holds e_gas_co2 /
+b_feed_co2 is 0.175-0.176 at 92.3 % and 0.087-0.100 at 69.3 % (0.062 on the 1 800 s F689).
+
+**The unit sensitivity (2.3)** (`e002_144.py`, unit level, [I]). The frozen boundary is U693's hold, taken from arm
+U144: U693's configuration re-run through session 136's own runner, with `probe144e` saving 322E002's call (its
+arguments and the holdup before it) every 300 s from 7 500 s. Gate: U144's series is bit-equal to U693's (0 leaves
+differ in 1 090 samples to 10 900 s, the header rule's valve events at the same times). The probe's own rows are
+labelled by call count, one tick behind the series (the runner ticks once before its loop); compared on that label
+they appear to differ, and that reading was withdrawn. U693 rings (period 4 606 s), so three phases were taken: 7 500, 9 000 and 10 500 s. For each, the seed's own first
+call is stepped 600 s (S takes its references there, as in the engine), then the snapshot's holdup is stepped 3 600 s on
+the snapshot's arguments with the shell at tsat_c(p + 1.01325) and p_shell_bara = p + 1.01325, every other argument
+frozen. Both share definitions are given: r = gas CO2 / tube-side feed CO2 (the holds' e_gas_co2 / b_feed_co2), and
+share = gas / (feed + gas) = r / (1 + r) (session 138's; the seed's 0.169 is r 0.2036). The last-300 s drift is under
+2e-5 in r at every point.
+
+| Closure, boundary | own p (bar g) | share at own (r) | share at 4.0 / 4.348 / 4.5 / 5.0 bar g | duty at 4.0 / 5.0 bar g (kW) | share 0.169 at (bar g) |
+|---|---|---|---|---|---|
+| as built, seed | 4.000 | 0.1692 (0.2036) | 0.1692 / 0.2119 / 0.2286 / 0.2765 | 62 582 / 43 941 | 4.000 |
+| as built, U144 7 500 s | 4.348 | 0.0040 (0.0040) | 0.0025 / 0.0040 / 0.0049 / 0.0101 | 54 154 / 53 660 | above 5.0 |
+| as built, U144 9 000 s | 4.330 | 0.0039 | 0.0025 / 0.0040 / 0.0049 / 0.0104 | 55 100 / 54 583 | above 5.0 |
+| as built, U144 10 500 s | 4.342 | 0.0040 | 0.0025 / 0.0041 / 0.0050 / 0.0106 | 55 752 / 55 213 | above 5.0 |
+| S, seed | 4.000 | 0.1692 | 0.1692 / 0.2401 / 0.2664 / 0.3384 | 62 582 / 30 389 | 4.000 |
+| S, U144 7 500 s | 4.348 | 0.0829 (0.0904) | 0.0000 / 0.0828 / 0.1402 / 0.2815 | 54 338 / 29 013 | 4.590 |
+| S, U144 9 000 s | 4.330 | 0.0961 (0.1063) | 0.0000 / 0.1030 / 0.1571 / 0.2914 | 55 304 / 28 451 | 4.539 |
+| S, U144 10 500 s | 4.342 | 0.1019 (0.1134) | 0.0000 / 0.1043 / 0.1577 / 0.2905 | 55 961 / 28 924 | 4.538 |
+| E1eu, seed | 4.000 | 0.1692 | 0.1692 / 0.2107 / 0.2270 / 0.2739 | 62 582 / 44 456 | 4.000 |
+| E1eu, U144, each phase | | equal to the law as built to the digits shown | | | above 5.0 |
+
+E1eu equals the law as built on U144's boundary because the saturation fraction is 1.0 at every point there, and E1eu
+changes only that fraction. S at its own pressure gives the hold it came from (r 0.090-0.113 against U693's hold range
+of 0.087-0.100). S's share is zero at 4.0 and 4.1 bar g on U144's boundary (its split cannot go negative).
+
+**The reading (2.4).** The holds' r of 0.087-0.100 at 69.3 % are S + B arms, so S at the rig's set point leads. On
+U144's turndown boundary S answers the handle: 0.37 of share per bar about the rig's 4.348 bar g, about 10 points over
+the plant's 0.29 bar move between Book2's 92.3 and 69.3 % bands, and the seed's share 0.169 needs 4.54-4.59 bar g,
+0.19-0.24 bar above the rig's set point [I]. The rig runs 0.05 bar under Book2's absolute 4.398 bar g (it moves the set
+point by Book2's departure from a 4.000 bar g seed), worth about 0.02 of share on S's slope [I]; Book2's absolute pressure
+is 0.14-0.19 bar under the pressure that gives 0.169. At the design boundary every closure answers: the law as built
+raises the share by 0.12 per bar (+0.043 for the rig's 0.348 bar), S by 0.20 per bar.
+
+The law as built, put on the same boundary, does not: its NTU quench puts the outlet at 158.1-158.4 C, 3.6-4.0 K above
+the shell, all but 0.4 % of the CO2 condenses, and a whole bar moves the share by 0.008 and the duty by 0.5 MW. The
+plant's 0.29 bar is worth 0.002 of share there: a fraction of a point. This boundary is one S made (U693 is an S + B
+arm, its 322E002 feed and pressure S's), so the result is the law as built at unit level on S's turndown state, not the
+committed engine's own turndown, which never reaches 69.3 % steadily (B-118). It does not reverse Part XCI's §XCI.2
+("322E002 does not over-quench at turndown"): that was measured in the loop on session 77's engine at 80 and 90 %
+(M1_080, M1_090), the melt's N/C at 3.4 and the saturation 0.88-0.90, where the condenser held less gas; on U693's
+boundary the saturation is 1.0 and the law's quench condenses nearly all of it. The two are different boundaries, and
+which one the committed engine would meet at a steady 69.3 % is not known.
+
+In the plan's terms (item 4): at unit level the law as built cannot use at turndown the handle the plant relies on,
+where S can; on this evidence the insensitivity is located in that closure (B-125), [I], on a boundary S made. S on a
+frozen boundary needs about 0.2 bar more than the rig runs. Neither pressure is a datum: the boundary is frozen (in
+the loop more gas heats the reactor and moves 322E002's own feed), and S's sign has flipped once between unit and loop
+(§CLI.5). The target for B-125 that needs no gap 17 is therefore the pressure that holds the plant's TT-322005 in the
+loop, on S, against Book2's PT-329207, not the share. No loop arm was run (the plan: no loop matrix).
+
+## CLVI.3 Step 3: A-63's gate on B143 and N100A to 30 000 s (decision 296)
+
+Arms B144 (B143's configuration, (b): the cap with dH 23 000 J/mol and a 3.5 K margin, law B re-referenced to it) and
+N144 (N142's, N100A, the as-built seed), each to 30 000 s, and the tick-1 arms B144t and N144t (`probe144t`: the packet
+the runner builds right after the engine's first tick, the series' first sample being the second). Gates: B144 and N144
+are bit-equal to B143 and N142 over their 15 000 s (0 leaves differ). Scored by `run/dom144.py` (sample-wise dominance,
+on score142's displayed tags and decimals plus 323F010's level, m308 and TT-329001) and `run/cond4_144.py` (conditions
+2 and 4 against registry144's numeric criterion, registered before B144 was read; the top read unrounded as the reactor's
+top node, `b_t_new[3]`, since the series' `tt_322005` is the display, an amendment registered before the read).
+
+**Condition 1, the pin at t = 0.** Both arms' tick-1 packets show every printed design value to its digits (TT-322005
+183.0 C, TT-322004 172.0, TT-322010 170.0, TT-322013 187.0, AT-322701 3.000, FT-329403 60.85 t/h, FT-329407 16.71 t/h
+and the rest of the pinned set). Passed on both.
+
+**Condition 2, zero boil at the top.** B144: no boil on any of 3 000 samples to 30 000 s, the margin to the cap
+3.4285-3.4994 K (3.4994-3.5 K at tick 1). N144: the top boils on all 3 000 samples (up to 127.62 kg/h), its margin zero.
+Passed by (b) only.
+
+**Condition 4, the top settled** (3 000 s window means of the unrounded top, C):
+
+| Arm | 1 500 | 4 500 | 7 500 | 10 500 | 13 500 | 16 500 | 19 500 | 22 500 | 25 500 | 28 500 | slope 15 000-30 000 s (K per 1 000 s) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| B144 | 183.0270 | 183.0274 | 183.0256 | 183.0379 | 183.0619 | 183.0444 | 183.0458 | 183.0702 | 183.0538 | 183.0582 | +0.00127 |
+| N144 | 183.0007 | 183.0016 | 183.0026 | 183.0021 | 183.0033 | 183.0039 | 183.0044 | 183.0052 | 183.0054 | 183.0063 | +0.00017 |
+
+B144 meets the registered criterion: (a) the slope +0.00127 K per 1 000 s, under 0.003; (b) the last three means
+within 0.0164 K, under 0.02; (c) the display never above 183.1 C. It meets it narrowly: the unrounded top reaches
+183.0766 C (minimum 183.0006), the display reads 183.1 on 1 222 of 3 000 samples, first at 11 170 s and on 56 % of the
+samples after 15 000 s, and the step of about 0.02-0.04 K at 11 000 s (with x_conv) is not reversed. The level it holds
+is 0.04-0.07 K above 183.0 C (the late window means 183.044-183.070), the top free of the clip. N144 is level on the clip (183.000-183.008 C).
+
+**Condition 3, dominance at every sample** (B144 against N144; a sample fails when B144's displayed distance from the
+printed value exceeds N144's at the same time by more than one display step). The reference value p0 is the PFD's
+printed value where the PFD prints one (P, score142's pinned set); for the other tags it is N144's first sample, the
+design value as the as-built seed displays it:
+
+| Tag | P | Samples failing (of 3 000) | First (s) | Largest excess (steps) | Largest distance B144 / N144 (steps) |
+|---|---|---|---|---|---|
+| 323F010 level | no | 840 | 11 030 | 5 | 7 / 4 |
+| FT-329407 | yes | 786 | 2 550 | 5 | 6 / 7 |
+| FT-329403 | yes | 126 | 10 220 | 3 | 4 / 6 |
+| LT-322504 | no | 288 | 8 280 | 1 | 2 / 2 |
+| m308 | no | 105 | 3 410 | 1 | 3 / 9 |
+
+The other 24 tags pass at every sample, TT-322005 and AT-322701 among them (TT-322005's largest distance one step,
+AT-322701's one against N144's four). Read as the ruling is written, at every sample, condition 3 fails on five tags:
+the two arms wander on the same mode out of phase, so at a given time B144 can be further out than N144 although its
+excursions are no larger. Read on the largest excursion over the run, it fails on 323F010's level alone (7 steps
+against 4), a tag with no printed value, scored from N144's first sample, and a level the rig holds on
+HIC-323605's trim; FT-329403 and FT-329407 then pass (4 against 6, 6 against 7).
+Both readings are the engineer's; no reading is chosen here. The worst tags sit on the LP chain 323C003 -> 323F004 ->
+323F010 -> 323E010 -> the LP header (FT-329407), the chain step 4 shows (b) enlarges (§CLVI.4).
+
+**FT-329403 and FT-329407 (decision 299's rates).** Over 15 000-30 000 s: FT-329403 +0.00038 t/h per 1 000 s on B144
+(window means 60.838-60.863), -0.00060 on N144 (60.859-60.880); FT-329407 +0.00145 on B144 (16.670-16.697, rising
+over the last three windows), +0.00121 on N144 (16.676-16.692). x_conv: +0.00002 and -0.00001 per 1 000 s.
+
+**The outcome.** Condition 4 is met on the registered criterion, so the plan's trigger for the build is met. A-63's gate
+(decision 296) is four conditions, and condition 3 as written fails: (b) is not built, no equivalence test is written,
+and N100B is not made. The outcome is the engineer's: the reading of condition 3 (every sample, or the run's largest
+excursion), and under the second, whether 323F010's level, on the rig's trim, counts against (b).
+
+## CLVI.4 Step 4: B-157's last probe, 323F004 (decision 299)
+
+Arm F144: N142's configuration (N100A) with `probe144f` on 323F004 (`FlashTank.step`: its arguments, 323C003's drain
+as it departed and the node pressures, and its result, every tick to 10 s, then every 10 s) and session 143's
+`probe143`, 3 600 s. Gate: bit-equal to N142 over its first 3 600 s (0 leaves differ in 360 samples). The drum sits on
+its bubble point (`liquor_stage.bubble_t`, departure form), so its temperature departure is split into a pressure part,
+T_bub(w0, P) - T_bub(w0, P0), and a composition part, T_bub(w, P) - T_bub(w0, P), on the module's own function
+(`f004_144.py`; `run/runs/F144_split.txt`). Departures from tick 1:
+
+| t (s) | inlet dUrea | inlet dNH3 / dCO2 | inlet dT (K) | drum dT (K) | dP (mbar) | T_bub: P part / w part (K) | m701 (kg/h) |
+|---|---|---|---|---|---|---|---|
+| 60 | -1.01e-4 | +3.8e-5 / +4.6e-5 | -0.001 | -0.001 | +0.16 | +0.003 / -0.015 | +2.0 |
+| 300 | -2.27e-4 | +5.0e-5 / +1.17e-4 | +0.001 | -0.054 | +0.64 | +0.013 / -0.101 | +10.6 |
+| 450 | -2.35e-4 | +5.0e-5 / +1.16e-4 | +0.001 | -0.071 | +0.64 | +0.013 / -0.089 | +11.5 |
+| 900 | -2.12e-4 | +5.0e-5 / +7.7e-5 | +0.001 | -0.066 | +0.39 | +0.008 / -0.065 | +9.8 |
+| 1 800 | -7.6e-5 | -2.2e-5 / -1.3e-5 | +0.002 | -0.000 | -0.23 | -0.005 / +0.009 | +1.3 |
+| 3 600 | -9.3e-5 | -1.2e-5 / -8.0e-6 | +0.001 | -0.005 | -0.18 | -0.004 / +0.005 | +0.0 |
+
+The drain's cooling is carried in by the inlet: 323C003's drain arrives at its own temperature (135 C within 0.002 K)
+but leaner in urea and richer in NH3 and CO2, which lowers the bubble point the drum relaxes to (-0.089 K at 450 s);
+323F004's own response, the node pressure rising 0.64 mbar on the larger flash, offsets +0.013 K. Its holdup and level
+(60.00 % within 0.1) take no part. 323F004 is not the source; its residual is 323C003's drain composition.
+
+**The time-box's test** (F144b, B143's configuration, (b), with the same probe, 3 600 s; registered prediction: smaller
+under (b) if the chain is the synthesis wander). Under (b) the move is larger: drum -0.094 K at 450 s (as built -0.071),
+-0.113 K at 900 s (-0.066), -0.150 K at 3 600 s (-0.005); inlet urea -3.13e-4 at 450 s (-2.35e-4) and -3.67e-4 at
+3 600 s (-0.93e-4). To 450 s, where the drain's move is set, (b) moves the synthesis less than N100A does (x_conv
+-3.7e-5 from its 10 s sample against -1.22e-4; the table below), yet the drain moves more, so the 323C003 drain's
+relaxation is not the synthesis wander that A-63's fix shrinks.
+
+| t (s) | x_conv N100A / (b) | 322E001 drain (kg/h) N100A / (b) | stripper bottoms (t/h) N100A / (b) |
+|---|---|---|---|
+| 10 | 0.541852 / 0.541823 | 130 523 / 130 482 | 130.479 / 130.480 |
+| 450 | 0.541730 / 0.541786 | 130 464 / 130 475 | 130.469 / 130.477 |
+| 900 | 0.541721 / 0.541706 | 130 461 / 130 463 | 130.462 / 130.470 |
+| 3 600 | 0.541827 / 0.541682 | 130 485 / 130 456 | 130.460 / 130.460 |
+
+The chain is: 323C003's drain composition (urea leaner, NH3 and CO2 richer, from the first minute, in both arms) ->
+323F004's bubble point -> its drain to 323F010, colder and leaner -> 323E010's duty -> the LP header's balance ->
+FT-329407. ERL in session 143 (the re-solve and the cp anchor both removed) also made it larger, so it is neither
+residual's. Whether 323C003's bottoms relax from its own seed state (§CLIV.4's -2.65e-6 urea per s) or carry its
+feed's, the stripper drain arriving 41 kg/h lower under (b) from the first sample, is [I]: decision 299 allows one probe
+and it was 323F004's. Decision 299's condition (the chain ends in the synthesis wander that A-63's fix shrinks) is not
+met, so B-157 does not close on A-63's build; the outcome goes to the engineer.
+
+
+## CLVI.5 Decisions, items and deliverables
+
+Decisions 296 to 300 taken; the zero-margin class appended to `docs/decided-classes.md` as "find and measure", its
+exception in `CLAUDE.md` section 5 rule 7. A-63: conditions 1, 2 and 4 met by (b) on B144, condition 3 failed as
+written (five tags sample-wise, 323F010's level alone on the run's largest excursion); (b) not built, N100B not made,
+the reading the engineer's (§CLVI.3). B-118: the steam-pressure handle sourced (Uhde, direction, no gain), the rig shown
+to move it by Book2's departure, and at unit level on U693's boundary the law as built found near-insensitive to it
+where S answers 0.37 of share per bar (§CLVI.2). B-125: located, [I], on a boundary S made. B-157: 323F004 is not the
+source, its residual 323C003's drain composition, and (b) enlarges the chain, so decision 299's condition is not met
+(§CLVI.4). Scripts and runs stay in `Tests and Reports/scratch/session-144`, archived as
+`Tests and Reports/reports/Session_144_b118`.

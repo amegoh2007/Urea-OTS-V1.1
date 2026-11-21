@@ -5388,3 +5388,14 @@ Law B's floor binds in no hold (R923b, U693, A61g), only with the top on the cap
 margin. A class for zero-margin design limits proposed (322R001's cap, 322E002's and 322E003's saturation laws).
 B-157: m308 and 323F010 are closures on the synthesis wander; CP_S208_DES is V1's, its residual the seed's bottoms;
 the heaters' draw is 323F004's drain. Step 5 not run. Part CLV; `Tests and Reports\scratch\session-143`.
+
+### Session 144 — 2026-11-20: decisions 296-300; 322E002's steam-pressure handle; A-63's gate to 30 000 s; B-157's 323F004 probe
+
+Session 143 committed (415078b) and pushed. Rulings recorded as decisions 296 (A-63's gate as four conditions, B143 and
+N100A to 30 000 s), 297 (the zero-margin class adopted as "find and measure"; `CLAUDE.md` section 5 rule 7), 298 (law B's
+floor closed as a lead), 299 (B-157 time-boxed on 323F004) and 300 (B-118's stop rule after session 146). Uhde's
+manual makes PIC-329207 the handle on 322E002's condensation, no gain printed; the rig moves it by Book2's departure.
+On U693's boundary S answers 0.37 of share per bar (0.169 at 4.54-4.59 bar g), the law as built 0.008 [I]. B144 to
+30 000 s: pin, zero boil and a settled top met; sample-wise dominance over N100A fails on five tags, on the largest
+excursion on 323F010's level alone; (b) not built, the reading the engineer's. 323F004's drain cooling is 323C003's
+drain composition, larger under (b); decision 299's condition not met. Part CLVI; `Tests and Reports\scratch\session-144`.
