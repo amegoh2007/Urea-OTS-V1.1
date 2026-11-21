@@ -5,7 +5,7 @@ is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-20, session 144
+**Last updated:** 2026-11-21, session 145
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -23,26 +23,27 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   Trips 35.1, 35.3 and 35.4 act on the header as AC4 PC35 draws them (decision 228). LI-323502, LI-323503 and
   LI-323501, LI-328503, LI-328505 and LI-328504 read between their taps (decisions 219, 233, 241, 243, 244, 246); B-156
   closed on those six, LT-329501 is data gap 15 (decision 248). PC21's timers run AC4's minutes (decisions 229, 231).
-  FY-321404 is shown and set on the DCS's formula (decision 235).
+  FY-321404 is shown and set on the DCS's formula (decision 235). 322R001's boil cap stands 3.5 K [E] above its
+  bubble line (decision 301), so the design seed's top no longer boils.
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A one (A-63), Section B five (B-118 with B-120 folded in, B-125, B-126, B-136 and
-  B-157), Section C none, 5 open data gaps (1, 3, 10, 15, 17). Each waits on a vendor document (Körting) or on one plant
+* **Open.** `handoff.md`: Section A none, Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
+  Section C none, 5 open data gaps (1, 3, 10, 15, 17). Each waits on a vendor document (Körting) or on one plant
   DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
-* **Session 144** (Part CLVI; decisions 296 to 300; nothing built). A-63's (b) to 30 000 s: pin, zero boil and a settled
-  top met, sample-wise dominance over N100A failed on five tags (323F010's level alone on the largest excursion); not
-  built, the engineer's reading. 322E002's steam pressure sourced as the handle; on S's turndown state the law as built
-  ignores it (unit level, [I]).
-* **Sessions 138 to 143** (Parts CL to CLV; decisions 277 to 295). One stable 322R001 root at every load; no share fits
-  under the boil cap (gap 17); A-61 closed (287); B-157 and A-63 raised (290); (b), a 3.5 K cap margin, ends the boil.
+* **Session 145** (Part CLVII; decisions 301 to 306). Built: the boil cap's 3.5 K margin with its three-sided test;
+  N100B (bit-equal to B144) the paired reference; A-63 and B-157 closed. Book2: drum pressure moves 322E002's outlet
+  (TT-322010 +4.4 K/bar at 94.2 %), the gas share under 0.01-0.03 per bar, against law S's 0.37 [I]. At 69.3 % neither
+  S at 4.557 bar g (rings, settles 184.2 C) nor Book2's 4.397 bar g holds the band. Three seed bounds, 918's tolerance
+  and 323F010's shutdown ring restated on the margin (304 to 306).
+* **Sessions 138 to 144** (Parts CL to CLVI; decisions 277 to 300). One stable 322R001 root at every load; no share
+  fits under the boil cap (gap 17); A-61 closed (287); A-63 raised (290) and its fix (b) measured to 30 000 s; PIC-329207
+  sourced as 322E002's handle; B-118's stop rule after session 146 (300).
 * **Sessions 135 to 137** (Parts CXLVII to CXLIX; decisions 253 to 275). The manual's header-valve rule on the B-118
   rig (253); the refit picks V1's approach; no wave M arm stands; the T693b trace closed gap 16; the letters and the
   readback checklist made.
-* **Session 133** (Part CXLV; decision 252, built on branch `v1.2-d252` and merged into `v1.2` after session 134's runs). LY-324501 built on AC4's formula over V1's level with Rosemount's LRV floor, the seed unchanged to the bit; at the design vacuum 335P001's L2 stop cannot act, kept as built (2026-11-19). Researched: 324F003's and the leg's drawings (232 kg at the plant's 50 %), the cooling-water lead ruled out, PT-323204's two decimals, the UF85 pumps' capacity, the Drive copy's hash. The session 114 scratch plan ran in session 134.
-* **Session 132** (Part CXLIV; decision 251). V1.2 made; the separators' ejectors break on the 5 November bracket.
-* **Sessions 129 to 131** (Parts CXL to CXLIII; decisions 249, 250). Built: PC21's page-20 timers as ABB TOFF elements
-  (decision 249) and FY-322403's trip at 8 500 Nm3/h (decision 250); another tool's 13 closures checked, none holds.
+* **Sessions 129 to 133** (Parts CXL to CXLV; decisions 249 to 252). PC21's timers as ABB TOFF elements; FY-322403's
+  trip at 8 500 Nm3/h; V1.2 made; LY-324501 built on AC4's formula, the seed unchanged to the bit.
 * **Sessions 121 to 128** (Parts CXXXI, CXXXIII to CXXXIX; decisions 219, 230, 232 to 235, 239 to 248). B-156 closed;
   data gaps 2, 8, 11 closed; A-57, B-127, A-59, B-135, A-60 closed as built. Surveys: `Session_123_gaps`, `Session_128_gaps`.
 * **Session 120** (Parts CXXX, CXXXII; decisions 218, 228). Every file the simulator uses lives in its folder, the
@@ -71,9 +72,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 145 (144 taken 2026-11-20: decisions 296-300, 322E002's steam-pressure handle, A-63's gate to 30 000 s, B-157's 323F004 probe) | `docs/history/session-log.md` |
-| Decision | 301 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138; 280 to 282 by session 139; 283 to 285 by session 140; 286 to 289 by session 141; 290 to 293 by session 142; 294 and 295 by session 143; 296 to 300 by session 144) | `docs/decisions.md` |
-| As-Built Part | CLVII (CLVI taken by session 144) | the As-Built reference, appended at its end |
+| Session | 146 (145 taken 2026-11-21: decisions 301-306, the boil cap's margin built, A-63 and B-157 closed, Book2's steam-pressure gain, law S at two pressures) | `docs/history/session-log.md` |
+| Decision | 307 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138; 280 to 282 by session 139; 283 to 285 by session 140; 286 to 289 by session 141; 290 to 293 by session 142; 294 and 295 by session 143; 296 to 300 by session 144; 301 to 306 by session 145) | `docs/decisions.md` |
+| As-Built Part | CLVIII (CLVII taken by session 145) | the As-Built reference, appended at its end |
 | Handoff Section A | A-64 (A-63 session 142's) | `handoff.md` |
 | Handoff Sections B and C | B-158 (B-157 session 138's) | `handoff.md` |
 

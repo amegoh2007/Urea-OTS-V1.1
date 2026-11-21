@@ -5399,3 +5399,14 @@ On U693's boundary S answers 0.37 of share per bar (0.169 at 4.54-4.59 bar g), t
 30 000 s: pin, zero boil and a settled top met; sample-wise dominance over N100A fails on five tags, on the largest
 excursion on 323F010's level alone; (b) not built, the reading the engineer's. 323F004's drain cooling is 323C003's
 drain composition, larger under (b); decision 299's condition not met. Part CLVI; `Tests and Reports\scratch\session-144`.
+
+### Session 145 — 2026-11-21: decisions 301-306; the boil cap's 3.5 K margin built; Book2's steam-pressure gain; law S at two pressures
+
+Session 144 committed and pushed. Rulings as decisions 301 (A-63's envelope reading; (b) built at 3.5 K [E], its test
+three-sided, N100B the paired reference; A-63 closed), 302 (B-157 closed under its time-box) and 303 (the rig's
+PIC-329207 as a departure from Book2). Built: `BOIL_CAP_MARGIN_K` in `data.unit_322r001`, `reactor_boil`'s ceiling on
+it; N100B bit-equal to B144. Book2: PT-329207 moves TT-322010 by +4.4 K/bar at 94.2 %, the gas share by 0.01 to 0.03
+per bar, between law B's 0.008 and law S's 0.37, recorded as B-125's target [I]. At 69.3 % law S at 4.557 bar g rings
+and settles at 184.2 C, Book2's 4.397 bar g no better; neither holds the band. The suite's consequences of the margin
+ruled as decisions 304 (three seed bounds restated), 305 (918 within 0.025 %) and 306 (323F010's shutdown ring as
+decision 163's). Part CLVII; `Tests and Reports\reports\Session_145_b118`.

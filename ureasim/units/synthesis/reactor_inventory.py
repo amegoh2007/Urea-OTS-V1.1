@@ -173,7 +173,8 @@ class ReactorStepResult:
     overflow_kgh: float
     #: What the holdup gained this tick [kg/h], the liquid PT-329201's vapour does not count.
     dm_liq_kgh: float = 0.0
-    #: The liquor's bubble temperature at the live pressure [deg C]; what the nodes' excess heat
+    #: The nodes' ceiling at the live pressure, the liquor's bubble line plus its margin (decision 301)
+    #: [deg C]; what the nodes' excess heat
     #: flashed off the overflow [kg/h]; the excess its volatiles could not pay [kJ/h] (B-92).
     t_bub_c: float = OFFGAS_T_DES_C
     boil_kgh: float = 0.0

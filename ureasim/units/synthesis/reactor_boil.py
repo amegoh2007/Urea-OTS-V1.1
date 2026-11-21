@@ -14,7 +14,8 @@ liquor boiling past its own boiling point): each node is held at most at the liq
 temperature at the live loop pressure, and the excess heat is paid as latent heat — it flashes
 the liquor's volatiles back into the off-gas, which returns their mass to the loop's vapour.
 
-    1 / T_bub(P) = 1 / T_des - (R / dH_vap) . ln(P_top / P_des),   P_top = PT-329201 + (P_des - P_loop,des)
+    1 / T_b(P)   = 1 / T_des - (R / dH_vap) . ln(P_top / P_des),   P_top = PT-329201 + (P_des - P_loop,des)
+    T_bub(P)     = T_b(P) + dT_margin                    the ceiling, dT_margin = 3.5 K [E] (decision 301)
 
     E_n   = m cp . tau_n . (T_n - T_bub) / dt     for every node above T_bub        [kJ/h]
     H     = n_CO2 . dH_carb + max(n_NH3 - 2 n_CO2, 0) . dH_vap + n_H2O . dH_H2O    [kJ/h]
@@ -34,12 +35,16 @@ what its volatiles cannot pay on a tick is published (``q_unpaid_kjh``) and leav
 as sensible heat — non-zero only where a state starts far above its ceiling, a start-up's first
 ticks.
 
-At the design seed the top node stands exactly on its bubble point and nothing flashes: the seed is
-V1's to the bit.
+The ceiling stands a margin above that line, 3.5 K at design (decision 301, handoff A-63): with no
+margin it sat on the design top and clipped V1's own 0.045 K top excess, so the seed's top boiled
+some 30 kg/h from its first tick, where V1 boils nothing. With the margin the design seed's top
+node stands 3.5 K under the ceiling and nothing flashes; the top settles where V1's kinetics put it.
+The margin is [E] (session 140's candidate (b)); its final value waits on the bubble-line
+literature report (decision 293).
 
-Source: decision 102 (`project.md`); V1 ``backend/reactor.py`` ``node_dTdt`` for the balance it
-bounds; `data.unit_322e002` (the melt's bubble law), `thermo.kinetics` (the carbamate enthalpy),
-`data.synthesis_pin` (the pinned node profile).
+Source: decisions 102 and 301 (`docs/decisions.md`); V1 ``backend/reactor.py`` ``node_dTdt`` for the
+balance it bounds; `data.unit_322e002` (the melt's bubble law), `data.unit_322r001` (the margin),
+`thermo.kinetics` (the carbamate enthalpy), `data.synthesis_pin` (the pinned node profile).
 """
 
 from __future__ import annotations
@@ -51,13 +56,14 @@ from ureasim.core.stream import MW_COMP
 from ureasim.data.synthesis_pin import REACT_NODE_SS_DES_C
 from ureasim.data.unit_320 import SYN_P_DES_BARA
 from ureasim.data.unit_322e002 import BUB_DHVAP_JMOL, FLASH_DH, FLASH_R_GAS_J
-from ureasim.data.unit_322r001 import OFFGAS_P_DES_BARA
+from ureasim.data.unit_322r001 import BOIL_CAP_MARGIN_K, OFFGAS_P_DES_BARA
 from ureasim.thermo.kinetics import CARBAMATE_DH_JMOL
 
-__all__ = ["BOIL_T_DES_C", "BOIL_DP_DES_BAR", "VOLATILES", "NodeBoil", "NO_BOIL",
+__all__ = ["BOIL_T_DES_C", "BOIL_DP_DES_BAR", "BOIL_CAP_MARGIN_K", "VOLATILES", "NodeBoil", "NO_BOIL",
            "liquor_bubble_t_c", "volatile_enthalpy_kjh", "node_boil"]
 
-#: Where the reactor's liquor boils at design [deg C]: the pinned top node, PFD 207's 183 C.
+#: The design anchor of the liquor's bubble line [deg C]: the pinned top node, PFD 207's 183 C. The
+#: ceiling stands `BOIL_CAP_MARGIN_K` above it (read at call time, so a test can set the margin to zero).
 BOIL_T_DES_C = REACT_NODE_SS_DES_C[-1]
 
 #: The reactor top over PT-329201 at design [bar], 0.6: the off-gas line's 141.3 bar a less the
@@ -85,9 +91,9 @@ _P_FLOOR_BARA = 1.0e-6
 class NodeBoil:
     """One tick of the reactor liquor's boil."""
 
-    #: The node temperatures, none above the bubble temperature [deg C].
+    #: The node temperatures, none above the ceiling [deg C].
     t_nodes_c: tuple
-    #: The liquor's bubble temperature at the live pressure [deg C].
+    #: The ceiling at the live pressure: the liquor's bubble line plus ``BOIL_CAP_MARGIN_K`` (decision 301) [deg C].
     t_bub_c: float
     #: The share of the overflow's volatiles that flashed [-], and what flashed [kmol/h, kg/h].
     frac: float
@@ -111,17 +117,19 @@ def liquor_bubble_t_c(p_syn_bara: float) -> float:
     The ceiling on the four thermowells: a liquor hotter than this flashes down to it. It rides
     the loop pressure, 0.532 K per bar at design (As-Built §CLIII), so a falling loop flashes the reactor's liquor
     and a rising one lets it hold more carbamate — the reactor's pressure and top temperature are
-    tied as on the plant.
+    tied as on the plant. It stands 3.5 K above the design top (decision 301), so the design
+    seed does not boil and a loop must fall some 6.6 bar before its top flashes.
 
     Equation
     --------
-        1 / T_bub = 1 / T_des - (R / dH_vap) . ln((P + dP_des) / P_des)
+        1 / T_b   = 1 / T_des - (R / dH_vap) . ln((P + dP_des) / P_des)
+        T_bub     = T_b + dT_margin
 
-    written as an increment on the anchor, so the design pressure returns exactly 183 C.
+    written as an increment on the anchor, so the design pressure returns exactly 183 C + 3.5 K.
     """
     inv = _INV_DES - (FLASH_R_GAS_J / BUB_DHVAP_JMOL) * math.log(
         max(p_syn_bara + BOIL_DP_DES_BAR, _P_FLOOR_BARA) / OFFGAS_P_DES_BARA)
-    return BOIL_T_DES_C + (1.0 / inv - 1.0 / _INV_DES)
+    return BOIL_T_DES_C + (1.0 / inv - 1.0 / _INV_DES) + BOIL_CAP_MARGIN_K
 
 
 def volatile_enthalpy_kjh(overflow_kmolh: dict) -> float:

@@ -1656,6 +1656,7 @@ boils (nor boils below it); found by the Phase 7 cold start (`tests/units/evapor
 | 356 | LI-328503 between LT-328503's taps on 328C002 (decision 243) | LI = M / M_des x 50, LIC-328503's PV the same, held at 50 % | `data/unit_328c002` ``lt_328503_pct``, ``LT_328503_DES_PCT``, the taps and span; `units/desorption/first_desorber` ``taps``, ``level_pct``, ``lic_328503(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-17: the reading between N7B and N7A, 1 200 mm on the shell above the partition, V1's design holdup at 70.83 %, LIC-328503 seeded and set there; ``taps=False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_328503_between_its_taps_decided_divergence`; the seed identical at tick 1 but for the reading, its flows within 1.96e-5 by 600 s, 324E001's boil-off 6.6e-5 (§CXXXVI.3) |
 | 357 | LI-328505 between LT-328505's taps on 328C004 (decision 244) | LI = M / M_des x 50, LIC-328505's PV the same, held at 50 % | `data/unit_328c004` ``lt_328505_pct``, ``LT_328505_DES_PCT``, the taps and span; `units/desorption/second_desorber` ``taps``, ``level_pct``, ``lic_328505(taps)``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-17: the reading between N11B and N11A, 1 000 mm on the shell above the bottom tangent line, V1's design holdup at 71.00 %, LIC-328505 seeded and set there; ``taps=False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_328505_between_its_taps_decided_divergence`; the seed identical at tick 1 but for the reading, its flows within 2.36e-5 by 600 s, 324E001's boil-off 5.1e-7 (§CXXXVII.3) |
 | 358 | LI-328504 between LT-328504's taps on 328C003 (decision 246) | LI = M / M_des x 50, LIC-328504's PV the same, held at 50 % | `data/unit_328c003` ``lt_328504_pct``, ``LT_328504_DES_PCT``, the taps and span; `units/desorption/hydrolyser` ``taps``, ``level_pct``; `engine/plant/recirc` ``adopt_tap_reading``; `data/retired_state` ``ADDED_ATTRIBUTES`` | **`[DECIDED DIVERGENCE]`** 2026-11-17: the reading between N5B and N5A, 1 475 and 475 mm below the top tangent line, V1's design holdup read as the drawing's N.L.L. at mid-span, 50 %, V1's own reading, LIC-328504's seed unchanged; ``taps=False``, V1's, on the harnesses, ``==`` every tick; both sides in `test_li_328504_between_its_taps_decided_divergence`; the seed identical at tick 1 but for the reading, AI-328701 within decision 246's 2e-4 by 600 s, every other flow within 6e-5, 324E001's boil-off 2.4e-4 (§CXXXVIII.3) |
+| 359 | 322R001's boil ceiling 3.5 K over its bubble line (decision 301; A-63) | T_ceil(P) = T_b(P) + dT_margin, 1/T_b = 1/T_des - (R/dH) ln((P+0.6)/141.3), dT_margin 3.5 K [E] | `data/unit_322r001` ``BOIL_CAP_MARGIN_K``; `units/synthesis/reactor_boil` ``liquor_bubble_t_c`` | **`[DECIDED DIVERGENCE]`** 2026-11-21: V1 has no boil at design and no cap; the as-built-before ceiling stood on the design top with zero margin and boiled the seed's top 29.93 kg/h on its first tick; the rewrite's ceiling stands at 186.5 C at 140.7 bar a, the seed's top boils nothing; all three sides in `test_the_reactor_ceiling_stands_its_margin_above_the_design_top_decided_divergence`, the top within 1e-8 K of V1's over 600 ticks; the zero-margin class's (decision 297) first measured instance; the suite's consequences decisions 304 to 306 (§CLVII.2) |
 
 **Rule for this table:** a row moves to `[PORTED]` only when (a) the code is in `ureasim/`, (b) an
 equivalence test in `tests/equivalence/` drives both implementations and passes, and (c) the
@@ -30763,3 +30764,224 @@ where S answers 0.37 of share per bar (§CLVI.2). B-125: located, [I], on a boun
 source, its residual 323C003's drain composition, and (b) enlarges the chain, so decision 299's condition is not met
 (§CLVI.4). Scripts and runs stay in `Tests and Reports/scratch/session-144`, archived as
 `Tests and Reports/reports/Session_144_b118`.
+
+# Part CLVII — Session 145: the rulings as decisions 301 to 306, the boil cap's 3.5 K margin built (A-63 closed), B-157 closed, Book2's steam-pressure gain, law S at two steam pressures (2026-11-21)
+
+Scripts and output: `Tests and Reports/reports/Session_145_b118` (session 145's scratch folder, archived; `registry145.md`, written before step 2's output and
+amended before step 3's launch; `desk/band145*.py`; `run/` with `go145.sh`, `go145b.sh`, `step3_145.py`,
+`score145h.py`, `drift145.py`; `eq145.py`, `record145.py`, `repin145.py`). Changed under `ureasim/`:
+`data/unit_322r001.py` and `units/synthesis/reactor_boil.py` (decision 301).
+
+## CLVII.1 Step 0 and the rulings
+
+Session 144's seven documents were already committed as a3a3a2d and pushed (`v1.2` level with `origin/v1.2`). Its
+`CLAUDE.md` diff carries exactly the two changes the ruling allows (rule 7's class count 104 to 107; the "find and
+measure" exception sentence); nothing reverted. The rulings of 2026-11-21 are decisions 301 (A-63's condition 3 read
+as envelope dominance on the printed design values; (b) built; N100B the paired reference; A-63 closed), 302 (B-157
+closed under its time-box as documented behaviour) and 303 (the rig's steam pressure stays a departure from Book2).
+The ruling cites "decision 196's departures" for the rig's basis; decision 196 is the relief-lift rule, and the
+departure basis is §CVI.5 / §CVII.1, cited instead.
+
+## CLVII.2 The boil cap's 3.5 K margin, built (decision 301; A-63 closed)
+
+**The relation.** `reactor_boil.liquor_bubble_t_c`, the ceiling on 322R001's four nodes:
+
+    1 / T_b = 1 / T_des - (R / dH_vap) . ln((P + dP_des) / P_des)        the line, as built (decision 102)
+    T_bub   = T_des + (1 / inv - 1 / inv_des) + dT_margin                dT_margin = 3.5 K [E]
+
+T_des 183 C (PFD 207's top node), dH_vap 23 kJ/mol, dP_des 0.6 bar, P_des 141.3 bar a; the margin
+`data.unit_322r001.BOIL_CAP_MARGIN_K`, source "[E], session 140 candidate (b); final value from the bubble-line
+literature report". The arithmetic is session 141's cap141 term for term. At 140.7 bar a the ceiling is 186.5 C
+(186.50000000000003, the anchor's own 183.00000000000003 plus 3.5). The cap lives in `units`, not `thermo`: no node
+store is stale and none was rebuilt (`CLAUDE.md` §3). It is the zero-margin class's (decision 297) first measured
+instance: its margin is measured on 322R001 itself (A-63's four conditions, §CLVI.3, read under decision 301).
+
+**Gate on the rig.** N100B, B144's configuration without the cap141 key on tree145 (tree252 with the two built files;
+`diff -rq --strip-trailing-cr` against the working tree's `ureasim` shows no other difference), 30 000 s: bit-equal to
+B144, 0 leaves differ in 3 000 samples, the A-61 probe file identical; the tree's cap printed 186.5 C at 140.7 bar a.
+N100B is decision 278's paired reference from now on.
+
+**The equivalence test** (`test_synthesis_loop_decided_equivalence.py`,
+`test_the_reactor_ceiling_stands_its_margin_above_the_design_top_decided_divergence`), a minute from the design seed on
+the synthesis-loop harness, three ways (measured by `eq145.py`):
+
+| Side | Boil, tick 1 / 60 s (kg/h) | Top node at 60 s (C) |
+|---|---|---|
+| V1 (B-92's lines off: no ceiling) | none | 183.003480 |
+| the rewrite, the 3.5 K ceiling | 0 on every tick | 183.003480 (within 6e-9 K of V1's; the rest is B-92's filling reactor) |
+| as built before (margin 0, set by `monkeypatch`) | 29.9302 / 32.1543, every tick | 183.000000 (clipped) |
+
+The margin is read at call time (`reactor_boil.BOIL_CAP_MARGIN_K`), so the test reaches the zero-margin side without a
+second code path; the harness's transcription calls the port's `node_boil`, so port == transcription holds both ways.
+With the margin the ceiling never binds from the seed; B-92's switch still differs from V1's lines through its other
+term, the residence on the liquid passing (`max(out, in)`), which first shows on LT-329501 at tick 13.
+
+**What the margin moves elsewhere** (re-pinned, each with "(X before decision 301)" or a decision-301 note):
+* `units/synthesis/test_reactor_boil.py`: the ceiling 3.5 K over the line at every pressure (186.5 C at design;
+  47.854 C at 9.4 bar a); a 5 bar fall no longer boils (the ceiling 0.81 K over the top); the one-tick total flash now
+  needs a 12 bar step (the ceiling 179.92 C).
+* The synthesis-loop decided tests: every start reaches the seed's top, which no longer boils, so the loop's off-gas
+  and everything downstream move by small amounts (HV-322604's purge returns to its value before B-91 / B-92,
+  1708.3203 kg/h; the B-75 load ratio 0.7902 against 0.7915). The starts that boil move more: at 130.7 bar a the ceiling
+  stands at 181.05 C over the line's 177.55 C, the top ends at 180.07 C (176.78 before), the loop at 130.5033 bar a
+  (130.4825); B-106's low-N/C run (+20 % CO2, the melt on the azeotrope branch) condenses 44.8 t/h (70.9) and its loop
+  climbs to 154.98 bar a at 200 s without passing 155 (before: past 155 after 180 s); AC4's CO2-cut trip ends at
+  139.70 / 139.83 bar a (139.52 / 140.80); 322E001's full sump fills a tick earlier (140.1 s).
+* The 100 % packet test's comment on 39 399 kW (`engine/packet/test_synthesis.py`): the stripper reads 39 400 kW after ten ticks
+  (39 399 with the margin at zero, the top's 32.7 kg/h flash carried by its feed); the comment restated, the pin unchanged.
+* The rest of the suite, re-pinned in the form "NEW (OLD before decision 301)": 322E001's sump over the disturbed
+  minute loses 317.974 kg (316.584); the tempered-water loss ends the loop at 141.0390 bar a (141.0419); the reactor
+  holdup's nitrogen departure is -1 595.73 kmol/h (-1 595.22); B-103's held liquor is 2 229.52 kg, V1's loop
+  142.0014, the port's 141.0459 bar a (2 223.46, 141.9951, 141.0394).
+* B-104's tube-ceiling run (LV-322501 to 10 %, the tubes capped): the cap at tick 2 177 (2 180), the last two
+  ticks' means 26 615.6 and 32 000.2 kg/h (26 608.7, 32 042.5), the tubes 8 401.1 kg at sigma 0.9669 (8 402.9,
+  0.9671), the levels 80.337 and 85.956 % (80.336, 85.943), TT-322004 165.63 against 141.56 C (165.61, 141.57),
+  the loops 146.6672 and 140.0131 bar a (146.6715, 140.0067).
+* The LP-side laws' part from V1's by 600 s (`engine/plant/test_recirc.py`): the seed's flow part falls, 4.79e-5 to
+  1.99e-5, its holdup 0.0182 to 0.0237 kg; three bounds exceeded and restated by decision 304: 323F010's boil-off
+  4.384e-3 against 2e-3 (now 4.4e-3), 323E011's 718A 3.292e-4 against 3.2e-4 (now 3.3e-4), 324E001's boil-off
+  2.406e-2 against 1.6e-2 (now 2.5e-2). The other parts: 328C002 2.154e-5 and 2.84e-5, 328C004 2.309e-5 and
+  2.77e-7, 328C003 1.894e-4 (inside decision 246's 2e-4) and 8.27e-5.
+* PFD stream 918 at the design-seed minute: 9 025.12 kg/h against its row of 9 027, 0.0208 % under, outside the
+  test's 0.02 %; held within 0.025 % by decision 305, the other rows within 0.02 %.
+* The fast shutdown (trip 21.2, LV-322501 at 100 %, FAST, irregular passes): 323F010 rings by +/-0.15 to 0.24 mbar,
+  period about three ticks, decaying, ticks 210 to 272, then settles; at zero margin no reversal run above decision
+  163's 0.012 mbar. Accepted as decision 163's memo ring by decision 306: above 0.3 mbar until tick 300, and above
+  0.012 mbar after it, a third reversal fails the audit. The mechanism is not traced.
+
+**A-63's reading under decision 301.** On B144 (= N100B) against N144 (§CLVI.3): every tag with a printed value has a
+largest departure no greater than N100A's plus one step (FT-329407 6 against 7 steps, FT-329403 4 against 6, TT-322005
+1, AT-322701 1 against 4); 323F010's level, 7 against 4, has no printed value. Conditions 1, 2 and 4 stand as measured.
+A-63 is closed.
+
+## CLVII.3 B-157 closed as documented behaviour (decision 302)
+
+On N100B (`run/drift145.py`, `run/runs/drift145_N100B.txt`; the series is B144's to the bit): each displayed tag's
+onset (the first sample one display step from its first), its largest departure and the least-squares rate over
+15 000-30 000 s.
+
+| Tag | Step | Onset (s) | Largest (steps) | Display changes | Rate per 1 000 s |
+|---|---|---|---|---|---|
+| FT-329407 | 0.01 t/h | 290 | 6 | 54 | +0.00145 t/h |
+| FT-329403 | 0.01 t/h | 2 320 | 4 | 25 | +0.00038 t/h |
+| 323F010 level | 0.1 % | 1 440 | 7 | 38 | -0.030 % |
+| m308 (323P001) | 0.01 t/h | 150 | 3 | 48 | +0.0013 t/h |
+| LT-322504 | 0.1 % | 1 770 | 2 | 17 | +0.017 % |
+| TT-322011 | 0.1 K | 2 620 | 2 | 26 | +0.0010 K |
+| AT-322701 | 0.001 | 870 | 1 | 19 | +0.00001 |
+| TT-322005 | 0.1 K | 11 170 | 1 | 7 | +0.0044 K |
+| TT-322006 | 0.1 K | 22 840 | 1 | 4 | +0.0011 K |
+| PV-329207B | 0.1 % | 530 | 1 | 8 | +0.0036 % |
+| 322E001 level | 0.1 % | 14 570 | 1 | 17 | -0.0012 % |
+| 322F001 level | 0.1 % | 4 900 | 1 | 2 | +0.0024 % |
+
+The other 17 displayed tags never leave their first display. The source is 323C003's drain composition (§CLVI.4), carried
+through 323F004's bubble point to 323F010, 323E010 and the LP header (FT-329407). Reopened only on a trainee-visible
+effect or a change that makes it grow (decision 302).
+
+## CLVII.4 Step 2: Book2's TT-322005 against PT-329207 (B-118, B-125)
+
+`desk/band145.py`, `band145b.py`, `band145c.py` (outputs `.txt` beside them); Book2's 5 280 rows, none dropped; session
+136's bands (+/- 2.5 % UREA-LOAD); fits M1: y ~ PT-329207 + FY-322403 + PT-329201 + AY-322701, and M2 without PT-329201
+(the total gain: Uhde p. 5-8 makes the loop pressure a consequence of the drum pressure); 95 % intervals naive, AR(1)
+effective n and a moving-block bootstrap (6 samples, 2 000 draws). The registered identification rule (`registry145.md`):
+the residual PT-329207 spread after the controls at least 5 x the 0.01 bar logging step, and the bootstrap interval
+positive and excluding zero.
+
+| Band | n (runs) | PT-329207 residual sd (bar) | dTT-322005/dP M1 (boot CI) | dTT-322010/dP M1 (boot) | d rise/dP M1 (boot) |
+|---|---|---|---|---|---|
+| 60.7 % | 15 (1) | 0.041 | -4.04 (-5.4..+6.2) | | -0.70 |
+| 69.3 % | 32 (4) | 0.075 | +1.17 (-4.0..+4.9) | +0.97 (-2.4..+2.9) | +0.20 (-4.4..+4.4) |
+| 80.4 % | 10 (2) | 0.042 | -0.47 (no bootstrap) | | -1.39 |
+| 94.2 % | 706 (35) | 0.031 | **+3.04 (+1.39..+4.15)** | **+4.39 (+3.45..+5.82)** | **-1.36 (-3.25..-0.16)** |
+| 100.3 % | 29 (12) | 0.075 | -0.36 (-3.1..+1.6) | -1.21 (-3.1..+0.7) | +0.85 |
+| 111.0 % | 4 312 (11) | 0.0067 | +6.86 (+5.8..+13.7; AR(1) spans 0) | +2.72 | +4.15 |
+| pool 69.3-100.3 (band effects) | 777 | 0.040 | +2.20 (+1.29..+3.61) | +2.44 (+2.04..+5.04) | -0.25 (-2.55..+0.25) |
+
+M2 at 94.2 %: TT-322005 +4.06 (+2.35..+5.10), TT-322010 +5.33 (+4.33..+6.86), rise -1.27 (-3.40..-0.31). Lead and lag
+(PT-329207 shifted k = -4..+4 samples of 16.8 min inside runs) leave the 94.2 % slope at +2.7 to +3.5 K/bar both ways:
+at Book2's sampling the operator's feedback cannot be separated from the response. The six-band pool (+2.76, AR(1)
++0.19..+5.33) is 85 % the 111 % band, whose identifying spread is under one logging step, and is not quoted as a gain.
+Across bands (six means) TT-322005 falls 2.53 K per bar as PT-329207 rises with turndown, a load-confounded slope; with
+the three controls it has one degree of freedom (+0.25 +/- 18.3 K/bar), no information.
+
+**Against the registry.** No band passes both clauses: 94.2 % passes the interval clause and fails the spread clause
+(3.1 x the step). A note made after the read, not a re-rating: the logging step's attenuation of the slope at 3.1 x is
+under 1 % (reliability 1 - (0.0029/0.031)^2 = 0.99). 69.3 %, where step 3 runs, gives no slope. The plan's own gate (a
+slope with an interval) is met at 94.2 %, so step 3 ran.
+
+**The channel.** The plant's response to drum pressure arrives at 322E002's outlet: TT-322010 +4.4 K/bar at 94.2 %
+(+2.4 pooled), TT-322005 follows it (+3.0, +2.2), and the reactor's own rise does not grow (-1.4, -0.25). The shell's
+saturation rises 6.98 K/bar, so the outlet carries about 0.6 of it at 94.2 %.
+
+**Translation into gas share [I].** share = r / (1 + r). Two channels: dTT-322005/dP = dTT-322010/dP (1 + a_in) +
+K_s ds/dP, with a_in the rise's inlet sensitivity and K_s its share sensitivity, both the single swaps of the unit
+model (§CL.3 at 92.3 %: a_in 0.21 K/K, K_s 132 K/share; §CXLIX.5 at 69.3 %: 0.18 K/K, 117 K/share), large swaps, so
+[I]:
+
+| Band | ds/dP, two channels (share/bar; boot / AR(1)) | upper bound | one channel, TT-322005 / K_s |
+|---|---|---|---|
+| 94.2 % (M1) | -0.017 (-0.032..-0.008 / -0.039..+0.005) | +0.005 | +0.023 |
+| 94.2 % (M2) | -0.018 (-0.034..-0.011 / -0.039..+0.004) | +0.004 | +0.031 |
+| 69.3 % (M1) | +0.000 (-0.039..+0.036 / -0.011..+0.012) | +0.036 | +0.010 |
+| pool 69.3-100.3 (M1) | -0.006 (-0.023..-0.002 / -0.021..+0.010) | +0.010 | +0.017 |
+
+**Each engine law against it** (item 4). Like with like: a 94.2 % slope against the design-boundary gains of §CLVI.2,
+as built 0.12 share/bar and S 0.20; the 69.3 % turndown pair, as built 0.008 and S 0.37. On either reading the plant's
+share gain is at most 0.01-0.03 share/bar, an order of magnitude under S at either boundary and under the law as built
+at the design boundary; it is closest to the law as built on the turndown boundary (0.008). The outlet response settles
+it without gap 17 (`e002_144.py`'s sweeps, `Session_144_b118/out/`): at fixed loop pressure and composition S's outlet
+has no shell term (dT_prod/dP 0.00 K/bar on the seed and on all three U144 snapshots: the outlet sits on the melt's
+bubble line), the law as built 1.19 K/bar on the seed's boundary and 6.90 K/bar on U144's (E1eu the same, 1.34 and
+6.90). Book2's TT-322010 moves +4.4 K/bar. S answers the handle through a channel the plant does not show (the share)
+and not through the one it does (the outlet). Recorded as B-125's target, [I] with its regression: the plant's
+dTT-322010/dPT-329207 +4.4 K/bar (boot +3.5..+5.8) at 94.2 % and +2.4 (+2.0..+5.0) pooled, the share gain under
++0.01-0.03 share/bar.
+
+## CLVII.5 Step 3: law S at 4.557 and 4.397 bar g, 69.3 % (B-118)
+
+Arms on session 141's Cb693 chain (cfg141 -> cfg140 -> ... on tree252: law S pinned + B, the twelve-compartment holdup,
+lean rise off, the ejector lift, the stagnant wall, decision 253's header rule, decision 277's feed rule, (b) by cap141
+dH 23 000 J/mol, margin 3.5 K), only MASTER-329207's departure changed (registered before launch): S145 dv 0.56
+(5.57 bar a, 4.557 bar g, inside S's 4.54-4.59 for share 0.169), P145 dv 0.398 (5.41 bar a, 4.397 bar g, Book2's
+4.398). Control Cb693 (dv 0.348, 5.36 bar a, 4.347 bar g); its re-run K145 is bit-equal (0 leaves in 2 172 samples), the
+chain's gate. Law B runs on its line through 183 C in all three (proto112 anchors on `BOIL_T_DES_C` / `_INV_DES`, which
+cap141 does not move): the literal shift of B's line by the 3.5 K margin puts its p_eff at the seed at 147.35 bar a
+against 140.7, so the departure form is the only seed-neutral reading of decision 296's "re-referenced"; the reading is
+the engineer's. Each arm ran 21 720 s (ramp to 3 720 s, settle to 7 320 s, hold to 21 720 s); no trip latched (the
+carbamate-deposition flag at 370 s in all; S145 also LV-323501's blow-through flag at 8 220 s and the stripper's
+solidification flag at 10 660 s). `run/runs/step3_145.txt`, `score137_145.txt`:
+
+| Arm | PIC-329207 SP / PV mean (bar a) | TT-322005 hold min-max, in 179.5-183.5 C | last 3 600 s: TT-322005 / TT-322010 / rise | gas share, hold mean / last 3 600 s | score137 |
+|---|---|---|---|---|---|
+| Cb693 = K145 | 5.36 / 5.364 | 170.7-184.3 C, 4.4 % | 171.95 / 168.00 / 3.95 K | 0.094 / 0.078 | ringing, 3 085 s; rise dep -6.44 K |
+| P145 | 5.41 / 5.413 | 168.3-184.3 C, 8.3 % | 173.82 / 168.05 / 5.77 K | 0.104 / 0.076 | ringing, 2 573 s; rise dep -5.06 K |
+| S145 | 5.57 / 5.560 | 163.3-184.5 C, 9.3 % | 184.17 / 166.19 / 17.97 K | 0.176 / 0.249 | ringing, 4 455 s; rise dep -2.55 K |
+
+Book2 at 69.3 %: TT-322005 181.5 C, TT-322010 169.0 C, the rise's departure -0.22 K. Paired against K145: P145 within
+5.1 K on TT-322005 (at 5 590 s), 0.7 K at the end, the control's collapsed branch at a slightly hotter top; S145 departs
+by up to 14.4 K (12 990 s), 26.3 t/h on FT-329403, 18.9 % on LT-322504. S145's 1 800 s windows after the settle:
+183.7 C (7 320 s), 177.3, 166.5, 164.8, 175.4, 183.6, 184.1, 184.2 C (19 920 s): a collapse to 163 C, a recovery and a
+late hot state above Book2's band (184.1-184.3 C, 0.3 K peak to peak over the last 4 606 s), with 0.249 of its CO2 as
+gas and a rise of 18.0 K against Book2's 13.4, while 322E002's outlet stands 1.8 K under the control's and 2.8 K under
+Book2's.
+
+**Reading.** Neither arm holds TT-322005 in band over the hold: no reduced-load stand below 90.5 %, so session 146 does
+not measure 74.4 and 68.9 % on these arms. Book2's absolute pressure (P145, +0.05 bar) keeps the control's collapsed
+branch. S at the pressure its unit sensitivity asks for (S145, +0.21 bar) rings through a collapse and settles hot,
+its share overshooting the seed's 0.169 by half and its outlet falling as the pressure rises, the opposite of Book2's
++4.4 K/bar. That is law S's steepness in the loop (0.37 share per bar at unit level against the plant's under 0.03) and
+its missing outlet channel. Step 2's plant gain points to a tempered closure: 322E002's outlet answering the shell at
+the plant's slope (+2.4 to +4.4 K/bar of TT-322010) and its gas share at the plant's (under 0.01-0.03 share/bar). That is
+a new mechanism: measured here, not built, the engineer's (B-125).
+
+## CLVII.6 Decisions, items and deliverables
+
+Decisions 301 to 306 taken (304 to 306 the suite's consequences of the margin, §CLVII.2). Built: decision 301's margin (`data/unit_322r001.py`, `units/synthesis/reactor_boil.py`)
+with its three-sided equivalence test and the re-pins of §CLVII.2. Closed: A-63 (decision 301), B-157 (decision 302).
+B-118: step 2's gain and channel (§CLVII.4), step 3's two arms (§CLVII.5), no stand below 90.5 %. B-125: the plant's
+outlet slope and share bound as its target, [I]. To the engineer: law B's form under the margin (departure form, the
+only seed-neutral reading); the tempered 322E002 closure as a new mechanism. Full suite: 8 437 passed, 1 failed, uncapped (`suite2.txt`). The one failure is
+322E001's tube-ceiling run, collected before its re-pin (the cap at tick 2 177, 2 180 before decision 301); it
+passes on its own re-run with the packet test (`tubes2.txt`), and the whole decided file with `units/synthesis`
+re-runs green on the final tree (`eqdec5.txt`). The PyQt6 layering grep prints nothing.

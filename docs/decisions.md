@@ -1642,3 +1642,43 @@ decision on an item.
      on physics and a labelled empirical trim for loads under 90 %, built as a decided divergence, so that trainees
      get reduced-load operation while the physics stays open. The session after 146 brings the measured case for
      each. As-Built Part CLVI.
+301. **A-63's condition 3 is envelope dominance on the printed design values; (b) is built** (2026-11-21, session
+     145; the process engineer's ruling). Read sample-wise, condition 3 compares two slowly oscillating series point by
+     point, and a small phase difference fails it where (b) is no worse (the flaw decision 278 met). It now reads: for
+     every tag with a printed design value, its largest departure from that value after t = 0 is no greater than
+     N100A's largest departure over the same run, plus one display step. On session 144's measurement only 323F010's
+     level fails that reading, a tag with no printed value held by the rig's HIC-323605 trim, so all four conditions
+     are met. The top's 183.1 C on 56 % of the late samples is V1's own behaviour (V1 has no cap; its top settles at
+     183.045 C, §CLIII's profile mismatch), not a defect of (b); a re-solve that removes those 0.045 K stays an option,
+     a separate V1 re-anchor outside A-63. (b) is built in `ureasim/` at 3.5 K [E] (`data.unit_322r001`
+     ``BOIL_CAP_MARGIN_K``: "[E], session 140 candidate (b); final value from the bubble-line literature report"),
+     its equivalence test asserting V1 (no boil), the rewrite (the 3.5 K cap) and the as-built-before (the zero-margin
+     clip); it is the zero-margin class's (decision 297) first measured instance. The built seed's run is N100B,
+     decision 278's paired reference from now on. A-63 closed. As-Built Part CLVII.
+302. **B-157 closes under its time-box as documented behaviour** (2026-11-21, session 145; the process engineer's
+     ruling). Decision 299 allowed one probe; the chain ends in 323C003's drain composition, not in the synthesis
+     wander, and every remaining move is far below a trainee's notice (FT-329407 moves 6 steps of 0.01 t/h over
+     hours). Closed as "slow LP-side drift at 100 %, documented", its tags named with their rates and onsets on N100B
+     and its source, 323C003's drain. Reopened only if a trainee-visible effect is reported or a later change makes it
+     grow. As-Built Part CLVII.
+303. **The rig keeps moving PIC-329207's set point as a departure from Book2** (2026-11-21, session 145; the process
+     engineer's ruling). It is the basis every handle uses (each handle starts on the design seed and moves as a departure with the
+     load, As-Built §CVI.5, §CVII.1; the ruling's citation of decision 196, the relief-lift rule, corrected). At 69.3 % it leaves
+     PIC-329207 0.05 bar under Book2's absolute 4.398 bar g, worth about 0.02 of share on law S (§CLVI.2); recorded,
+     not corrected. As-Built Part CLVII.
+304. **The seed's drift bounds restated with the reactor ceiling's margin** (2026-11-21, session 145; the process
+     engineer's choice). Decision 301's 3.5 K margin stops the seed's top flashing on its first tick, and the plant's
+     600 s part from V1's LP-side laws moves: decision 230's boil-off bound 2e-3 to 4.4e-3 (measured 4.384e-3, 323F010),
+     decision 233's flow bound 3.2e-4 to 3.3e-4 (3.292e-4, 323E011's 718A), decision 241's boil-off bound 1.6e-2 to
+     2.5e-2 (2.406e-2, 324E001), each at its measured value rounded up to two figures, as decisions 241 and 246
+     restated theirs. The flow part of the seed's own test falls, 4.79e-5 to 1.99e-5. As-Built Part CLVII.
+305. **PFD stream 918 held within 0.025 % at the seed** (2026-11-21, session 145; the process engineer's choice).
+     With the top no longer flashing at the seed (decision 301), 918 draws 9 025.12 kg/h against its row's 9 027,
+     0.0208 % under; the design-seed minute holds it within 0.025 %, the other six rows within 0.02 % as before, the
+     PFD row unchanged. As-Built Part CLVII.
+306. **323F010's drain ring in the fast shutdown accepted as decision 163's memo ring** (2026-11-21, session 145; the
+     process engineer's choice). Trip 21.2 with LV-322501 wide open at FAST: with decision 301's margin 323F010 rings
+     by +/-0.15 to 0.24 mbar, period about three ticks, decaying, from tick 210 to 272, then settles; with the margin
+     at zero it does not. The size is decision 163's memo ring under a feed surge (+/-0.22 mbar), below PT-323204's
+     resolution. The audit counts a 323F010 step as ringing only above 0.3 mbar until tick 300, and decision 163's
+     0.012 mbar after it. Measured, not traced: the mechanism is not isolated. As-Built Part CLVII.
