@@ -5432,3 +5432,14 @@ archive: the capped, boiling top starves 322E001 into LV-322501's mushy zone (fa
 stalls (gap 1), trip 22.1 fires and melt N/C falls to 2.865 in the ramp (case 3), the hold rings 147.7-180.1 C. The
 no-trim controls do the same. Gates B and C not run; not ready to build. Nothing built. Part CLIX;
 `Tests and Reports\reports\Session_147_b118_eu_trim`.
+
+### Session 148 — 2026-11-22: decisions 314-317; decision 315's base and EU148 stopped at Gate A
+
+Session 147 already committed (96b41f7, not pushed). Rulings as decisions 314 (decision 313's bounds), 315 (the base:
+322F001's lift, P4, 322E002's UA on L_fresh, each gated on w(L_fresh)) and 316 (session 146's trace closed). P4 as decided
+changes 9 835 leaves at 100 % (co2_scale 2e-7 under 1); gated on w, Z148 and EU148_100 are bit-identical to N100B. A
+321P002B fault at 100 % stalls 322F001 as committed. Gate A, n 0.77: 92.3 % cold (TT-322005 178.9-181.1 C) with TT-322004
+182 C; 69.3 % passes the ramp without a stall, rides the boil ceiling from 3 720 s (TT-322004 192-197 C, FY-329403 over
+its window, the ratio trim on its floor), crosses melt N/C 3.0 at 6 110 s and trips at 7 180 s, relief at 7 330 s.
+Stopped at Gate A by the engineer (317); both reduced arms stopped at 8 200 and 12 300 s. No-go for building EU148.
+Nothing built. Part CLX; `Tests and Reports\reports\Session_148_b118_lift_base`.

@@ -31465,3 +31465,111 @@ when data gap 17 closes (checklist row 30). Not built.
 3. In the 92.3 % hold 322E002's throughput sits at design on this tree, so a UA trim on m_dot / m_dot0 has nothing to
    act on there;
    the 92.3 % cold branch (177.0 C mean) stays.
+
+# Part CLX — Session 148: the rulings as decisions 314 to 316, decision 315's base and the trim EU148 on the committed tree, stopped at Gate A (2026-11-22)
+
+Scripts and output: `Tests and Reports/scratch/session-148` (`registry148.md`, written before any Gate A output and
+amended twice; `proto148.py`; `run/` with `cfg148.py`, `go148.sh`, `make148.py`, `gate148.py`, `score148.py`,
+`score137h.py`, `mc148.py`, `gomc148.sh`, `first148.py`, `cfg/` and `runs/`; `trace693.txt`, `trace693_nc.txt`).
+Archived to `Tests and Reports/reports/Session_148_b118_lift_base`. Nothing under `ureasim/` or `Tests and
+Reports/tests/` changed. Two conversations ran this session: the first wrote decisions 314 to 316, proto148, Z148 and
+launched Gate A; the second adopted the running arms (registry amendment 2), added the motive-cut check and scored.
+
+## CLX.1 Step 0 and the rulings
+
+Session 147's five documents were already committed as 96b41f7 on `v1.2` (not pushed); `git diff e58014f HEAD --
+ureasim "Tests and Reports/tests"` is empty. The engineer's rulings of 2026-11-22 are decisions 314 (decision 313's
+numeric bounds), 315 (the Option 2 base and the trim's touch points, for scratch measurement) and 316 (session 146's
+runaway trace closed). Decision 314's bounds replace §CLIX.1's provisional readings.
+
+## CLX.2 The prototype (decision 315), as measured on tree145
+
+W3ROOT is `scratch/session-145/tree145`, e58014f's code (§CLIX.3). `proto148.py`, installed before session 143's
+runner chain (`cfg143.py`, N100B's), no `cap141` key, no S, B, B-126 or B-136 (b):
+
+    L_fresh = feed_to_loop_th / (CO2_DES_KGH / 1000)          320K002's CO2FeedLine result, the delayed feed
+    w(L)    = 0 at L >= 0.98, 1 at L <= 0.95, 0.5 (1 + cos(pi (0.95 - L) / 0.03)) between     (C1 half-cosine)
+    lift    p_disch,eff = p_disch - 2.41 w (1 - r_m^2),  r_m = clamp(m_motive / EJ_MOTIVE_NH3_DES, 0, 1)   [E]/[I], gap 1
+    P4      node_dtdt's wall gate (1 - w)(1 - flow_frac) while CO2 flows; as built at the 1e-3 flow floor
+    UA      UA_eff = UA . clamp(L_fresh, 0.50, 1.00)^(w n),  n = 0.77                                [E]/[I], gap 17
+
+w = 0 is a branch at every touch point (the as-built call with its own arguments). The three hooks patch the only call
+sites (`engine/plant/synthesis.py` for 322F001, `reactor_inventory` for node_dtdt, `condenser_holdup` for 322E002,
+whose UA line is recompiled with one line added). On tree145 `flow_frac` enters `node_dtdt` only in the wall gate,
+and the residence time is computed by the caller from the as-built flow_frac, so the wrapper is §CVI's P4 and nothing
+else.
+
+**P4 as decided is not identically zero at 100 % on e58014f** (amendment 1). Z148nop4 (lift and UA only, 600 s):
+0 leaves differ from N100B. Z148 with P4 ungated: 9 835 leaves differ over 61 samples, the first at 10 s, because
+322R001's `co2_scale` sits 2e-7 to 4e-6 under 1 on 6 097 of 6 100 ticks, so the as-built gate 1 - flow_frac is about
+1e-7, not 0; P4 removes it (p_syn 5e-8 bar; no displayed temperature moved). §CVI's 600-tick identity was measured on
+an older seed. With P4 behind the same w(L): 0 leaves differ, w > 0 on 0 ticks, P4 bite ticks 0 (hooks live: 6 219
+ejector, 11 895 UA and 24 396 node_dtdt calls). At L <= 0.95 the gated form is P4 exactly, so no reduced-load arm
+depends on the choice. An ungated P4 cannot be built with the 100 % pin held to the bit; the gated form or a restated
+seed criterion is the engineer's (a Session 149 go / no-go item).
+
+## CLX.3 Step 2: the null and the motive cut
+
+* L_fresh on N100B's stack: 0.9999995 to 1.0 over Z148's 600 s; 0.99998 to 1.000003 over EU148_100's 14 400 s.
+* Z148 (600 s, gated P4): 0 leaves differ from N100B over 61 samples; w > 0 on 0 of 6 100 ticks.
+* MC148 (`run/mc148.py`): 321P002B, the running HP ammonia pump, faulted at 60 s by the instructor's `trigger_fault`
+  at 100 % CO2 load, 600 s, with proto148 (MC148_p) and without (MC148_0). 0 leaves differ over 61 samples; both
+  flag EJECTOR_STALL and latch trip 21.10 at 60 s, and 21.2, 21.8 and 22.1 at 360 s. w = 0 from the cut to 360 s, so
+  322F001's motive-loss stall is the committed tree's. When the trips stop the CO2 at 360 s L falls to 0 and w = 1
+  on the remaining 2 500 ticks: the lift and UA hooks then act on the shut-down plant (P4 passes through at the floor);
+  no published leaf moved to 610 s. The longer cooldown and a restart through L = 0.95-0.98 are not measured.
+
+## CLX.4 Gate A (n = 0.77)
+
+Three arms in parallel on decision 253's header rule and decision 277's feed rule, E146_923's and E146_693's handles
+(PT-329207 on decision 303's 4.347 bar g departure at 69.3 %), scored by `run/score148.py` (decision 180 and
+decision 314 over the settled hold) and `run/first148.py` (each bound's first violation from the ramp end).
+
+**EU148_100** (14 400 s): 0 leaves differ from N100B over 1 440 samples; w > 0 on 0 of 144 000 ticks. Pass.
+
+**EU148_923** (ramp end 960 s, settle end 4 560 s, stopped at 8 200 s by the engineer's ruling, 3 640 s into the planned 14 400 s hold). Live at 2 090 s: UA ratio 0.941, lift
+0.38 bar (r_m 0.917), P4 biting. Over the hold to 8 200 s: no boil (ceiling margin at least 4.87 K), no stall, no trip; TT-322005 178.9-181.1 C, mean 179.56 C, against Book2's 180.58-184.58 C (9.3 % of samples in band); the rise 9.80 K mean, a departure of -3.20 K from the seed's 13.0 K against Book2's +0.21 K (§CXLIX.5, §CLVIII.7), a 3.41 K miss; TT-322010 169.7-169.8 C; TT-322004 181.9-182.2 C (over 178 C from 1 700 s); FY-329403 0.938-0.968 of design, inside [0.803, 0.973] over the hold (the first sample after the ramp end, 960 s, is outside); LT-322501 49.6-51.1 %, no liquor held (no violation to 8 200 s); LT-329501 49.1-51.1 %; 322F001 suction 57.0-59.3 t/h; 322E002's saturation 0.979 minimum; melt N/C 3.046 minimum in the hold; TT-322005's last-3 600 s peak to peak 2.20 K. Decision 180: band fail, rise fail. Decision 314: boil, FY-329403, LT-322501, tubes and trips pass; TT-322004 and the peak-to-peak bound fail.
+
+**EU148_693** (ramp end 3 720 s, settle end 7 320 s). Live at 2 070 s: UA ratio 0.896, lift 0.60 bar (r_m 0.867).
+The ramp passes without a 322F001 stall (suction 49.6-62.2 t/h), TT-322005 183.0-183.9 C, melt N/C over 3.0 except the
+rig's 30 s dip to 2.977 at 360-380 s, which session 147's H147_693, H147_923 and EU147_693 show at the same time and
+which N100B does not (the reduced-load handles' first move, not the ramp latch). The failure, first-violation times
+from the ramp end (`trace693.txt`, `first148.py`):
+
+| t (s) | Event |
+|---|---|
+| 3 700-3 720 | 322R001's top on the boil ceiling (margin 0.1 K to -0.05 K, the 0.1 K display step), boil > 0 from 3 700 s, 20 s before the ramp end; at the ramp end TT-322004 over 178 C and FY-329403 over the 0.743 ceiling. To the trip TT-322004 stays 193.2-197.0 C and FY-329403 0.85-1.49 of design; the boil is 0 on 16 samples (from 6 420 s) and above 0 on the rest |
+| 3 600-6 000 | the ratio trim at its 2.0 floor (2.000 rising to 2.019); AY-322701 3.27 to 2.87; 322E002's CO2 slip (gas over feed CO2) 0.25 to 0.34; boil 0.7 to 10.3 t/h |
+| 6 110 | melt N/C under 3.0 (2.994), AY-322701 2.784, saturation 0.967, TT-322010 170.0 C, TT-322005 183.4 C, p_syn 134.9 bar, boil 12.5 t/h, LT-329501 53.4 %, suction 58.7 t/h, L_fresh 0.6922 |
+| 6 300-6 420 | slip 0.43 to 0.55; 322E002's saturation 0.90 to 0.41, its steam 57 to 6.7 t/h; boil to 39 t/h (65.3 t/h at 6 640 s, the run's maximum before the trip); melt N/C 2.43 |
+| 6 420-7 140 | the loop rises from 136.9 to 158.4 bar, TT-322005 from 184.4 to 195.5 C on the ceiling, TT-322010 to 162-166 C; 322E002's published steam oscillates between -37.2 t/h (6 720 s) and 76.9 t/h (6 860 s) |
+| 7 170-7 180 | LV323501_BLOWTHROUGH; trips 21.2, 21.8, 21.10 and 22.1 latch, 321P002B stops (motive 0) and 322F001 flags its stall in the same 10 s sample; no stalled sample before 7 180 s (0 of 717), so which came first is unresolved (in E146 the stall flag came 10 s before the trips, §CLIX.2) |
+| 7 330 | SYN_PSV_LIFT and TOXIC_RELEASE at 160 bar a; trip 35.4 at 8 850 s; STRIPPER_SOLIDIFICATION at 10 240 s |
+
+LT-322501 stays under 95 % and the tubes hold nothing until the trip. The arm was stopped at 12 300 s by the engineer's ruling; every decision 180 and 314 bound fails (score148 over the settle end, after the trip, and first148 from the ramp end).
+
+**Gate A outcome.** EU148_100 passes. EU148_923 holds the reactor without boil, stall or trip but runs cold, under
+Book2's band, with 322E001 hot. EU148_693 holds the ramp but rides the cap from the ramp end and runs away. At
+n = 0.77 the two holds miss in opposite directions (92.3 % cold, 69.3 % on the ceiling), so no single adjusted n
+is likely to serve both [I]. None of the plan's three Gate B cases fits at face value: case 1 needs both loads to hold, case 2 needs
+no N/C crossing, case 3 names the ramp (the crossing came 2 390 s into the settle, after 2 390 s on the cap). Both
+registered predictions (`registry148.md`) missed: at 92.3 % a pass of decision 180's band was predicted, and the arm
+runs under it; at 69.3 % the ramp latch was predicted, and the failure is hot cap riding into the low-N/C
+branch with the stripper over-steamed, not the ramp latch. The engineer ruled to stop at Gate A (decision 317); no
+Gate B or Gate C arm was run.
+
+## CLX.5 Build readiness
+
+| Hold | Decision 180 | Decision 314 | Verdict |
+|---|---|---|---|
+| 100 % (EU148_100 against N100B) | the pin to the bit | n/a | pass |
+| 92.3 % (EU148_923) | band fail (178.9-181.1 C), rise fail (-3.20 K against Book2's +0.21 K) | TT-322004 fail (182 C); peak to peak 2.2 K fail; boil, steam, sump, trips: no violation to 8 200 s | fail |
+| 69.3 % (EU148_693) | trips at 7 180 s, relief at 7 330 s | boil, TT-322004 and FY-329403 fail from 3 720 s; trips; relief | fail |
+| 74.4 %, 68.9 %, 69.3 % +0.2 bar upset | not run (Gate C needs a Gate A or B pass) | | not run |
+
+Touch points as prototyped: 322F001's ejector call (lift, [E]/[I], retired on data gap 1, Körting), 322R001's
+node_dtdt (P4, gated on w, decision 181), 322E002's UA line (UA_eff, [E]/[I], retired on data gap 17, checklist row
+30). Recommendation: no-go for a Session 149 build of EU148 at n = 0.77. Open go / no-go items for any later base: the
+gated or ungated P4 at 100 % (§CLX.2); the shut-down and restart behaviour of the w-gated hooks (§CLX.3); 322E001
+over-steamed and hot at both holds (B-136 (b) unmeasured on this base); the ratio trim at its floor through the 69.3 %
+settle.

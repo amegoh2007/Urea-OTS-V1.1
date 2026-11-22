@@ -1716,3 +1716,33 @@ decision on an item.
      20 K hot; LT-322501 off its 100 % rail; the stripper's MP steam, FY-329403 and 322E001's duty, proportional to
      load); and no late runaway (the hold and any post-upset tail bounded and not ringing through 24 000 s, with no
      trip and no relief lift). The numeric readings used are the session's, As-Built §CLIX.1. As-Built Part CLIX.
+314. **Decision 313's numeric acceptance bounds pinned** (2026-11-22, session 148; the process engineer's ruling; they
+     replace the provisional readings of As-Built §CLIX.1). Every reduced-load hold (92.3, 74.4, 69.3 and 68.9 %), over
+     its settled hold: 322R001's top boil 0.0 kg/h, TT-322005 strictly below T_ceil(P); TT-322004 inside [150.0, 178.0] C
+     (above LV-322501's 137.7 C mushy-zone onset by more than 12 K, never above the design side; B-136's ideal at or
+     below 172.0 C); FY-329403 over its 60.85 t/h design inside [L - 0.12, L + 0.05] (anchored on Book2's 92.3 % range,
+     0.856-0.905 of design); LT-322501 below 95 % throughout with no liquor held in the tubes (B-104 inactive); bounded
+     and non-ringing through 24 000 s (and at least 6 000 s after an upset's revert), zero trips, zero relief lifts.
+     As-Built Part CLX.
+315. **The Option 2 base and the trim's touch points, for scratch measurement** (2026-11-22, session 148; the process
+     engineer's ruling). Base, on e58014f with no S, no B and no B-126: (1) decision 180's 322F001 lift-friction
+     prototype, p_disch,eff = p_disch - 2.41 w(L_fresh) (1 - r_m^2), r_m = clamp(m_motive / EJ_MOTIVE_NH3_DES, 0, 1),
+     w a C1 ramp, 0 at L_fresh >= 0.98 and 1 at L_fresh <= 0.95 ([E]/[I], retired when Koerting's diagrams close data
+     gap 1); (2) decision 181's P4, 322R001's wall loss on a stagnant reactor only. Primary trim, one touch point in
+     322E002: UA_eff = UA_des . clamp(L_fresh, 0.50, 1.00)^(w n), n = 0.77, on the fresh load, not on 322E002's own
+     throughput ([E]/[I], retired on data gap 17, checklist row 30). Gate B, only on a named Gate A failure and at most
+     one arm: B-136 (b), or one second 322E002 touch point (a decision 297 saturation margin or a tempered flash gain).
+     Measured (As-Built Part CLX): P4 as decided is not identically zero at 100 % on e58014f (322R001's co2_scale sits
+     2e-7 to 4e-6 off 1, so the as-built wall gate is about 1e-7), and the 600 s null differs in 9 835 leaves; in
+     scratch P4 was put behind the same w(L_fresh), and the null is then bit-identical. Which form a build takes is
+     the engineer's.
+316. **Session 146's runaway trace closed** (2026-11-22, session 148; the process engineer's ruling on As-Built
+     §CLIX.2). E146 rode 322R001's 3.5 K boil ceiling (8.6 t/h top boil), starving 322E001 (19-21 t/h steam,
+     TT-322004 138-141 C) until LV-322501's mushy factor fell below 1 (16 110 s unstepped, 18 440 s stepped), which
+     flooded LT-322501 to 100 %, collapsed the steam to 0 and drove the 159.5 bar a runaway and the 20 930 s trips.
+317. **Session 148 stopped at Gate A** (2026-11-22, session 148; the process engineer's ruling on As-Built §CLX.4).
+     EU148 at n = 0.77 on decision 315's base passes at 100 % (bit-identical to N100B over 14 400 s) and fails both
+     reduced holds in opposite directions: 92.3 % under Book2's band with 322E001 hot, 69.3 % on 322R001's boil ceiling
+     from the ramp end into the low-N/C branch, the loop pressure runaway and the 7 180 s trips. No plan case fits at face
+     value; no Gate B or Gate C arm is run, and both reduced arms are stopped where they stood (8 200 s and 12 300 s),
+     their verdicts fixed. As-Built Part CLX.

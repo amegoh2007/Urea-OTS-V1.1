@@ -5,7 +5,7 @@ is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-22, session 147
+**Last updated:** 2026-11-22, session 148
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -31,13 +31,13 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 * **Open.** `handoff.md`: Section A none, Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
   Section C none, 5 open data gaps (1, 3, 10, 15, 17). Each waits on a vendor document (Körting) or on one plant
   DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
-* **Session 147** (Part CLIX; decisions 310 to 313). Decision 300 ruled: a labelled trim on the committed tree, S + B
-  retired. EU147, one line on 322E002's UA, is bit-identical to N100B at 100 %, inert in the 92.3 % hold (322E002 at design
-  throughput), and at 69.3 % meets case 3: 322E003 floods, 322F001 stalls (gap 1), melt N/C 2.865 in the ramp; the
-  no-trim control does the same. Stopped at Gate A, nothing built; the base is the engineer's question.
-* **Sessions 138 to 146** (Parts CL to CLVIII; decisions 277 to 309). One stable 322R001 root at every load; no share
+* **Session 148** (Part CLX; decisions 314 to 317). Decision 313's bounds pinned (314); decision 315's base (the
+  322F001 lift, P4, 322E002's UA on the CO2 load, each gated on w(L_fresh)) bit-identical to N100B at 100 % once P4 is
+  gated too. Gate A at n 0.77: 92.3 % cold under Book2's band, 322E001 hot; 69.3 % passes the ramp without a stall, then
+  rides the boil ceiling into the low-N/C branch and trips at 7 180 s. Stopped at Gate A (317); no-go to build EU148.
+* **Sessions 138 to 147** (Parts CL to CLIX; decisions 277 to 313). One stable 322R001 root at every load; no share
   fits under the boil cap (gap 17); A-61 closed (287); A-63 raised (290) and closed with the boil cap's 3.5 K margin built
-  (301); PIC-329207 sourced as 322E002's handle; B-118's stop rule (300) measured on T146 and E146 (session 146).
+  (301); PIC-329207 sourced as 322E002's handle; B-118's stop rule (300) measured; option 2, a labelled trim, ruled (310).
 * **Sessions 135 to 137** (Parts CXLVII to CXLIX; decisions 253 to 275). The manual's header-valve rule on the B-118
   rig (253); the refit picks V1's approach; no wave M arm stands; the T693b trace closed gap 16; the letters and the
   readback checklist made.
@@ -71,9 +71,9 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 148 (147 taken 2026-11-21: decisions 310-313, B-118's EU147 trim measured in scratch) | `docs/history/session-log.md` |
-| Decision | 314 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138; 280 to 282 by session 139; 283 to 285 by session 140; 286 to 289 by session 141; 290 to 293 by session 142; 294 and 295 by session 143; 296 to 300 by session 144; 301 to 306 by session 145; 307 to 309 by session 146; 310 to 313 by session 147) | `docs/decisions.md` |
-| As-Built Part | CLX (CLIX taken by session 147) | the As-Built reference, appended at its end |
+| Session | 149 (148 taken 2026-11-22: decisions 314-317, decision 315's base and EU148 measured in scratch) | `docs/history/session-log.md` |
+| Decision | 318 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138; 280 to 282 by session 139; 283 to 285 by session 140; 286 to 289 by session 141; 290 to 293 by session 142; 294 and 295 by session 143; 296 to 300 by session 144; 301 to 306 by session 145; 307 to 309 by session 146; 310 to 313 by session 147; 314 to 317 by session 148) | `docs/decisions.md` |
+| As-Built Part | CLXI (CLX taken by session 148) | the As-Built reference, appended at its end |
 | Handoff Section A | A-64 (A-63 session 142's) | `handoff.md` |
 | Handoff Sections B and C | B-158 (B-157 session 138's) | `handoff.md` |
 

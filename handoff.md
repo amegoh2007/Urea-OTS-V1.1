@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-22, session 147.
+**Last updated:** 2026-11-22, session 148.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -28,8 +28,8 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 ### B-118 — Below 100 % load the engine holds no steady state on the plant's reactor window
 
-*Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to CLIX; decisions 177, 180, 181, 188,
-190, 259 to 284, 286, 288, 290 to 293, 295 to 301, 303 and 307 to 313.*
+*Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to CLX; decisions 177, 180, 181, 188,
+190, 259 to 284, 286, 288, 290 to 293, 295 to 301, 303 and 307 to 317.*
 
 **Problem.** The plant runs for hours at reduced load. The committed engine, ramped from its design seed, does not:
 at 70-85 % trip 22.1 in 20-80 minutes, or with 22.2 removed (decision 189) SV32064 lifts and 21.x and 22.1 latch
@@ -48,7 +48,7 @@ departure within 1.0 K of Book2's (decision 274) and no trip:
 | 68.9 %, 46 min | the same | the same |
 
 Licensor's windows (Operating Manual III §5.2): N/C 2.90-3.10, TT-322005 180-183 C, PT-329201 136-143 bar. A-34's atoms
-close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atoms.py`, §CX.1). Decision 190 adds the procedure's criteria (a)-(d) and (f); decision 196 fails a hold on a relief's lift. Decision 313 adds no boil-cap riding, a healthy 322E001 and no late runaway through 24 000 s (readings in §CLIX.1).
+close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atoms.py`, §CX.1). Decision 190 adds the procedure's criteria (a)-(d) and (f); decision 196 fails a hold on a relief's lift. Decision 313 adds no boil-cap riding, a healthy 322E001 and no late runaway through 24 000 s; decision 314 pins its bounds (zero top boil, TT-322004 in [150, 178] C, FY-329403 in [L - 0.12, L + 0.05] of design, LT-322501 under 95 %, nothing held in the tubes, no trip or relief).
 
 **Established. Do not measure these again; cite the section.**
 
@@ -77,32 +77,31 @@ close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atom
   (decision 295); the floor binds in no hold (decision 298).
 * The boil cap (Part CLIII; decisions 286, 288, 301): 23 kJ/mol, 0.532 K/bar, rejected by Book2 in every band but
   80.4 %; built with a 3.5 K margin [E] (§CLVII.2; N100B the paired reference); it moves no reduced-load hold.
-* 322E002's steam pressure (§CLVI.2, §CLVII.4-5): Uhde makes PIC-329207 the handle, TI322005 its indicator, no gain
-  printed; the rig moves it by Book2's departure (decision 303: 4.347 bar g at 69.3 %, 0.05 under Book2's 4.398).
-  Book2 (§CLVII.4, [I]): at 94.2 % TT-322005 +3.0 K/bar (boot +1.4..+4.1), TT-322010 +4.4, the rise -1.4, so the
-  plant's response arrives at 322E002's outlet; pooled 69.3-100.3 % +2.2 / +2.4 / -0.25; 69.3 % alone no slope; the
-  share gain at most 0.01-0.03 share/bar, against S's 0.37 (turndown) and 0.20 (design boundary). S's outlet has no
-  shell term (0 K/bar); the law as built 1.2 (design boundary) and 6.9 K/bar (U144's).
-* In the loop at 69.3 % (§CLVII.5; S + B, (b), header and feed rules; control Cb693 at 4.347 bar g): P145 at Book2's
-  4.397 bar g keeps the control's collapsed branch (end 173.8 C, rise dep -5.1 K); S145 at 4.557 bar g rings through a
-  collapse to 163 C and settles hot, 184.2 C, share 0.249, rise 18.0 K, TT-322010 1.8 K under the control. Neither is
-  in band over the hold.
+* 322E002's steam pressure (§CLVI.2, §CLVII.4-5): PIC-329207 is Uhde's handle, moved by Book2's departure (decision
+  303: 4.347 bar g at 69.3 %). Book2 [I]: at 94.2 % TT-322005 +3.0 K/bar, TT-322010 +4.4, the rise -1.4; the share gain
+  at most 0.01-0.03 share/bar, against S's 0.37. In the loop at 69.3 % neither P145 nor S145 holds the band (§CLVII.5).
 
 **Decision 300 ruled (decision 310): option 2, a labelled trim on the committed tree; S + B retired (311), E146
-rejected (312).** Session 146's runaway (§CLIX.2): the capped, boiling top starves 322E001 into LV-322501's mushy zone.
-EU147 (§CLIX.3-5; one line on 322E002's UA, (m_dot / m_dot0)^(w n), w on 0.95-0.98 of its throughput, n 0.75 on U144):
-bit-identical to N100B over 14 400 s; inert in the 92.3 % hold on this tree, where 322E002's throughput sits at design
-(EU147_923 not run; the committed 92.3 % hold is cold, 175.7-179.5 C, and rings); at 69.3 % 322E003 floods, 322F001 stalls (gap 1), trip 22.1
-fires and melt N/C falls to 2.865 in the ramp (case 3, stop), the hold rings 147.7-180.1 C; the no-trim control does
-the same. Before the stall, with 322E002's share on the seed's, the top still falls 9 K over the ramp from L 0.90
-while its off-gas doubles ([I], not separated from 322E003's fill). Not ready to build (§CLIX.7).
+rejected (312).** Session 146's runaway (§CLIX.2, decision 316). EU147, the UA trim on 322E002's own throughput, is inert
+at 92.3 % and at 69.3 % stalls 322F001 without the lift, as the no-trim control does (§CLIX.3-7).
 
-**Open options** (the engineer's): the base for a trim with or without 322F001's lift prototype (gap 1's friction
-share, unbuilt scratch; every archived stack that held 69.3 % carried it); a trim at 322R001's own boundary (the
-session's suggestion, unmeasured); or wait on gap 1 (Körting) and gap 17 (row 30). Law B stays in its departure form (307).
+**Decision 315's base with EU148 (Part CLX; decisions 314 to 317).** The lift, P4 and 322E002's UA on L_fresh (the
+delayed CO2 feed over design), each gated on w(L_fresh), n 0.77. P4 as decided is not zero at 100 % on e58014f (9 835
+leaves over 600 s); w-gated, Z148 and EU148_100 are bit-identical to N100B (§CLX.2-4). A 321P002B fault at 100 % stalls
+322F001 as committed; after the CO2 trips w = 1 on the shut-down plant, unmeasured past 610 s (§CLX.3). Gate A: 92.3 %
+holds without boil or stall to 8 200 s but runs cold, TT-322005 178.9-181.1 C (band 180.58-184.58), the rise's departure
+-3.20 K against Book2's +0.21 K, TT-322004 182 C; 69.3 % passes the ramp without a stall, then rides the boil ceiling from 3 720 s with TT-322004
+192-197 C, FY-329403 0.87-0.98 of design and the ratio trim at its 2.0 floor; 322E002's CO2 slip 0.25 to 0.55, melt
+N/C under 3.0 at 6 110 s, the saturation collapses, the loop runs to 159.5 bar a, trips at 7 180 s, relief at 7 330 s.
+Opposite signs at one n. Stopped at Gate A (317); no-go for a Session 149 build of EU148 (§CLX.5).
 
-**Next step.** The engineer's ruling on the base (the lift prototype) and on where a trim may touch; then one Gate A
-arm at 69.3 % to 24 000 s on that base. Decision 277's feed rule and 253's header rule on every arm.
+**Open options** (the engineer's): B-136 (b) on this base, the over-steamed stripper being common to both holds
+(unmeasured here); a load-shaped n or a second 322E002 touch point (decision 315's Gate B arms); a trim at 322R001's
+own boundary; or wait on gap 1 (Körting) and gap 17 (row 30). The gated or ungated P4 at 100 % and the w-gated hooks
+on a shut-down plant are go / no-go items for any build. Law B stays in its departure form (307).
+
+**Next step.** The engineer's choice among the open options on §CLX.4's 69.3 % trace; then one Gate A pair (92.3 %,
+69.3 % to 24 000 s). Decision 277's feed rule and 253's header rule on every arm.
 
 **B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode (§XCVIII.3, §CIII.7, §CXIV.7,
 §CXVII.6); the gain stays 4.0.
@@ -196,7 +195,7 @@ Rows 10, 15 and 17 close on one plant DCS readback session (`Tests and Reports\r
 
 | # | Datum | Needed by | As built | Found so far | Route to close |
 |---|---|---|---|---|---|
-| 1 | 322F001's nozzle and mixing-throat geometry, loss coefficients and performance diagrams | `control/jet_pump.py`, `data/unit_322f001.py` | both areas back-solved from the licensor's design duty on open-literature loss coefficients; the design point exact, the stall margin not (B-12's 90.7 %, §LXXI.3); the lift a fixed 4.2 bar | no vendor geometry or curve in either archive (§LIX.4). The plant keeps the entrainment ratio from 69 to 102 % load, mu / mu_ref 1.031 +/- 0.044, n 15; the as-built closure stalls on that line at 69.9-80.7 %; a friction share of at least 2.41 bar of the lift passes it, a fit (§CV.3-4). Book2's points: LT-329501 11 % at HV-322602 40 % (69.3 %), 1 % at 54 % (80.4 %). LT-329501 is not in the 5 November trends, so the level term is unfitted; session 99 (§CX.9): the friction share needed is 0-2.41 bar over the 15 windows, and no level law fits Book2's four points (V1's passes 1-23 % of the plant's suction there). The suction line 150-ACA1-322004 (168.3 x 12.5) falls from 322E003/N6 at EL +21192 to 322F001/N1 at EL +8300 (isometric UD-RL-100-MB-0004 rev 03, as built), against Uhde's 10 m L.C. suction head (EC-0013) and the HP-level drawing's +10.00 m ejector (§CXXXIX.2). EC-0013 p. 2: motive 44 600 kg/h at 161.7 bar a, suction 62 000 kg/h at 141.5 bar a, mixed 145.0 bar a, "static pump head 4.2 bar g"; the ejector body (item 10) is printed Da 164 mm on a 60 mm wall (DZ-0013-003 p. 2, "ø164x60" on the as-built drawing), so its neck's bore is 44 mm, calculated; no page labels it the throat (§CXLI.7, §CXLVIII.8) | Körting's 14 diagrams, order 2/131/4/04219 (draft request: `Tests and Reports\reports\Koerting request draft s99.md`). The lift prototype is held with B-118 (decision 180). Session 135 [E] (§CXLVII.6): on a 44 mm throat no literature loss set makes the duty; K_th 0.32-0.54 does. Session 136 (§CXLVIII.8): EC-0013's row 18, "static pump head 4.2 bar g", is defined on no page; read as the lift it back-solves a 45.6 mm throat on EC-0013's densities (a 44 mm throat then needs K_th 0.13, inside the literature), the 3.5 bar pressure difference 52.4 mm; decision 272 proposed (no re-anchor; the letter asks row 18's meaning and the throat). Held with B-118; letter final: `Tests and Reports\reports\Session_135_gaps\Koerting request s135.md`. Session 147 (§CLIX.5): on the committed tree, without the lift prototype, 322E003 floods and 322F001 stalls at 69.3 % (suction 0 from 3 790-3 820 s), with or without a 322E002 trim |
+| 1 | 322F001's nozzle and mixing-throat geometry, loss coefficients and performance diagrams | `control/jet_pump.py`, `data/unit_322f001.py` | both areas back-solved from the licensor's design duty on open-literature loss coefficients; the design point exact, the stall margin not (B-12's 90.7 %, §LXXI.3); the lift a fixed 4.2 bar | no vendor geometry or curve in either archive (§LIX.4). The plant keeps the entrainment ratio from 69 to 102 % load, mu / mu_ref 1.031 +/- 0.044, n 15; the as-built closure stalls on that line at 69.9-80.7 %; a friction share of at least 2.41 bar of the lift passes it, a fit (§CV.3-4). Book2's points: LT-329501 11 % at HV-322602 40 % (69.3 %), 1 % at 54 % (80.4 %). LT-329501 is not in the 5 November trends, so the level term is unfitted; session 99 (§CX.9): the friction share needed is 0-2.41 bar over the 15 windows, and no level law fits Book2's four points (V1's passes 1-23 % of the plant's suction there). The suction line 150-ACA1-322004 (168.3 x 12.5) falls from 322E003/N6 at EL +21192 to 322F001/N1 at EL +8300 (isometric UD-RL-100-MB-0004 rev 03, as built), against Uhde's 10 m L.C. suction head (EC-0013) and the HP-level drawing's +10.00 m ejector (§CXXXIX.2). EC-0013 p. 2: motive 44 600 kg/h at 161.7 bar a, suction 62 000 kg/h at 141.5 bar a, mixed 145.0 bar a, "static pump head 4.2 bar g"; the ejector body (item 10) is printed Da 164 mm on a 60 mm wall (DZ-0013-003 p. 2, "ø164x60" on the as-built drawing), so its neck's bore is 44 mm, calculated; no page labels it the throat (§CXLI.7, §CXLVIII.8) | Körting's 14 diagrams, order 2/131/4/04219 (draft request: `Tests and Reports\reports\Koerting request draft s99.md`). The lift prototype is held with B-118 (decision 180). Session 135 [E] (§CXLVII.6): on a 44 mm throat no literature loss set makes the duty; K_th 0.32-0.54 does. Session 136 (§CXLVIII.8): EC-0013's row 18, "static pump head 4.2 bar g", is defined on no page; read as the lift it back-solves a 45.6 mm throat on EC-0013's densities (a 44 mm throat then needs K_th 0.13, inside the literature), the 3.5 bar pressure difference 52.4 mm; decision 272 proposed (no re-anchor; the letter asks row 18's meaning and the throat). Held with B-118; letter final: `Tests and Reports\reports\Session_135_gaps\Koerting request s135.md`. Session 147 (§CLIX.5): on the committed tree, without the lift prototype, 322E003 floods and 322F001 stalls at 69.3 % (suction 0 from 3 790-3 820 s), with or without a 322E002 trim. Session 148 (§CLX.4): with the lift prototype gated on the CO2 load (2.41 bar at w = 1) the 69.3 % ramp passes without a stall (suction 49.6-62.2 t/h); the first stalled sample is 7 180 s, the sample in which 321P002B trips (order unresolved) |
 | 3 | Körting's performance curves of 324F002, 324F004 and 324F005 | `ejector_map`, B-57's interpolation on the synthesized maps (§XLIX.4, §L.1) | synthesized maps, anchored on the PFD's design loads; in-situ factors 0.919, 0.336, 0.497; the break, P_c's scale and width, on the plant's 5 November bracket (decision 251, §CXLIV) | one duty point an ejector; no curve in the archive (§XLVIII.2). The plant's motive break-off, the datum a curve must meet: HIC-329605 between 55 and 64 % (HIC-329606 38-40 %) at PT-329207 4.20-4.24 bar g, 5 November 2026 13:11-13:16, 75 % load (§CV.5). Since decision 251 the engine holds at 64 % and 40 % and loses both vacuums below, more softly than the plant: stage 1 at 0.345 bar a at 55 %, where the plant logged 0.6 (§CXLIV.3). The ejector file lists no curve (AB-0007); Körting's minimum motive 3.1 bar g for 324F004 / F005; Uhde's condenser cooling-water flows (§CXLI.7) are ruled out as the cause: on them the vent the ejectors draw falls by at most 4 %, and on the sheets' rises they would carry a larger duty (calculated, §CXLV.4) | Körting, orders 2/115/4/09674 and 2/232/4/00503 (the same draft); checklist row 13: 324E002's and 324E005's cold-end and cooling-water temperatures for 5 November 13:00-13:30. Session 135: letter final (`Session_135_gaps\Koerting request s135.md`); the [E] break characteristic is in §CXLVII.10 |
 | 10 | LT-329505's tap elevations | LI-329505 between its taps (decision 33's class) | V1's holdup ratio; LV-329505 on Flowserve's trim (§LXVIII.5) | upper tap 324E001 / N5 at EL +15129; lower tap on the DN700 condensate pot at EL +10651 (isometric UD-RL-100-MB-0312): 4 478 mm apart. The loop summary prints 3 000 mm. The conflict is logged, not resolved (§CIII.5). Uhde's data sheet UD-MR-G00-EC-0133 p. 4: nozzle distance 3 000 mm, set range 0 to 300 mbar on 922 kg/m3, so the 4 478 mm would over-range it (§CXXVII.5); the range is 100 mbar per metre of nozzle distance, 1.11 times the head of 922 kg/m3, as LT-329504's is (§CXXVIII.5). Rosemount's factory record: 1151DP4, serial 8063396, 0 to 300 mbar (UD-MR-G00-DZ-0012-002 p. 46; a second unit keyed LT 329505 at 326 mbar is LT 323505's range, a mis-keyed tag). Hook-up K3V31 (UD-MR-G00-LD-0001 p. 76): transmitter below the taps, a vented separator pot on the upper connection, so a condensate-filled reference leg, "3000 liquid head" (§CXL.1-2). Rosemount's compliance and WIKA's seal certificates key LT 329505 with LT 328503 at 0-326 mbar, weakening the mis-keyed reading; only rev 02 of the sheets exists (§CXLI.7) | checklist row 10: the transmitter's LRV and URV decide which span its 0-100 % covers. Session 135 [E] (§CXLVII.7): on the wet leg 0-300 mbar covers the whole 3 m, or the upper 3.32 m of 4.478 m; LI-329505 is logged nowhere, so the display's scale alone moves. Decision 257 keeps the row open on the readback (ruling 8) |
 | 15 | LT-329501's calibrated span and its design reading: which tap distance the 0-1 200 mbar covers, the impulse legs' fill, the level the design gives | LI-329501 between its taps (decisions 33 and 214); 322F001's suction (row 1) | V1's holdup ratio, 50 % at 3 837 kg (`data/unit_322e003` `LEVEL_NLL_PCT`, `TAU_HOLDUP_MIN`), which also sets 322F001's suction, the loop-pressure sum and the flooded-surface derate | Uhde's sheet EC-0133 p. 3 and loop summary UD-MR-329-EC-0001 p. 77 (LI, AH): L 329256, U 329257, both legs "High Pressure Condensate", 1 133 kg/m3, 141 bar a, 99 C, 0-1 200 mbar over 10 000 mm. Both impulse lines run to line 322004, 322E003's outlet to 322F001 (piping list UD-RL-G00-MB-0001 pp. 91-92, PDF 94-95); the as-built isometric UD-RL-100-MB-0004 rev 03 puts the branches at EL +8300 and +21089, 12 789 mm apart. The HP-level drawing (UD-AU-322-EC-0005 p. 27) gives 322E003's bottom part +16.65 m, not the downcomer's. MB-0415 / 0416 are field-routed; MB-0420 is the purge header from 329P004A / B. Book2 reads 1-11 % (§CXXXIX.2). Rosemount's factory record: 1151HP5, serial 8063392, 0 to 1 200 mbar (UD-MR-G00-DZ-0012-002 p. 42). Hook-up K3V91 (UD-MR-G00-LD-0001 p. 79): transmitter below both taps, "liquid head 10.000 mm", both impulse lines drawn purged through check valves from FI 329421 and FI 329422, so full of condensate, on a design drawing (§CXL.1-2); Operating Manual III pp. 1-59 and 1-83: both lines continuously injected with condensate from 329P004A / B (§CXLI.7) | checklist row 25: the configured LRV and URV and the legs' arrangement; a walk-down of the taps. Session 135 [E] (§CXLVII.7): with both legs wet (K3V91) Book2's 1-11 % is liquid 8.6-12.1 m above 322F001, on Uhde's 10 m suction head; dry, 0.1-1.2 m; the design reading not computable on V1's holdup. Session 136 (§CXLVIII.9): the wet reading with a zero LRV is withdrawn, since Book2 reads above its 13.7-17.5 % ceiling (100.3 % band mean 21.0 %, maxima to 37.2 %); dry or an elevated span remain, the readback decides (decision 273 proposed) |
