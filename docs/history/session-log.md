@@ -5421,3 +5421,14 @@ closure, is bit-identical to S + B at and above 90 %; at 69.3 and 74.4 % it sits
 and +2.46 K) with 322E001 starved; its +0.2 bar step answers in the plant's direction, the stepped twin trips at
 20 930 s. The S + B seed fails decision 278 and grows. Nothing built; decision 300's choice is the engineer's.
 Part CLVIII; `Tests and Reports\reports\Session_146_b118_stop_rule`.
+
+### Session 147 — 2026-11-22: decisions 310-313; EU147, the single-touch 322E002 trim, stopped at Gate A on case 3
+
+Session 146's documents committed (4179972, not pushed). Rulings as decisions 310 (option 2, a labelled trim on the
+committed tree), 311 (S + B retired), 312 (E146 rejected) and 313 (decision 180 widened). E146's runaway read from the
+archive: the capped, boiling top starves 322E001 into LV-322501's mushy zone (factor below 1 at 16 110 s). EU147, UA x
+(m_dot / m_dot0)^(w n) behind a 0.95-0.98 envelope on 322E002's throughput, n 0.75 on U144: bit-identical to N100B over
+14 400 s (w > 0 on 0 ticks); inert in the 92.3 % hold (throughput at design); at 69.3 % 322E003 floods, 322F001
+stalls (gap 1), trip 22.1 fires and melt N/C falls to 2.865 in the ramp (case 3), the hold rings 147.7-180.1 C. The
+no-trim controls do the same. Gates B and C not run; not ready to build. Nothing built. Part CLIX;
+`Tests and Reports\reports\Session_147_b118_eu_trim`.

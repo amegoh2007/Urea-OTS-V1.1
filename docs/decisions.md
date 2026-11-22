@@ -1696,3 +1696,23 @@ decision on an item.
      tempered flash target, design-anchored, measured at unit level before any in-loop arm, one candidate, no second
      physics variant. Measured: no member with n <= 1 meets the plant's two slopes at either boundary, so no in-loop
      arm ran. Not built. As-Built Part CLVIII.3.
+310. **Decision 300's stop rule: option 2, a labelled empirical trim** (2026-11-21, session 147; the process engineer's
+     ruling). Option 1, further physics on the lumped 322E002, is closed for V1.2: the single-lump NTU quench ties the
+     outlet and share slopes (dT/dP about 7 - 45 ds/dP, As-Built §CLVIII.3), so Book2's +2.4 to +4.4 K/bar outlet with at
+     most 0.03 share/bar is out of reach without a distributed model and data gap 17 (checklist row 30). B-118 proceeds
+     under option 2: a minimal, cleanly switched, labelled turndown trim ([E]/[I], a decided divergence) on the committed
+     e58014f tree, retired when data gap 17 closes. As-Built Part CLIX.
+311. **The S + B scratch stack retired as a base** (2026-11-21, session 147; the process engineer's ruling). S + B with
+     B-126's holdup carries a growing 4 045 s oscillation on the 100 % seed (E146_100, w = 0 on all 144 000 ticks:
+     FT-329403 peak to peak 0.03 to 0.32 t/h, doubling hourly) and Cb923 fails score137 at 92.3 % (As-Built §CLVIII.6).
+     No build rests on S + B. As-Built Part CLIX.
+312. **Session 146's E146 deviation rejected** (2026-11-21, session 147; the process engineer's ruling). E146, the SU
+     blend with three touch points on S + B, is rejected. The trim touches 322E002 once, on the committed tree, with an
+     exact zero footprint at 100 % load (bit-identical to N100B over 144 000 ticks). As-Built Part CLIX.
+313. **B-118's reduced-load acceptance widened** (2026-11-21, session 147; the process engineer's ruling; an addition to
+     decision 180 and score137). Every reduced-load hold must also show: no riding of 322R001's boil cap (its top boil
+     0 kg/h in the settled hold, TT-322005 below the ceiling, not held by the 3.5 K margin); a healthy 322E001
+     (TT-322004 in the plant's direction and window, neither below 150 C towards LV-322501's 137.7 C mushy zone nor
+     20 K hot; LT-322501 off its 100 % rail; the stripper's MP steam, FY-329403 and 322E001's duty, proportional to
+     load); and no late runaway (the hold and any post-upset tail bounded and not ringing through 24 000 s, with no
+     trip and no relief lift). The numeric readings used are the session's, As-Built §CLIX.1. As-Built Part CLIX.

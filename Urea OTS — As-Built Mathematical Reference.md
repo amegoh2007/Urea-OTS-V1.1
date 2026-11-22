@@ -31266,3 +31266,202 @@ Neither option meets decision 180's acceptance at any reduced-load hold. Both ca
 * B-125: the saturation fraction binds under E-U at 69.3 % (0.894 to 0.944).
 * Nothing under `ureasim/` or `Tests and Reports/tests/` changed. The full suite (8 438 passed) is the session's gate.
 * Archive: `Tests and Reports/reports/Session_146_b118_stop_rule`.
+
+# Part CLIX — Session 147: the rulings as decisions 310 to 313, the single-touch trim EU147 on the committed tree, stopped at Gate A on case 3 (2026-11-22)
+
+Scripts and output: `Tests and Reports/scratch/session-147` (`registry147.md`, written before any output and amended
+twice before the outputs it names; `proto147.py`, `e002_147.py`, `table147.py`, `forensic147.py` with `unit/` and
+`out/`; `run/` with `cfg147.py`, `go147.sh`, `make147.py`, `gate147.py`, `score147.py`, `score137h.py`, `nc147.py`
+and `runs/`). Archived to `Tests and Reports/reports/Session_147_b118_eu_trim`. Nothing under `ureasim/` or
+`Tests and Reports/tests/` changed.
+
+## CLIX.1 Step 0 and the rulings
+
+Session 146's five documents were committed as 4179972 on `v1.2`, not pushed. The rulings of 2026-11-21 are decisions
+310 (option 2, a labelled empirical trim on the committed tree), 311 (S + B retired as a base), 312 (E146 rejected;
+one touch point, zero footprint at 100 %) and 313 (decision 180 widened: no boil-cap riding, a healthy 322E001, no late
+runaway through 24 000 s).
+
+Decision 313's numeric readings, this session's reading of the ruling's words, used by `run/score147.py`:
+
+* boil cap: 322R001's `b_boil_kgh` 0 on every sample of the last 3 600 s, TT-322005 at least 0.2 K under the ceiling
+  (`b_t_bub`, the built cap at the live pressure) there;
+* 322E001: TT-322004 in [150 C, 192 C) over the hold (the seed's 172.0 C + 20 K), the mushy factor 1, LT-322501 under
+  99.5 %, the stripper steam over the last 3 600 s within L +/- 0.15 of the seed's 66.90 t/h;
+* late: the run to 24 000 s, no trip latched, TT-322005's last-3 600 s peak to peak at or under 0.5 K.
+
+The 322E001 steam band is a reading, not a ruling: H147_923 passes it at 1.066 of the seed's steam with TT-322004 3-6 K
+over the seed's 172 C (§CLIX.5). The band is the engineer's to set.
+
+## CLIX.2 Session 146's runaway, read from the archive (no re-run)
+
+`forensic147.py` on E146_693 and E146_693u (`Session_146_b118_stop_rule/run/runs`), 14 000-21 000 s:
+
+* The starvation stands before the window. At 12 600 s 322R001's top already boils 8.6-8.7 t/h on the cap, its
+  overflow is 113-118 t/h (K145's 152.6), 322E001's steam 18.7-21.1 t/h and TT-322004 137.8-141.5 C.
+* The first discrete event is 322E001's mushy factor leaving 1 (the STRIPPER_SOLIDIFICATION flag): 16 110 s unstepped,
+  18 440 s stepped, as TT-322004 falls towards LV-322501's 137.7 C line (it reads under it from 16 300 s and
+  18 540 s, after the factor has left 1).
+* LT-322501 reaches 100 % with solids held at 19 240 s (unstepped) and 19 290 s (stepped).
+* Unstepped, the factor bottoms at 0.46 (19 500 s) and recovers; the level is back to 2 % by 21 000 s.
+* Stepped, the factor is 0.16 at 19 800 s and 0.00 at 19 860 s; the stripper steam falls from 14.4 t/h to 0 by
+  20 040 s and its feed from 144 to 35 t/h; 322R001's overflow falls from 106 to 1.5 t/h, its level rises from 79.8 to
+  91.2 % and the top's boil from 5 to 39 t/h; the loop rises from 136.7 to 159.5 bar a from 20 100 s, TT-322005 from
+  184.4 to 196.1 C; RATIO_PV_BAD and EJECTOR_STALL flag at 20 920 s; trips 21.2, 21.8, 21.10 and 22.1 latch at 20 930 s;
+  the HP vent opens 10.8 t/h at 20 940 s.
+
+The series is consistent with the prompt's first reading: the boiling, capped top (overflow down a quarter) starves
+322E001, TT-322004 reaches LV-322501's mushy zone, the stripper floods with solids, and in the stepped arm its outflow
+path closes (322R001's overflow to 1.5 t/h, its level up 11 points, consistent with a backup into the reactor) and
+the loop pressure runs to the trips. B-104's entry was not read; that this is B-104's backup is unconfirmed. The initiation precedes 14 000 s (the standing starvation); the first
+event in the window is the mushy factor. The 14 210 s excursion of the saturation fraction that a 4-sigma scan reports
+first is the band's floor inside the 2 679 s ring, not a first mover.
+
+## CLIX.3 The rig, the trim, the gates
+
+**Tree and stack.** W3ROOT is `scratch/session-145/tree145`; its `ureasim/` differs from `git archive e58014f
+ureasim` only in comment lines of `units/synthesis/reactor_boil.py` and `reactor_inventory.py` (`diff -rq
+--strip-trailing-cr`), so it is e58014f's code and the tree N100B ran on. Runner: session 143's `cfg143.py` chain,
+no `cap141` key. Reduced-load configs carry the handle policy, decision 253's header rule, decision 277's feed rule
+and the A-61 probe only: no `ej_proto` (322F001's lift, data gap 1), `proto95`, `proto103` (B-126), `proto108`
+(B-136 (b)), `proto112` (S + B) or `cap141`. 100 % configs are N100B's verbatim plus the trim key.
+
+**EU147** [E/TRIM, decision 310], one source line added after `carbamate_condenser_322e002`'s UA line
+(`proto147.py`):
+
+    UA_eff = UA_KJHK . (m_dot / m_dot0) ** (w(x) . n)
+    x      = m_dot / m_dot0          322E002's throughput against the engine's first call (250 638.93497 kg/h)
+    w(x)   = 0 (x >= 0.98); 1 (x <= 0.95); 0.5 (1 + cos(pi (0.95 - x) / 0.03)) between       (C1 at both edges)
+
+w = 0 returns UA untouched (a branch). The basis was chosen on the archives before any EU147 output: N100B's x is
+0.9999-1.0003 over 30 000 s; E146_923's 92.3 % hold 0.872-0.904.
+
+**Gates at 100 %.**
+
+| Arm | Against | Samples | Leaves differ | w > 0 ticks | x range |
+|---|---|---|---|---|---|
+| Z147 (600 s) | N100B | 61 | 0 | 0 of 6 100 | 0.99999978-1.0000323 |
+| EU147_100 (14 400 s) | N100B | 1 440 | 0 | 0 of 144 000 | 0.9999835-1.0002355 |
+
+EU147_100's A-61 probe file is a byte prefix of N100B's. The zero footprint at 100 % is exact.
+
+## CLIX.4 EU147 at unit level
+
+`e002_147.py` (session 146's method: frozen boundaries, 1 800 s relaxed at the boundary's shell pressure and at
++/- 0.1 bar, slopes by central difference, share r / (1 + r)); design residual at t = 0 is 0.0 on every member.
+n = 1.00 on U144 reproduces session 146's E-U row (169.50 C, share 0.249, sat 0.944). Means over each set's three
+boundaries (`unit/table_u144.txt`, `table_h693.txt`, `table_h923.txt`):
+
+| n | U144 (S + B-made, 69.3 %): TT-322010 C, share, dT/dP K/bar, ds/dP share/bar, sat min | h693 (committed control, 69.3 %, collapsed) | h923 (committed control, 92.3 %) |
+|---|---|---|---|
+| as built | 158.24, 0.005, +7.07, +0.005, 1.000 | 156.78, 0.002, +7.09, +0.003, 1.000 | 169.90, 0.176, +1.38, +0.123, 1.000 |
+| 0.50 | 165.08, 0.022, +6.29, +0.052, 1.000 | 164.90, 0.010, +6.83, +0.018, 1.000 | as built (w = 0) |
+| 0.65 | 167.42, 0.072, +3.53, +0.170, 1.000 | 168.73, 0.068, +3.83, +0.178, 0.947 | as built |
+| 0.75 | 168.25, 0.134, +1.90, +0.184, 0.980 | 170.15, 0.163, +1.75, +0.188, 0.909 | as built |
+| 0.85 | 168.81, 0.189, +1.54, +0.146, 0.965 | 170.75, 0.248, +0.82, +0.142, 0.892 | as built |
+| 0.92 | 169.15, 0.220, +1.41, +0.124, 0.955 | 171.00, 0.292, +0.62, +0.112, 0.885 | as built |
+| 1.00 | 169.50, 0.249, +1.30, +0.103, 0.944 | 171.22, 0.330, +0.50, +0.086, 0.878 | as built |
+| Book2 [I] | 168.06 +/- 0.31, gap 17, +0.97 (CI spans 0), <= 0.036 | the same | 168.74 +/- 0.34; +4.39 (94.2 %) |
+
+With sat held at 1 the n = 0.75 row moves by 0.06 K and 0.002 share on U144 (0.31 K and 0.011 on h693): the saturation
+law is a weak lever at n*. The design boundary's slopes are as built on every member (+1.380 K/bar, +0.130 share/bar).
+
+* n* = 0.75 on U144 (registry147's rule: nearest 168.06 C, inside 167.5-168.4 C), provisional: U144's boundary was
+  made by the retired S + B stack. h693 gives 0.65 (168.73 C, outside
+  the band), one grid step away; h693 is the committed control's boundary after trip 22.1 and 322F001's stall
+  (§CLIX.5), so it is not a calibration and n* rests on U144 alone.
+* From n = 0.65 the share slope is 3 to 6 times Book2's bound (decision 310's tie: no single-lump closure meets it);
+  n = 0.50 is inside it on h693 (0.018) and not on U144 (0.052), with the outlet 3 K under Book2's.
+* **On the committed tree in the 92.3 % hold 322E002's throughput is at design**: x 1.000-1.007 on all 1 441 hold
+  samples of H147_923 (1.002-1.004 at the three snapshots; 0.87-0.90 on the retired S + B stack). In the hold w = 0,
+  and on a load basis the factor (m_dot / m_dot0)^n would be within 0.5 % of 1. In the ramp and settle x falls to
+  0.929 (98 samples under 0.98, 49 under 0.95), so EU147 would act there transiently. EU147_923 was not run.
+
+## CLIX.5 In the loop at 69.3 % and 92.3 % (Gate A; controls)
+
+Ramp 0.5 %/min, settle 3 600 s; the 69.3 % arms hold 16 800 s to 24 120 s, the 92.3 % control 14 400 s. Scored by
+score137 (`score137h.py`) and decision 313's terms (`score147.py`); `runs/score137_*.txt`, `score147_*.txt`.
+
+| Quantity | EU147_693 (n 0.75) | H147_693 (no trim) | H147_923 (no trim; EU147 not run) | Book2 |
+|---|---|---|---|---|
+| TT-322005 hold min-max, mean, end (C) | 147.7-180.1, 167.8, 161.7 | 143.8-145.4, 144.9, 144.9 | 175.7-179.5, 177.0, 179.5 | 181.5 / 182.6 +/- 2 |
+| in band over the hold | 7.0 % | 0 % | 0 % | |
+| rise departure (score137) | -6.96 K | -24.04 K | -5.84 K | -0.22 / +0.21 K |
+| score137 | ringing, 5 250 s | settled; fails 180, the rise, the whole hold | ringing, 4 555 s | |
+| TT-322010 hold mean (C) | 163.2 | 156.2 | 169.9 | 168.06 / 168.74 |
+| 322E002 sat hold min / mean | 0.748 / 0.868 | 1.000 / 1.000 | 1.000 / 1.000 | |
+| gas share hold mean | 0.122 | 0.002 | 0.175 | gap 17 |
+| 322E002 x in the hold; UA ratio | 0.33-0.43; 0.44-0.53 | | 1.00 | |
+| 322R001 boil, hold max | 0 | 0 | 0 | |
+| TT-322004 hold min-max (C) | 151.8-168.4 | 171.4-185.8 | 174.7-178.1 | 166.6 (92.3 %) |
+| 322E001 steam last 3 600 s / seed | 0.308 (L 0.693) | 0.844 | 1.066 (L 0.923) | |
+| LT-322501 hold | 48.3-58.9 % | 48.9-56.8 % | 48.0-51.1 % | |
+| melt N/C min, ramp / hold | 2.865 (3 290.6 s) / 3.248 | 2.726 (3 253.7 s) / 3.070 | 2.980 / 2.960 | |
+| trips and flags | 22.1 at 3 230 s; EJECTOR_STALL 3 790 s; 35.1, 35.4 at 23 870 s | 22.1 at 2 800 s; EJECTOR_STALL 3 820 s; 35.4 at 5 540 s | none | |
+| decision 313: cap / 322E001 / late | pass / FAIL / FAIL | pass / FAIL / FAIL | pass / pass (reading) / not run to 24 000 s | |
+| wall time | 12 385 s | | | |
+
+Trip 22.1 is TT-322015's vent flood (110 C set, 108 C clear, `data.unit_322c001`); it does not latch in the engine
+(the rig's `trip_latched` key records its first sighting). TT-322015 stays at or above 110 C on 2 090 of EU147_693's
+samples from 3 230 s to the end.
+
+**The trace at 69.3 % (`run/nc147.py`, `runs/nc147.txt`, `runs/nc147_zoom.txt`).** EU147 engages from 350 s (L 0.974),
+w = 1 from 980 s (L 0.923, x 0.947); the arms differ from 350 s. Both arms dip melt N/C to 2.976 for about 30 s at
+360 s (feed CO2 up 10 % in one sample, CARBAMATE_DEPOSITION from purge_valve at 360 s), before the trim acts. Then:
+
+1. 1 200-3 000 s (L 0.90 to 0.75): EU147 holds 322E002's share on the seed's (0.16-0.18; seed 0.169) and its outlet at
+   Book2's level (168.0-168.8 C; seed 170.0), with melt N/C at or above 3.27; the top falls from 183.2 to 173.8 C while 322R001's off-gas rises from 24 to 42 t/h (the
+   control's top falls faster, to 164.7 C, its off-gas to 66 t/h). The reactor's loss is not 322E002's outlet.
+2. From 2 000 s 322E003's level LT-329501 rises (61 % at 2 000 s, 80 % at 3 000 s) while HIC-322602 follows its
+   schedule from 73 to 26 %; it reaches 100 % at 3 210 s.
+3. At 3 210-3 240 s melt N/C drops from 3.28 to 2.906 and trip 22.1 fires (TT-322015 70.5 to 175 C); that the flooded
+   scrubber passes hot gas to 322C001 is an inference, not traced. N/C stays under 3.0 on 33 samples, 3 200-3 520 s, minimum 2.865 at 3 290.6 s.
+4. 322F001's suction falls from 44.5 t/h (3 120 s) to 0 at 3 810 s (EJECTOR_STALL at 3 790 s); it stays stalled to the
+   end. The control does the same 400 s earlier (LT-329501 100 % by 3 000 s, 22.1 at 2 800 s, N/C under 3.0 from
+   2 160 s, with breaks, to 3 560 s).
+5. The hold: 322E002's throughput falls to 0.33-0.43 of design and its condensation duty to 24-40 MW (62.6 at design),
+   the loop rises to 149.8 bar a at the run's end, still rising (the control 148.2), TT-322005 rings 147.7-180.1 C, the header rule sheds valves to one, and trips 35.1
+   and 35.4 fire at 23 870 s.
+
+The archived S + B arms carry 322F001's lift prototype (`ej_proto`, data gap 1's friction share): E146_693 holds
+LT-329501 at 49-54 % and the ejector's suction at 31-50 t/h through the ramp and the hold, with no stall flag. On the committed
+tree 322F001 stalls at 69.3 % whether or not 322E002 is trimmed. That is data gap 1's stall (322F001's as-built
+closure stalls at 69.9-80.7 % on the plant's entrainment line), which no 322E002 trim touches.
+
+## CLIX.6 Gate B and Gate C: not run
+
+EU147_693 meets case 3's trigger (melt N/C under 3.0 in the ramp without B-126), so the session stops for the engineer,
+as the plan prescribes; B-126 is not re-introduced. Case 2's premise (the top collapsing because B-125's saturation
+binds) is not shown: the top falls from L 0.90 with saturation at 0.87-0.92 and the share on the seed's, and the
+saturation binds in both arms' ramps (the control's 0.90-0.96), so it does not separate them. Case 1 does not apply (TT-322004 is not hot). Gate C (92.3, 74.4, 68.9 % and the
++0.2 bar upset) is gated on a 69.3 % pass and was not run; in the 92.3 % hold EU147 is inert on this tree (§CLIX.4) and the
+committed tree's own hold (H147_923) is cold and ringing.
+
+## CLIX.7 The build-readiness packet
+
+**Candidate.** EU147: `ureasim/units/synthesis/carbamate_condenser.py`, one line after the UA line of
+`carbamate_condenser_322e002`, `UA_eff = UA_KJHK (m_dot / m_dot0)^(w(x) n)`, n = 0.75 [E], provisional (U144's unit fit to Book2's
+69.3 % TT-322010 [I]), w the C1 half-cosine of x = m_dot / m_dot0 between 0.95 and 0.98; [E/TRIM, decision 310], retired
+when data gap 17 closes (checklist row 30). Not built.
+
+| Hold | Result | Decision 180 | Decision 313 (cap / 322E001 / late) |
+|---|---|---|---|
+| 100 % (N100B), 14 400 s | bit-identical, w > 0 on 0 of 144 000 ticks | pass (the pin to the bit) | n/a |
+| 92.3 % | EU147 not run, inert in the hold (x 1.000-1.007); the committed hold H147_923: 175.7-179.5 C, rise -5.84 K, ringing 4 555 s | FAIL | pass / pass on the reading / not run to 24 000 s |
+| 74.4 % | not run (gated) | | |
+| 69.3 %, 24 120 s | 147.7-180.1 C, 7 % in band, rise -6.96 K, ringing 5 250 s; 22.1 at 3 230 s; 322F001 stalled from 3 790 s; 35.1, 35.4 at 23 870 s | FAIL | pass / FAIL (steam 0.31 of seed at L 0.69) / FAIL |
+| 68.9 % | not run (gated) | | |
+| 69.3 % + 0.2 bar on PIC-329207 | not run (gated) | | |
+
+**Recommendation: not ready to build in session 148.** The blocker is the base, not the trim's strength:
+
+1. On the committed tree 322F001 stalls at 69.3 % (322E003 floods, suction to 0, trip 22.1 follows) with or without
+   EU147. The lift prototype that held it in every archived reduced-load stack is unbuilt scratch on data gap 1
+   (Körting's curves). Whether the base for a trim may carry it is the engineer's question; it was not run here.
+2. Before the stall, with 322E002's share on the seed's and its outlet at Book2's level, 322R001's top still falls
+   9 K over the ramp from L 0.90 while its off-gas doubles. [I], one arm: the loss reads as the reactor's own boundary
+   (§CL.3, §CVI), but it is not separated from 322E003's fill (LT-329501 61 % at 2 000 s), and no arm on this tree
+   carries the lift.
+3. In the 92.3 % hold 322E002's throughput sits at design on this tree, so a UA trim on m_dot / m_dot0 has nothing to
+   act on there;
+   the 92.3 % cold branch (177.0 C mean) stays.
