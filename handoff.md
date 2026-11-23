@@ -5,7 +5,7 @@ problem, its acceptance tests, what is established, the open options, the next s
 an item's state in place and appends no session paragraph (`CLAUDE.md` §3a). Close an item by deleting it;
 its closure is recorded in the session's As-Built Part. Ceiling: 300 lines.
 
-**Last updated:** 2026-11-22, session 148.
+**Last updated:** 2026-11-22, session 149.
 
 **Section A** — issues created by the V1.1 rewrite.
 **Section B** — physics gaps inherited from V1 that the rewrite carries forward. Port V1's behaviour
@@ -28,8 +28,8 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 ### B-118 — Below 100 % load the engine holds no steady state on the plant's reactor window
 
-*Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to CLX; decisions 177, 180, 181, 188,
-190, 259 to 284, 286, 288, 290 to 293, 295 to 301, 303 and 307 to 317.*
+*Raised 2026-10-30, session 76. Phase 7. Record: As-Built Parts LXXXIX to CLXI; decisions 177, 180, 181, 188,
+190, 259 to 284, 286, 288, 290 to 293, 295 to 301, 303 and 307 to 320.*
 
 **Problem.** The plant runs for hours at reduced load. The committed engine, ramped from its design seed, does not:
 at 70-85 % trip 22.1 in 20-80 minutes, or with 22.2 removed (decision 189) SV32064 lifts and 21.x and 22.1 latch
@@ -85,23 +85,22 @@ close tick by tick on a turndown (`Tests and Reports/tests/phase7/test_loop_atom
 rejected (312).** Session 146's runaway (§CLIX.2, decision 316). EU147, the UA trim on 322E002's own throughput, is inert
 at 92.3 % and at 69.3 % stalls 322F001 without the lift, as the no-trim control does (§CLIX.3-7).
 
-**Decision 315's base with EU148 (Part CLX; decisions 314 to 317).** The lift, P4 and 322E002's UA on L_fresh (the
-delayed CO2 feed over design), each gated on w(L_fresh), n 0.77. P4 as decided is not zero at 100 % on e58014f (9 835
-leaves over 600 s); w-gated, Z148 and EU148_100 are bit-identical to N100B (§CLX.2-4). A 321P002B fault at 100 % stalls
-322F001 as committed; after the CO2 trips w = 1 on the shut-down plant, unmeasured past 610 s (§CLX.3). Gate A: 92.3 %
-holds without boil or stall to 8 200 s but runs cold, TT-322005 178.9-181.1 C (band 180.58-184.58), the rise's departure
--3.20 K against Book2's +0.21 K, TT-322004 182 C; 69.3 % passes the ramp without a stall, then rides the boil ceiling from 3 720 s with TT-322004
-192-197 C, FY-329403 0.87-0.98 of design and the ratio trim at its 2.0 floor; 322E002's CO2 slip 0.25 to 0.55, melt
-N/C under 3.0 at 6 110 s, the saturation collapses, the loop runs to 159.5 bar a, trips at 7 180 s, relief at 7 330 s.
-Opposite signs at one n. Stopped at Gate A (317); no-go for a Session 149 build of EU148 (§CLX.5).
+**Decision 315's base (Parts CLX, CLXI; decisions 314 to 320).** The lift, P4 (w-gated, 318) and 322E002's UA on
+L_fresh, each gated on w(L_fresh), n 0.77, bit-identical to N100B at 100 % (Z148, EU148_100, Z149, B149_100). With EU148
+92.3 % runs cold (rise -3.20 K) with TT-322004 182 C and 69.3 % boils into the low-N/C branch, trip at 7 180 s (§CLX.4).
+With B-136 (b) on (319, beta 1.00) both fall cold, as rise off on P1 did (§CXVIII.11): 92.3 % 173.9-175.2 C (rise
+-8.55 K), TT-322004 167-169 C; 69.3 % 176 C at the ramp end to 154 C, trip 22.1 at 6 740 s (§CLXI.4). In the 92.3 % hold
+the share is above the seed's and 322R001's off-gas CO2 1.61 of it (a hold budget; the initiator is not traced). The
+unit sweep of n x beta_phi (320), on the arms' snapshots and on Book2's bands, returns no pair: ds/dP 0.055-0.16 share/bar;
+at beta 0.10 the flash's own part is 0.022-0.028 and the saturation law's zero margin adds 0.049-0.065 (§CLXI.5).
+Stopped at Step 3; no Gate A reduced arm, Gate B, C or SD149 run. w = 1 on a shut-down plant unmeasured past 610 s.
 
-**Open options** (the engineer's): B-136 (b) on this base, the over-steamed stripper being common to both holds
-(unmeasured here); a load-shaped n or a second 322E002 touch point (decision 315's Gate B arms); a trim at 322R001's
-own boundary; or wait on gap 1 (Körting) and gap 17 (row 30). The gated or ungated P4 at 100 % and the w-gated hooks
-on a shut-down plant are go / no-go items for any build. Law B stays in its departure form (307).
+**Open options** (the engineer's): stop the Option 2 line here; beta_phi with a decision 297 saturation margin (whether
+the two meet the slope together is [I], unmeasured) and a trim at 322R001's own boundary; Gate A at a disclosed pair
+outside the rule; or wait on gap 1 (Körting) and gap 17 (row 30). Law B stays in its departure form (307).
 
-**Next step.** The engineer's choice among the open options on §CLX.4's 69.3 % trace; then one Gate A pair (92.3 %,
-69.3 % to 24 000 s). Decision 277's feed rule and 253's header rule on every arm.
+**Next step.** The engineer's choice on §CLXI.4-5; any Gate A pair then 92.3 % to 14 400 s and 69.3 % to 24 000 s,
+decision 277's feed rule and 253's header rule on every arm, and Gate C's SD149 before any build (318).
 
 **B-120 folded in (decisions 177, 181).** V1's stripper slip gain drives a loop mode (§XCVIII.3, §CIII.7, §CXIV.7,
 §CXVII.6); the gain stays 4.0.
@@ -140,7 +139,8 @@ the shell), where at the design boundary it answers 0.12 per bar; S answers 0.37
 regression): the plant's outlet TT-322010 +4.4 K/bar at 94.2 % (boot +3.5..+5.8), +2.4 pooled 69.3-100.3 %, its gas
 share under 0.01-0.03 share/bar; S has no outlet term and overshoots in the loop (§CLVII.5). Under E-U at 69.3 % the
 law binds (0.894 to 0.944; §CLVIII.4, §CLVIII.6); under EU147 on the committed tree at 69.3 % 0.748 to 1, not the
-lever there (sat 1 moves n = 0.75's share by 0.002; §CLIX.4-6). Next step: B-118's.
+lever there (sat 1 moves n = 0.75's share by 0.002; §CLIX.4-6). On Book2's bands with beta_phi 0.10 the law
+carries 66-72 % of the share's pressure slope, 0.049-0.065 share/bar (§CLXI.5). Next step: B-118's.
 
 ### B-126 — 322R001's 136 t of liquor has no composition
 
@@ -180,7 +180,8 @@ the new stripper's GA the outlets are N6A at EL +7154 and N6B at +6554; N6B shut
 (calculated, §CXLVI.9). If the design duty is on that area, nothing changes below 100 %; if on the full area, the lean
 rise returns at 74.4 % and below, tried only on a ringing law (§CXLVI.14). Which reading holds is the process
 engineer's. Decided (decision 266): (b), the rise off, measured only together with decision 263's refit of 322R001.
-Next step: B-118's.
+Gated on w(L_fresh) on decision 315's base (decision 319, §CLXI.4, scratch): TT-322004 167-169 C at 92.3 % (the
+plant's sign), 137 C at 69.3 % as the loop falls cold. Next step: B-118's.
 
 # Section C — Calibration Deferrals
 

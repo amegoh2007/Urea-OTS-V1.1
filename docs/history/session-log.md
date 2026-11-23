@@ -5443,3 +5443,13 @@ changes 9 835 leaves at 100 % (co2_scale 2e-7 under 1); gated on w, Z148 and EU1
 its window, the ratio trim on its floor), crosses melt N/C 3.0 at 6 110 s and trips at 7 180 s, relief at 7 330 s.
 Stopped at Gate A by the engineer (317); both reduced arms stopped at 8 200 and 12 300 s. No-go for building EU148.
 Nothing built. Part CLX; `Tests and Reports\reports\Session_148_b118_lift_base`.
+
+### Session 149 — 2026-11-22: decisions 318-320; the Option 2 stack with B-136 (b) and beta_phi, stopped at Step 3
+
+Session 148 committed (e7aa1c8, not pushed). Rulings as decisions 318 (P4 w-gated; Gate C's shut-down trace), 319 (B-136
+(b) gated on w) and 320 (beta_phi, 322E002's tempered flash departure). Session 148's archive read: at 92.3 % the rise is
+lost to 322R001's off-gas CO2, not 322E002's outlet; at 69.3 % the hot stripper's hydrolysis leads the chain to melt N/C
+3.0. proto149 (lift, P4, UA, lean, beta): Z149 / Z149b bit-identical to N100B. At (n 0.77, beta 1.00) in the loop both
+loads fall cold, 69.3 % to trip 22.1 at 6 740 s. The unit sweep of n x beta, on the arms' snapshots and on Book2's bands,
+returns no pair: ds/dP 0.055-0.16 share/bar, the saturation law's zero margin 66-72 % of it at beta 0.10. Stopped at Step 3
+for the engineer; no Gate A reduced arm run. Nothing built. Part CLXI; `Tests and Reports\reports\Session_149_b118_b136_trim`.

@@ -31573,3 +31573,120 @@ node_dtdt (P4, gated on w, decision 181), 322E002's UA line (UA_eff, [E]/[I], re
 gated or ungated P4 at 100 % (§CLX.2); the shut-down and restart behaviour of the w-gated hooks (§CLX.3); 322E001
 over-steamed and hot at both holds (B-136 (b) unmeasured on this base); the ratio trim at its floor through the 69.3 %
 settle.
+
+# Part CLXI — Session 149: the rulings as decisions 318 to 320, the Option 2 stack with B-136 (b) and beta_phi, stopped at Step 3 (2026-11-22)
+
+Scripts and output: `Tests and Reports/scratch/session-149` (`registry149.md`, written before any Gate A reduced arm
+and amended twice; `proto149.py`; `diag149.py`, `diag149b.py`, `diag149c.py`; `e002_149.py`, `e002_149b.py`,
+`sel149.py`, `sat149.py`; `out/`; `run/` with `cfg149.py`, `go149.sh`, `make149.py`, `gate149.py`, `score149.py`,
+`cfg/` and `runs/`, the snapshots in `runs/P149_923_e002` and `runs/P149_693_e002`; `first149.py` and `mc149.py`
+copied, not run). Archived to `Tests and Reports/reports/Session_149_b118_b136_trim`.
+Nothing under `ureasim/` or `Tests and Reports/tests/` changed. "Share" below is 322E002's gas CO2 over (feed CO2 +
+gas CO2), 0.1692 on the seed; the flash's CO2 gas fraction phi = share / (1 - share), 0.2036 on the seed.
+
+## CLXI.1 Step 0 and the rulings
+
+Session 148's five documents were committed as `e7aa1c8` on `v1.2` (not pushed) after `git diff --name-only --
+ureasim "Tests and Reports/tests"` printed nothing. The engineer's rulings of 2026-11-22 are decisions 318 (the
+w-gated P4 adopted for the Option 2 base; Gate C's 3 600 s shut-down trace before any build), 319 (the gated B-136 (b),
+322E001's feed-lean rise scaled by 1 - w) and 320 (beta_phi, the tempered flash departure in 322E002, [E]/[I]).
+
+## CLXI.2 Step 2: Session 148's archive read (no re-run)
+
+* EU148_923, hold 4 560-8 200 s against the seed (`diag149b.txt`): share 0.175 (phi 0.2126); the stripper's
+  hydrolysis 154 kmol/h, 1.75 of the seed's 88.2 (1.89 per unit load); TT-322013 191.3 C (seed 187.0); TT-322010
+  169.76 C (seed 170.00). The rise is lost at 322R001's own boundary, not at 322E002's outlet: 322E002's gas CO2 480
+  kmol/h (0.98 of the seed, 1.06 per unit load) against 322R001's off-gas CO2 234 (1.19, 1.28 per unit load), so the
+  carbamate made in the reactor falls to 246 kmol/h (0.84, 0.91 per unit load): b_carb_K -2.73 K, the off-gas split
+  +5.25 K, its slip +0.99 K, against the gas term +3.51 K; the conversion 0.522 (seed 0.542); b_rxn_K 10.60 K (13.04).
+* EU148_693 at 3 700 / 5 000 / 6 100 s (`diag149.txt`): TT-322004 193.2 / 196.7 / 196.0 C; hydrolysis 371 / 512 /
+  589 kmol/h (4.2 / 5.8 / 6.7 of the seed); the stripper top's molar NH3/CO2 2.160 / 1.947 / 1.787 (seed 1.895);
+  share 0.201 / 0.218 / 0.259; melt N/C 3.48 / 3.22 / 3.00; saturation 0.846 / 0.908 / 0.967; 322R001's top boil 0.76 /
+  1.3 / 12.2 t/h. The chain: the hot stripper hydrolyses 4 to 7 times the seed's urea; hydrolysis makes NH3 and CO2 at
+  2 : 1, above 1.895, so it cannot pull the top's ratio down; the fall comes with the stripper's H/C term (g_hc
+  0.959 to 0.891; `slip` is 1 - g_hc, read here as NH3 left in the bottoms [I]) and the CO2 recycled in the overflow (top CO2 1 341 to 1 508 kmol/h on 859
+  kmol/h fresh). The share and the boil rise with it, the melt N/C crosses 3.0 at 6 110 s (§CLX.4). The saturation
+  rises through the chain and falls (0.69 at 7 170 s) only after the collapse: a consequence, not the initiator.
+
+## CLXI.3 proto149 and the nulls
+
+`proto149.py` is proto148 (§CLX.2) with two touch points, each a branch at w = 0:
+
+    lean    stripper_322e001: after dt_load's line, if raw_load > 0: dt_load = (1 - w) dt_load      (decision 319)
+            g_t, dt_bot and the top's T_TOP_LOAD_K . dt_bot follow; dt_flood and dt_strip untouched
+    beta    carbamate_condenser_322e002: phi_gas,k = phi_des,k + gate . (1 - w (1 - beta_phi)) . (phi_film,k - phi_des,k)
+            (decision 320); phi_film, the carried state, and the saturation step after it untouched
+
+Both are recompiled copies of the unit's own function with one line added, installed at the only call sites
+(`engine/plant/synthesis.py` for 322E001, `condenser_holdup` for 322E002). n and beta_phi are read at call time from
+`proto149.PARAM`, L from `proto149.CELL`.
+
+* Z149 (600 s at 100 %, lift 2.41, P4 gated, n 0.77, lean, beta_phi 0.10): 0 leaves differ from N100B over 61
+  samples (10-610 s); w > 0 on 0 of 6 100 ticks; calls ej 6 219, ua 11 895, p4 24 396, lean 6 097, phi 11 895, every
+  w-branch 0. Z149b, the same on the final file (after the PARAM / CELL refactor): 0 leaves differ over 61 samples.
+* B149_100 (14 400 s at 100 %, the same stack): 0 leaves differ from N100B over 1 440 samples (10-14 400 s); w > 0
+  on 0 of 144 000 ticks (L_fresh 0.99998-1.00000); no trip.
+
+## CLXI.4 The full stack in the loop at (n 0.77, beta 1.00): both loads cold
+
+P149_923 and P149_693 (E146's Book2 handles, decision 253's header rule, decision 277's feed rule; PT-329207 on
+decision 303's departure at 69.3 %), shortened arms run as the sweep's boundary sources, scored on `score149.py`:
+
+| | P149_923 (to 6 060 s) | P149_693 (to 7 920 s) |
+|---|---|---|
+| TT-322005 hold | 173.9-175.2 C (Book2 180.58-184.58) | 154.3-156.0 C (from 176.1 C at the ramp end) |
+| rise departure | -8.55 K (Book2 +0.21) | -24.38 K (Book2 -0.22) |
+| TT-322004 hold | 166.7-169.2 C | 137.3-138.1 C, STRIPPER_SOLIDIFICATION at 7 040 s |
+| FY-329403 / 60.85 | 0.913-0.948 | 0.515-0.593 |
+| boil, sat hold min | 0, 1.000 | 0, 0.890 |
+| melt N/C hold min | 2.978 | 2.772 |
+| LT-329501 | 49.4-51.6 % | 100 % |
+| trips | none | 22.1 at 6 740 s |
+
+Live: lean_w_calls 52 098 / 70 698 (the cut 12.9 / 36.8 K at the end), w > 0 on 55 004 / 73 744 ticks, UA ratio 0.940
+/ 0.752, lift 0.36 / 1.27 bar. Decision 319 removes session 148's hot failure (TT-322004 182 C at 92.3 %, the boil
+ceiling at 69.3 %) and the loop falls onto the cold branch at both loads, as the rise off on P1 did on session 108's
+tree (§CXVIII.11: PV923_l -6.23 K, PV693_l -26.45 K). At 92.3 % (`diag149c.txt`, 4 560-6 060 s)
+322E002's gas CO2 is 511 kmol/h (1.04 of the seed) and the share 0.179, above the seed's; 322R001's off-gas CO2 is
+318 (1.61; the split 1.52, its slip 44.7 kmol/h from 0), the carbamate made 193 (0.66), the conversion 0.453. This is
+the hold's budget, not the initiator: at 2 400 s the share was 0.158, under the seed's, with the rise already 9.6 K;
+in the hold the share sits above the seed's and the off-gas carries the loss. At 69.3 % the share falls with TT-322010 (0.191 at
+3 720 s to 0.092 at 6 600 s) while the off-gas CO2 rises from 287 to 617 kmol/h.
+
+## CLXI.5 Step 3: the unit sweep of (n, beta_phi)
+
+Grid beta_phi {1.00, 0.30, 0.20, 0.15, 0.10} x n {0.77, 0.85, 0.92, 1.00}; each cell relaxes 322E002's holdup at its
+shell pressure and +/- 0.1 bar with every other argument frozen; slopes by central differences. The selection rule
+(registry149.md, written before the sweep was read): TT-322010 in [168.0, 169.5] C, share in [0.16, 0.17], sat >= 0.99,
+ds/dP <= 0.03 share/bar, dT/dP > 0, one pair at both loads.
+
+**On the P149 arms' snapshots** (`e002_149.py`, 1 800 s; 92.3 % at 5 400 and 6 000 s, 69.3 % at 4 200 and 4 800 s;
+`sel149.txt`): ds/dP 0.055-0.117 on every cell; TT-322010 169.9-170.8 C at 92.3 % and 164.9-168.0 C at 69.3 %; share
+0.174-0.200 and 0.165-0.250; sat 0.98-1.0 and 0.79-0.91. beta's sign flips with the boundary: at 92.3 % the film sits
+above design and tempering lowers the gas CO2 (524.6 to 495.9 kmol/h, n 0.77, beta 1.00 to 0.10); at 69.3 % below, and
+tempering raises it (373.5 to 475.3). These are boundaries of failing arms.
+
+**On Book2's bands** (`e002_149b.py`: session 139's boundary, §CLI.5, at 94.2 % for 92.3 % and at 69.3 %; 3 600 s):
+
+| | 94.2 % (L 0.9164) | 69.3 % (L 0.6942) |
+|---|---|---|
+| TT-322010 | 169.26-169.76 C (Book2 169.69) | 167.33-169.29 C (Book2 169.01) |
+| share | 0.185-0.204 | 0.184-0.252 |
+| sat | 0.954-0.970 | 0.887-0.947 |
+| ds/dP (share/bar) | 0.080-0.134 | 0.071-0.159 |
+| dT/dP (K/bar) | +1.28 to +3.50 | +1.33 to +4.09 |
+
+No cell meets the rule at either band: ds/dP above 0.03, share above 0.17 and sat below 0.99 everywhere. beta moves the
+share by +0.0004 (n 0.77) to -0.006 (n 1.00) at 94.2 % and by +0.010 to -0.016 at 69.3 % (beta 1.00 to 0.10); n raises it at both (+0.019 at
+94.2 %, +0.068 at 69.3 %, n 0.77 to 1.00, beta 1.00).
+
+**The ds/dP floor** (`sat149.txt`, the share re-made with the saturation held at the centre row's value): tempering
+raises dT/dP from about 1.3 to 3.3-4.1 K/bar (the outlet's shell-pressure channel strengthens as less CO2 leaves per
+kelvin, toward Book2's +4.4 K/bar at 94.2 %, §CLVII.4), so beta . dT/dP falls less than beta. The flash's own part
+falls to 0.022-0.028 share/bar at beta 0.10 on Book2's bands, inside the bound; the saturation law (B-125's zero
+margin) adds 0.049-0.065 share/bar there, 66-72 % of the slope (15-19 % at beta 1.00).
+
+**Verdict.** Step 3 is a named failure on both boundary sets: no (n*, beta*) is chosen, and no Gate A reduced arm, Gate
+B, Gate C or SD149 is run. With the saturation law as built, beta_phi alone cannot meet ds/dP <= 0.03 on these boundaries; whether a
+saturation margin (decision 297's class) with the flash tempered meets it is [I], unmeasured. The choice is the
+engineer's.

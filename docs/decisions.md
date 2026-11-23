@@ -1746,3 +1746,29 @@ decision on an item.
      from the ramp end into the low-N/C branch, the loop pressure runaway and the 7 180 s trips. No plan case fits at face
      value; no Gate B or Gate C arm is run, and both reduced arms are stopped where they stood (8 200 s and 12 300 s),
      their verdicts fixed. As-Built Part CLX.
+318. **The gated P4 adopted for the Option 2 base** (2026-11-22, session 149; the process engineer's ruling; it resolves
+     decision 315's go / no-go item on P4's form). 322R001's P4, the wall loss on a stagnant reactor only, is gated by
+     w(L_fresh), 0 at L_fresh >= 0.98 and 1 at L_fresh <= 0.95, so the 100 % load stays bit-identical to N100B and the
+     ungated P4's 9 835-leaf drift at co2_scale 2e-7 under 1 is gone (As-Built §CLX.2). At w = 1 P4 removes the ambient
+     wall loss over the normal flow range and still restores the whole ambient wall loss whenever 322R001's flow falls
+     into P4's stagnant or shut-down band, so a cold reactor still cools down after a feed trip. Before any build into
+     `ureasim/`, Gate C carries a long shut-down and restart trace, at least 3 600 s after the trip.
+319. **The gated B-136 (b), 322E001's feed-deficit rise off at reduced load, admitted to the Option 2 scratch stack**
+     (2026-11-22, session 149; the process engineer's ruling on As-Built §CLX.4). Kept, the feed-deficit rise
+     (raw_load > 0) drives TT-322004 to 182 C at 92.3 % and 193-197 C at 69.3 %, with 5-7 times the urea hydrolysis
+     (xi_hydrolysis), FY-329403 over-steamed to 1.49 of design, 322R001 boiling 65.3 t/h and the melt N/C collapsing
+     to 2.32 under 3.0. Only the feed-lean heating branch of `stripper_322e001` is suppressed, by (1 - w(L_fresh)):
+     dT_load,eff = (1 - w(L_fresh)) . dT_load when raw_load > 0, used in dt_bot and in g_t on the raw_load > 0 side.
+     The high-feed flooding branch (raw_load <= 0, dt_flood) and the CO2 sweep-endotherm branch (dt_strip) are not
+     touched. At L_fresh >= 0.98 (w = 0) the stripper is bit-identical to e58014f; at L_fresh <= 0.95 (w = 1) the
+     feed-deficit rise is off. Scratch only; not built.
+320. **A second 322E002 touch point, beta_phi's tempering of the flash departure, authorized in scratch** (2026-11-22,
+     session 149; the process engineer's ruling; [E]/[I]). Inside `carbamate_condenser_322e002` the departure of
+     phi_gas from its design value is tempered at reduced load by one scalar beta_phi in [0, 1], gated by w(L_fresh):
+     phi_gain = 1 - w(L_fresh) . (1 - beta_phi), and phi_gas,k = phi_des,k + gate . phi_gain . (phi_film,k - phi_des,k).
+     At 100 % load w = 0 and phi_gain = 1, so decision 86's gate = 1 holds bit-identically against N100B. The phase
+     split stays inside [0, 1], so mass, atoms and energy close exactly. It is meant to keep 322E002's gas-CO2 share
+     near the design's 0.16-0.17 when TT-322010 sits at Book2's 168-169.5 C, and to bring d(share)/d(PT-329207) from
+     0.18 share/bar into Book2's window of at most 0.03 share/bar, while UA_eff(L_fresh, n) keeps TT-322010's positive
+     shell-pressure channel. sat_frac stays live, so the low-pressure and low-N/C malfunction physics are kept. It is
+     retired when data gap 17 (checklist row 30) supplies the plant's 322E002 steam-make data.
