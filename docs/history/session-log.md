@@ -5453,3 +5453,16 @@ lost to 322R001's off-gas CO2, not 322E002's outlet; at 69.3 % the hot stripper'
 loads fall cold, 69.3 % to trip 22.1 at 6 740 s. The unit sweep of n x beta, on the arms' snapshots and on Book2's bands,
 returns no pair: ds/dP 0.055-0.16 share/bar, the saturation law's zero margin 66-72 % of it at beta 0.10. Stopped at Step 3
 for the engineer; no Gate A reduced arm run. Nothing built. Part CLXI; `Tests and Reports\reports\Session_149_b118_b136_trim`.
+
+### Session 150 — 2026-11-23: decisions 321-322; the evaporation ejectors on deduced break curves, the pacing x1 to x10
+
+Session 149 committed and pushed (1e56dab). On the committed engine HIC-329605 and HIC-329606 moved PT-324201 and
+PT-324204 by under 0.01 bar above their brackets, and opening HIC-329605 worsened the vacuum (§CLXII.1). Decision 322 (the
+engineer's instruction, Körting's curves unreachable): each ejector holds a compression ratio CR(P_m) through the plant's
+5 and 7 November readings, the 1-D slope above, width 1.04, capacity at the duty's motive; stage 2 split between 324F004
+and 324F005 and read on the plant's 44.3 % design stroke [E], meeting the vendor duties' ratios (3.00 / 2.92, 3.48 /
+3.52). Built after a scratch prototype: stage 1 0.624 / 0.568 / 0.457 bar a at 48 / 55 / 60 % (plant 0.64, 0.56-0.61);
+stage 2 0.447 / 0.392 / 0.143 at 64 / 68 / 73 % of the engine's stroke (plant 0.48 / 0.415 / 0.15 at the same shares);
+bleeds shut 0.317 (plant 0.32); the seed within its own wander over 14 400 s. Decision 230's boil bound and 306's ring
+ceiling restated, for the engineer. Decision 321: the pacing x1 to x10, FREEZE / RUN lit from the packet's sim_frozen.
+Data gap 3 open. Part CLXII; `Tests and Reports\reports\Session_150_ejectors_pacing`.

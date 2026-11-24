@@ -33,7 +33,7 @@ def test_every_path_resolves():
     from tests.phase7.drivers import flatten
     sched = Scheduler(*build_plant())
     sched.tick()
-    flat = flatten(build_packet(sched.plant, sched.results, sched.tears_read, sim_mode="SLOW",
+    flat = flatten(build_packet(sched.plant, sched.results, sched.tears_read, sim_mode="x1",
                                 t_wall=0.0))
     missing = [(c.key, x.path) for c in COUPLED for x in c.claims
                if x.path not in (rc.EXTRA if x.path.startswith("x.") else flat)]

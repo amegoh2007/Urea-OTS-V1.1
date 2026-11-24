@@ -334,7 +334,7 @@ def design_packet():
     from ureasim.engine.scheduler import Scheduler
     sched = Scheduler(*build_plant())
     sched.tick()
-    return build_packet(sched.plant, sched.results, sched.tears_read, sim_mode="SLOW",
+    return build_packet(sched.plant, sched.results, sched.tears_read, sim_mode="x1",
                         t_wall=0.0)
 
 

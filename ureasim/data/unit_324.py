@@ -458,45 +458,98 @@ LIC_324501_KC = 0.85
 LIC_324501_TI_S = 200.0
 
 # ======================================================================================
-# The ejectors' break-off on the plant's motive strokes (decision 251)
+# The ejectors' deduced break curves on the plant's motive strokes (decision 322)
 # ======================================================================================
 
 
 @dataclass(frozen=True)
-class EjectorBreak:
-    """Where the plant's ejector loses its vacuum on its motive valve's stroke.
+class EjectorBreakCurve:
+    """An ejector's deduced break curve: the suction it holds against its design discharge as its
+    motive valve strokes.
 
-    ``hold_pct`` is the stroke at which the plant still holds its design vacuum and ``lost_pct``
-    the one at which it has lost it [%]. ``p_discharge_bara`` is what the ejector discharges into at
-    design. ``bleed_des_kgh`` is the design false air its stage's PIC admits [kg/h], which the
-    plant ran shut."""
+    ``nodes`` are (stroke [%], suction held [bar a]), rising in stroke; at each, the ejector holds
+    the compression ratio ``p_discharge_bara / suction``. A node's stroke becomes a nozzle pressure
+    on the engine's valve law on the logged header (`MOTIVE_BREAK_HEADER_BARA`), the other motive
+    valve at its design stroke; or, where ``design_stroke_pct`` is given (the stroke at which the
+    plant's valve passes its design motive), as the duty's motive times stroke / design_stroke_pct,
+    the plant's own valve read as linear about its design [E]. The top node is the stroke from
+    which the ejector holds its design vacuum: above it the ratio follows the 1-D model's motive
+    slope (`units.evaporation.ejector_map`)."""
 
     tag: str
     valve: str
-    hold_pct: float
-    lost_pct: float
     p_discharge_bara: float
-    bleed_des_kgh: float
+    nodes: tuple[tuple[float, float], ...]
+    design_stroke_pct: float | None = None
 
 
 #: The LP header the break-off was logged on [bar a]: PT-329207 4.20-4.24 bar g, taken at its mid
 #: 4.22 bar g, 5 November 2026 13:11-13:16 (As-Built §CV.5).
 MOTIVE_BREAK_HEADER_BARA = 4.22 + ATM_BARA
 
-#: The plant's break-off bracket (decision 251, 2026-11-18, the process engineer's instruction to
-#: make HV-329605 and HV-329606 act on the vacuums). Source: the DCS trend photos of 5 November
-#: 2026, 75 % load, digitized in As-Built §CV.5. Stage 1 sat at 0.56-0.64 bar a with HIC-329605 at
-#: 48-55 % and at 0.25-0.33 bar a at 64-73 %. Stage 2 sat at 0.40-0.48 bar a with HIC-329606 at
-#: 35-38 % and at 0.14-0.17 bar a at 40-41 %. HV-329606 drives 324F004 and 324F005 together, so
-#: both carry its bracket. The discharges are 323C005's 1.0 bar a, 324E006's 0.3 and 324E007's 1.0;
-#: the bleeds are PFD 784's and 783's 21 kg/h.
+#: The second stage's readings on the plant's 5 November and 7 November 2026 trends (As-Built
+#: §CV.5), 324E005's pressure on HIC-329606's stroke [%, bar a]: 0.48 at 35 %, 0.40-0.43 at
+#: 37.5-38 %, 0.14-0.17 at 40-41 % and 0.10 at 44.3 % (7 November, the bleeds shut).
+STAGE2_READINGS = ((35.0, 0.48), (37.75, 0.415), (40.5, 0.15), (44.3, 0.10))
+
+#: HIC-329606's stroke at the plant's design motive [%]: 44.3 % at 101.7 % load on a 4.00 bar g
+#: header, 7 November 2026 (As-Built §CV.5), where the engine's valve passes PFD 927 + 929 at 80.16 %
+#: (`unit_324_train.HV_329606_OP_DES_PCT`). On the engine's valve law the plant's stage-2 strokes
+#: put the nozzles at 1.5-2.0 bar a, under half the design and Körting's 3.1 bar g minimum (As-Built
+#: §CXLIV.2); read on this stroke instead, the curves meet the vendor duties' ratios at 4.1 bar a
+#: (324F004 3.00 against 2.92, 324F005 3.48 against 3.52; As-Built §CLXII.2) [E].
+HIC_329606_PLANT_DES_PCT = 44.3
+
+
+def _pair_split(readings: tuple[tuple[float, float], ...], p_hold_4: float,
+                p_hold_5: float) -> tuple[tuple, tuple]:
+    """The second stage's readings split between 324F004 and 324F005, which one valve drives.
+
+    Process utility: the plant logs one pressure for the pair, 324E005's. Where it reads at or
+    under the hold (``p_hold_4``, 324F004 against 324E006 at its design 0.3 bar a), 324F005 holds
+    324E006 at design and the reading is 324F004's alone. Above it both have broken and the pair
+    holds P_d5 / (CR_4 CR_5); the loss is shared equally in the logarithm of each ejector's
+    compression ratio at its hold, an assumption [E] (decision 322):
+
+        CR_4 CR_5 = P_d5 / P_s,    CR_i = CR_i,hold (CR_4 CR_5 / CR_4,hold CR_5,hold)^(1/2)
+    """
+    cr4_hold, cr5_hold = E006_P_DES_BARA / p_hold_4, E007_P_DES_BARA / p_hold_5
+    f004, f005 = [], []
+    for stroke, p_s in readings:
+        if p_s <= p_hold_4:
+            f004.append((stroke, p_s))
+            continue
+        share = math.sqrt(E007_P_DES_BARA / p_s / (cr4_hold * cr5_hold))
+        f004.append((stroke, E006_P_DES_BARA / (cr4_hold * share)))
+        f005.append((stroke, E007_P_DES_BARA / (cr5_hold * share)))
+    f005.append((next(s for s, p in readings if p <= p_hold_4), E006_P_DES_BARA))
+    return tuple(f004), tuple(f005)
+
+
+_F004_NODES, _F005_NODES = _pair_split(STAGE2_READINGS, 0.15, E006_P_DES_BARA)
+
+#: The deduced break curves (decision 322, 2026-11-23: the process engineer's instruction to deduce
+#: curves that make HIC-329605 and HIC-329606 act on their vacuums, Körting's curves being
+#: unreachable, data gap 3). Source: the plant's 5 and 7 November 2026 trends (As-Built §CV.5), the
+#: one record of these ejectors off their design. Stage 1 (324F002 into 323C005) held 0.64 bar a at
+#: HIC-329605 48 %, 0.56-0.61 at 50-55 % and its design 0.33 at 64 % (decision 251's held stroke).
+#: Stage 2 is `STAGE2_READINGS` split by `_pair_split`, its strokes read on the plant's design
+#: stroke (`HIC_329606_PLANT_DES_PCT`). [E]: the plant's readings are at 75 % load with both bleeds
+#: shut; the curves read them as the suction the ejector holds, whatever its load.
 EJECTOR_BREAKS = {
-    "324F002": EjectorBreak("324F002", "HIC-329605", 64.0, 55.0, C005_P_BARA, F001_FA_DES_KGH),
-    "324F004": EjectorBreak("324F004", "HIC-329606", 40.0, 38.0, E006_P_DES_BARA,
-                            F003_FA_DES_KGH),
-    "324F005": EjectorBreak("324F005", "HIC-329606", 40.0, 38.0, E007_P_DES_BARA,
-                            F003_FA_DES_KGH),
+    "324F002": EjectorBreakCurve("324F002", "HIC-329605", C005_P_BARA,
+                                 ((48.0, 0.64), (55.0, 0.57), (64.0, F001_P_DES_BARA))),
+    "324F004": EjectorBreakCurve("324F004", "HIC-329606", E006_P_DES_BARA, _F004_NODES,
+                                 HIC_329606_PLANT_DES_PCT),
+    "324F005": EjectorBreakCurve("324F005", "HIC-329606", E007_P_DES_BARA, _F005_NODES,
+                                 HIC_329606_PLANT_DES_PCT),
 }
+
+#: The break's width (decision 322): an ejector pulls nothing once its discharge stands this many
+#: times above its critical back pressure, the fall shaped as decision 251's. 1.04 is 324F005's
+#: width under decision 251, and puts the separators' broken vacuums within a few per cent of the
+#: nodes they rest on, as the plant's ran (As-Built Part CLXII) [E].
+EJECTOR_BREAK_WIDTH = 1.04
 
 __all__ = [
     "F001_P_DES_BARA", "F003_P_DES_BARA", "E001_W_UREA_DES", "E001_T_DES_C", "E003_W_UREA_DES",
@@ -528,5 +581,6 @@ __all__ = [
     "PIC_335201_DES_BARG", "E003_LIQUOR", "F003_P_MIN_BARA", "F003_P_MAX_BARA",
     "TT_324002_SPAN_C", "PT_329212_SPAN_BAR", "PT_324203_SPAN_BAR", "TIC_324002_KC",
     "TIC_324002_TI_S", "PIC_329212_KC", "PIC_329212_TI_S", "PIC_324203_KC", "PIC_324203_TI_S",
-    "LIC_324501_KC", "LIC_324501_TI_S", "EjectorBreak", "MOTIVE_BREAK_HEADER_BARA", "EJECTOR_BREAKS",
+    "LIC_324501_KC", "LIC_324501_TI_S", "EjectorBreakCurve", "MOTIVE_BREAK_HEADER_BARA",
+    "STAGE2_READINGS", "HIC_329606_PLANT_DES_PCT", "EJECTOR_BREAKS", "EJECTOR_BREAK_WIDTH",
 ]

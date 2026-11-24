@@ -261,8 +261,8 @@ def test_a_real_engine_historian_answers_the_window(qapp, tmp_path):
     from ureasim.engine.session import EngineSession
 
     session = EngineSession(tmp_path)
-    session.handle({"type": "set_sim_mode", "mode": "FAST"})
-    session.advance(500_000_000)
+    session.handle({"type": "set_sim_mode", "mode": "x10"})
+    session.simulator.run(300)
     bridge = FakeBridge(session.packet(0.0, health=False))
     w = TrendWindow(bridge, se.trend_sources(OVERLAYS))
     w.add_tag("PIC-323203")

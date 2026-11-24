@@ -254,7 +254,7 @@ def test_a_console_connecting_to_a_silent_engine_is_told_so_and_shown_nothing():
         server = StationServer(clock=clock)
         port = await server.start("127.0.0.1", 0)
         server.publish({"PT_329201": 141.2}, t_plant=99.0)
-        server.publish_status("ENGINE RUNNING — SLOW", "ok")
+        server.publish_status("ENGINE RUNNING — x1", "ok")
         clock.t += SNAPSHOT_REPLAY_MAX_AGE_S + 5.0
         assert server.snapshot_age_s() == pytest.approx(SNAPSHOT_REPLAY_MAX_AGE_S + 5.0)
 
@@ -268,7 +268,7 @@ def test_a_console_connecting_to_a_silent_engine_is_told_so_and_shown_nothing():
         server.publish({"PT_329201": 141.5}, t_plant=99.1)
         await late.pump(5)
         assert [m["t"] for m in late.inbox[3:5]] == ["status", "snapshot"]
-        assert late.inbox[3]["text"] == "ENGINE RUNNING — SLOW"
+        assert late.inbox[3]["text"] == "ENGINE RUNNING — x1"
         assert late.inbox[4]["state"]["PT_329201"] == 141.5
         server.publish({"PT_329201": 141.6}, t_plant=99.2)
         await late.pump(6)

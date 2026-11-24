@@ -9,7 +9,7 @@ the plant clock, publishes that packet (`engine.packet`) with the engine's healt
 operator's commands (`engine.command`) and answers the simulator's own controls, which the protocol
 reserves for the instructor:
 
-    set_sim_mode   SLOW or FAST pacing (V1's ``SIM_SPEED``)
+    set_sim_mode   the pacing, x1 to x10 (`ureasim.data.engine.SIM_SPEED`, decision 321)
     freeze         hold the plant clock, or release it
     reset_sim      the plant back to its design seed, the trends restarted (V1's
                    ``reset_simulation``)
@@ -170,16 +170,20 @@ class EngineSession:
     # ---- what the consoles read ----
 
     def packet(self, t_wall: float | None = None, *, health: bool = True) -> dict:
-        """The console packet after the last tick, on V1's key paths, with the health block
-        unless ``health`` is false; empty before the plant's first tick, except that a plant reset or
-        restored shows its rehearsed first tick (module docstring)."""
+        """The console packet after the last tick, on V1's key paths, with the health block and
+        whether the plant clock is held (``sim_frozen``, decision 321) unless ``health`` is false;
+        empty before the plant's first tick, except that a plant reset or restored shows its
+        rehearsed first tick (module docstring)."""
         shown = self._shown()
         if shown is None:
             return {}
         plant, results, tears_read = shown
         t_wall = time.time() if t_wall is None else t_wall
-        return build_packet(plant, results, tears_read, sim_mode=self.simulator.pacing, t_wall=t_wall,
-                            health=self.health(t_wall) if health else None)
+        packet = build_packet(plant, results, tears_read, sim_mode=self.simulator.pacing,
+                              t_wall=t_wall, health=self.health(t_wall) if health else None)
+        if health:
+            packet["sim_frozen"] = self.frozen
+        return packet
 
     def _shown(self) -> tuple[PlantState, dict, Any] | None:
         """The plant, results and tears a packet is built from: the last tick's, or the rehearsal's
@@ -250,9 +254,9 @@ class EngineSession:
 
     def _simulator_command(self, kind: str, cmd: Mapping[str, Any]) -> tuple[bool, str]:
         if kind == "set_sim_mode":
-            mode = str(cmd.get("mode", "")).upper()
+            mode = str(cmd.get("mode", "")).strip().lower()
             if mode not in SIM_SPEED:
-                return False, f"no pacing {cmd.get('mode')!r}: one of {', '.join(sorted(SIM_SPEED))}"
+                return False, f"no pacing {cmd.get('mode')!r}: one of {', '.join(SIM_SPEED)}"
             self.simulator.set_pacing(mode)
             return True, ""
         if kind == "freeze":

@@ -1772,3 +1772,34 @@ decision on an item.
      0.18 share/bar into Book2's window of at most 0.03 share/bar, while UA_eff(L_fresh, n) keeps TT-322010's positive
      shell-pressure channel. sat_frac stays live, so the low-pressure and low-N/C malfunction physics are kept. It is
      retired when data gap 17 (checklist row 30) supplies the plant's 322E002 steam-make data.
+321. **The instructor's pacing x1 to x10, and FREEZE or RUN lit** (2026-11-23, session 150; the process engineer's
+     instruction). The Simulation box's SLOW and FAST, V1's ``SIM_SPEED`` of 1 and 60, become ten buttons, x1 to x10 in
+     steps of one (`data.engine.SIM_SPEED`; the session starts at x1, `DEFAULT_PACING`); ``set_sim_mode`` takes the
+     name case-blind and refuses SLOW and FAST. The step stays 0.1 s (rule 10): xn pays n steps a wall-clock tenth, and a
+     machine that cannot run them falls behind (``MAX_PASS_S``). FREEZE is lit while the engine holds the plant clock
+     and RUN while it runs, from ``sim_frozen``, which `EngineSession.packet` staples on the consoles' packet beside
+     ``_health`` (not on the historian's sample, not in `build_packet`'s V1 key set), so the panel keeps no freeze
+     state of its own (`Claude.md` §4a rule 3) and a reset or restore while frozen stays lit right. A decided divergence
+     from V1's pacing. As-Built §CLXII.5.
+322. **The evaporation ejectors on deduced break curves** (2026-11-23, session 150; the process engineer's instruction:
+     Körting's curves for 324F002, 324F004 and 324F005 being unreachable, deduce curves that make HIC-329605 and
+     HIC-329606 act on their vacuums, the documented-data search waived for this datum). Supersedes decision 251's fit
+     (its held / lost strokes, scales and widths). Each decided map carries a break curve, the compression ratio CR(P_m)
+     it holds at a nozzle pressure: piecewise linear through no motive (CR = 1) and the plant's readings of 5 and 7
+     November 2026 (§CV.5), and above the top node a power of the motive on the 1-D model's slope (n 0.496, 0.400,
+     0.489). P_c = P_s . CR(P_m); the pull is the critical capacity read at the duty's motive times decision 251's flux
+     shape on [1, 1.04]. Stage 1's nodes, on the engine's valve law on the logged 4.22 bar g header: 0.64 bar a at
+     HIC-329605 48 %, 0.57 at 55 %, 0.33 at 64 %. Stage 2's, 324E005's readings 0.48, 0.415, 0.15 and 0.10 bar a at
+     HIC-329606 35, 37.75, 40.5 and 44.3 %, split between 324F004 and 324F005 equally in the logarithm of each one's
+     ratio at its hold [E], their strokes read on the plant's design stroke, 44.3 % (7 November, 101.7 % load), as
+     P_m = 4.1 bar a x stroke / 44.3 [E]: on the engine's valve law they sat at 1.5-2.0 bar a and the curves exceeded
+     the vendor duties' ratios by 40-47 %; so read they meet them (3.00 against 2.92, 3.48 against 3.52), and HIC-329606
+     acts between about 60 and 76 % of the engine's stroke, the plant's relative moves, not its absolute strokes. On the
+     seed F = 1 at every tick (smallest P_c / P_d over 14 400 s 1.0087); the first tick is the committed engine's to the
+     bit, and over 14 400 s 38 of 783 published leaves part from it, each within its own wander on the committed engine
+     (decision 278's paired form; decision 259's display-step form is not met: 324E002's condensate by 0.9 kg/h on a
+     0.1 step), so N100B is no longer the reference at 100 % on this tree. Two decided bounds are
+     restated at their new measured values, for the process engineer to confirm: decision 230's boil-off bound,
+     4.4e-3 to 4.5e-3 (323F010's few kg/h, measured 4.438e-3), and decision 306's fast-shutdown ring, 0.3 to 0.4 mbar
+     (measured 0.363 mbar, the shutdown now starving 324F002 of motive). Data gap 3 stays open, its stand-in changed.
+     As-Built §CLXII.2-6.

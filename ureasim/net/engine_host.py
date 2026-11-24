@@ -7,7 +7,7 @@ pays the wall clock to the engine session in fixed 0.1 s steps at the instructor
 (`ureasim.engine.session`), applies the console's commands between two ticks in arrival order,
 answers trend queries from the historian, and hands the console packet to the server once a
 pass, 10 times a second. The server's event loop does nothing but the network, so a long pass —
-FAST pacing, a stiff transient — never delays the console's ack or its snapshot.
+x10 pacing, a stiff transient — never delays the console's ack or its snapshot.
 
     console --command--> StationServer --submit--> queue --> physics thread: session.handle
     console <--ack------ StationServer <--future-- answered between two ticks
@@ -20,7 +20,7 @@ Applied from another thread it could land halfway through a tick, and a unit rea
 unit read after it would see two different plants. Queued, each command is applied whole between
 two ticks (`project.md` §3.6, step 1 of a tick), and its answer — accepted, or the plant's reason
 for refusing it — travels back on the future the server is awaiting. A pass is paid in slices of
-at most ``SLICE_S`` of wall time, the queue drained between them, so under FAST pacing a command
+at most ``SLICE_S`` of wall time, the queue drained between them, so under a fast pacing a command
 waits at most a slice's steps, not a whole pass's.
 
 The slices change nothing the plant sees: the simulator keeps its owed time in integer
@@ -52,7 +52,7 @@ log = logging.getLogger(__name__)
 PASS_S = DT_S
 
 #: The longest slice of wall time paid to the plant between two drains of the command queue [s]:
-#: 10 ms of wall time is 0.6 s of plant at FAST pacing, six steps.
+#: 10 ms of wall time is 0.1 s of plant at x10 pacing, one step.
 SLICE_S = 0.01
 _SLICE_NS = int(SLICE_S * 1e9)
 

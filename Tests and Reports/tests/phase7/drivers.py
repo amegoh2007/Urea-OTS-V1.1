@@ -285,7 +285,7 @@ def run_port(scenario: Scenario) -> dict:
     reads = {name: _read(unit, "p_syn_bara" if unit == "PT-329201" else "p_bara")
              for name, (_field, unit) in WATCHES.items()}
     rec = _drive(scenario, sched.tick,
-                 lambda: build_packet(plant, sched.results, sched.tears_read, sim_mode="SLOW",
+                 lambda: build_packet(plant, sched.results, sched.tears_read, sim_mode="x1",
                                       t_wall=0.0),
                  apply, reads, trips, lambda c: initials[c["type"]], after, before)
     rec["side"] = "port"

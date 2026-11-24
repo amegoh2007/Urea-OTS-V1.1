@@ -75,8 +75,8 @@ def test_hv_322604_discharges_against_322c001_decided_divergence(v1):
 def test_the_residual_credit_scales_with_the_load_decided_divergence(v1):
     """B-75. The CO2 demand cut to 80 %: the reactor's load ratio settles at 0.79 and the recycle
     tear it deletes falls with it. V1 still credits the design residual, 2024.9 kg/h, and its loop
-    runs down; the port credits the residual at the same ratio (1519.7 (1521.9 before decision 301) (1522.0 before decision 251) (1522.1 before decision 178) (1521.7 before decision 170) kg/h after two minutes).
-    After two minutes V1's PT-329201 reads 141.5823 (141.4894 before decision 301) (141.4889 before decision 251) (141.4864 before decision 178) (141.4877 before decision 170) bar a, the port's 141.5951 (141.5025 before decision 301) (141.5019 before decision 251) (141.5020 before decision 246) (141.4994 before decision 178) (141.5007 before decision 170) (load ratio 0.7902 (0.7915 before decision 301),
+    runs down; the port credits the residual at the same ratio (1518.9 (1519.7 before decision 322) (1521.9 before decision 301) (1522.0 before decision 251) (1522.1 before decision 178) (1521.7 before decision 170) kg/h after two minutes).
+    After two minutes V1's PT-329201 reads 141.5904 (141.5823 before decision 322) (141.4894 before decision 301) (141.4889 before decision 251) (141.4864 before decision 178) (141.4877 before decision 170) bar a, the port's 141.6033 (141.5951 before decision 322) (141.5025 before decision 301) (141.5019 before decision 251) (141.5020 before decision 246) (141.4994 before decision 178) (141.5007 before decision 170) (load ratio 0.7900 (0.7902 before decision 322) (0.7915 before decision 301),
     with the session-69 valves on their vendor sheets and 322E006 on PFD 28's water, decisions
     150 and 151; 141.4894, 141.5024 and 1521.6 with HV-323605, PV-323203 and TV-328002 on their Metso trims, 2026-10-17 — V1's side through the
     steam network it shares with the port; 141.4895 and 141.5025 on session 53's code, 2026-10-15;
@@ -98,11 +98,11 @@ def test_the_residual_credit_scales_with_the_load_decided_divergence(v1):
     hist, _, s = h.run_both(v1, 1200, act, decided=h.ALL - {"B-75"}, check=False)
     _, res, p_v1 = hist[-1]
     pt, ratio = res["PT-329201"], res["322R001"].reaction.co2_scale
-    assert ratio == pytest.approx(0.7902, abs=1e-4)
+    assert ratio == pytest.approx(0.7900, abs=1e-4)
     assert pt.resid_credit_kgh == pt.loop_mass_frac * ratio * SYN_LOOP_RESID_DES_KGH
-    assert pt.resid_credit_kgh == pytest.approx(1519.7, abs=0.1)
-    assert (p_v1, pt.p_syn_bara) == (pytest.approx(141.5823, abs=1e-4),
-                                     pytest.approx(141.5951, abs=1e-4))
+    assert pt.resid_credit_kgh == pytest.approx(1518.9, abs=0.1)
+    assert (p_v1, pt.p_syn_bara) == (pytest.approx(141.5904, abs=1e-4),
+                                     pytest.approx(141.6033, abs=1e-4))
 
 
 def test_the_recondensed_backlog_returns_to_the_sump_decided_divergence(v1):
@@ -353,7 +353,7 @@ def test_the_reactor_ceiling_stands_its_margin_above_the_design_top_decided_dive
     boils nothing on any tick and its top follows V1's (183.0035 C, within 1e-8 K; the rest is
     B-92's filling reactor, not the ceiling). The ceiling as built before decision 301, with no
     margin, sat on the design top: it clipped the top to 183.0 C and boiled the seed's liquor from
-    the first tick, 29.93 kg/h, 32.15 kg/h at a minute."""
+    the first tick, 29.93 kg/h, 32.16 kg/h at a minute (32.15 before decision 322)."""
     hist, _, s = h.run_both(v1, 600, decided=h.ALL - {"B-92"}, check=False)
     assert s.react_T_node[3] == pytest.approx(183.00348, abs=1e-5)
     v1_top = s.react_T_node[3]
@@ -368,7 +368,7 @@ def test_the_reactor_ceiling_stands_its_margin_above_the_design_top_decided_dive
     assert first.boil_kgh == pytest.approx(29.9302, abs=1e-4)
     assert first.t_nodes_c[3] == pytest.approx(183.0, abs=1e-9)
     assert min(step[1]["322R001"].boil_kgh for step in before) > 29.9
-    assert last.boil_kgh == pytest.approx(32.1543, abs=1e-4)
+    assert last.boil_kgh == pytest.approx(32.1555, abs=1e-4)
     assert max(last.t_nodes_c) <= last.t_bub_c + 1e-9
 
 
@@ -396,17 +396,17 @@ def test_the_saturation_fraction_solved_on_the_tick_decided_divergence(v1):
     out, res, p_v1 = hist[4]
     assert res["322E002"].holdup.condenser.liq_kgh == pytest.approx(out.hpcc["liq_kgh"], rel=1e-4)
     (a, ra, _), (b, rb, p_v1) = hist[299], hist[300]
-    assert (a.hpcc["liq_kgh"], b.hpcc["liq_kgh"]) == (pytest.approx(3750.4, abs=0.1),
-                                                     pytest.approx(225169.6, abs=0.1))
-    assert (a.hpcc["P_bub"], b.hpcc["P_bub"]) == (pytest.approx(171.76, abs=0.01),
+    assert (a.hpcc["liq_kgh"], b.hpcc["liq_kgh"]) == (pytest.approx(3751.3, abs=0.1),
+                                                     pytest.approx(225034.8, abs=0.1))
+    assert (a.hpcc["P_bub"], b.hpcc["P_bub"]) == (pytest.approx(171.79, abs=0.01),
                                                  pytest.approx(220.28, abs=0.01))
-    assert p_v1 == pytest.approx(152.5053, abs=1e-4)
+    assert p_v1 == pytest.approx(152.5049, abs=1e-4)
     hp = rb["322E002"].holdup
     assert (hp.condenser.liq_kgh, hp.condenser.p_bub_bara, hp.sat_frac) == (
-        pytest.approx(135359.7, abs=0.1), pytest.approx(175.54, abs=0.01),
-        pytest.approx(0.5283, abs=1e-4))
-    assert ra["322E002"].holdup.condenser.liq_kgh == pytest.approx(135367.9, abs=0.1)
-    assert rb["PT-329201"].p_syn_bara == pytest.approx(141.3360, abs=1e-4)
+        pytest.approx(135314.7, abs=0.1), pytest.approx(175.54, abs=0.01),
+        pytest.approx(0.5281, abs=1e-4))
+    assert ra["322E002"].holdup.condenser.liq_kgh == pytest.approx(135323.1, abs=0.1)
+    assert rb["PT-329201"].p_syn_bara == pytest.approx(141.3361, abs=1e-4)
 
 
 def test_322e003s_capacity_on_its_shells_effectiveness_decided_divergence(v1):
@@ -494,7 +494,7 @@ def test_322e001s_full_sump_holds_its_excess_back_decided_divergence(v1):
     taps (decision 244) moves the held liquor 2 223.45 to 2 223.44 kg and V1's loop, fed the port's
     308 and steam pressures, 141.9952 to 141.9953 bar a; LI-328504 between its taps (decision 246) moves
     them to 2 223.46 kg and 141.9951 bar a; the reactor ceiling's margin (decision 301) to 2 229.52 kg, V1's
-    loop to 142.0014 and the port's to 141.0459 bar a. Without the tubes' ceiling and their submergence
+    loop to 142.0010 and the port's to 141.0457 bar a (142.0014 and 141.0459 before decision 322). Without the tubes' ceiling and their submergence
     (B-104, its own test)."""
     def act(k, plant, s):
         if k == 0:
@@ -509,9 +509,9 @@ def test_322e001s_full_sump_holds_its_excess_back_decided_divergence(v1):
     out, res, p_v1 = hist[2200]
     sp = res["322E001"].sump
     assert (out.sump.level_pct, out.sump.held_kg) == (100.0, 0.0)
-    assert (sp.level_pct, sp.held_kg) == (100.0, pytest.approx(2229.52, abs=0.01))
-    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(142.0014, abs=1e-4),
-                                                   pytest.approx(141.0459, abs=1e-4))
+    assert (sp.level_pct, sp.held_kg) == (100.0, pytest.approx(2229.54, abs=0.01))
+    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(142.0010, abs=1e-4),
+                                                   pytest.approx(141.0457, abs=1e-4))
 
 
 def test_322e001s_tubes_standing_full_hold_the_liquor_back_in_the_reactor_decided_divergence(v1):
@@ -542,7 +542,7 @@ def test_322e001s_tubes_standing_full_hold_the_liquor_back_in_the_reactor_decide
     (decision 246) to 26 608.7 and 32 041.0 kg/h and 8 402.9 kg; decision 251 to 32 042.5 kg/h and V1's
     side to 146.6715. The reactor ceiling's margin (decision 301) caps it at tick 2 177 and moves the means to
     26 615.6 and 32 000.2 kg/h, the tubes to 8 401.1 kg (sigma 0.9669), the levels to 80.337 and 85.956 %, TT-322004
-    to 165.63 against 141.56 C, and the loops to 146.6672 and 140.0131 bar a. The ring is 322E001's bottoms
+    to 165.63 against 141.56 C, and the loops to 146.6694 (146.6672 before decision 322) and 140.0131 bar a. The ring is 322E001's bottoms
     on the edge of the bubble-point surface, refused on one tick and 907 bar on the next (A-60, closed
     as built by decision 245, As-Built §CXXXVII.5)."""
     def act(k, plant, s):
@@ -571,7 +571,7 @@ def test_322e001s_tubes_standing_full_hold_the_liquor_back_in_the_reactor_decide
                                                  pytest.approx(85.956, abs=1e-3))
     assert (out.sump.tt_322004_c, sp.tt_322004_c) == (pytest.approx(165.63, abs=0.01),
                                                       pytest.approx(141.57, abs=0.01))
-    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(146.6672, abs=1e-4),
+    assert (p_v1, res["PT-329201"].p_syn_bara) == (pytest.approx(146.6694, abs=1e-4),
                                                    pytest.approx(140.0131, abs=1e-4))
 
 
@@ -596,7 +596,7 @@ def test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence(
     t/h (71.6 before decision 243) (71.5 before decision 241) on average where V1's condenses 198.0; from 90 to 110 s PT-329201 stands at 147.69 (147.68 before decision 243) bar a
     on the port against 141.02 on V1. (LI-328503 between its taps, decision 243, moves the seed's own drift by parts
     in 1e-6 and the condensation mean 0.34 t/h: the window mean is not robust to ppm moves upstream.) The port's loop climbs toward V1's trip 22.2 set point, 155 bar a,
-    passing 154 bar a after 188 s and standing at 154.98 bar a at 200 s, 154.21 on average over the
+    passing 154 bar a after 188 s and standing at 154.97 (154.98 before decision 322) bar a at 200 s, 154.21 on average over the
     last 20 s (decision 301's ceiling, 3.5 K above the line: before it the loop passed 155 bar a after
     180 s and stood at 154.90; there is no such trip, decision 189), where V1's never passes 141.7 bar a.
 
@@ -632,12 +632,12 @@ def test_the_melts_bubble_pressure_rises_below_its_azeotrope_decided_divergence(
         return row[2]
 
     assert (_mean(hist, liq, 501, 1500), _mean(hist, liq_v1, 501, 1500)) == (
-        pytest.approx(44.78, abs=0.1), pytest.approx(204.88, abs=0.05))
+        pytest.approx(44.78, abs=0.1), pytest.approx(204.81, abs=0.05))
     assert (_mean(hist, p, 901, 1100), _mean(hist, p_v1, 901, 1100)) == (
         pytest.approx(147.410, abs=0.005), pytest.approx(140.9736, abs=5e-4))
     over = next(k for k, row in enumerate(hist) if p(row) >= 154.0)
     assert 1800 < over <= 2000
-    assert max(p(row) for row in hist) == pytest.approx(154.977, abs=0.01)
+    assert max(p(row) for row in hist) == pytest.approx(154.967, abs=0.01)
     assert _mean(hist, p, 1801, 2000) == pytest.approx(154.21, abs=0.03)
     assert max(p_v1(row) for row in hist) < 141.7
 

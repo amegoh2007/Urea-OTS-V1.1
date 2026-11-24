@@ -111,7 +111,7 @@ This is the house style. It is not negotiable.
 9. **Dead code is deleted, not commented out.** Git is the history.
 10. **The physics step is fixed at 0.1 s.** The engine advances the plant in whole steps of
     exactly 0.1 s — V1's `DT`, the step of its design pin and of every equivalence test.
-    Pacing (SLOW, FAST, a loaded machine) changes how many steps run per wall-clock second,
+    Pacing (x1 to x10, decision 321; a loaded machine) changes how many steps run per wall-clock second,
     never the size of a step. Every recycle tear carries one step of delay, so a variable
     step would make every transient depend on machine load and no exercise would replay.
     Decided 2026-09-27 (handoff A-14, `project.md` decision 9).
@@ -319,7 +319,7 @@ none of them is optional:
    the handoff item is deleted.
 7. **A decided class applies to every new unit (2026-09-30).** Once the process engineer has
    decided a class of V1 flaw, apply it without re-asking wherever a new unit shows it. The classes,
-   107 of them, one a line with its decision number, are in `docs/decided-classes.md` and are binding
+   108 of them, one a line with its decision number, are in `docs/decided-classes.md` and are binding
    (moved there 2026-11-11, wording unchanged). Before a unit's physics is ported or changed, grep
    that file for the mechanism and for the equipment's kind; never read it whole. A class decided
    later is appended there as one line. A new mechanism still goes to the process engineer, with

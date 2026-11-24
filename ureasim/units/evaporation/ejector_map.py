@@ -77,6 +77,34 @@ load less the design bleed. The same flux shape runs on [1, w] instead of [1, 1/
 At the design motive P_c stays above every design discharge and F = 1, so the design pin is
 unchanged. `vendor_map` keeps the vendor's scale and V1's width, the vendor's margin.
 
+Decided 2026-11-23 (decision 322, the process engineer's instruction to deduce curves that make
+HIC-329605 and HIC-329606 act on their vacuums, Körting's being unreachable): decision 251's
+bracket left the motive valves all but inert. Fitted at the design suction, a broken ejector
+re-choked a few tens of mbar up, since the 1-D P_c rises faster than the suction does: stage 1 held
+0.345 bar a at 55 %, where the plant sat at 0.56-0.61; stage 2 broke only below 40 % of an 80 %
+design stroke; and above the bracket the capacity fell with the motive, so opening HIC-329605
+worsened the vacuum. Each decided map now carries a deduced break curve
+(`data.unit_324.EJECTOR_BREAKS`): the compression ratio CR(P_m) the ejector holds at a nozzle
+pressure, piecewise linear through no motive (CR = 1) and the plant's nodes (CR = P_d / P_s at
+each node's nozzle pressure: stage 1's strokes on the engine's valve law on the logged header,
+stage 2's on the plant's design stroke, P_m = P_m,duty . s / s_des), and above the top node rising
+as the 1-D model's P_c does, as a power of the motive, its secant from the top node to the duty's
+motive, or to the table's 6.0 bar a ceiling where the top node is the duty's:
+
+    P_c(P_s, P_m) = P_s . CR(P_m)
+    CR(P_m)       = CR_top (P_m / P_m,top)^n                                  above the top node
+    n             = ln[P_c,1D(P_s,des, P_m,end) / P_c,1D(P_s,des, P_m,top)] / ln(P_m,end / P_m,top)
+    pull          = C(P_s, P_m,duty) . F(P_d / P_c; w),   w = `EJECTOR_BREAK_WIDTH`
+
+A broken ejector so holds about P_d / CR(P_m), whatever its load, the plateau the plant ran on; one
+with motive to spare holds its load line, and with the bleeds shut, where the ratio binds before
+the load line does, more motive pulls a deeper vacuum. The critical capacity is read at the duty's
+motive: in the critical mode the secondary flow chokes in the annulus and barely answers the motive
+(Huang's own data), so more motive never worsens the vacuum [E]. On the seed F is 1 at every tick
+(the smallest P_c / P_d over 14 400 s is 1.0087, on 324F002) and the first tick is the committed
+engine's to the bit; reading the capacity at the duty's motive parts the trajectory from the second
+tick by less than the seed's own wander (As-Built §CLXII.5).
+
 The table. C and P_c on suction pressures 0.010 to 1.200 bar a by 0.005 and motive pressures 0
 to 6.00 bar a by 0.05 (the steam chests' 6 bar g design caps the motive), interpolated
 bilinearly; outside it the pressures are held at its edges. Every duty point is a node.
@@ -102,11 +130,12 @@ from functools import lru_cache
 
 from ureasim.core.units_of_measure import ABSOLUTE_ZERO_C, PA_PER_BAR, R_GAS_J_KMOL
 from ureasim.data.unit_324 import (
+    EJECTOR_BREAK_WIDTH,
     EJECTOR_BREAKS,
     EJECTOR_DESIGN_LOADS,
     EJECTOR_DUTIES,
     MOTIVE_BREAK_HEADER_BARA,
-    EjectorBreak,
+    EjectorBreakCurve,
     EjectorDuty,
 )
 from ureasim.data.unit_324_train import HV_329605_OP_DES_PCT, HV_329606_OP_DES_PCT
@@ -152,6 +181,12 @@ class EjectorMap:
     pc_scale: float
     #: x = P_d / P_c at which the pull reaches zero [-]; None is the loss-free 1 / r* (1.85).
     break_width: float | None = None
+    #: The deduced break curve (decision 322): (nozzle pressure [bar a], compression ratio held
+    #: [-]) from no motive to the top node, rising; None on the vendor map, whose P_c is the 1-D
+    #: model's times ``pc_scale``.
+    break_curve: tuple[tuple[float, float], ...] | None = None
+    #: Above the curve's top node the ratio rises as P_m to this power, the 1-D model's slope [-].
+    curve_exponent: float = 0.0
 
 
 def motive_kgh(m: EjectorMap, p_motive_bara: float) -> float:
@@ -200,13 +235,34 @@ def critical_capacity_kgh(m: EjectorMap, p_suction_bara: float, p_motive_bara: f
     return m.k_capacity * _gas_capacity_1d(m.duty, p_suction_bara, m.mixing_m2 - a_py)
 
 
+def compression_limit(m: EjectorMap, p_motive_bara: float) -> float:
+    """The compression ratio the ejector holds at a nozzle pressure, on its break curve [-].
+
+    Process utility: the deduced curve (decision 322) — how far the motive valve's steam can lift
+    the suction against the discharge. 1 with no motive; through the plant's nodes as the valve
+    opens; above the top node, where the ejector holds its design vacuum, a power of the motive
+    on the 1-D model's slope. Equations in the module docstring.
+    """
+    pts = m.break_curve
+    if p_motive_bara <= 0.0:
+        return pts[0][1]
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        if p_motive_bara <= x1:
+            return y0 + (y1 - y0) * (p_motive_bara - x0) / (x1 - x0)
+    x_top, y_top = pts[-1]
+    return y_top * (p_motive_bara / x_top) ** m.curve_exponent
+
+
 def critical_back_pressure_bara(m: EjectorMap, p_suction_bara: float,
                                 p_motive_bara: float) -> float:
     """The map's critical back pressure [bar a], zero where the ejector entrains nothing.
 
     Process utility: the discharge pressure past which the ejector breaks — what a motive sag,
-    or a downstream condenser losing its water, pushes it into.
+    or a downstream condenser losing its water, pushes it into. On a decided map, the suction
+    times the compression ratio its break curve holds (decision 322).
     """
+    if m.break_curve is not None:
+        return max(p_suction_bara, 0.0) * compression_limit(m, p_motive_bara)
     if critical_capacity_kgh(m, p_suction_bara, p_motive_bara) <= 0.0:
         return 0.0
     return m.pc_scale * critical_back_pressure(p_motive_bara * PA_PER_BAR,
@@ -288,7 +344,7 @@ def ejector_map(tag: str) -> EjectorMap:
     read = _read(lambda p_s, p_m: critical_capacity_kgh(m, p_s, p_m), load.p_suction_bara,
                  m.duty.p_motive_bara)
     m = replace(m, k_capacity=m.k_capacity * load.suction_kgh / read)
-    return _on_plant_break(m, EJECTOR_BREAKS[tag]) if tag in EJECTOR_BREAKS else m
+    return _on_break_curve(m, EJECTOR_BREAKS[tag]) if tag in EJECTOR_BREAKS else m
 
 
 def break_nozzle_bara(tag: str, stroke_pct: float) -> float:
@@ -306,49 +362,48 @@ def break_nozzle_bara(tag: str, stroke_pct: float) -> float:
     return nozzle_pressure_bara(tag, kgh)
 
 
-def _on_plant_break(m: EjectorMap, brk: EjectorBreak) -> EjectorMap:
-    """The map with its break put on the plant's break-off bracket (decision 251).
+def _on_break_curve(m: EjectorMap, curve: EjectorBreakCurve) -> EjectorMap:
+    """The map with its deduced break curve (decision 322).
 
     Process utility
     ---------------
-    Makes the motive valve act on the vacuum where the plant's does. Without it the map stays
-    critical down to about a quarter of the valve's stroke and pulls harder on less motive, so a
-    throttled HIC-329605 deepens 324F001's vacuum. The plant lost stage 1 below 55-64 % on
-    HIC-329605 and stage 2 below 38-40 % on HIC-329606 (As-Built §CV.5).
+    Makes the motive valve act on the vacuum as the plant's did on 5 November 2026: a throttled
+    valve loses the vacuum to the plateau the plant ran on, and an opened one pulls deeper while
+    the ratio binds. Each node's stroke becomes its nozzle pressure on the logged header
+    (`break_nozzle_bara`), or on the plant's design stroke where the curve names one; the exponent
+    above the top node is the 1-D model's.
 
     Equations
     ---------
-    At the design suction P_s and discharge P_d, the ejector is critical at the hold stroke:
+        nodes:  (0, 1), (P_m,i, P_d / P_s,i),   P_m,i = P_m,duty . s_i / s_des   (s_des given)
+        n = ln[P_c,1D(P_s,des, P_m,end) / P_c,1D(P_s,des, P_m,top)] / ln(P_m,end / P_m,top)
+        P_m,end = P_m,duty above the top node, the table's ceiling where the top node is the duty's
 
-        pc_scale = P_d / P_c,1D(P_s, P_m,hold)
-
-    At the lost stroke it pulls the design load less the design bleed, which the plant ran shut:
-
-        C(P_s, P_m,lost) . F(P_d / P_c(P_s, P_m,lost), width) = m_s,des - m_bleed,des
-
-    The width is solved by bisection: F rises with the width at a fixed x. Every P_m is the
-    nozzle's on the logged header (`break_nozzle_bara`). C is not touched, and at the design motive
-    P_c stays above P_d, so the design point keeps F = 1.
+    A curve whose nodes do not rise, or that would leave the design suction short of its design
+    discharge at the duty's motive (the design pin's F = 1), raises: a changed datum cannot pass
+    unnoticed.
     """
-    p_s = EJECTOR_DESIGN_LOADS[m.duty.tag].p_suction_bara
-    p_hold = break_nozzle_bara(m.duty.tag, brk.hold_pct)
-    p_lost = break_nozzle_bara(m.duty.tag, brk.lost_pct)
-    m = replace(m, pc_scale=brk.p_discharge_bara * PA_PER_BAR
-                / critical_back_pressure(p_hold * PA_PER_BAR, p_s * PA_PER_BAR))
-    need = ((EJECTOR_DESIGN_LOADS[m.duty.tag].suction_kgh - brk.bleed_des_kgh)
-            / critical_capacity_kgh(m, p_s, p_lost))
-    x = brk.p_discharge_bara / critical_back_pressure_bara(m, p_s, p_lost)
-    if not (x > 1.0 and 0.0 < need < 1.0):
-        raise ValueError(f"{m.duty.tag}: the break-off bracket is not a break (x {x}, F {need})")
-    lo, hi = x, 1.0 / R_STAR
-    while True:
-        mid = 0.5 * (lo + hi)
-        if mid == lo or mid == hi:
-            return replace(m, break_width=mid)
-        if unchoked_fraction(brk.p_discharge_bara, brk.p_discharge_bara / x, mid) < need:
-            lo = mid
-        else:
-            hi = mid
+    p_duty = m.duty.p_motive_bara
+
+    def nozzle(stroke: float) -> float:
+        if curve.design_stroke_pct is None:
+            return break_nozzle_bara(curve.tag, stroke)
+        return p_duty * (stroke / curve.design_stroke_pct)
+
+    pts = [(0.0, 1.0)] + [(nozzle(stroke), curve.p_discharge_bara / p_s)
+                          for stroke, p_s in curve.nodes]
+    if any(b[0] <= a[0] or b[1] <= a[1] for a, b in zip(pts, pts[1:])):
+        raise ValueError(f"{curve.tag}: the break curve does not rise ({pts})")
+    p_s = EJECTOR_DESIGN_LOADS[curve.tag].p_suction_bara
+    p_top = pts[-1][0]
+    p_end = p_duty if p_top < p_duty else _node(MOTIVE_NODE_RANGE[1], MOTIVE_NODES_PER_BAR)
+    n = (math.log(critical_back_pressure(p_end * PA_PER_BAR, p_s * PA_PER_BAR)
+                  / critical_back_pressure(p_top * PA_PER_BAR, p_s * PA_PER_BAR))
+         / math.log(p_end / p_top))
+    m = replace(m, break_width=EJECTOR_BREAK_WIDTH, break_curve=tuple(pts), curve_exponent=n)
+    if not critical_back_pressure_bara(m, p_s, p_duty) > curve.p_discharge_bara:
+        raise ValueError(f"{curve.tag}: the design point is not critical on its break curve")
+    return m
 
 
 def nozzle_pressure_bara(tag: str, motive_kgh: float) -> float:
@@ -395,20 +450,12 @@ def _blend(t00: float, t01: float, t10: float, t11: float, fs: float, fm: float)
 
 @lru_cache(maxsize=None)
 def _table(tag: str) -> tuple:
-    """The map tabulated: (capacity rows, critical back pressure rows), each row one suction
-    node over the motive nodes."""
+    """The map's critical capacity tabulated: one row a suction node, over the motive nodes."""
     m = ejector_map(tag)
-    caps, pcs = [], []
-    for i in range(SUCTION_NODE_RANGE[0], SUCTION_NODE_RANGE[1] + 1):
-        p_s = _node(i, SUCTION_NODES_PER_BAR)
-        cap_row, pc_row = [], []
-        for j in range(MOTIVE_NODE_RANGE[0], MOTIVE_NODE_RANGE[1] + 1):
-            p_m = _node(j, MOTIVE_NODES_PER_BAR)
-            cap_row.append(critical_capacity_kgh(m, p_s, p_m))
-            pc_row.append(critical_back_pressure_bara(m, p_s, p_m))
-        caps.append(cap_row)
-        pcs.append(pc_row)
-    return caps, pcs
+    return tuple(tuple(critical_capacity_kgh(m, _node(i, SUCTION_NODES_PER_BAR),
+                                             _node(j, MOTIVE_NODES_PER_BAR))
+                       for j in range(MOTIVE_NODE_RANGE[0], MOTIVE_NODE_RANGE[1] + 1))
+                 for i in range(SUCTION_NODE_RANGE[0], SUCTION_NODE_RANGE[1] + 1))
 
 
 def _cell(p: float, per_bar: int, node_range: tuple) -> tuple[int, float]:
@@ -420,20 +467,18 @@ def _cell(p: float, per_bar: int, node_range: tuple) -> tuple[int, float]:
 
 
 def interpolated(tag: str, p_suction_bara: float, p_motive_bara: float) -> tuple[float, float]:
-    """(critical capacity [kg/h], critical back pressure [bar a]) off the table, bilinear.
+    """(critical capacity [kg/h] off the table, bilinear; critical back pressure [bar a] on the
+    break curve).
 
     Process utility: the decided interpolation (handoff B-57) — the vendor-anchored map read
     at the live suction and motive pressures, cheap enough to sit inside a vacuum's pressure
-    loop.
+    loop; the critical back pressure is the curve's, exact (decision 322).
     """
-    caps, pcs = _table(tag)
+    caps = _table(tag)
     i, fs = _cell(p_suction_bara, SUCTION_NODES_PER_BAR, SUCTION_NODE_RANGE)
     j, fm = _cell(p_motive_bara, MOTIVE_NODES_PER_BAR, MOTIVE_NODE_RANGE)
-
-    def bilinear(t):
-        return _blend(t[i][j], t[i][j + 1], t[i + 1][j], t[i + 1][j + 1], fs, fm)
-
-    return bilinear(caps), bilinear(pcs)
+    cap = _blend(caps[i][j], caps[i][j + 1], caps[i + 1][j], caps[i + 1][j + 1], fs, fm)
+    return cap, critical_back_pressure_bara(ejector_map(tag), p_suction_bara, p_motive_bara)
 
 
 def suction_capacity_kgh(tag: str, p_suction_bara: float, p_motive_bara: float,
@@ -447,16 +492,20 @@ def suction_capacity_kgh(tag: str, p_suction_bara: float, p_motive_bara: float,
     the discharge pressure passes the critical back pressure, which a motive sag lowers — the
     stall V1's straight line cannot show.
 
-    Equation: pull = C(P_s, P_m) . F(P_d / P_c(P_s, P_m)), C and P_c off the table.
+    Equation: pull = C(P_s, P_m,duty) . F(P_d / P_c(P_s, P_m)), C off the table at the duty's
+    motive, P_c on the break curve at the live motive (decision 322).
     """
-    cap, p_crit = interpolated(tag, p_suction_bara, p_motive_bara)
-    return cap * unchoked_fraction(p_discharge_bara, p_crit, ejector_map(tag).break_width)
+    m = ejector_map(tag)
+    cap = interpolated(tag, p_suction_bara, m.duty.p_motive_bara)[0]
+    p_crit = critical_back_pressure_bara(m, p_suction_bara, p_motive_bara)
+    return cap * unchoked_fraction(p_discharge_bara, p_crit, m.break_width)
 
 
 __all__ = [
     "SUCTION_NODES_PER_BAR", "SUCTION_NODE_RANGE", "MOTIVE_NODES_PER_BAR", "MOTIVE_NODE_RANGE",
     "R_STAR", "EjectorMap", "motive_kgh", "critical_capacity_kgh", "critical_back_pressure_bara",
-    "unchoked_fraction", "vendor_map", "ejector_map", "break_nozzle_bara", "nozzle_pressure_bara",
+    "unchoked_fraction", "compression_limit", "vendor_map", "ejector_map", "break_nozzle_bara",
+    "nozzle_pressure_bara",
     "interpolated",
     "suction_capacity_kgh",
 ]

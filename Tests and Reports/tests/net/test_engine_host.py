@@ -27,14 +27,14 @@ from tests.net.test_server import Client
 
 
 def test_a_pass_paid_in_slices_is_a_pass_paid_at_once(tmp_path):
-    """0.5 s at FAST pacing — 300 steps — through the host's slices and through one call: the
+    """0.5 s at x10 pacing — 50 steps — through the host's slices and through one call: the
     same steps, the same plant, to the bit."""
     sliced, whole = EngineSession(tmp_path), EngineSession(tmp_path)
     for s in (sliced, whole):
-        s.handle({"type": "set_sim_mode", "mode": "FAST"})
+        s.handle({"type": "set_sim_mode", "mode": "x10"})
         s.handle({"type": "hic605_set", "op": 45.0})
     host = EngineHost(sliced, StationServer())
-    assert host.pay(MAX_PASS_NS + 123_456_789) == whole.advance(MAX_PASS_NS) == 300
+    assert host.pay(MAX_PASS_NS + 123_456_789) == whole.advance(MAX_PASS_NS) == 50
     assert sliced.packet(0.0, health=False) == whole.packet(0.0, health=False)
 
 
@@ -106,7 +106,7 @@ def test_the_packet_status_and_history_reach_the_console(tmp_path):
         assert state["_health"]["ok"] is True
         while not obs.of_kind(Kind.STATUS):
             await obs.pump(len(obs.inbox) + 1, timeout=10.0)
-        assert obs.of_kind(Kind.STATUS)[-1]["text"] == "ENGINE RUNNING — SLOW"
+        assert obs.of_kind(Kind.STATUS)[-1]["text"] == "ENGINE RUNNING — x1"
         await asyncio.sleep(1.2)
         await obs.send(protocol.history(7, ["RECIRC_323.C003.TIC_323007.pv"], 60.0))
         await obs.send(protocol.history_paths(8))

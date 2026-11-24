@@ -19,7 +19,7 @@ class Ran:
         self.results = scheduler.results
         self.tick = Tick(self.plant, self.results, scheduler.tears_read)
         self.packet = build_packet(self.plant, self.results, scheduler.tears_read,
-                                   sim_mode="SLOW", t_wall=1.0e9, health={"ok": True})
+                                   sim_mode="x1", t_wall=1.0e9, health={"ok": True})
 
 
 def run(ticks: int = 10, setup=None) -> Ran:

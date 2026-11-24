@@ -5,7 +5,7 @@ is kept unchanged as the version to return to (session 132)
 **Predecessor:** `E:\Simulator\Urea Simulation` (V1 — reference only, never edited from here; decision 165),
 read from its copy `D:\Work\Urea Simulation V1` (decision 223); the files the suite reads are copied into
 `Tests and Reports/tests/equivalence/v1_reference` (decision 210), so V1.1 runs and tests without V1
-**Last updated:** 2026-11-22, session 149
+**Last updated:** 2026-11-23, session 150
 
 This file is the project's state, read whole at every session start. It is rewritten in place, never
 appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs/`.
@@ -24,11 +24,12 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
   LI-323501, LI-328503, LI-328505 and LI-328504 read between their taps (decisions 219, 233, 241, 243, 244, 246); B-156
   closed on those six, LT-329501 is data gap 15 (decision 248). PC21's timers run AC4's minutes (decisions 229, 231).
   FY-321404 is shown and set on the DCS's formula (decision 235). 322R001's boil cap stands 3.5 K [E] above its
-  bubble line (decision 301), so the design seed's top no longer boils.
+  bubble line (decision 301), so the design seed's top no longer boils. 324F002, 324F004 and 324F005 break on deduced
+  curves through the plant's 5 and 7 November readings (decision 322, Part CLXII); the instructor paces x1 to x10 (321).
 * **Verified.** The design pin holds at 1750 MTPD, 100 % load. The load study verified 100 % on both
   objectives and 105 % on the steam objective; the engine holds no steady state below 100 % load or at
   110 to 115 % (sessions 78 and 80, As-Built Parts XCI and XCIII). That is handoff B-118.
-* **Open.** `handoff.md`: Section A none, Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
+* **Open.** `handoff.md`: Section A one (A-64, the exercise load105_conversion on decision 322), Section B four (B-118 with B-120 folded in, B-125, B-126 and B-136),
   Section C none, 5 open data gaps (1, 3, 10, 15, 17). Each waits on a vendor document (Körting) or on one plant
   DCS readback session (`Tests and Reports\reports\DCS readback checklist.md`).
 * **Sessions 148 and 149** (Parts CLX, CLXI; decisions 314 to 320). Decision 315's base (the 322F001 lift, P4 w-gated
@@ -71,10 +72,10 @@ appended to; its ceiling is 150 lines (`CLAUDE.md` §3a). History lives in `docs
 
 | Series | Next | Where it is written |
 |---|---|---|
-| Session | 150 (149 taken 2026-11-22: decisions 318-320, the Option 2 stack with B-136 (b) and beta_phi, stopped at Step 3) | `docs/history/session-log.md` |
-| Decision | 321 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138; 280 to 282 by session 139; 283 to 285 by session 140; 286 to 289 by session 141; 290 to 293 by session 142; 294 and 295 by session 143; 296 to 300 by session 144; 301 to 306 by session 145; 307 to 309 by session 146; 310 to 313 by session 147; 314 to 317 by session 148; 318 to 320 by session 149) | `docs/decisions.md` |
-| As-Built Part | CLXII (CLXI taken by session 149) | the As-Built reference, appended at its end |
-| Handoff Section A | A-64 (A-63 session 142's) | `handoff.md` |
+| Session | 151 (150 taken 2026-11-23: decisions 321-322, the ejectors' deduced break curves and the pacing x1 to x10) | `docs/history/session-log.md` |
+| Decision | 323 (253 to 267 taken by session 136; 268, 271 to 273 claimed by session 136, proposed, not taken; 269, 270, 274 and 275 taken by session 137; 276 rejected, 277 to 279 taken by session 138; 280 to 282 by session 139; 283 to 285 by session 140; 286 to 289 by session 141; 290 to 293 by session 142; 294 and 295 by session 143; 296 to 300 by session 144; 301 to 306 by session 145; 307 to 309 by session 146; 310 to 313 by session 147; 314 to 317 by session 148; 318 to 320 by session 149; 321 and 322 by session 150) | `docs/decisions.md` |
+| As-Built Part | CLXIII (CLXII taken by session 150) | the As-Built reference, appended at its end |
+| Handoff Section A | A-65 (A-64 session 150's) | `handoff.md` |
 | Handoff Sections B and C | B-158 (B-157 session 138's) | `handoff.md` |
 
 A session that takes a number updates this table in the same edit. A side session claims its numbers

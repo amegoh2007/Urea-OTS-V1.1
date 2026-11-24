@@ -8,14 +8,15 @@ delay, so the step must never move, or a transient would depend on machine load.
 
 Source
 ------
-V1 ``backend/main.py``: ``DT`` (line 277), ``SIM_SPEED`` (285), ``STEP_CAP`` (286), and
-``sim_task``'s per-pass cap on the wall-clock elapsed (12013). The replay age is the rewrite's own
-(handoff A-28, decision 172).
+V1 ``backend/main.py``: ``DT`` (line 277), ``STEP_CAP`` (286), and ``sim_task``'s per-pass cap on
+the wall-clock elapsed (12013). The pacing modes replace V1's ``SIM_SPEED`` (285), SLOW and FAST, with
+x1 to x10 in steps of one (2026-11-23, the process engineer's instruction; `project.md` decision 321).
+The replay age is the rewrite's own (handoff A-28, decision 172).
 """
 
 from __future__ import annotations
 
-__all__ = ["DT_S", "DT_NS", "SIM_SPEED", "MAX_PASS_S", "MAX_PASS_NS", "STEP_CAP_S",
+__all__ = ["DT_S", "DT_NS", "SIM_SPEED", "DEFAULT_PACING", "MAX_PASS_S", "MAX_PASS_NS", "STEP_CAP_S",
            "SNAPSHOT_REPLAY_MAX_AGE_S"]
 
 #: The physics step [s]: V1's ``DT``, the step of V1's design pin and of every equivalence test.
@@ -25,9 +26,15 @@ DT_S = 0.1
 #: The same step in integer nanoseconds, so the simulator owes and pays plant time exactly.
 DT_NS = 100_000_000
 
-#: Plant seconds advanced per wall-clock second in each pacing mode: V1's ``SIM_SPEED``,
-#: ``{"SLOW": 1.0, "FAST": 60.0}``, held as integers so the owed time is integer arithmetic.
-SIM_SPEED = {"SLOW": 1, "FAST": 60}
+#: Plant seconds advanced per wall-clock second in each pacing mode, x1 (real time) to x10 in
+#: steps of one, held as integers so the owed time is integer arithmetic. V1's ``SIM_SPEED`` was
+#: ``{"SLOW": 1.0, "FAST": 60.0}``; the instructor's panel offers the ten factors instead
+#: (decision 321). A loaded machine that cannot run the steps a factor owes falls behind the wall
+#: clock (``MAX_PASS_S``); the step itself never changes.
+SIM_SPEED = {f"x{n}": n for n in range(1, 11)}
+
+#: The pacing a session starts at: real time, V1's SLOW.
+DEFAULT_PACING = "x1"
 
 #: The most wall-clock time one pass may owe [s]: V1's ``min(now - last_t, 0.5)``. A stalled
 #: machine catches up with more steps, up to this much per pass; past it, plant time falls

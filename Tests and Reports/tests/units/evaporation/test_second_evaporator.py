@@ -246,7 +246,8 @@ def test_a_feed_pump_trip_sends_stage_2_the_melt_its_leg_drains_b63():
     (the chests on their vendor trims). The leg runs dry onto stage 1's heel
     at 350 s; stage 2 boils its last, LIC-324501 shuts LV-324501A at 638 s with the level at 21.6 %
     (its equal percentage passing little at low stroke, decision 150), and the melt holds 1496 kg
-    at 98.40 % urea and 161.41 (161.40 before decision 178) C (161.75 on the chord), the chest isolated at its saturation. The melt never
+    at 98.39 % urea and 161.31 C (161.41 before decision 322's ejectors held stage 1 on its ratio,
+    161.40 before decision 178, 161.75 on the chord), the chest isolated at its saturation. The melt never
     falls below its 140 C design, where V1 — the strength stage 1 made, 0 — boiled the whole leg
     as water to -83 C in a minute. On V1's selector, the harness's side of decision 224; AC4's
     header is pinned below."""
@@ -263,9 +264,9 @@ def test_a_feed_pump_trip_sends_stage_2_the_melt_its_leg_drains_b63():
     assert next(k for k in range(400, 12005) if run[k][1].m_402_kgh == 0.0) == 6376
     r1, r2 = run[12004]
     assert r1.m_401_kgh == 0.0 and r2.m_402_kgh == 0.0 and r2.m_vap_kgh == 0.0 == r2.m_boil_kgh
-    assert (r2.m_kg, r2.w["Urea"], r2.t_c) == (pytest.approx(1496.40, abs=0.01),
-                                               pytest.approx(0.98396, abs=1e-5),
-                                               pytest.approx(161.4014, abs=1e-4))
+    assert (r2.m_kg, r2.w["Urea"], r2.t_c) == (pytest.approx(1496.50, abs=0.01),
+                                               pytest.approx(0.98394, abs=1e-5),
+                                               pytest.approx(161.3128, abs=1e-4))
 
 
 def test_a_feed_pump_trip_on_ac4s_header_drains_stage_2_to_its_heel_b63():
@@ -273,9 +274,10 @@ def test_a_feed_pump_trip_on_ac4s_header_drains_stage_2_to_its_heel_b63():
     1273 kg/h of the feed's water and 655 of its own boil off at 30 s, the melt at 141.88 C, and
     never falls below 140 C; but PIC-335201 holds the header on E1's 2.8 bar g floor as the level
     falls, so the drain runs on after the leg runs dry: the seal uncovers at 361.3 s, the heel
-    limits the drain at 372.2 s and the melt holds its 1 kg heel at 98.41 % and 162.18 C, the leg
+    limits the drain at 372.2 s and the melt holds its 1 kg heel at 98.41 % and 162.12 C, the leg
     drawing 1.9 t/h of air. Run with 335P001A / B's low-level stop on LY-324501 off (decision 217),
-    whose own arm follows. (361.6 s, 372.4 s and 162.1832 C before decisions 236 and 237.)"""
+    whose own arm follows. (361.6 s, 372.4 s and 162.1832 C before decisions 236 and 237; 98.413 %
+    and 162.1801 C before decision 322.)"""
     run = _chain(12005, cut_at=5, stop=False)
     _r1, r2 = run[300]
     assert (r2.m_vap_kgh, r2.m_boil_kgh, r2.t_c) == (pytest.approx(1272.98, abs=0.01),
@@ -286,8 +288,8 @@ def test_a_feed_pump_trip_on_ac4s_header_drains_stage_2_to_its_heel_b63():
     assert next(k for k in range(400, 12005) if run[k][1].m_402_kgh == 0.0) == 3722
     r1, r2 = run[12004]
     assert r1.m_401_kgh == 0.0 and r2.m_402_kgh == 0.0 and r2.m_kg == 1.0 and r2.header.capped
-    assert (r2.w["Urea"], r2.t_c) == (pytest.approx(0.98413, abs=1e-5),
-                                      pytest.approx(162.1801, abs=1e-4))
+    assert (r2.w["Urea"], r2.t_c) == (pytest.approx(0.98411, abs=1e-5),
+                                      pytest.approx(162.1184, abs=1e-4))
     assert r2.seal_air_kgh == pytest.approx(1882.0, abs=1.0)
 
 
@@ -325,18 +327,19 @@ def test_a_feed_pump_trip_on_ac4s_header_stops_335p001_on_ly_324501s_l2_b63():
     """Decision 217 on B-63, LY-324501 on AC4's formula (decision 252): stage 2 finishes the leg's
     melt as with the stop off, but LY-324501 stands on its LRV floor, so the stop does not act before
     the heel does: the seal uncovers at 361.3 s and the heel shuts the drain at 372.2 s with
-    LY-324501 on 12.65 % at 0.201 bar a. Stage 2 holds its 1 kg heel at 162.18 C and 98.41 %, never
+    LY-324501 on 12.66 % at 0.201 bar a (12.65 % before decision 322). Stage 2 holds its 1 kg heel
+    at 162.12 C and 98.41 % (162.18 C before decision 322), never
     below 140 C, drawing 1.9 t/h of air, as with the stop off. On V1's level the pumps stopped at
     354.0 s with 346.7 kg held and the seal covered (decision 217's pins before decision 252)."""
     run = _chain(4000, cut_at=5)
     first = next(k for k in range(400, 4000) if run[k][1].m_402_kgh == 0.0)
     assert first == 3722 and all(r2.m_402_kgh == 0.0 for _, r2 in run[first:])
-    assert run[first][1].level_pct == pytest.approx(12.6547, abs=1e-4)
+    assert run[first][1].level_pct == pytest.approx(12.6609, abs=1e-4)
     assert next(k for k in range(4000) if run[k][1].seal_air_kgh > 0.0) == 3613
     assert all(r.converged and r.t_c >= 140.0 for _, r in run)
     r2 = run[-1][1]
-    assert (r2.m_kg, r2.t_c, r2.w["Urea"]) == (1.0, pytest.approx(162.1801, abs=1e-4),
-                                               pytest.approx(0.98413, abs=1e-5))
+    assert (r2.m_kg, r2.t_c, r2.w["Urea"]) == (1.0, pytest.approx(162.1184, abs=1e-4),
+                                               pytest.approx(0.98411, abs=1e-5))
     assert r2.seal_air_kgh == pytest.approx(1881.7, abs=1.0)
 
 

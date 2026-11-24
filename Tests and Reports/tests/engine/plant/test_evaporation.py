@@ -35,7 +35,7 @@ def _cmd(s: Scheduler, **cmd) -> None:
 
 
 def _packet(s: Scheduler) -> dict:
-    return build_packet(s.plant, s.results, s.tears_read, sim_mode="SLOW", t_wall=0.0)
+    return build_packet(s.plant, s.results, s.tears_read, sim_mode="x1", t_wall=0.0)
 
 
 @pytest.fixture(scope="module")
@@ -110,26 +110,29 @@ def test_a_save_made_before_the_trips_loads_with_them_healthy():
     assert back.units[TRIPS_35].actions == HEALTHY_35
 
 
-#: Decision 251: the motive valves' strokes and what the separators' loops do 300 s after each step
-#: from the seed run 60 s (measured: 64 % 0.330 bar a / 61.1 %; 55 % 0.349 / 52.5 %, PT-323204 0.465;
-#: 40 % 0.129 / 92.5 %; 38 % 0.150 / 87.3 %).
+#: Decision 322: the motive valves' strokes on the engine's 4.0 bar g header and what the
+#: separators' loops do 300 s after each step from the seed run 60 s. HIC-329605 holds above its
+#: design 69.06 % and loses 324F001's vacuum below about 66 %; HIC-329606 holds above about 76 %
+#: of its design 80.16 % and loses 324F003's below, the plant's 40.5 % on its 44.3 % (As-Built
+#: §CLXII.3). (Decision 251's steps were 64 / 55 % and 40 / 38 %.)
 MOTIVE_STEPS = [
-    ("hic9605_set", 64.0, "E001", "PIC_324202", "PT_324202", False),
-    ("hic9605_set", 55.0, "E001", "PIC_324202", "PT_324202", True),
-    ("hic9606_set", 40.0, "E003", "PIC_324203", "PT_324203", False),
-    ("hic9606_set", 38.0, "E003", "PIC_324203", "PT_324203", True),
+    ("hic9605_set", 75.0, "E001", "PIC_324202", "PT_324202", False),
+    ("hic9605_set", 60.0, "E001", "PIC_324202", "PT_324202", True),
+    ("hic9606_set", 76.0, "E003", "PIC_324203", "PT_324203", False),
+    ("hic9606_set", 68.0, "E003", "PIC_324203", "PT_324203", True),
 ]
 
 
 @pytest.mark.parametrize("kind, op, stage, pic, pt, lost", MOTIVE_STEPS,
                          ids=[f"{k}_{o:.0f}" for k, o, *_ in MOTIVE_STEPS])
-def test_the_motive_valves_hold_and_lose_the_vacuums_on_the_plants_bracket_decision_251(
+def test_the_motive_valves_hold_and_lose_the_vacuums_on_their_curves_decision_322(
         kind, op, stage, pic, pt, lost):
-    """Decision 251, As-Built §CXLIV.3. On the plant, 5 November 2026, HIC-329605 held 324F001's
-    vacuum at 64 % and lost it at 55 %, HIC-329606 held 324F003's at 40 % and lost it at 38 %. At
-    the held stroke the bleed takes the step and the vacuum stays; at the lost stroke the
-    separator's pressure rises and its PIC closes the bleed, and stage 1's loss reaches 323F010
-    (PT-323204), whose vapour 324E002 condenses beside 324F001's."""
+    """Decision 322, As-Built §CLXII.3. On the plant, 5 November 2026, HIC-329605 held 324F001's
+    vacuum at 64 % and lost it at 55 %, HIC-329606 held 324F003's at 40 % and lost it at 38 %; the
+    deduced curves put those losses on the engine's strokes. At the held stroke the bleed takes the
+    step and the vacuum stays; at the lost stroke the separator's pressure rises and its PIC closes
+    the bleed, and stage 1's loss reaches 323F010 (PT-323204), whose vapour 324E002 condenses beside
+    324F001's."""
     s = Scheduler(*build_plant())
     _run(s, 60.0)
     seed = _packet(s)

@@ -310,7 +310,7 @@ its measurement in handoff A-10. Never a global iteration.
 Every tear's delay is one step, so the step must not move. V1 steps on the wall clock — a variable
 step up to 0.25 s — which makes a transient depend on machine load. The law: a fixed 0.1 s, V1's
 `DT` and the step every equivalence test runs at; `simulator.py` accumulates wall-clock x pacing
-and pays it in whole steps, so SLOW and FAST run the identical steps and an exercise replays bit
+and pays it in whole steps, so every pacing, x1 to x10 (decision 321), runs the identical steps and an exercise replays bit
 for bit.
 
 **6. What is built, in order, and how it is proven.** `state.py`, `schedule.py` (the wiring and its

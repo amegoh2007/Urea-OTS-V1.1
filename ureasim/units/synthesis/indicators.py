@@ -12,8 +12,8 @@ console packet (`ureasim.engine.packet`) publishes them.
 Why a scheduled step and not the packet
 ---------------------------------------
 V1 computes the lags inside ``step_sim``, once per physics step. The implicit Euler weight
-``dt / (tau + dt)`` is not additive over steps, so a lag advanced once per console publish — six
-plant seconds under FAST pacing — would not be V1's indicator. A step also puts the lag store in
+``dt / (tau + dt)`` is not additive over steps, so a lag advanced once per console publish — one
+plant second under x10 pacing — would not be V1's indicator. A step also puts the lag store in
 the plant state, so an exercise saved and restored replays its indicators too.
 
 Source

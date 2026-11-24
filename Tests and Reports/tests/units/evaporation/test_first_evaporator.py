@@ -60,35 +60,38 @@ def test_pv_324202_on_its_vendor_trim():
 
 def test_a_lost_header_dilutes_the_melt():
     """The LP header to 1.2 bar a: on PV-329203's vendor trim (decided 2026-10-14) the melt falls
-    to 101.46 C and 84.45 % urea, and the stage boils 4883 kg/h (4882 before decision 251) where it boiled 14 072 (99.9 C,
-    83.4 % and 3780 on V1's linear valve); the held melt, cooling, does not boil on its own."""
+    to 101.43 C and 84.49 % urea, and the stage boils 4930 kg/h where it boiled 14 072 (99.9 C,
+    83.4 % and 3780 on V1's linear valve); the held melt, cooling, does not boil on its own. With
+    the load gone 324F002 holds the vacuum on its break curve's ratio, not on its load line
+    (decision 322; 101.46 C, 84.45 % and 4883 kg/h before it, 4882 before decision 251)."""
     _, _, r = _run(18000, p_lp=1.2)
-    assert r.t_c == pytest.approx(101.458, abs=0.001)
-    assert r.w_melt == pytest.approx(0.8445, abs=1e-4)
-    assert r.m_vap_kgh == pytest.approx(4883.3, abs=0.5)
+    assert r.t_c == pytest.approx(101.427, abs=0.001)
+    assert r.w_melt == pytest.approx(0.8449, abs=1e-4)
+    assert r.m_vap_kgh == pytest.approx(4930.2, abs=0.5)
     assert r.m_boil_kgh == 0.0
 
 
 def test_a_lost_feed_boils_the_held_melt_as_it_drains_b62():
     """Handoff B-62, decided 2026-10-01. 323P003 stops. The chest's duty, no longer spent on the
-    feed, boils the held melt: about 1.14 t/h after a minute, the melt at 150.02 (150.15 before decision 178) C and 96.81 %,
+    feed, boils the held melt: about 1.17 t/h after a minute, the melt at 150.02 (150.15 before decision 178) C and 96.80 %,
     holding at its own boiling point as it concentrates. The chest fills to the 5.013 bar a
-    header; at 151.82 C (PV-329203 on its vendor trim) the melt's equilibrium at the vacuum is
-    97.06 % and it
-    boils no more. The leg drains 324F001 to its 1 kg floor in ten minutes and no further."""
+    header; at 151.94 C (PV-329203 on its vendor trim) the melt's equilibrium at the vacuum is
+    96.99 % and it boils no more, 324F002 holding 0.321 bar a on its break curve's ratio as the
+    load goes (decision 322; 1179.89 kg/h, 151.852 C and 97.058 % before it). The leg drains
+    324F001 to its 1 kg floor in ten minutes and no further."""
     unit, loops = fe.FirstEvaporator(), fe.FirstEvaporatorLoops()
     for k in range(6000):
         r = unit.step(loops, 0.0, 99.0, W_S317, P_LP_BARA, P_MOTIVE, P_C005, MEVAP_DES_KGH, None,
                       TV, 0.1)
         if k == 600:
             assert (r.t_c, r.m_boil_kgh, unit.w["Urea"]) == (
-                pytest.approx(150.0177, abs=1e-4), pytest.approx(1179.89, abs=0.01),
-                pytest.approx(0.96803, abs=1e-5))
+                pytest.approx(150.0209, abs=1e-4), pytest.approx(1173.03, abs=0.01),
+                pytest.approx(0.96802, abs=1e-5))
         assert r.converged
     assert unit.m_kg == 1.0 and r.m_401_kgh == 0.0
     assert r.m_vap_kgh == 0.0 == r.m_boil_kgh
-    assert r.t_c == pytest.approx(151.852, abs=1e-3)
-    assert unit.w["Urea"] == pytest.approx(0.97058, abs=1e-5)
+    assert r.t_c == pytest.approx(151.936, abs=1e-3)
+    assert unit.w["Urea"] == pytest.approx(0.96993, abs=1e-5)
 
 
 def test_on_the_vendor_anchor_pv_324202_would_run_out_of_air_b61():

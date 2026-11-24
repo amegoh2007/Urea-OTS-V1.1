@@ -31690,3 +31690,187 @@ margin) adds 0.049-0.065 share/bar there, 66-72 % of the slope (15-19 % at beta 
 B, Gate C or SD149 is run. With the saturation law as built, beta_phi alone cannot meet ds/dP <= 0.03 on these boundaries; whether a
 saturation margin (decision 297's class) with the flash tempered meets it is [I], unmeasured. The choice is the
 engineer's.
+
+# Part CLXII — Session 150: the evaporation ejectors on deduced break curves; the instructor's pacing x1 to x10 and FREEZE / RUN lit (2026-11-23)
+
+The process engineer's instructions of 2026-11-23: HIC-329605 and HIC-329606 still showed no impact on their pressures;
+Körting's curves of 324F002, 324F004 and 324F005 being unreachable, deduce curves that make the environment work (the
+documented-data search waived for this datum; the references checked for a solution); and in the instructor's
+Simulation box, the pacing x1 to x10 and FREEZE or RUN lit as it is on. Decisions 321 and 322. Scripts and output:
+`Tests and Reports/scratch/session-150` (`probe150.py`, `proto150.py`, `probe_cmd.py`, `seedrun.py`, `seedtick.py`,
+`ring150.py`, the runs `b1_` to `b7_`, `pins150*.py`, `record_approx.py` and `apply_approx.py`, `suite/`, `suite2/`,
+`suite3/`); archived to `Tests and Reports/reports/Session_150_ejectors_pacing`.
+
+## CLXII.1 The report, measured on the committed engine
+
+From the design seed, 600 s after each step, PIC-324202 and PIC-324203 in AUTO or held in MAN at their design strokes
+(`b1_`). PT-324201 reads 324F001's node and PT-324204 324F003's.
+
+| Step | PT-324201 AUTO / MAN (bar a) | PT-324204 AUTO / MAN (bar a) |
+|---|---|---|
+| HIC-329605 100 % | 0.335 / 0.340 | 0.133 |
+| HIC-329605 50 % | 0.376 / 0.384 | 0.154-0.157 |
+| HIC-329605 30 % | 0.517 / 0.609, still rising | 0.257-0.315 |
+| HIC-329606 100 % | 0.330 | 0.132 / 0.132 |
+| HIC-329606 35 % | 0.330 | 0.264 / 0.268 |
+| HIC-329606 20 % | 0.330 | 0.403 / 0.839, rising |
+
+Four causes, read from the map (`ejector_map`, decision 251): (1) the width was fitted so that at the lost stroke the
+ejector still pulls its design load less the design bleed, and the 1-D P_c rises faster than the suction, so a broken
+ejector re-choked a few tens of mbar up (stage 1 0.38 bar a at 50 %, where the plant sat at 0.56-0.64); (2) stage 2's
+bracket, 38-40 % on an 80 % design stroke, left HIC-329606 inert from 40 to 100 %; (3) above the bracket the critical
+capacity falls with the motive (324F002 72.0 kg/h at 69 %, 66.2 at 100 %, on the design suction), so opening
+HIC-329605 worsened the vacuum; (4) in AUTO the bleed absorbs any change inside its authority. The references
+(`Gaps solution.md` §7.1, Gap Closure3, the deep-research report) give the curve's class: a load line while critical,
+a sharp break below a minimum motive or above a maximum discharge, the break's position the free datum; no curve.
+
+## CLXII.2 The law (decision 322)
+
+Each decided map carries a break curve, the compression ratio CR(P_m) the ejector holds at a nozzle pressure, built from
+`data.unit_324.EJECTOR_BREAKS`:
+
+    CR(0) = 1;   CR(P_m,i) = P_d / P_s,i at each node;   linear in P_m between nodes
+    CR(P_m) = CR_top (P_m / P_m,top)^n above the top node,
+              n = ln[P_c,1D(P_s,des, P_m,end) / P_c,1D(P_s,des, P_m,top)] / ln(P_m,end / P_m,top),
+              P_m,end = 4.1 bar a, or the table's 6.0 bar a ceiling where the top node is at 4.1
+    P_c(P_s, P_m) = P_s . CR(P_m)
+    pull = C(P_s, 4.1 bar a) . F(P_d / P_c; 1.04)      (F decision 251's flux shape on [1, w])
+
+Stage 1's node strokes become nozzle pressures on the engine's valve law on the logged 4.22 bar g header
+(`break_nozzle_bara`). Stage 2's are read on the plant's design stroke: on 7 November, at 101.7 % load on a 4.00 bar g
+header, the plant ran HIC-329605 at 73.0 % (the engine's design 69.06 %) but HIC-329606 at 44.3 % (the engine's 80.16 %),
+so P_m = 4.1 bar a x stroke / 44.3 [E], the plant's valve read as linear about its design
+(`HIC_329606_PLANT_DES_PCT`). A first build read stage 2 on the engine's valve law: its nodes sat at 1.5-2.0 bar a,
+under half the design motive (Körting's minimum 3.1 bar g, §CXLIV.2), the 1-D slope carried the ratios at 4.1 bar a to
+4.09 and 5.18, 40-47 % above the vendor duties' 0.35 / 0.12 = 2.92 and 1.16 / 0.33 = 3.52, a 0.5 bar a 324E006 no longer
+reached stage 2, and HIC-329606 stayed inert from 45 to 100 %. Read on the plant's design stroke the curves meet the
+vendor's duties without being fitted to them:
+
+| Ejector | Discharge (bar a) | Nodes: stroke % -> nozzle bar a, suction held bar a, CR | n | CR at 4.1 bar a | vendor duty ratio |
+|---|---|---|---|---|---|
+| 324F002 | 1.0 (323C005) | 48 -> 3.0395, 0.64, 1.5625; 55 -> 3.4991, 0.57, 1.7544; 64 -> 4.0282, 0.33, 3.0303 | 0.49581 | 3.0570 | 5.0 |
+| 324F004 | 0.3 (324E006) | 35 -> 3.2393, 0.26833, 1.1180; 37.75 -> 3.4938, 0.24950, 1.2024; 40.5 -> 3.7483, 0.15, 2.0; 44.3 -> 4.1, 0.10, 3.0 | 0.39989 | 3.0000 | 2.92 |
+| 324F005 | 1.0 (324E007) | 35 -> 3.2393, 0.53666, 1.8634; 37.75 -> 3.4938, 0.49900, 2.0040; 40.5 -> 3.7483, 0.30, 3.3333 | 0.48882 | 3.4827 | 3.52 |
+
+Stage 1's nodes are the plant's 324F001 readings (§CV.5; 0.64 at 48 %, the 50-55 % window's 0.56-0.61 taken as 0.57 at
+55 %, decision 251's held 64 % at the design 0.33). Stage 2's are 324E005's readings (0.48, 0.415, 0.15, 0.10 bar a at
+35, 37.75, 40.5, 44.3 %): at or under 0.15 the reading is 324F004's alone, 324F005 holding 324E006 at its 0.3 bar a;
+above it both have broken and the loss is split equally in the logarithm of each one's ratio at its hold,
+CR_i = CR_i,hold (CR_4 CR_5 / CR_4,hold CR_5,hold)^(1/2) [E] (`_pair_split`). The 44.3 % node is a bound read as
+equality: the plant there sat on its load line (0.10 bar a, the engine's bleed-shut 0.102). The capacity is read at the
+duty's motive: in the critical mode the secondary flow chokes in the annulus and barely answers the motive [E], so more
+motive never worsens a vacuum. The width 1.04 is decision 251's 324F005 width; with 1.10 (the prototype's first arm,
+`b2_`) the broken plateaus sat 8-15 % under the nodes, with 1.04 within 2-5 %. At the seed P_c / P_d is 1.0088, 1.31 and
+1.045 (324F002, 324F004, 324F005), so F = 1; a curve that does not rise, or leaves the design point short of critical,
+raises at import.
+
+## CLXII.3 Measured on the build
+
+The build reproduces the scratch prototype (`proto150.py`, rebound on the three callers) to the displayed digit on every
+stage-1 arm. From the design seed, 1 200 s after the step (`b8_`, `b6_`); MAN holds the bleed at its design stroke
+(PV-324202 61.1 %, PV-324203 92.0 %), SHUT at 0 %. No tick unconverged on 324E001 or 324E003, no root exhausted.
+
+| Step | PT-324201 (bar a) | PT-324204 (bar a) | Plant (§CV.5) |
+|---|---|---|---|
+| seed | 0.330 | 0.131 | |
+| HIC-329605 30 % MAN | 0.718 | 0.323 (PV-324203 0 %) | |
+| HIC-329605 48 % MAN | 0.625 | 0.320 | 0.64 |
+| HIC-329605 55 % MAN / AUTO | 0.568 / 0.567 (PV-324202 0 %) | 0.323 / 0.322 | 0.56-0.61 (50-55 %) |
+| HIC-329605 60 % MAN | 0.457 | 0.256 | |
+| HIC-329605 64 % MAN | 0.370 | 0.155 | 0.31-0.33 (64-67 %, on 4.13-4.24 bar g) |
+| HIC-329605 100 % MAN / AUTO | 0.330 / 0.330 (61.0 %) | 0.131 | |
+| HIC-329605 69.06 % SHUT | 0.317 | 0.124 | 0.32 (73 %, bleeds shut) |
+| HIC-329605 100 % SHUT | 0.293 | 0.113 | |
+| HIC-329606 20 % MAN | 0.329 | 0.733 | |
+| HIC-329606 50 % MAN | 0.329 | 0.531 | |
+| HIC-329606 60 % MAN | 0.330 | 0.469 | |
+| HIC-329606 64 % MAN | 0.330 | 0.447 | 0.48 (35 %, 0.79 of design) |
+| HIC-329606 66 % MAN / AUTO | 0.330 | 0.421 / 0.404 (PV-324203 0 %) | |
+| HIC-329606 68 % MAN | 0.330 | 0.392 | 0.40-0.43 (37.5-38 %, 0.85) |
+| HIC-329606 70 % MAN | 0.330 | 0.265 | |
+| HIC-329606 73 % MAN | 0.330 | 0.143 | 0.14-0.17 (40-41 %, 0.91) |
+| HIC-329606 76 % MAN | 0.330 | 0.131 | |
+| HIC-329606 80.16 % / 100 % SHUT | 0.330 | 0.128 / 0.128 | 0.10 (324E005, 44.3 %, 1.00) |
+| HIC-329606 100 % MAN | 0.330 | 0.131 | |
+
+The engine runs on the design header, 4.0 bar g, where a stroke gives less motive than on the logged 4.22 bar g, so stage
+1's break sits a few per cent of stroke higher than the plant's (64 % holds 0.370 here). Stage 2 shows the plant's moves
+relative to its design stroke, not its absolute strokes. Below the break the vacuum falls to the plateau P_d / CR whatever
+the load; above it the load line holds and the PIC's bleed sets the vacuum (flat); with the bleed shut, the plant's
+practice, stage 1's ratio binds first and more motive pulls deeper (0.317 to 0.293 bar a on HIC-329605), while stage 2
+stays on its load line (0.128). The first stage's break reaches stage 2 harder than before: its extra vapour takes
+324F003 to 0.32 bar a with PV-324203 shut, where 324F004's ratio now binds (0.25-0.28 on the first stage-2 anchor). With the load gone (323P003 stopped)
+324F002 holds 324F001 on its ratio, 0.317-0.321 bar a, where its load line took it to 0.306, so the held melt boils less
+(6.3 kg/h of vapour at two minutes against 94.8). PIC-324202 cannot pull 324F001 below about 0.32 bar a at the design
+motive: its set point 0.30 leaves 0.321 bar a after ten minutes (0.316 and falling on decision 251's map), the
+ejector's limit, which a trainee meets by opening HIC-329605. HV-329606 ten points under its design stroke (87 % of the
+design motive) now breaks stage 2 to 0.253 bar a, where decision 251's map held 0.131. 324E006's water lost: stage 2 at
+0.2876 bar a at two minutes (0.2875 on decision 251's map), 324F004 critical to 0.863 bar a there against 324E007's 1.0;
+324E006 at 0.5 bar a: stage 2 to 0.160 (0.152).
+
+## CLXII.4 The LP header sag and the fast shutdown
+
+MASTER-329207 lowered from the seed after 60 s (`b7_`, 1 200 s; the committed engine held 0.329-0.331 and 0.131 on both,
+`b5_head_`): to 3.7 bar g the header settles about 4.71 bar a, PT-324201 0.370 bar a with PV-324202 at 14 %, PT-324204
+0.153; to 3.4 bar g, 4.41 bar a, PT-324201 0.476 with the bleed shut and PT-324204 0.271, both still rising. No trip on
+any arm. The motive-starved ejectors on a sagging header are the plant's own (Körting's 3.1 bar g minimum motive).
+
+In the fast shutdown (trip 21.2, LV-322501 wide open; `ring150.py`) 324F002's nozzle falls from 4.1 to 3.0 bar a in
+10 s, the ejector breaks and 324F001's vacuum is lost to 0.43 bar a in two minutes. 323F010's drain ring (decision 306)
+then comes at ticks 185-201 and reaches 0.363 mbar, over decision 306's 0.3 mbar ceiling and under PT-323204's 1 mbar
+resolution: the audit's ceiling is restated at 0.4 mbar (decision 322), for the engineer to confirm.
+
+Broken and restored (`probe_back.py`, `b9_`: the valve to its stroke for 600 s, then back to its design stroke for
+600 s). HIC-329605 at 0 % or at 48 % (the same within 600 s, 324F002 pulling nothing until 324F001 reaches its plateau):
+PT-324201 0.517 bar a in AUTO (PV-324202 shut) and 0.609 in MAN after 600 s; back at 69.06 %, 0.421 / 0.503 two minutes
+later and 0.319 / 0.355 after ten, the held melt's flash slowing the recovery (the plant's, 0.56-0.64 to 0.21-0.31 bar a in
+2.5 minutes, at 75 % load). HIC-329606 at 0 %: PT-324204 0.403 in AUTO and 0.839 in MAN; at 60 %, 0.403 / 0.468; back at
+80.16 %, 0.114-0.128 bar a within 30 s, settling at 0.128-0.136. No trip on any arm.
+
+The shipped exercises (`scen_check.py`, 900 s each, the build against the committed engine): load090_steam,
+load095_steam, load100_conversion, load100_steam and load105_steam hold within 0.002 bar a of the committed engine on
+both stages. load105_conversion does not: its LP header stands at 4.51 bar a (3.49 bar g), 324F002's nozzle at 3.69 bar a
+with HIC-329605 at its design 69.06 %, where its curve holds a ratio of 2.22 against the 3.03 it needs, and 324F001 goes
+to 0.43 bar a in 300 s, PV-324202 shut and stage 2 to 0.247 bar a by 900 s (the committed engine held 0.333 and 0.139).
+The motive-starved ejector is the curve's physics; the exercise was saved on an engine whose ejector did not answer its
+motive. Handoff A-64.
+
+## CLXII.5 The design pin and the moved pins
+
+The seed's first tick is the committed engine's to the bit; from the second the live motive leaves 4.1 bar a by a few
+1e-6 and the capacity, read at the duty's motive, parts by 1e-15 bar (`seedtick.py`). Over 14 400 s from the seed
+(`seedrun.py`, a packet a minute): 38 of 783 leaves ever differ from the committed engine's, each by less than that
+leaf's own wander over the run on the committed engine (324E002's condensate 0.9 kg/h against a 24.8 kg/h range);
+PT-324201, PIC-324202's output and PT-324204 are identical at every sample; the smallest P_c / P_d is 1.00872 on
+324F002, 1.305 on 324F004 and 1.0443 on 324F005, so no ejector leaves F = 1. The seed parting tests (decisions 230, 241,
+243, 244, 246) stay inside their bounds but one: 323F010's boil-off, a few kg/h, parts by 4.438e-3 against 4.4e-3, and
+the bound is restated at 4.5e-3 (decision 322), for the engineer to confirm, as decision 304 restated it.
+
+The pins the curves moved are re-pinned at their new values, each a transient that crosses a vacuum (recorded in one
+run by `record_approx.py`): the evaporators' feed and header losses, the vacuum train's motive and cooling-water arms,
+the decided-equivalence harnesses' ejector, separator and condenser cases, the synthesis loop's whole-plant transients
+(below 0.2 % at their pinned digits), the seed parting values, and the engine's motive-valve test, now on the engine's
+strokes (HIC-329605 75 % held and 60 % lost, HIC-329606 76 % and 68 %).
+
+## CLXII.6 The pacing and the freeze (decision 321)
+
+`data.engine.SIM_SPEED` is x1 to x10 (1 to 10 plant seconds a wall-clock second), `DEFAULT_PACING` x1;
+`EngineSession` takes the name case-blind and refuses SLOW, FAST and anything else. The step stays 0.1 s, the
+owed time integer nanoseconds: xn pays n steps per wall-clock tenth, at most 5 n per 0.5 s pass (`MAX_PASS_S`).
+`EngineSession.packet` staples ``sim_frozen`` on the consoles' packet (health on), not on the historian's sample; the
+panel lights FREEZE while it is true and RUN while it is false, and neither on a packet without it. The Simulation box
+is two rows: Speed x1 to x10, then FREEZE, RUN, RESET. Pinned in `test_simulator.py` (every factor pays its steps; the
+replay at x1 and x10 bit for bit), `test_session.py`, `test_engine_host.py` and `test_panel.py`.
+
+The engine's own speed bounds the factors: on this machine, idle, a step with the console's packet every tenth step
+costs 14.3 ms, so the plant runs at most about 7 times real time (18.6 ms, 5.4 times, with two test processes beside
+it). From x8 the pacing asks for more steps than the machine runs; the step stays 0.1 s and the plant falls behind the
+wall clock (``MAX_PASS_S``), so x8 to x10 run alike at the machine's ceiling.
+
+## CLXII.7 Checks
+
+The full suite on the build, twelve parallel groups (`suite3/`): 8 440 passed, none failed. A first run on the first
+stage-2 anchor (`suite/`) and a recording run (`suite2/`, `record_approx.py`, every moved approx pin logged and passed)
+found the moved pins, written back by `apply_approx.py` and by hand (§CLXII.5). Nothing below `ureasim/hmi` imports
+PyQt6. `ejector_map.py` 509 lines, `data/unit_324.py` 586, `hmi/instructor/panel.py` 294. The instructor's panel rendered
+off screen (`panel_running_x4.png`, `panel_frozen_x4.png`): x4 and RUN lit while running, FREEZE lit when frozen.

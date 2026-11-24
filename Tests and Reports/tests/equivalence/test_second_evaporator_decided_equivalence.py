@@ -79,16 +79,18 @@ def _both(v1, script, n, off, sp=None, setup=None, vendor_trim=False, seal_air=F
 
 
 @pytest.mark.parametrize("name, over, p, fa", [
-    ("motive halved", {"hic": 25.0}, (0.13432, 0.13068), (20.162, 21.080)),
-    ("324E006 at 0.5 bar a", {"pd": 0.5}, (0.13100, 0.15166), (21.000, 16.402)),
+    ("motive halved", {"hic": 25.0}, (0.13432, 0.26841), (20.162, 4.298)),
+    ("324E006 at 0.5 bar a", {"pd": 0.5}, (0.13100, 0.16027), (21.000, 14.803)),
 ])
 def test_the_pull_off_the_design_anchored_map_decided_divergence(v1, name, over, p, fa):
     """B-61, decided 2026-10-01. At design both pull PFD 712's 584 kg/h at 0.131 bar a. Halve
     HIC-329606: V1 halves its pull and the vacuum rises to 0.1343 bar a after ten minutes,
-    PIC-324203 throttling the bleed to 20.2 kg/h; the map, still critical, pulls a little more and
-    the vacuum deepens to 0.1307. Back 324E006 up to 0.5 bar a: V1 does not notice; the ejector,
-    critical only to 0.434 bar a on the decided break (decision 251; 0.369 before), passes it and
-    the vacuum rises to 0.1517, the bleed throttled to 16.4 kg/h (0.1313 and 20.9 before)."""
+    PIC-324203 throttling the bleed to 20.2 kg/h; the map, its nozzle at half the design motive,
+    breaks on its deduced curve and the vacuum is lost to 0.2684, the bleed throttled to 4.3 kg/h
+    (decision 322; on decision 251's map, still critical, it deepened to 0.1307). Back 324E006 up to
+    0.5 bar a: V1 does not notice; the ejector, critical only to 0.393 bar a on its curve (0.434 on
+    decision 251's break, 0.369 before it), passes it and the vacuum rises to 0.1603, the bleed
+    throttled to 14.8 kg/h (0.1517 and 16.4 under decision 251, 0.1313 and 20.9 before it)."""
     _, hist = _both(v1, h._step(v1, 5, **over), 6000, "B-61")
     r = hist[5999]
     assert r["P"] == (pytest.approx(p[0], abs=1e-5), pytest.approx(p[1], abs=1e-5))
@@ -185,14 +187,15 @@ def test_pv_324203_on_its_vendor_trim_decided_divergence(v1):
 
 def test_the_separator_with_its_heads_decided_divergence(v1):
     """Decision 33. 324F003 on the drawing's 10.7 m3 (7.59 m3 of vapour at design) where V1 takes
-    the 7.43 m3 cylinder (4.32). HIC-329606 halved: the vacuum node is quick either way — 0.5 s
-    later V1's has moved 0.182 mbar, the port's 0.138 — and both settle at 0.13070 bar a within
-    1.5 s."""
+    the 7.43 m3 cylinder (4.32). HIC-329606 halved, 324F004 breaking on its deduced curve (decision
+    322): 0.5 s later V1's node has risen 2.63 mbar, the port's larger one 1.73, and two minutes on
+    both stand at 0.26841 bar a, within 1e-7 bar of each other. (On decision 251's map, still
+    critical, they moved 0.182 and 0.138 mbar and settled at 0.13070 within 1.5 s.)"""
     _, hist = _both(v1, h._step(v1, 5, hic=25.0), 1200, "volume")
-    assert hist[5]["P"] == (pytest.approx(0.1308029, abs=1e-7),
-                            pytest.approx(0.1308510, abs=1e-7))
-    assert hist[1199]["P"] == (pytest.approx(0.1306765, abs=1e-7),
-                               pytest.approx(0.1306765, abs=1e-7))
+    assert hist[5]["P"] == (pytest.approx(0.1336300, abs=1e-7),
+                            pytest.approx(0.1327337, abs=1e-7))
+    assert hist[1199]["P"] == (pytest.approx(0.2684126, abs=1e-7),
+                               pytest.approx(0.2684127, abs=1e-7))
 
 
 def test_the_drain_above_its_heel_decided_divergence(v1):

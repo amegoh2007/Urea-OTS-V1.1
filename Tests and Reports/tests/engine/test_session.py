@@ -45,9 +45,14 @@ def _find(node, key):
 
 def test_the_wall_clock_is_paid_in_whole_steps_at_the_pacing(tmp_path):
     s = EngineSession(tmp_path)
-    assert s.advance(250_000_000) == 2 and s.plant.clock.tick == 2     # 0.25 s at SLOW
-    assert s.handle({"type": "set_sim_mode", "mode": "FAST"}) == (True, "")
-    assert s.advance(100_000_000) == 60                                 # 0.1 s at 60x
+    assert s.advance(250_000_000) == 2 and s.plant.clock.tick == 2     # 0.25 s at x1
+    assert s.handle({"type": "set_sim_mode", "mode": "x10"}) == (True, "")
+    assert s.advance(100_000_000) == 10                                 # 0.1 s at 10x
+    assert s.handle({"type": "set_sim_mode", "mode": "X6"}) == (True, "")   # case-blind
+    assert s.advance(500_000_000) == 30                                 # 0.5 s at 6x
+    assert s.handle({"type": "set_sim_mode", "mode": "x10"}) == (True, "")
+    assert s.advance(200_000_000) == 20
+    assert not s.handle({"type": "set_sim_mode", "mode": "FAST"})[0]   # retired (decision 321)
     assert s.handle({"type": "freeze", "on": True}) == (True, "")
     assert s.advance(100_000_000) == 0
     ok, reason = s.handle({"type": "set_sim_mode", "mode": "WARP"})

@@ -9,7 +9,9 @@ here re-pinned, and nothing else moves unseen. The table is As-Built §CX.9.
 
 Gap 1's stand-ins are the open-literature loss coefficients of `control/jet_pump.py` and the two areas
 back-solved through them from the licensor's design duty; gap 3's are the in-situ factors that anchor each
-vendor map on the PFD's design load (decided B-61). Körting's curves would replace exactly these. The design
+vendor map on the PFD's design load (decided B-61) and, since decision 322, the deduced break curves' width and the
+plant's design stroke stage 2's readings are read on (their nodes are the plant's readings, `EJECTOR_BREAKS`).
+Körting's curves would replace exactly these. The design
 duties they are anchored on are PFD data, not stand-ins, and are not pinned here.
 """
 
@@ -25,6 +27,9 @@ STANDINS = [
     (1, "ureasim.control.jet_pump", "K_ENTRY", 0.10, "its suction-inlet loss, open literature"),
     (1, "ureasim.control.jet_pump", "K_THROAT", 0.05, "its mixing-throat friction, open literature"),
     (1, "ureasim.control.jet_pump", "ETA_DIFF", 0.80, "its diffuser recovery, open literature"),
+    (3, "ureasim.data.unit_324", "EJECTOR_BREAK_WIDTH", 1.04, "the ejectors' break width, decision 322 [E]"),
+    (3, "ureasim.data.unit_324", "HIC_329606_PLANT_DES_PCT", 44.3,
+     "stage 2's readings read on HIC-329606's plant design stroke, decision 322 [E]"),
     (4, "ureasim.data.unit_324", "F003_M_TAU_S", 180.0, "LI-324501 on V1's holdup ratio: the melt's residence"),
     (4, "ureasim.data.unit_324", "F003_LEVEL_SP_PCT", 54.7, "LIC-324501's set point, V1's"),
     (5, "ureasim.data.unit_322_loop", "TRIP_21_8_PDY_L2_BAR", 0.1, "PDY-321203 / 204's L2"),
