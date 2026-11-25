@@ -31874,3 +31874,27 @@ stage-2 anchor (`suite/`) and a recording run (`suite2/`, `record_approx.py`, ev
 found the moved pins, written back by `apply_approx.py` and by hand (§CLXII.5). Nothing below `ureasim/hmi` imports
 PyQt6. `ejector_map.py` 509 lines, `data/unit_324.py` 586, `hmi/instructor/panel.py` 294. The instructor's panel rendered
 off screen (`panel_running_x4.png`, `panel_frozen_x4.png`): x4 and RUN lit while running, FREEZE lit when frozen.
+
+## CLXII.8 load105_conversion re-saved (decision 323)
+
+The process engineer chose handoff A-64's option (a) on 2026-11-24. On the exercise's own LP header, 4.51 bar a,
+HIC-329605 85 % and HIC-329606 95 % put the nozzles at 4.147 and 4.129 bar a (82.7 % and 93.6 % give 4.1 exactly; the
+valve law, `motive_steam`). A first re-save opened both and settled 1 800 s (`resave150.py`): the vacuums held at
+0.322-0.334 and 0.133-0.138 bar a on a header swinging 4.46-4.58 bar a, but restored and run an hour on, trip 22.1
+latched. The committed engine on the original file shows why (`verify_scen.py`, `compare_scen.py`): the exercise is no
+steady state past its session-88 check of 15 minutes, LT-329501 draining from 49.9 to 0.8 % and TT-322011 rising from
+144.6 to 185 C in the hour, so a settle carries that drift forward. The re-save kept is the original state, unstepped,
+with only the two strokes changed (`resave150b.py`). Over 3 600 s untouched on the build against the original on the
+committed engine:
+
+| Tag | Original, committed engine | Re-saved, build |
+|---|---|---|
+| PT-324201 (bar a) | 0.330 to 0.324, range 0.324-0.340 | 0.330 to 0.321, range 0.321-0.343 |
+| PIC-324202 output (%) | 64.3 to 55.6 | 64.3 to 60.6 |
+| PT-324204 (bar a) | 0.137 to 0.139, range 0.134-0.139 | 0.137 to 0.138, range 0.133-0.139 |
+| PT-323204 (bar a) | 0.441 to 0.411 | 0.441 to 0.410 |
+| LT-329501 (%) | 49.9 to 0.8 | 49.9 to 0.7 |
+| TT-322005 (C) | 183.6 to 187.0 | 183.6 to 187.0 |
+
+No trip or relief on either. `test_snapshot.py`'s shipped-exercise pins hold, the re-saved file the one that carries
+322P002's field-set delivery (at the seed's 744). Handoff A-64 closed.

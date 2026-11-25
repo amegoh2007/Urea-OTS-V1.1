@@ -20,16 +20,7 @@ items' summaries, B-118's chronicle (sessions 76 to 95) and every data-gap row's
 
 # Section A — Rewrite issues
 
-### A-64 — The shipped exercise load105_conversion loses stage 1's vacuum on decision 322's curves
-
-*Raised 2026-11-23, session 150 (As-Built §CLXII.4).* The exercise holds the LP header at 4.51 bar a (3.49 bar g) with
-HIC-329605 at its design 69.06 %: 324F002's nozzle sits at 3.69 bar a, its curve holds a ratio of 2.22 against the 3.03
-the design vacuum needs, and 324F001 goes to 0.43 bar a in 300 s (PV-324202 shut), stage 2 to 0.247 bar a by 900 s. The
-committed engine held 0.333 and 0.139. The other five shipped exercises hold within 0.002 bar a. Acceptance: the
-exercise restored and run 3 600 s untouched holds both vacuums within the PICs' authority, no trip. Options: (a) re-save
-it with HIC-329605 opened to restore the motive (the plant ran 73 % at 101.7 % load on 4.00 bar g) and re-verify it as
-a steady state; (b) keep it as it is, a lesson in a sagging header; (c) re-save it with its header at design. Next step:
-the engineer's choice.
+*None open.*
 
 ---
 

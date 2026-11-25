@@ -1803,3 +1803,11 @@ decision on an item.
      4.4e-3 to 4.5e-3 (323F010's few kg/h, measured 4.438e-3), and decision 306's fast-shutdown ring, 0.3 to 0.4 mbar
      (measured 0.363 mbar, the shutdown now starving 324F002 of motive). Data gap 3 stays open, its stand-in changed.
      As-Built §CLXII.2-6.
+323. **The shipped exercise load105_conversion re-saved with its motive strokes opened** (2026-11-24, session 150; the
+     process engineer's choice of handoff A-64's option (a)). On decision 322's curves the exercise's 3.49 bar g LP
+     header starved 324F002 at HIC-329605's design 69.06 % and 324F001 lost its vacuum in 300 s. The file is the original
+     state, unstepped, with HIC-329605 at 85 % and HIC-329606 at 95 %, both nozzles about 4.1 bar a on that header; its
+     note records the change. Over 3 600 s untouched it follows the original on the committed engine: 324F001 0.321-0.343
+     bar a (0.324-0.340), 324F003 0.133-0.139 (0.134-0.139), the synthesis tags the same, no trip on either. The
+     exercise is no steady state past its own 15-minute check on either engine (LT-329501 drains from 50 to under 1 % in
+     the hour); a first re-save settled 1 800 s first and tripped 22.1 within the next hour. As-Built §CLXII.8.
