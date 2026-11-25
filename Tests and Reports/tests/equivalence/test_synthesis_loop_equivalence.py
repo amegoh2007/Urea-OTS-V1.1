@@ -848,7 +848,7 @@ def test_the_spindle_moved(v1):
 
 def test_the_tempered_water_lost(v1):
     """329P006A stopped: 322E003 loses its condensation, PT-329201 climbs 0.35 bar in two minutes;
-    the backlog recondensing returns to the sump (B-76). (141.0419 (141.0434 before decision 170) bar a with 323E011 on its dew point,
+    the backlog recondensing returns to the sump (B-76). (141.0390 bar a with the reactor ceiling's margin, decision 301; 141.0419 (141.0434 before decision 170) bar a with 323E011 on its dew point,
     323F010 on its live vacuum and the steam butterflies on their trims, 2026-10-15, session 53;
     141.0460 with PV-329202 and PV-329208 on
     their vendor trims, 2026-10-15, through 323E003's 308; 141.0451 with 322E003 on its own
@@ -862,7 +862,7 @@ def test_the_tempered_water_lost(v1):
         if k == 5:
             plant.loops["322E003"][0].p329p006a = s.P329P006A = False
     hist, _, s = run_both(v1, 1200, act)
-    assert s.p_syn == pytest.approx(141.0419, abs=1e-4)
+    assert s.p_syn == pytest.approx(141.0390, abs=1e-4)
 
 
 def test_the_ratio_raised(v1):
@@ -914,7 +914,8 @@ def test_v1s_trip_22_2_and_the_port_without_it_decided_divergence(v1):
     21.2's flag is lost on the same tick and AC4 shuts XV-322902 and stops both pumps: after a
     minute the feeds are cut and PT-329201 stands at 154.3152 bar a (both sides measured on
     2026-11-12); 154.4555 with 21.2's CO2 timer an off-delay and FY-322403's L2 at 8 500 Nm3/h,
-    the trip 5 s after the starved feed falls below it (decisions 249 and 250)."""
+    the trip 5 s after the starved feed falls below it (decisions 249 and 250); 154.4542 on the
+    evaporation ejectors' deduced curves (decision 322)."""
     def act(k, plant, s):
         if k == 0:
             plant.units["PT-329201"].p_syn_bara = s.p_syn = 155.5
@@ -925,7 +926,7 @@ def test_v1s_trip_22_2_and_the_port_without_it_decided_divergence(v1):
     assert not hasattr(trips, "i_22_2") and trips.latched == dict.fromkeys(("21_2", "21_8", "21_10"), True)
     assert not sched.plant.units["320K002"].xv_322902_open
     assert hist[-1][1]["321"].flow_total_th == 0.0
-    assert hist[-1][1]["PT-329201"].p_syn_bara == pytest.approx(154.4555, abs=1e-4)
+    assert hist[-1][1]["PT-329201"].p_syn_bara == pytest.approx(154.4542, abs=1e-4)
 
 
 # --------------------------------------------------------------------------------------

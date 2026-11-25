@@ -395,7 +395,7 @@ def _run(v1, script, n_ticks, decided=ALL, check=True, setup=None):
     # their decided tests.
     unit = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False, seal_air=False,
                                bisect_fixed_point=False, vendor_drain=False,
-                               ac4_header=False)
+                               ac4_header=False, ac4_ly=False)
     loops = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST),
                                      level=se.lic_324501(vendor=False))
     if setup:
@@ -477,7 +477,7 @@ def test_set_point_steps_are_v1s(v1):
     # their decided tests.
     unit = se.SecondEvaporator(chest=se.V1_CHEST, backward_species=False, seal_air=False,
                                bisect_fixed_point=False, vendor_drain=False,
-                               ac4_header=False)
+                               ac4_header=False, ac4_ly=False)
     loops = se.SecondEvaporatorLoops(pic=se.pic_329212(se.V1_CHEST),
                                      level=se.lic_324501(vendor=False))
     for k in range(3000):

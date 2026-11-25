@@ -1,4 +1,4 @@
-# Urea Plant Operator Training Simulator — V1.1
+# Urea Plant Operator Training Simulator — V1.2
 
 A dynamic simulator for a 1750 MTPD Stamicarbon-type CO2-stripping urea plant, with a
 PyQt6 DCS-replica operator console.

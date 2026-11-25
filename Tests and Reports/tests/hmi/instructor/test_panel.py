@@ -1,10 +1,11 @@
 """The instructor's panel — `ureasim.hmi.instructor.panel`.
 
-Pinned: each control sends one command — the pacing, FREEZE / RUN, RESET only once confirmed,
+Pinned: each control sends one command — the pacing x1 to x10 (decision 321), FREEZE / RUN, RESET only once confirmed,
 each malfunction armed and cleared, 322E002's tube leak with the rate its box holds (B-90), the CO2
 demand on 320K002 within V1's 0 to 120 % of the design feed, 322P002's field-set delivery
 within none to FI-322402's 40 m3/h (decisions 212, 234), an exercise saved and, once confirmed, restored; the
-pacing, the CO2 demand and 322P002's delivery shown are the packet's; every answer is shown
+pacing, FREEZE or RUN lit as the plant clock is held or running, the CO2 demand and 322P002's
+delivery shown are the packet's; every answer is shown
 with its reason; and every command is one the engine session takes. The single console (decision
 149) has no roster and no unit assignment.
 """
@@ -33,8 +34,10 @@ def _panel(bridge, answer=True):
 def test_the_exercise_controls(bridge, packet, tmp_path):
     panel, asked = _panel(bridge)
     panel.refresh(packet)
-    assert panel.pacing_buttons["SLOW"].property("active") is True
-    panel.pacing_buttons["FAST"].click()
+    assert list(panel.pacing_buttons) == [f"x{n}" for n in range(1, 11)]
+    assert panel.pacing_buttons["x1"].property("active") is True
+    assert not any(b.property("active") for m, b in panel.pacing_buttons.items() if m != "x1")
+    panel.pacing_buttons["x10"].click()
     panel.freeze(True)
     panel.freeze(False)
     panel.fault("A", True)
@@ -62,7 +65,7 @@ def test_the_exercise_controls(bridge, packet, tmp_path):
     panel.reset()
     assert asked == ["Restore shift-a?", "Reset the simulation?"]
     assert bridge.sent == [
-        {"type": "set_sim_mode", "mode": "FAST"}, {"type": "freeze", "on": True},
+        {"type": "set_sim_mode", "mode": "x10"}, {"type": "freeze", "on": True},
         {"type": "freeze", "on": False}, {"type": "trigger_fault", "id": "A"},
         {"type": "clear_fault", "id": "A"},
         {"type": "trigger_fault", "id": "322E002", "rate": 2.5},
@@ -74,6 +77,32 @@ def test_the_exercise_controls(bridge, packet, tmp_path):
     session = EngineSession(tmp_path)
     for cmd in bridge.sent:
         assert session.handle(cmd) == (True, ""), cmd
+    panel.close()
+
+
+def test_freeze_or_run_is_lit_as_the_engine_reports_its_clock(bridge, packet, tmp_path):
+    """Decision 321: FREEZE is lit while the engine holds the plant clock and RUN while it runs,
+    from the packet's ``sim_frozen``, which the engine session staples on the consoles' packet; a
+    packet without it lights neither, so the panel keeps no freeze state of its own."""
+    panel, _ = _panel(bridge)
+    lit = lambda: (panel.freeze_button.property("active"), panel.run_button.property("active"))
+    panel.refresh(packet)
+    assert lit() == (False, False)
+    panel.refresh({**packet, "sim_frozen": True})
+    assert lit() == (True, False)
+    panel.refresh({**packet, "sim_frozen": False, "sim_mode": "x7"})
+    assert lit() == (False, True)
+    assert [m for m, b in panel.pacing_buttons.items() if b.property("active")] == ["x7"]
+    session = EngineSession(tmp_path)
+    session.simulator.run(1)
+    assert session.packet(0.0)["sim_frozen"] is False
+    assert "sim_frozen" not in session.packet(0.0, health=False)      # the historian's sample
+    assert session.handle({"type": "freeze", "on": True}) == (True, "")
+    panel.refresh(session.packet(0.0))
+    assert lit() == (True, False)
+    assert session.handle({"type": "freeze", "on": False}) == (True, "")
+    panel.refresh(session.packet(0.0))
+    assert lit() == (False, True)
     panel.close()
 
 

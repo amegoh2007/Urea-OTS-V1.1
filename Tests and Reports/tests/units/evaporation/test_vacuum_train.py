@@ -182,56 +182,64 @@ def test_the_two_stages_and_the_train_hold_the_design_together():
 
 def test_less_motive_on_hv_329606_unloads_the_back_of_the_train():
     """HV-329606 ten points below its design stroke: 87 % of the motive, 1066 and 157 kg/h, the
-    nozzles at 3.58 bar a — their lower back-pressure opens the valve's differential (B-73). 324F004's
-    map, still critical, pulls a shade more (B-61) and after ten minutes stage 2 sits at 0.13058 bar
-    a with PIC-324203 bleeding 21.1 kg/h; 324F005's map pulls 324E006's shell down to 0.276 bar a
-    (B-66); 324E006 condenses 1622 kg/h where it condensed 1763, and 324E007 sends 26.7 kg/h to
-    atmosphere."""
+    nozzles at 3.58 bar a — their lower back-pressure opens the valve's differential (B-73). That is
+    87 % of the design motive, the plant's 38.8 % on HIC-329606's 44.3 % design stroke, inside the
+    break on the deduced curves (decision 322): 324F005 holds 324E006's shell at 0.390 bar a and
+    324F004 only 0.253 bar a at stage 2 after ten minutes, PIC-324203 closing its bleed to 44.6 %
+    (5.1 kg/h); 324E006 condenses 1067 kg/h where it condensed 1763, and 324E007 sends 5.6 kg/h to
+    atmosphere. Before decision 322 324F004's map, still critical, pulled a shade more: 0.13058 bar
+    a, 21.1 kg/h, the shell 0.276 bar a, 1661 kg/h on 714 and 1622 condensed, 26.7 to atmosphere."""
     r1, r2, tr = _plant(6005, hic=lambda k: (DES[0], DES[1] - 10.0) if k >= 5 else DES)[-1]
     s = tr.streams_kgh
     assert (s["927"], s["929"]) == (pytest.approx(1065.972, abs=1e-3),
                                     pytest.approx(157.275, abs=1e-3))
     assert em.nozzle_pressure_bara("324F004", s["927"]) == pytest.approx(3.5824, abs=1e-4)
-    assert r2.p_bara == pytest.approx(0.1305824, abs=1e-6)
-    assert r2.false_air_kgh == pytest.approx(21.0968, abs=1e-3)
-    assert tr.p_324e006_bara == pytest.approx(0.276426, abs=1e-5)
-    assert (s["714"], s["721"], s["722"]) == (pytest.approx(1661.415, abs=0.01),
-                                              pytest.approx(1622.252, abs=0.01),
-                                              pytest.approx(26.672, abs=0.01))
+    assert r2.p_bara == pytest.approx(0.2533049, abs=1e-6)
+    assert r2.false_air_kgh == pytest.approx(5.0665, abs=1e-3)
+    assert tr.p_324e006_bara == pytest.approx(0.389881, abs=1e-5)
+    assert (s["714"], s["721"], s["722"]) == (pytest.approx(1073.056, abs=0.01),
+                                              pytest.approx(1067.366, abs=0.01),
+                                              pytest.approx(5.616, abs=0.01))
     assert r1.p_bara == pytest.approx(0.33, abs=1e-6)
 
 
 def test_a_lost_324e006_breaks_stage_2s_vacuum_b66():
     """Handoff B-66, decided 2026-10-02. 324E006's cooling water lost. Its shell reaches
-    324E007's 1.0 bar a 2.4 s later; 324F004, discharging against it, breaks — its critical back
-    pressure 0.54 bar a at the suction stage 2 climbs to, so it keeps 1.4 % of its capacity — and
-    stage 2's vacuum is lost: 0.152 bar a in 4.5 s, 0.2587 in two minutes, the melt from 140 to
-    143.9 C (144.0 with PV-329212 on the chord, before decision 170, 2026-11-06), PIC-324203
-    closing its bleed to 73 % (12.0 kg/h) against it. 324E005 still condenses
+    324E007's 1.0 bar a 2.5 s later; 324F004, discharging against it, breaks — its critical back
+    pressure 0.863 bar a at the suction stage 2 climbs to, the suction times the 3.0 its break curve
+    holds at 4.1 bar a (decision 322; 0.673 on decision 251's bracket), past its break, so it keeps
+    none of its capacity — and stage 2's vacuum is lost: 0.155 bar a in 4.5 s, 0.2876 in two
+    minutes, the melt from 140 to 144.2 C, PIC-324203 closing its bleed to 70 % (10.9 kg/h) against
+    it, within 1e-4 bar of decision 251's.
+    Before decision 251 (the break on the plant's bracket, 2026-11-18): 2.4 s, 0.54 bar a and
+    1.4 % kept, 0.152 and 0.2587 bar a, 143.9 C (144.0 with PV-329212 on the chord, before
+    decision 170, 2026-11-06), 73 % (12.0 kg/h), 1128 kg/h. 324E005 still condenses
     stage 2's vapour, so the vacuum holds there; 324E007 takes what 324E006 no longer condenses
-    and sends 1128 kg/h to atmosphere. No pulse on the way."""
+    and sends 1125 kg/h to atmosphere. No pulse on the way."""
     run = _plant(1200, cw=lambda k: {"324E006": 0.0} if k >= 5 else None)
     shell = [tr.p_324e006_bara for _, _, tr in run]
     assert shell[5] == pytest.approx(0.3, abs=1e-8)
-    assert shell.index(1.0) == 29
+    assert shell.index(1.0) == 30   # 29 before decision 251
     _, r2, tr = run[50]
     # 0.151936 before the held melt's boil was bounded at the melt model's 99 C window (Phase 7,
     # As-Built §LXII.4): the implicit pressure step's deep trial vacuums boil a little less;
     # 0.151562 before LV-324501A took its equal-percentage sheet (decision 150); 0.151977 with
     # PV-329212 on the chord, before Valmet's S-Disc table ran between its printed points (decision 170);
-    # 0.151903 before decision 224's melt header drained stage 2 through PIC-335201.
-    assert r2.p_bara == pytest.approx(0.151887, abs=1e-6)
+    # 0.151903 before decision 224's melt header drained stage 2 through PIC-335201; 0.151887 before
+    # decision 251; 0.153681 before decision 322.
+    assert r2.p_bara == pytest.approx(0.154544, abs=1e-6)
     r1, r2, tr = run[-1]
-    assert r2.p_bara == pytest.approx(0.258704, abs=1e-6)
-    assert r2.t_c == pytest.approx(143.873, abs=1e-3)       # 143.874 before decision 224
-    assert (r2.vacuum_op_pct, r2.false_air_kgh) == (pytest.approx(73.410, abs=1e-3),
-                                                    pytest.approx(12.0256, abs=1e-3))
+    assert r2.p_bara == pytest.approx(0.287613, abs=1e-6)      # 0.287486 before decision 322
+    assert r2.t_c == pytest.approx(144.195, abs=1e-3)       # 144.189 before decision 322
+    assert (r2.vacuum_op_pct, r2.false_air_kgh) == (pytest.approx(70.185, abs=1e-3),
+                                                    pytest.approx(10.9207, abs=1e-3))
     _, p_crit = em.interpolated("324F004", r2.p_bara, 4.1)
-    assert p_crit == pytest.approx(0.5404, abs=1e-4)
-    assert em.unchoked_fraction(tr.p_324e006_bara, p_crit) == pytest.approx(0.0136, abs=1e-4)
+    assert p_crit == pytest.approx(0.8628, abs=1e-4)          # 0.6731 before decision 322
+    assert em.unchoked_fraction(tr.p_324e006_bara, p_crit,
+                                em.ejector_map("324F004").break_width) == 0.0   # 0.0136 before decision 251
     s = tr.streams_kgh
-    assert (s["712"], s["721"], s["722"]) == (pytest.approx(17.245, abs=1e-3), 0.0,
-                                              pytest.approx(1127.949, abs=1e-3))
+    assert (s["712"], s["721"], s["722"]) == (pytest.approx(14.418, abs=1e-3), 0.0,
+                                              pytest.approx(1124.826, abs=1e-3))
     assert r1.p_bara == pytest.approx(0.33, abs=1e-6)
     assert _pulses([r2.p_bara for _, r2, _ in run], 1e-5) == 0
     assert _pulses(shell, 1e-5) == 0
@@ -239,7 +247,7 @@ def test_a_lost_324e006_breaks_stage_2s_vacuum_b66():
 
 def test_324e006_on_a_fifth_of_its_water_b66():
     """A fifth of 324E006's cooling water: the shell climbs to 0.3584 bar a and settles, 715 to
-    54.7 kg/h; 324F004 stays critical below its 0.369 bar a, so stage 2 holds its vacuum to 2e-8
+    54.7 kg/h; 324F004 stays critical below its 0.434 bar a (0.369 before decision 251), so stage 2 holds its vacuum to 2e-8
     bar — the margin an operator has before the next condenser starts to cost stage 2."""
     _, r2, tr = _plant(700, cw=lambda k: {"324E006": 0.2 * E006_CW_KGH} if k >= 5 else None)[-1]
     assert tr.p_324e006_bara == pytest.approx(0.358387, abs=1e-5)

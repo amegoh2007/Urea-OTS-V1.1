@@ -11,7 +11,7 @@ Design (V1's, kept)
 * **Columnar, with a shared time index.** Every path is sampled on the same tick, so the two
   timestamp arrays are held once for the whole ring rather than once per path.
 * **Plant-time cadence.** Sampling is driven by the plant clock, not the wall clock, so a 1-hour
-  trend covers one hour of plant behaviour at 1x (SLOW) or 60x (FAST).
+  trend covers one hour of plant behaviour at any pacing, x1 to x10.
 * **Fixed-capacity circular buffers over ``array('f')``.** A deque of Python floats costs about
   8x the memory for the same data.
 * **Two rings**: 1 s x 3600 (the 1 min to 1 h spans at full resolution) and 10 s x 2880 (2 h to

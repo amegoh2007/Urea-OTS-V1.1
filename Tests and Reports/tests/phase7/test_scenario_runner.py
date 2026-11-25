@@ -49,7 +49,7 @@ def test_every_sampled_path_resolves_in_the_rewrites_packet():
     from ureasim.engine.scheduler import Scheduler
     sched = Scheduler(*build_plant())
     sched.tick()
-    flat = flatten(build_packet(sched.plant, sched.results, sched.tears_read, sim_mode="SLOW",
+    flat = flatten(build_packet(sched.plant, sched.results, sched.tears_read, sim_mode="x1",
                                 t_wall=0.0))
     assert [p for p in CORE_TAGS if p not in flat] == []
 

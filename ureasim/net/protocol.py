@@ -138,7 +138,7 @@ def snapshot(seq: int, t_plant: float, state: Mapping[str, Any]) -> dict:
 
     ``seq`` increments once per publish so a client can detect a dropped or reordered
     frame; ``t_plant`` is simulated time in seconds, which is what the trend window plots
-    against — wall-clock would break as soon as the instructor uses FAST pacing.
+    against — wall-clock would break as soon as the instructor paces the plant faster than x1.
     """
     return {"t": Kind.SNAPSHOT.value, "seq": seq, "t_plant": t_plant, "state": state}
 

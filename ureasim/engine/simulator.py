@@ -3,11 +3,11 @@
 What this is
 ------------
 The loop that turns real time into plant time. Each pass the server makes owes the plant the
-wall-clock time since the last pass times the pacing factor — 1 in SLOW, 60 in FAST — and the
+wall-clock time since the last pass times the pacing factor — 1 to 10, x1 to x10 — and the
 simulator pays it in whole physics steps of exactly 0.1 s, carrying the remainder to the next
 pass. The step never moves (decided 2026-09-27, handoff A-14; `Claude.md` §1 rule 10): every
 recycle tear carries one step of delay, so a variable step would make every transient that
-crosses a tear depend on machine load. SLOW and FAST run the identical sequence of steps; only
+crosses a tear depend on machine load. Every pacing runs the identical sequence of steps; only
 the number per real second changes, and an exercise replays bit for bit.
 
 V1's ``sim_task`` integrates ``min(elapsed, 0.5) x speed`` in sub-steps of at most 0.25 s — a
@@ -28,7 +28,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable
 
-from ureasim.data.engine import DT_NS, DT_S, MAX_PASS_NS, SIM_SPEED
+from ureasim.data.engine import DEFAULT_PACING, DT_NS, DT_S, MAX_PASS_NS, SIM_SPEED
 
 __all__ = ["Simulator"]
 
@@ -43,7 +43,7 @@ class Simulator:
     """
 
     step: Callable[[float], None]
-    pacing: str = "SLOW"
+    pacing: str = DEFAULT_PACING
     #: Plant time owed and not yet paid [ns], always under one step after a pass.
     owed_ns: int = 0
     #: Steps run since the simulator was made.

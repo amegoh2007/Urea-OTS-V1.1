@@ -146,7 +146,7 @@ def test_the_reactor_tear_is_the_pinned_vector_on_the_co2_load(loop):
 def test_the_reactor_holdup_sends_the_reactions_composition(loop):
     """B-126: the overflow 322R001 sends on is this tick's reaction product scaled to the outflow,
     species by species, to the bit (0.0 kmol/h measured), so the holdup carries no composition; through
-    the disturbance the overflow's nitrogen differs from the reaction's by up to -1 595.22 kmol/h.
+    the disturbance the overflow's nitrogen differs from the reaction's by up to -1 595.73 kmol/h (-1 595.22 before decision 301).
     Carrying the holdup's species closes this exception."""
     assert loop.scaled < 1e-9
-    assert loop.holdup_n == pytest.approx(-1595.22, abs=0.01)
+    assert loop.holdup_n == pytest.approx(-1595.73, abs=0.01)

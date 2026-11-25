@@ -203,7 +203,7 @@ class Strings:
     title_1: str = "UREA PLANT"
     title_2: str = "OPERATOR TRAINING SIMULATOR"
     subtitle: str = "1750 MTPD  ·  CO2 STRIPPING PROCESS"
-    version: str = "V1.1"
+    version: str = "V1.2"
     hint: str = "PRESS ANY KEY TO SKIP"
     start_hint: str = "PRESS ENTER TO START"
     starting: str = "Starting simulator"

@@ -1364,3 +1364,450 @@ decision on an item.
      8 500 Nm3/h (pre-alarm 10 000), in `References\trip_and_interlock_schedule.md` line 71. Built:
      `data/unit_322_loop.TRIP_21_2_FY_L2_NM3H`, compared on FT-322403's own Nm3 basis, 30.0 % of the design CO2,
      replacing V1's 5 % (data gap 5's stand-in). As-Built §CXLI.2, §CXLII.
+251. **The separators' ejectors break on the plant's 5 November bracket** (2026-11-18, session 132, in V1.2 only; the
+     process engineer's "Build it"). Reported: a step on HV-329605 barely moved PIC-324202, PT-324201 and PT-323204,
+     and one on HV-329606 barely moved PIC-324203 and PT-324204, where the plant lost both vacuums (HIC-329605 held at
+     64 % and lost at 55 %, HIC-329606 held at 40 % and lost at 38 %, PT-329207 4.22 bar g; As-Built §CV.5). Built in
+     `data/unit_324.EJECTOR_BREAKS` and `units/evaporation/ejector_map`: each of 324F002, 324F004 and 324F005 is made
+     critical against its design discharge at its design suction with its valve at the held stroke on the logged
+     header, and its break width is fitted so that at the lost stroke it pulls its design load less the design bleed;
+     V1's flux shape runs on [1, w] instead of [1, 1/r*]. Scales 0.43610, 0.31233, 0.71224; widths 1.09820, 1.05737,
+     1.04014. The design pin is unchanged, bit for bit. `vendor_map` keeps the vendor's scale and V1's width. The
+     break is softer than the plant's, which logged 0.6 bar a at 75 % load; Körting's curves (data gap 3) still
+     decide it. As-Built §CXLIV.
+252. **LY-324501 is AC4's formula on V1's level** (2026-11-18, session 133, in V1.2; the process engineer's "AC4
+     formula, V1 level" and "Indicator, LIC, L2 stop"). AC4 PC35.2.1 computes LY-324501 = (LT-324501 - 1000
+     PT-324203) / 885 x 100 from a gauge transmitter at the leg's one tap; Rosemount's -700 mbar LRV gives it a floor,
+     20.6 % at the design 0.131 bar a. Built in `units/evaporation/melt_leg_transmitter` on V1's holdup ratio, not on
+     the leg's profile (which kept no bit-identical seed and moved a slug 20 times as far, As-Built §CXLV.3): LY-324501
+     = max(level, floor), read by LIC-324501, the console and 335P001's L2 stop; the seal air keeps the holdup.
+     `SecondEvaporator.ac4_ly`, False in the V1 harnesses. The seed is unchanged to the bit. At the design vacuum the
+     L2 stop cannot act: a lost feed drains the separator to its 1 kg heel, the seal's air breaks the vacuum, and only
+     then (0.270 bar a) does LY-324501 fall below L2; beside PC35's trips the vacuum recovers and the pumps run again.
+     The process engineer kept that behaviour as built on 2026-11-19 ("Keep as built"): the stop reads LY-324501
+     with its floor and does not latch.
+     Data gap 4 stays open on the configured LRV and the leg's walk-down. As-Built §CXLV.9.
+253. **The operator's header-valve rule is the B-118 rig's handle, taken conditionally** (2026-11-19, session 136;
+     the process engineer's ruling 6 on session 135's packet, `Tests and Reports\reports\Session 136 plan prompt -
+     rulings and Q2 matrix.md` Part A). The rig moves GRANULATION-HEADERS by the Operating Manual's rule
+     (UD-VT-G00-DC-0003 pp. 4-40, 4-41, 4-43, 6-22, 6-23), read in bar g on E1's two ends: a valve off when
+     PIC-335201's PV is under 3.0 bar g with LIC-324501's output at 0 %, on when it is over 3.5 bar g with LV-324501B
+     open, with the rig's 300 s dwell and no shedding while LY-324501 rises (As-Built §CXLVII.1-2). The rule is not
+     built into `ureasim/`. Data gap 16 closes, as "the count is the rule's output", only once R693b's feed step is
+     traced to a cause that is not the rule (session 136's Part C step 2); until then it stays open.
+254. **An engineering estimate may stand in for a vendor datum, tagged [E]** (2026-11-19, session 136; ruling 8). An
+     estimate from open literature or standard practice, bounded by a sensitivity run, may stand in for a datum the
+     archives do not give until the datum arrives. It is tagged [E] wherever it is cited, and the data-gap row stays
+     open on the vendor's or the plant's datum unless a decision closes it. As-Built §CXLVII.6-10.
+255. **Data gaps 5 and 14 close as built** (2026-11-19, session 136; ruling 8). Gap 5: nothing sets
+     `trip_84_8_healthy` and no malfunction reaches it, so TRIP_84_8's L2 has no consumer and cannot change a run.
+     Gap 14: LVSL-324501A at 0, 2 or 5 % of stroke moves trip 35.4's heal by 0 to 4.3 s on an operator-held restart,
+     the running stroke never under 72.7 %; the stand-in stays 0 %. The readback checklist's rows 6 and 22 become
+     checks. As-Built §CXLVII.3-4.
+256. **Data gap 4 closes on the two sources' agreement** (2026-11-19, session 136; ruling 8). LT-324501's range is
+     -700 to 900 mbar on Uhde's data sheet UD-MR-G00-EC-0136 p. 3 and on Rosemount's factory record
+     UD-MR-G00-DZ-0012-002 p. 76; the functional diagram 324-FF-0002's -800 mbar is set aside, as decision 252 did.
+     LY-324501 stays as built on decision 252. The readback's row 11 becomes a check. As-Built §CXLV.1-9, §CXLVII.5.
+257. **Data gaps 9 and 12 close as built on sensitivity; data gap 10 stays open** (2026-11-19, session 136; ruling 8).
+     Gap 9: on the engine's loop lambda tunings settle a UF85 step in 30-66 s against V1's 94.5 s, none
+     overshooting, so FIC-335405 keeps V1's 100 per t/h and 15 s. Gap 12: any LV-324501A lag in 0.5-2 s sits inside
+     the 5 November trend's 4 s resolution, so the 1 s stand-in stays. Gap 10 is not closed: a scale change of up to
+     1.11 on LIC-329505's display is visible to a trainee, so the proposal's premise fails there; it closes on the
+     readback's row 10. As-Built §CXLVII.7-9.
+258. **Session 135's documents stand as measurements and proposals, nothing decided** (2026-11-19, session 136;
+     ruling 0). Session 135's four documents were committed on `v1.2` as 676f567 before session 136 began; that
+     commit is the record and is not amended. Decisions 253 to 257 are taken by session 136, on the rulings above.
+259. **The seed criterion: every published tag within its display step over 14 400 s** (2026-11-19, session 136;
+     ruling 1a (ii)). A candidate law keeps the 100 % seed when every published tag stays within its last displayed
+     digit over a 14 400 s hold, the longest hold the B-118 matrix uses, on the display-step check of As-Built
+     §CXLVI.8; the design pin's printed numbers are unchanged.
+260. **D1's rise is read as a three-period mean, ±1.0 K, with a drift limit** (2026-11-19, session 136; ruling 1b).
+     The rise is the mean over the run's last three periods of its slowest visible mode, the tolerance kept at
+     ±1.0 K (not widened by the window spread), and the arm must drift less than 0.05 K per 1 000 s over the same
+     three periods.
+261. **PC35's latch counts** (2026-11-19, session 136; ruling 1c (i)). From session 136 every B-118 arm runs with the
+     header rule (decision 253) on, and a PC35 latch fails the arm as any other trip does.
+262. **D1's rise band is Book2's measured rise on the thermowells** (2026-11-19, session 136; ruling 1d (ii)). At
+     each Book2 load the band is Book2's rise TT-322005 - TT-322010 at that load, ±1.0 K, read on the thermowells,
+     not on `b_rxn_K`. The 5 November holds (90.5, 74.4, 68.9 %) are scored on TT-322005's band alone until the
+     readback's row 21 is read.
+263. **322R001's approach to equilibrium and 322E001's feed-deficit rise are measured together, before any build**
+     (2026-11-19, session 136; ruling 2 (ii), with one change). The two divergences from V1 are measured together,
+     with B-126 (b), S + B on UA as built and the header rule, on decisions 259 to 262. 322R001 is re-anchored by
+     refitting V1's reactor law to Book2, not by setting the licensor's 95 % by hand. Nothing is built into
+     `ureasim/` on this decision; a build waits on its own decision under `CLAUDE.md` §5 rule 6.
+264. **B-125 is measured as S with B, inside B-118** (2026-11-19, session 136; ruling 3 (c)). 322E002's saturation
+     law is carried as law S beside law B in the B-118 arms; B-125 stays open and nothing is built.
+265. **B-126 is measured as the twelve-compartment species holdup, on decision 259** (2026-11-19, session 136;
+     ruling 4 (b)). Every B-118 arm carries it; B-126 stays open and nothing is built.
+266. **B-136 is measured with the feed-deficit rise off, only together with decision 263** (2026-11-19, session 136;
+     ruling 5 (b)). Never alone; B-136 stays open and nothing is built.
+267. **322E002's UA stays as built; the pressure clamp is rejected** (2026-11-19, session 136; ruling 7). Book2's UA
+     exponent 0.50 rings at 92.3 % on evidence from one load, and the pressure clamp is Book2's pressure written in
+     as a law; neither is a build candidate. As-Built §CXLVI.3, .12, .14.
+269. **Decision 180's TT-322005 clause is read over the whole hold after the ramp** (2026-11-19, session 137; the
+     process engineer's ruling of 19:30 on session 136's proposal). Book2's three load reductions never pass under
+     180.6 C (As-Built §CXLVIII.4), so a trough under the band after the ramp is a miss the plant does not show. The
+     scorer reads TT-322005's minimum and maximum from the ramp's end to the run's end, beside the last period.
+270. **322R001's re-anchor is closed, not built; V1's X_INF stays as built** (2026-11-19, session 137; ruling Q-S on
+     session 136's proposal). Both the refit (f 0.58) and the licensor's 95 % are rejected. Evidence: on Book2's
+     boundary the 95 % anchor misses the 100 % profile by 2.9 K rms (§CXLVIII.5); in wave M Q923 scores worse than
+     K923 and Q693 much worse (2.43 K rise, TT-322005 168.1 C); the refit is V1's value within the fit's flatness,
+     moves the rise +0.06 K at 92.3 % and +0.20 K at 69.3 %, and its 100 % null fails decision 259 from the first
+     sample (TT-322006, TT-322007). No 95 % null ran; its seed failure is calculated from its pin profile, 2.1-2.6 K
+     under the as-built seed's at TT-322006 / 007 (177.13 / 172.25 C against 179.23 / 174.89 C). Finding: desk and loop agree that 322R001's law is not B-118's cause; the
+     lead is the boundary the loop delivers to the reactor.
+274. **D1's rise is scored as a departure from the seed** (2026-11-19, session 137; ruling Q-R (ii)). Engine: the
+     thermowell rise TT-322005 - TT-322010 over decision 260's window, less the same rise on the engine's 100 % design
+     seed. Plant: Book2's rise at the hold's band less Book2's rise interpolated to 100 % between its 94.2 % and 111 %
+     bands. Pass: the engine's departure within +/- 1.0 K of the plant's. It replaces decision 262's absolute band for
+     the verdict; the absolute reading against Book2's band is printed beside every verdict and counts for none. The
+     seed's offset from Book2 at 100 % is printed once as a finding and counted against no arm. Decision 262's scope
+     stands: the 5 November holds (90.5, 74.4, 68.9 %) carry no rise criterion.
+275. **Decision 259 stands as written** (2026-11-19, session 137; the process engineer's ruling of 19:30). Its
+     failure on the base B-118 law set is a finding to trace law by law, not a reason to loosen it; no law that fails
+     it is built.
+277. **The operator's evaporator-feed rule rides every B-118 arm in scratch** (2026-11-20, session 138; the process
+     engineer's ruling on session 137's proposal, taken as written). On the CO2 ramp FIC-324401 is put in AUTO with its
+     set point the seed's set point times the ramp's load; at the first check after the ramp ends LIC-323507 is put to
+     MAN on FIC-324401's set point, then to AUTO, and FIC-324401 back to CAS (bumpless). It is applied as the header-valve
+     rule is (decision 253): in the rig, through the engine's own `r323_ctrl_set` command, nothing under `ureasim/`
+     changed. Source: Operating Manual UD-VT-G00-DC-0003 pp. 1-69, 4-43 and 6-23; As-Built §CXLIX.3.
+278. **Decision 259 is read as a paired comparison; proposal 276 is rejected** (2026-11-20, session 138; the process
+     engineer's ruling). Skipping a tag wherever the reference has wandered hides the times and tags where a law's own
+     drift would show. Instead the arm and the reference start from the same seed on the deterministic engine, and at
+     every sample each displayed tag of the arm stays within one display step of the reference at the same time,
+     |arm(t) - ref(t)| <= one display step, over 15 000 s. A law that shifts the phase of a slow wander fails even at the
+     reference's amplitude; that counts as a real difference, and the phase shift is reported when it is the cause. The
+     reference's own wander from its seed is a finding, raised as its own handoff item (B-157). As-Built §CL.2.
+279. **A-62 is closed as not a product defect** (2026-11-20, session 138; the process engineer's ruling). 323D002 losing
+     suction on the B-118 rig's low holds is what the plant would do if the operator skipped Operating Manual p. 6-23,
+     "slowly reduce the urea solution flow to first stage evaporator"; the rig skipped it and decision 277 fixes the rig.
+     In the product it is the correct consequence of a missed operator step, so it is training value and is not
+     engineered away. Recorded with the closure: the teaching case is noted for the instructor (`scenarios/
+     teaching_cases.md`: a load reduction without the feed reduction drains 323D002 in about 20-30 minutes), and
+     LIC-323507's tuning page is added to the DCS readback checklist (row 29), since the drain's rate rests on its
+     estimated Kc 1 and Ti 4 030 s (V1's; the loop has no row in the DCS table). As-Built §CL.1.
+280. **The 322R001 multiplicity hypothesis is closed as refuted** (2026-11-20, session 139; the process engineer's
+     ruling). On its engine step 322R001 is single-valued at 100, 92.3 and 69.3 % (As-Built §CL.3). The hypothesis
+     (the plant on the reactor's high branch, the engine on its middle point) was the session 138 plan's, not the
+     builder's, and the record says so wherever it is cited; the three points it rested on were session 137's damped
+     iteration's cycle, retracted (§CL.3). Loop-level multiplicity is not covered. As-Built §CLI.1.
+281. **A-61 closes on one run** (2026-11-20, session 139; the process engineer's ruling). SB693_ldcL252's base,
+     settled at 69.3 %, with the header rule (decision 253) and the feed rule (decision 277) together, held
+     14 400 s. A-61 closes if all of these hold: 335P001 runs to the end; no PC35 latch fires; the header count
+     changes direction at most once after the ramp; and the count it lands on is reported beside the calculated
+     6.9-8.1. The ruling's premise is that the 6-versus-7 question came from the feed step decision 277 removes, so
+     the count with both rules on is the answer and the old trace is not read again. Run in session 139 (A61_693):
+     the first two criteria are met, the third fails (seven direction changes), so A-61 stays open. As-Built §CLI.2.
+282. **Data gap 17's route must exist before it is listed** (2026-11-20, session 139; the process engineer's ruling).
+     The readback row for gap 17 names only a tag physically on the P&ID. Checked in order: (1) the boiler-feed-water
+     make-up to 322D001A/B (the steam make being about the make-up less the blowdown); (2) the drums' level-control
+     valve outputs with their sheets' Cv; (3) the LP header's balance, if its other users are metered. The row is
+     rewritten on the first tag that exists; if none exists, the reactor inverse is the only route. Session 139: (1)
+     has no meter; (2) exists, LIC-329504 and LIC-329503, both logged in Book2; row 30 is rewritten on them.
+     As-Built §CLI.3.
+283. **A-61's header rule becomes predictive, and criterion 3 is replaced** (2026-11-20, session 140; the process
+     engineer's ruling). The header passes the melt as N sqrt(P) (As-Built §CXLVI.19), so at a fixed make one valve
+     moves the header by (N / (N - 1))^2, 1.36 from seven to six, wider than the manual's 3.0-3.5 bar g band, and a
+     band-only rule must hunt when the make needs a fractional count. The ruling: a valve comes off only if the
+     predicted pressure after removal, P (N / (N - 1))^2, stays at or below the guide figures' upper end, and goes on
+     only if the predicted pressure after addition stays at or above their lower end, the guide figures being 2.5-4.0
+     bar a (UD-VT-G00-DC-0003 p. 4-43); the fractional remainder is carried by PIC-335201 and LV-324501B. Criterion 3
+     becomes: at most one reversal of the header count in any 3 600 s after the ramp, and the header pressure inside
+     2.5-4.0 bar a for at least 95 % of the hold; criteria 1 and 2 of decision 281 stand. The guard is applied on top
+     of decision 253's triggers. Session 140 (As-Built §CLII.2): the arithmetic holds, but the bounds as written in bar a
+     lie below E1's 2.8 bar g floor (3.81 bar a), which §CXLVII.1 had already found; read in bar a the guard blocks
+     every shed, and read in bar g it blocks no move of decision 281's run. Run, the guard on decision 253's
+     triggers: in bar a the rig keeps ten valves and LV-324501A shuts on PC35.4 at 3 520 s; in bar g the run is
+     decision 281's to the bit. A-61 stays open on the units of the bounds.
+284. **B-118: the seed's 322E002 gas share is not taken as the plant's** (2026-11-20, session 140; the process
+     engineer's ruling). Session 139 found a more fundamental limit than the share (322R001's boil cap below Book2's
+     TT-322005 at every reduced band, As-Built §CLI.4), so the share is not the binding term; the seed's 0.169 stays a
+     stand-in (data gap 17). The thermowell reading at 94.2 %, 0.171-0.180 on law B, is recorded as an inference
+     beside it, not as data.
+285. **B-157: the wander is neither accepted nor fixed until it is traced** (2026-11-20, session 140; the process
+     engineer's ruling). The null's differing diagnostic keys are traced first, because every paired comparison since
+     decision 278 relies on the engine being deterministic; then the first mover's balance, term by term. Whether to
+     re-seed is the process engineer's question. Session 140 (As-Built §CLII.4): the engine is deterministic across
+     processes; the null's keys were a runner hook's reference; unit 329's seed is at its own steady state; at t = 0
+     322E003's sump takes 29.93 kg/h more than 322F001 draws and hands on another composition than the seed's.
+286. **The session 140 plan's inert hypothesis is refuted, and its sign was the plan's error** (2026-11-20, session
+     141; the process engineer's ruling). Inerts lower the condensables' partial pressure and so lower the bubble
+     temperature; they do not raise it. The licensor says the same (UD-VT-G00-DC-0003 p. 1-16), and closing 322R001's
+     boil-cap gap on the inerts would need 1.1-2.9 times the design off-gas (As-Built §CLII.3). Recorded as the plan's
+     mistake, as decision 280 recorded the multiplicity.
+287. **A-61 closes on criteria 1 and 2; criterion 3 and the predictive guard are withdrawn** (2026-11-20, session 141;
+     the process engineer's ruling). The plan read the wrong header. Page 4-43 of UD-VT-G00-DC-0003 prints two bands
+     for two headers: 2.5-4.0 bar abs "at granulator main header", downstream, which the engine does not model
+     separately, and 3-3.5 bar for "the urea melt main header", which is PIC-335201's header. The rule's bounds are
+     therefore 3.0-3.5 bar g on PIC-335201: bar g is the faceplate's convention (decision 183), and these bounds lie
+     inside E1's own 2.8-3.8 bar g span. That is decision 253's rule as built in the rig. The page itself prints
+     neither the identification with PIC-335201 nor the unit of the 3-3.5 bar band (As-Built §CLII.2); both are the
+     engineer's reading. The predictive guard of decision 283 is withdrawn: it blocked nothing in bar g, and in bar a
+     it drained the leg. Criterion 3 of decision 283 was the plan's over-reach. A-61's purpose was that the B-118 rig
+     holds a reduced load with 335P001 running and no PC35 latch, and A61g meets it: the pump ran, no latch fired,
+     and the header was inside 2.5-4.0 bar g for 100 % of the hold. The 6 <-> 7 hunting is a property of a discrete
+     rule whose band is narrower than one valve's step (§CLII.2), recorded as a known limit of the rig's scratch
+     operator; it touches no trainee, since the rig is not the product. A-61 is closed on A61g with the rule as
+     decision 253 states it. Nothing is built into `ureasim/`.
+288. **B-118's boil cap: no choice between the two candidates before they are discriminated** (2026-11-20, session 141;
+     the process engineer's ruling). The flatter bubble line (about 87 kJ/mol) and the cap's slope with a design
+     margin (3.5 K) fit Book2 equally well (§CLII.3); which is physical is decided first, from the engine's own
+     Extended UNIQUAC, Book2's within-band behaviour and each candidate's cost to the design pin, with at most two
+     reduced-load holds a candidate and neither built. Both are new mechanisms (`CLAUDE.md` §5 rule 7), so the choice
+     goes to the engineer measured on both sides. Session 141 (As-Built §CLIII.3-8): the engine's UNIQUAC puts the top's liquor
+     at 40 bar a, not 141.3, and weighs on neither; Book2 rejects the cap's slope; (a) costs the 100 % seed nothing over
+     3 600 s, (b) removes its top boil and moves two flows; through `node_boil` neither moves a reduced-load hold (law B
+     not re-pointed). Neither is established.
+289. **B-157: the seed's first tick is audited unit by unit before any re-seed question** (2026-11-20, session 141;
+     the process engineer's ruling). Session 140 found 322E003's sump off its balance at t = 0 and 322F001's
+     discharge composition stepping at the second tick, so the seed is not a steady state for at least one unit, and
+     small first-tick residuals integrate over 15 000 s. Every synthesis and recirculation unit's first-tick residual
+     (mass, species, energy, each holdup's d/dt) is tabulated and ranked by the displayed tag it would move, the
+     cause of the largest named, and a fix proposed per residual with its cost, none built: a re-anchor of a V1
+     back-solve is a decided divergence and a re-seed moves the PFD pin, both the engineer's. Session 141 (As-Built
+     §CLIII.6): the largest residual is 322R001's top boiling 29.93 kg/h on the first tick, V1's profile and kinetics
+     anchored at two flows under the rewrite's cap; the LP side's 323C003 and 323E003 pressures are separate residuals.
+290. **The seed's top boil is a rewrite defect: A-63** (2026-11-20, session 142; the process engineer's ruling). V1 has
+     the 0.045 K mismatch between its node profile (the fixed point at 228.46 m3/h) and its kinetics (anchored at
+     227.50 m3/h), but V1 has no ceiling and does not boil at its design seed. The boil exists only because the
+     rewrite's cap (decision 102) clips that mismatch, and decision 102's own premise is that nothing flashes at the
+     design seed, so the premise fails on the rewrite's tree. That is Section A by the tracker's definition, an issue
+     the rewrite created: A-63. B-157 keeps the wander and cites A-63 as its synthesis source; the LP side's residuals
+     (323C003, 323E003) stay in B-157. The fix to test is the joint re-solve of the profile and the kinetic anchor at
+     the live flow, not the cap; widening the cap's tolerance to swallow 0.045 K would be a silently widened clamp
+     (`CLAUDE.md` §5 rule 5) and is not an option. As-Built Part CLIV.
+291. **The cap's docstring is corrected to its equation's slope** (2026-11-20, session 142; the process engineer's
+     ruling). `reactor_boil.liquor_bubble_t_c` stated 0.75 K/bar where its equation gives 0.532 K/bar at design
+     (§CLIII); a comment that misstates its equation is a defect under `CLAUDE.md` §2. The docstring now states
+     0.532 K/bar, citing §CLIII; no code line changed; committed on its own.
+292. **Candidate (b)'s failure on the 100 % seed is set aside** (2026-11-20, session 142; the process engineer's
+     ruling). Session 141's (b) failed the paired test against N100A only by removing N100A's top boil, the rewrite's
+     artefact (decision 290). (b) is judged again on the re-solved seed, where neither side boils at the first tick
+     (§CLIV.3: it passes decision 278's paired test against the re-solved reference over 3 600 s).
+293. **No choice between the boil cap's candidates (a) and (b) before the literature report** (2026-11-20, session
+     142; the process engineer's ruling). The engine's Extended UNIQUAC is off by a factor of 3.5 in level at 183 C
+     (40 against 141.3 bar a) and cannot arbitrate; the engineer commissions a literature search on the synthesis
+     liquor's bubble line at 125-150 bar (`Tests and Reports\reports\Bubble line research\`). Law B's re-flash uses
+     the same 23 kJ/mol line as the cap: a later candidate that changes the cap's slope changes law B's line with it,
+     or the test mixes two bubble lines (session 141's point 2.4 holds changed the cap alone).
+294. **A-63's fix to test is (b), the cap with a design margin, alone, without the re-solve** (2026-11-20, session
+     143; the process engineer's ruling). Session 142 settled the mechanism: the joint re-solve removes the first
+     tick's boil, but the boil returns from 30 s (to 50.7 kg/h), so it is not a seeding accident; it comes from the
+     cap's anchoring, which puts the cap exactly on the design top temperature with zero margin, so that any
+     perturbation of the loop grazes it. V1 has no cap and does not boil at design, and decision 102's premise is that
+     nothing flashes at the design seed: a margin makes that premise true and restores V1's behaviour at design while
+     the cap stays as protection. The re-solve would re-anchor a V1 value (a divergence) to fix what the margin already
+     fixes; the smaller change is preferred. This supersedes decision 290's clause that the fix to test is the re-solve
+     "not the cap". The margin is 3.5 K [E] in the interim (session 140's candidate (b)); its final value comes from the
+     bubble-line literature report (decision 293 stands). The test is the design pin on its printed values over
+     15 000 s on the as-built seed, with zero boil throughout. As-Built Part CLV.
+295. **The cap-released share stays model-conditional, and the inverse waits on law B's floor** (2026-11-20, session
+     143; the process engineer's ruling). At every fitted root of session 142's cap-released inverse law B sits at its
+     floor, so the fit is set by a model clause, not by Book2 (§CLIV.6). Data gap 17 stays on the readback's row 30,
+     and no further inverse runs are made until law B's floor is understood. As-Built Part CLV.
+296. **A-63's gate is dominance over the as-built engine, and the top settled** (2026-11-20, session 144; the process
+     engineer's ruling). Decision 294's gate, every displayed design value within its last digit over 15 000 s, cannot
+     be passed: N100A, the as-built engine, fails it on the same tags, earlier or by more (§CLV.2), so the gate tested
+     B-157's wander, not A-63's fix. A-63's acceptance is now four conditions: (1) the design pin to its printed
+     digits at t = 0; (2) zero boil at 322R001's top over the run; (3) at every sample, every displayed tag no further
+     from its printed design value than N100A is at the same time, plus one display step (dominance); (4) the top
+     settled. B143's top was still rising at 15 000 s, so condition 4 needs B143 and N100A both to 30 000 s. If B143's
+     top levels off inside one display step of 183.0 C, A-63 is accepted on (b) at 3.5 K [E]: (b) is then built, its
+     equivalence test asserting both sides (`CLAUDE.md` section 5, rule 6), and the run's seed becomes the reference
+     N100B. If the top keeps climbing, (b) trades a boil for a drift: its rate is reported, A-63 stays open and the
+     margin waits on the literature value (decision 293). The margin is the product's only: the rig's law B is scratch,
+     and a rig run with (b) re-references law B to the same margin (decision 292: one bubble line). Supersedes
+     decision 294's gate; its choice of (b) alone stands. As-Built Part CLVI.
+297. **The zero-margin class is adopted as "find and measure", not "apply"** (2026-11-20, session 144; the process
+     engineer's ruling). Section 5, rule 7 of `CLAUDE.md` applies a decided class to every unit without re-asking;
+     applied that way, an [E] margin would spread unmeasured. The class line reads: a saturation or boiling limit
+     anchored on the design operating point with zero margin is a defect; each instance is listed, and its margin is
+     sourced or measured per unit before it is built. It covers 322R001's boil cap (A-63), 322E002's saturation law
+     (B-125) and 322E003's sump saturation (§CLV.4). The other units' bubble and boil relations are classified when
+     they are next touched. As-Built Part CLVI.
+298. **Law B's floor is closed as a lead** (2026-11-20, session 144; the process engineer's ruling). It never binds
+     in a hold (0 of 143 900 ticks in each of R923b, U693 and A61g, §CLV.3). The low gas share at turndown,
+     0.097-0.099 against the seed's 0.169, comes from elsewhere, and session 144's step 2 looks for it in 322E002's
+     response to its steam pressure. As-Built Part CLVI.
+299. **B-157 is time-boxed** (2026-11-20, session 144; the process engineer's ruling). What is left is a
+     sub-display chain at 100 %: the synthesis wander passes through 323D001's level loop and 323F004's drain to
+     323E010 and FT-329407. One more probe is made, on 323F004. If the chain ends in the synthesis wander that A-63's
+     fix shrinks, B-157 closes on A-63's build as "the remaining wander is documented and below display except
+     FT-329403 and FT-329407", those two named with their rates. B-157 gets no further session of its own.
+     As-Built Part CLVI.
+300. **A stop rule for B-118's low holds** (2026-11-20, session 144; the process engineer's ruling). If no arm holds
+     74.4-68.9 % with TT-322005 in band by the end of session 146, the process engineer decides between continuing
+     on physics and a labelled empirical trim for loads under 90 %, built as a decided divergence, so that trainees
+     get reduced-load operation while the physics stays open. The session after 146 brings the measured case for
+     each. As-Built Part CLVI.
+301. **A-63's condition 3 is envelope dominance on the printed design values; (b) is built** (2026-11-21, session
+     145; the process engineer's ruling). Read sample-wise, condition 3 compares two slowly oscillating series point by
+     point, and a small phase difference fails it where (b) is no worse (the flaw decision 278 met). It now reads: for
+     every tag with a printed design value, its largest departure from that value after t = 0 is no greater than
+     N100A's largest departure over the same run, plus one display step. On session 144's measurement only 323F010's
+     level fails that reading, a tag with no printed value held by the rig's HIC-323605 trim, so all four conditions
+     are met. The top's 183.1 C on 56 % of the late samples is V1's own behaviour (V1 has no cap; its top settles at
+     183.045 C, §CLIII's profile mismatch), not a defect of (b); a re-solve that removes those 0.045 K stays an option,
+     a separate V1 re-anchor outside A-63. (b) is built in `ureasim/` at 3.5 K [E] (`data.unit_322r001`
+     ``BOIL_CAP_MARGIN_K``: "[E], session 140 candidate (b); final value from the bubble-line literature report"),
+     its equivalence test asserting V1 (no boil), the rewrite (the 3.5 K cap) and the as-built-before (the zero-margin
+     clip); it is the zero-margin class's (decision 297) first measured instance. The built seed's run is N100B,
+     decision 278's paired reference from now on. A-63 closed. As-Built Part CLVII.
+302. **B-157 closes under its time-box as documented behaviour** (2026-11-21, session 145; the process engineer's
+     ruling). Decision 299 allowed one probe; the chain ends in 323C003's drain composition, not in the synthesis
+     wander, and every remaining move is far below a trainee's notice (FT-329407 moves 6 steps of 0.01 t/h over
+     hours). Closed as "slow LP-side drift at 100 %, documented", its tags named with their rates and onsets on N100B
+     and its source, 323C003's drain. Reopened only if a trainee-visible effect is reported or a later change makes it
+     grow. As-Built Part CLVII.
+303. **The rig keeps moving PIC-329207's set point as a departure from Book2** (2026-11-21, session 145; the process
+     engineer's ruling). It is the basis every handle uses (each handle starts on the design seed and moves as a departure with the
+     load, As-Built §CVI.5, §CVII.1; the ruling's citation of decision 196, the relief-lift rule, corrected). At 69.3 % it leaves
+     PIC-329207 0.05 bar under Book2's absolute 4.398 bar g, worth about 0.02 of share on law S (§CLVI.2); recorded,
+     not corrected. As-Built Part CLVII.
+304. **The seed's drift bounds restated with the reactor ceiling's margin** (2026-11-21, session 145; the process
+     engineer's choice). Decision 301's 3.5 K margin stops the seed's top flashing on its first tick, and the plant's
+     600 s part from V1's LP-side laws moves: decision 230's boil-off bound 2e-3 to 4.4e-3 (measured 4.384e-3, 323F010),
+     decision 233's flow bound 3.2e-4 to 3.3e-4 (3.292e-4, 323E011's 718A), decision 241's boil-off bound 1.6e-2 to
+     2.5e-2 (2.406e-2, 324E001), each at its measured value rounded up to two figures, as decisions 241 and 246
+     restated theirs. The flow part of the seed's own test falls, 4.79e-5 to 1.99e-5. As-Built Part CLVII.
+305. **PFD stream 918 held within 0.025 % at the seed** (2026-11-21, session 145; the process engineer's choice).
+     With the top no longer flashing at the seed (decision 301), 918 draws 9 025.12 kg/h against its row's 9 027,
+     0.0208 % under; the design-seed minute holds it within 0.025 %, the other six rows within 0.02 % as before, the
+     PFD row unchanged. As-Built Part CLVII.
+306. **323F010's drain ring in the fast shutdown accepted as decision 163's memo ring** (2026-11-21, session 145; the
+     process engineer's choice). Trip 21.2 with LV-322501 wide open at FAST: with decision 301's margin 323F010 rings
+     by +/-0.15 to 0.24 mbar, period about three ticks, decaying, from tick 210 to 272, then settles; with the margin
+     at zero it does not. The size is decision 163's memo ring under a feed surge (+/-0.22 mbar), below PT-323204's
+     resolution. The audit counts a 323F010 step as ringing only above 0.3 mbar until tick 300, and decision 163's
+     0.012 mbar after it. Measured, not traced: the mechanism is not isolated. As-Built Part CLVII.
+307. **Law B's form under the 3.5 K boil-cap margin: the departure form** (2026-11-21, session 146; the process
+     engineer's ruling). In B-118's scratch arms law B keeps its line through 183 C at the seed's top
+     (`reactor_boil.BOIL_T_DES_C`, `_INV_DES`) and takes the cap's slope, so its p_eff at t = 0 is the design pressure
+     (140.7 bar a, measured in session 146); the literal shift of B's line by the margin (147.35 bar a at the seed) is
+     rejected. Scratch only; law B is not built. As-Built Parts CLVII.5 and CLVIII.4.
+308. **Decision 303's citation corrected** (2026-11-21, session 146; the process engineer's ruling). The rig's
+     departure basis for PIC-329207 is As-Built §CVI.5 and §CVII.1, in place of the ruling's "decision 196" (the
+     relief-lift rule). Decision 306 stands as recorded; its 323F010 ring is attributed on magnitude only, untraced.
+     As-Built Part CLVIII.1.
+309. **The tempered two-channel 322E002 closure authorized for scratch measurement only** (2026-11-21, session 146;
+     the process engineer's ruling): T146, a load-scaled shell conductance UA (m_dot / m_dot0)^n with a mass-transfer
+     tempered flash target, design-anchored, measured at unit level before any in-loop arm, one candidate, no second
+     physics variant. Measured: no member with n <= 1 meets the plant's two slopes at either boundary, so no in-loop
+     arm ran. Not built. As-Built Part CLVIII.3.
+310. **Decision 300's stop rule: option 2, a labelled empirical trim** (2026-11-21, session 147; the process engineer's
+     ruling). Option 1, further physics on the lumped 322E002, is closed for V1.2: the single-lump NTU quench ties the
+     outlet and share slopes (dT/dP about 7 - 45 ds/dP, As-Built §CLVIII.3), so Book2's +2.4 to +4.4 K/bar outlet with at
+     most 0.03 share/bar is out of reach without a distributed model and data gap 17 (checklist row 30). B-118 proceeds
+     under option 2: a minimal, cleanly switched, labelled turndown trim ([E]/[I], a decided divergence) on the committed
+     e58014f tree, retired when data gap 17 closes. As-Built Part CLIX.
+311. **The S + B scratch stack retired as a base** (2026-11-21, session 147; the process engineer's ruling). S + B with
+     B-126's holdup carries a growing 4 045 s oscillation on the 100 % seed (E146_100, w = 0 on all 144 000 ticks:
+     FT-329403 peak to peak 0.03 to 0.32 t/h, doubling hourly) and Cb923 fails score137 at 92.3 % (As-Built §CLVIII.6).
+     No build rests on S + B. As-Built Part CLIX.
+312. **Session 146's E146 deviation rejected** (2026-11-21, session 147; the process engineer's ruling). E146, the SU
+     blend with three touch points on S + B, is rejected. The trim touches 322E002 once, on the committed tree, with an
+     exact zero footprint at 100 % load (bit-identical to N100B over 144 000 ticks). As-Built Part CLIX.
+313. **B-118's reduced-load acceptance widened** (2026-11-21, session 147; the process engineer's ruling; an addition to
+     decision 180 and score137). Every reduced-load hold must also show: no riding of 322R001's boil cap (its top boil
+     0 kg/h in the settled hold, TT-322005 below the ceiling, not held by the 3.5 K margin); a healthy 322E001
+     (TT-322004 in the plant's direction and window, neither below 150 C towards LV-322501's 137.7 C mushy zone nor
+     20 K hot; LT-322501 off its 100 % rail; the stripper's MP steam, FY-329403 and 322E001's duty, proportional to
+     load); and no late runaway (the hold and any post-upset tail bounded and not ringing through 24 000 s, with no
+     trip and no relief lift). The numeric readings used are the session's, As-Built §CLIX.1. As-Built Part CLIX.
+314. **Decision 313's numeric acceptance bounds pinned** (2026-11-22, session 148; the process engineer's ruling; they
+     replace the provisional readings of As-Built §CLIX.1). Every reduced-load hold (92.3, 74.4, 69.3 and 68.9 %), over
+     its settled hold: 322R001's top boil 0.0 kg/h, TT-322005 strictly below T_ceil(P); TT-322004 inside [150.0, 178.0] C
+     (above LV-322501's 137.7 C mushy-zone onset by more than 12 K, never above the design side; B-136's ideal at or
+     below 172.0 C); FY-329403 over its 60.85 t/h design inside [L - 0.12, L + 0.05] (anchored on Book2's 92.3 % range,
+     0.856-0.905 of design); LT-322501 below 95 % throughout with no liquor held in the tubes (B-104 inactive); bounded
+     and non-ringing through 24 000 s (and at least 6 000 s after an upset's revert), zero trips, zero relief lifts.
+     As-Built Part CLX.
+315. **The Option 2 base and the trim's touch points, for scratch measurement** (2026-11-22, session 148; the process
+     engineer's ruling). Base, on e58014f with no S, no B and no B-126: (1) decision 180's 322F001 lift-friction
+     prototype, p_disch,eff = p_disch - 2.41 w(L_fresh) (1 - r_m^2), r_m = clamp(m_motive / EJ_MOTIVE_NH3_DES, 0, 1),
+     w a C1 ramp, 0 at L_fresh >= 0.98 and 1 at L_fresh <= 0.95 ([E]/[I], retired when Koerting's diagrams close data
+     gap 1); (2) decision 181's P4, 322R001's wall loss on a stagnant reactor only. Primary trim, one touch point in
+     322E002: UA_eff = UA_des . clamp(L_fresh, 0.50, 1.00)^(w n), n = 0.77, on the fresh load, not on 322E002's own
+     throughput ([E]/[I], retired on data gap 17, checklist row 30). Gate B, only on a named Gate A failure and at most
+     one arm: B-136 (b), or one second 322E002 touch point (a decision 297 saturation margin or a tempered flash gain).
+     Measured (As-Built Part CLX): P4 as decided is not identically zero at 100 % on e58014f (322R001's co2_scale sits
+     2e-7 to 4e-6 off 1, so the as-built wall gate is about 1e-7), and the 600 s null differs in 9 835 leaves; in
+     scratch P4 was put behind the same w(L_fresh), and the null is then bit-identical. Which form a build takes is
+     the engineer's.
+316. **Session 146's runaway trace closed** (2026-11-22, session 148; the process engineer's ruling on As-Built
+     §CLIX.2). E146 rode 322R001's 3.5 K boil ceiling (8.6 t/h top boil), starving 322E001 (19-21 t/h steam,
+     TT-322004 138-141 C) until LV-322501's mushy factor fell below 1 (16 110 s unstepped, 18 440 s stepped), which
+     flooded LT-322501 to 100 %, collapsed the steam to 0 and drove the 159.5 bar a runaway and the 20 930 s trips.
+317. **Session 148 stopped at Gate A** (2026-11-22, session 148; the process engineer's ruling on As-Built §CLX.4).
+     EU148 at n = 0.77 on decision 315's base passes at 100 % (bit-identical to N100B over 14 400 s) and fails both
+     reduced holds in opposite directions: 92.3 % under Book2's band with 322E001 hot, 69.3 % on 322R001's boil ceiling
+     from the ramp end into the low-N/C branch, the loop pressure runaway and the 7 180 s trips. No plan case fits at face
+     value; no Gate B or Gate C arm is run, and both reduced arms are stopped where they stood (8 200 s and 12 300 s),
+     their verdicts fixed. As-Built Part CLX.
+318. **The gated P4 adopted for the Option 2 base** (2026-11-22, session 149; the process engineer's ruling; it resolves
+     decision 315's go / no-go item on P4's form). 322R001's P4, the wall loss on a stagnant reactor only, is gated by
+     w(L_fresh), 0 at L_fresh >= 0.98 and 1 at L_fresh <= 0.95, so the 100 % load stays bit-identical to N100B and the
+     ungated P4's 9 835-leaf drift at co2_scale 2e-7 under 1 is gone (As-Built §CLX.2). At w = 1 P4 removes the ambient
+     wall loss over the normal flow range and still restores the whole ambient wall loss whenever 322R001's flow falls
+     into P4's stagnant or shut-down band, so a cold reactor still cools down after a feed trip. Before any build into
+     `ureasim/`, Gate C carries a long shut-down and restart trace, at least 3 600 s after the trip.
+319. **The gated B-136 (b), 322E001's feed-deficit rise off at reduced load, admitted to the Option 2 scratch stack**
+     (2026-11-22, session 149; the process engineer's ruling on As-Built §CLX.4). Kept, the feed-deficit rise
+     (raw_load > 0) drives TT-322004 to 182 C at 92.3 % and 193-197 C at 69.3 %, with 5-7 times the urea hydrolysis
+     (xi_hydrolysis), FY-329403 over-steamed to 1.49 of design, 322R001 boiling 65.3 t/h and the melt N/C collapsing
+     to 2.32 under 3.0. Only the feed-lean heating branch of `stripper_322e001` is suppressed, by (1 - w(L_fresh)):
+     dT_load,eff = (1 - w(L_fresh)) . dT_load when raw_load > 0, used in dt_bot and in g_t on the raw_load > 0 side.
+     The high-feed flooding branch (raw_load <= 0, dt_flood) and the CO2 sweep-endotherm branch (dt_strip) are not
+     touched. At L_fresh >= 0.98 (w = 0) the stripper is bit-identical to e58014f; at L_fresh <= 0.95 (w = 1) the
+     feed-deficit rise is off. Scratch only; not built.
+320. **A second 322E002 touch point, beta_phi's tempering of the flash departure, authorized in scratch** (2026-11-22,
+     session 149; the process engineer's ruling; [E]/[I]). Inside `carbamate_condenser_322e002` the departure of
+     phi_gas from its design value is tempered at reduced load by one scalar beta_phi in [0, 1], gated by w(L_fresh):
+     phi_gain = 1 - w(L_fresh) . (1 - beta_phi), and phi_gas,k = phi_des,k + gate . phi_gain . (phi_film,k - phi_des,k).
+     At 100 % load w = 0 and phi_gain = 1, so decision 86's gate = 1 holds bit-identically against N100B. The phase
+     split stays inside [0, 1], so mass, atoms and energy close exactly. It is meant to keep 322E002's gas-CO2 share
+     near the design's 0.16-0.17 when TT-322010 sits at Book2's 168-169.5 C, and to bring d(share)/d(PT-329207) from
+     0.18 share/bar into Book2's window of at most 0.03 share/bar, while UA_eff(L_fresh, n) keeps TT-322010's positive
+     shell-pressure channel. sat_frac stays live, so the low-pressure and low-N/C malfunction physics are kept. It is
+     retired when data gap 17 (checklist row 30) supplies the plant's 322E002 steam-make data.
+321. **The instructor's pacing x1 to x10, and FREEZE or RUN lit** (2026-11-23, session 150; the process engineer's
+     instruction). The Simulation box's SLOW and FAST, V1's ``SIM_SPEED`` of 1 and 60, become ten buttons, x1 to x10 in
+     steps of one (`data.engine.SIM_SPEED`; the session starts at x1, `DEFAULT_PACING`); ``set_sim_mode`` takes the
+     name case-blind and refuses SLOW and FAST. The step stays 0.1 s (rule 10): xn pays n steps a wall-clock tenth, and a
+     machine that cannot run them falls behind (``MAX_PASS_S``). FREEZE is lit while the engine holds the plant clock
+     and RUN while it runs, from ``sim_frozen``, which `EngineSession.packet` staples on the consoles' packet beside
+     ``_health`` (not on the historian's sample, not in `build_packet`'s V1 key set), so the panel keeps no freeze
+     state of its own (`Claude.md` §4a rule 3) and a reset or restore while frozen stays lit right. A decided divergence
+     from V1's pacing. As-Built §CLXII.5.
+322. **The evaporation ejectors on deduced break curves** (2026-11-23, session 150; the process engineer's instruction:
+     Körting's curves for 324F002, 324F004 and 324F005 being unreachable, deduce curves that make HIC-329605 and
+     HIC-329606 act on their vacuums, the documented-data search waived for this datum). Supersedes decision 251's fit
+     (its held / lost strokes, scales and widths). Each decided map carries a break curve, the compression ratio CR(P_m)
+     it holds at a nozzle pressure: piecewise linear through no motive (CR = 1) and the plant's readings of 5 and 7
+     November 2026 (§CV.5), and above the top node a power of the motive on the 1-D model's slope (n 0.496, 0.400,
+     0.489). P_c = P_s . CR(P_m); the pull is the critical capacity read at the duty's motive times decision 251's flux
+     shape on [1, 1.04]. Stage 1's nodes, on the engine's valve law on the logged 4.22 bar g header: 0.64 bar a at
+     HIC-329605 48 %, 0.57 at 55 %, 0.33 at 64 %. Stage 2's, 324E005's readings 0.48, 0.415, 0.15 and 0.10 bar a at
+     HIC-329606 35, 37.75, 40.5 and 44.3 %, split between 324F004 and 324F005 equally in the logarithm of each one's
+     ratio at its hold [E], their strokes read on the plant's design stroke, 44.3 % (7 November, 101.7 % load), as
+     P_m = 4.1 bar a x stroke / 44.3 [E]: on the engine's valve law they sat at 1.5-2.0 bar a and the curves exceeded
+     the vendor duties' ratios by 40-47 %; so read they meet them (3.00 against 2.92, 3.48 against 3.52), and HIC-329606
+     acts between about 60 and 76 % of the engine's stroke, the plant's relative moves, not its absolute strokes. On the
+     seed F = 1 at every tick (smallest P_c / P_d over 14 400 s 1.0087); the first tick is the committed engine's to the
+     bit, and over 14 400 s 38 of 783 published leaves part from it, each within its own wander on the committed engine
+     (decision 278's paired form; decision 259's display-step form is not met: 324E002's condensate by 0.9 kg/h on a
+     0.1 step), so N100B is no longer the reference at 100 % on this tree. Two decided bounds are
+     restated at their new measured values, for the process engineer to confirm: decision 230's boil-off bound,
+     4.4e-3 to 4.5e-3 (323F010's few kg/h, measured 4.438e-3), and decision 306's fast-shutdown ring, 0.3 to 0.4 mbar
+     (measured 0.363 mbar, the shutdown now starving 324F002 of motive). Data gap 3 stays open, its stand-in changed.
+     As-Built §CLXII.2-6.
+323. **The shipped exercise load105_conversion re-saved with its motive strokes opened** (2026-11-24, session 150; the
+     process engineer's choice of handoff A-64's option (a)). On decision 322's curves the exercise's 3.49 bar g LP
+     header starved 324F002 at HIC-329605's design 69.06 % and 324F001 lost its vacuum in 300 s. The file is the original
+     state, unstepped, with HIC-329605 at 85 % and HIC-329606 at 95 %, both nozzles about 4.1 bar a on that header; its
+     note records the change. Over 3 600 s untouched it follows the original on the committed engine: 324F001 0.321-0.343
+     bar a (0.324-0.340), 324F003 0.133-0.139 (0.134-0.139), the synthesis tags the same, no trip on either. The
+     exercise is no steady state past its own 15-minute check on either engine (LT-329501 drains from 50 to under 1 % in
+     the hour); a first re-save settled 1 800 s first and tripped 22.1 within the next hour. As-Built §CLXII.8.

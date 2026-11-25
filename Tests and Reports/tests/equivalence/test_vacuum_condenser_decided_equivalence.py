@@ -108,21 +108,27 @@ def test_the_trip_through_the_train_decided_divergence(v1):
     valves; 1294 kg/h, 135.0 and 32.15 C, the port's 29.05 kg/h, on the Neldisc chord before decision
     170, which feeds both trains the second stage's vapour of PV-329212 on the S-Disc table). Before
     decisions 236 and 237 (LV-324501A's positioner and its sheet inlet) the second stage sent
-    1277.205 kg/h and V1's train vented 136.416."""
+    1277.205 kg/h and V1's train vented 136.416. With the separators' ejectors on the plant's
+    bracket (decision 251) the stages sent 94.8 and 1279.0 kg/h, and V1's train vented 136.6 at
+    32.0 C. On the deduced break curves (decision 322) 324F002 holds stage 1 at 0.317 bar a on its
+    ratio as the load goes, where its load line would have taken it to 0.306, so the held melt boils
+    less, and 324F004 holds stage 2 on its ratio (0.1 bar a at the design motive) as the load goes, so
+    its held melt boils less too: the stages send 6.3 and 1062.7 kg/h, V1's train vents 35.9 at 51.3
+    C, and the port's sends 28.0 at 53.6 C."""
     r1, r2, tr = _plant(1201, cut_at=5)[1200]
     mot = (tr.streams_kgh["924"], tr.streams_kgh["927"], tr.streams_kgh["929"])
     args = (MEVAP_DES_KGH, r1.m_vap_kgh + r1.m_boil_kgh, r2.m_vap_kgh + r2.m_boil_kgh,
             r1.false_air_kgh, r2.false_air_kgh)
-    assert (args[1], args[2]) == (pytest.approx(105.722, abs=1e-3),
-                                  pytest.approx(1277.184, abs=1e-3))
+    assert (args[1], args[2]) == (pytest.approx(6.263, abs=1e-3),
+                                  pytest.approx(1062.750, abs=1e-3))
     theirs = v1["vacuum_train_324"](*args, *mot, cw_factors={}, p_e002_bara=r1.p_bara,
                                     p_e005_bara=r2.p_bara, sub_703=None)
     mine = vt.vacuum_train(*args, vt.MotiveSteam(*mot), p_324e002_bara=r1.p_bara,
                            p_324e005_bara=r2.p_bara)
     assert (theirs["streams_kgh"]["722"], theirs["nodes"]["324E007"]["t_vent_c"]) == (
-        pytest.approx(136.417, abs=1e-3), pytest.approx(32.020, abs=1e-3))
+        pytest.approx(35.914, abs=1e-3), pytest.approx(51.310, abs=1e-3))
     assert (mine.streams_kgh["722"], mine.nodes["324E007"].t_vent_c) == (
-        pytest.approx(29.080, abs=1e-3), pytest.approx(54.009, abs=1e-3))
+        pytest.approx(27.978, abs=1e-3), pytest.approx(53.645, abs=1e-3))
 
 
 @pytest.mark.parametrize("k", ("NH3", "CO2"))

@@ -320,13 +320,14 @@ def test_a_reference_to_an_object_the_save_does_not_hold_is_refused():
 @pytest.mark.parametrize("path", sorted(SCENARIOS.glob("*.json")), ids=lambda p: p.stem)
 def test_every_shipped_exercise_loads_and_holds_no_retired_state(path):
     """The six shipped exercises carry no trip 22.2 record (cut from them on 2026-11-12) and load on
-    the present model. Saved before decision 212, each lacks 322P002's field-set delivery and loads it
-    from the seed, the PFD's 744; saved before decision 228, each lacks PC35's trips and loads them
-    healthy."""
+    the present model. Saved before decision 212, five lack 322P002's field-set delivery and load it
+    from the seed, the PFD's 744; load105_conversion, re-saved by decision 323 (its motive strokes
+    opened, handoff A-64), carries it at that seed value. Saved before decision 228, each lacks PC35's
+    trips or holds them healthy, and loads them healthy."""
     doc = json.loads(path.read_text(encoding="utf-8"))
     (trips,) = _objects(doc["state"], {})[SYNTHESIS_TRIPS]
     assert "i_22_2" not in trips["a"]
-    assert P002_DELIVERY_TAG not in path.read_text(encoding="utf-8")
+    assert (P002_DELIVERY_TAG in path.read_text(encoding="utf-8")) is (path.stem == "load105_conversion")
     back = snapshot.load(str(path), build_plant()[1])
     assert set(back.units["SYN-TRIPS"].latched) == {"21_2", "21_8", "21_10"}
     assert back.operator[P002_DELIVERY_TAG] == M744_DES_KGH

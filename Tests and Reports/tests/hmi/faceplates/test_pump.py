@@ -88,5 +88,5 @@ def test_every_icon_that_opens_the_faceplate_drives_its_machine():
         for on in (False, True):
             assert apply_command(plant, {"type": PUMP_COMMANDS[e["tag"]], "id": e["id"],
                                          "on": on}).ok, e["tag"]
-            pkt = build_packet(plant, s.results, s.tears_read, sim_mode="SLOW", t_wall=0.0)
+            pkt = build_packet(plant, s.results, s.tears_read, sim_mode="x1", t_wall=0.0)
             assert bool(get_path(pkt, e["bind"])["on"]) is on, (e["tag"], on)

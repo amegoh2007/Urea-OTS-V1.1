@@ -5,8 +5,10 @@ What it is
 A window on the console with the controls that are not plant equipment, kept off the process
 screens so they stay true to the DCS (`project.md` decision 149):
 
-* **Simulation** — the pacing (SLOW / FAST, `ureasim.data.engine.SIM_SPEED`), FREEZE and RUN,
-  and RESET to the design seed after a confirmation;
+* **Simulation** — the pacing, x1 to x10 in steps of one (`ureasim.data.engine.SIM_SPEED`,
+  decision 321), FREEZE and RUN, and RESET to the design seed after a confirmation; the pacing the
+  plant runs at, and FREEZE or RUN as the plant clock is held or running (the packet's
+  ``sim_frozen``), are lit;
 * **Malfunctions** — every equipment fault the engine can inject, armed and cleared
   (`ureasim.data.faceplates.MALFUNCTIONS`);
 * **Boundary** — the CO2 asked of 320K002 (``co2_set``), the battery-limit rate: a boundary
@@ -19,8 +21,8 @@ screens so they stay true to the DCS (`project.md` decision 149):
 * **Exercises** — save the plant under a name with a note, and restore a saved one after a
   confirmation, from the list the engine's side holds.
 
-Like a faceplate it is a dumb renderer and an emitter: the pacing, the CO2 demand and 322P002's
-delivery it shows are the packet's, the exercises the engine's list, and every button sends one command whose answer —
+Like a faceplate it is a dumb renderer and an emitter: the pacing, the freeze, the CO2 demand and
+322P002's delivery it shows are the packet's, the exercises the engine's list, and every button sends one command whose answer —
 the engine's — is shown with its reason.
 
 Source: V1 ``frontend/app.js`` (the reset button, 120-160) and ``frontend/co2_compressor.js`` (the
@@ -99,18 +101,25 @@ class InstructorPanel(QWidget):
 
     def _simulation(self) -> QGroupBox:
         box = QGroupBox("Simulation", self)
-        row = QHBoxLayout(box)
+        column = QVBoxLayout(box)
+        speeds = QHBoxLayout()
+        speeds.addWidget(QLabel("Speed", box))
         self.pacing_buttons = {}
         for mode in SIM_SPEED:
             b = self._button(mode, lambda m=mode: self.pacing(m), box)
             self.pacing_buttons[mode] = b
-            row.addWidget(b)
-        row.addSpacing(12)
-        row.addWidget(self._button("FREEZE", lambda: self.freeze(True), box))
-        row.addWidget(self._button("RUN", lambda: self.freeze(False), box))
-        row.addSpacing(12)
-        row.addWidget(self._button("RESET", self.reset, box))
-        row.addStretch(1)
+            speeds.addWidget(b)
+        speeds.addStretch(1)
+        column.addLayout(speeds)
+        clock = QHBoxLayout()
+        self.freeze_button = self._button("FREEZE", lambda: self.freeze(True), box)
+        self.run_button = self._button("RUN", lambda: self.freeze(False), box)
+        clock.addWidget(self.freeze_button)
+        clock.addWidget(self.run_button)
+        clock.addSpacing(12)
+        clock.addWidget(self._button("RESET", self.reset, box))
+        clock.addStretch(1)
+        column.addLayout(clock)
         return box
 
     def _malfunctions(self) -> QGroupBox:
@@ -187,19 +196,27 @@ class InstructorPanel(QWidget):
     # ---- rendering ----
 
     def refresh(self, state: Mapping[str, Any]) -> None:
-        """The pacing the plant runs at, the CO2 demand on 320K002 and 322P002's delivery, from
-        the packet."""
+        """The pacing the plant runs at, whether its clock is held, the CO2 demand on 320K002 and
+        322P002's delivery, from the packet."""
         mode = get_path(state, "sim_mode")
         for m, b in self.pacing_buttons.items():
-            b.setProperty("active", m == mode)
-            b.style().unpolish(b)
-            b.style().polish(b)
+            self._light(b, m == mode)
+        frozen = get_path(state, "sim_frozen")
+        self._light(self.freeze_button, frozen is True)
+        self._light(self.run_button, frozen is False)
         demand = get_path(state, "CO2_FEED.raw_th")
         self.co2_now.setText("--" if demand is None else f"now {demand:.2f} t/h")
         set_m3h = get_path(state, "ABSORB_328.D003.P002_delivery_set_m3h")
         read_m3h = get_path(state, "ABSORB_328.D003.flow755_m3h")
         self.p002_now.setText("--" if set_m3h is None or read_m3h is None
                               else f"set {set_m3h:.2f}, FI-322402 {read_m3h:.2f} m3/h")
+
+    @staticmethod
+    def _light(button: QPushButton, on: bool) -> None:
+        """Light a button as the state the packet reports (the faceplates' active style)."""
+        button.setProperty("active", on)
+        button.style().unpolish(button)
+        button.style().polish(button)
 
     def show_exercises(self, names, reason: str) -> None:
         """The saved exercises."""

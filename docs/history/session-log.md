@@ -5238,3 +5238,230 @@ withdrawing §CXL.4's slew bound. Rows 1, 3, 4, 9, 10, 15 and B-136 narrowed. Th
 in scratch (a pump stop trips 21.2 at 359.9 s, a CO2 cut to 10 t/h at 78.1 s) and built both: `OffDelayTimer` for
 page 20's three T (decision 249) and `TRIP_21_2_FY_L2_NM3H` = 8 500 (decision 250); six exercises and five equivalence
 pins restated. Parts CXLI, CXLII; report `Tests and Reports\reports\Session_130_gaps`.
+
+### Session 131 — 2026-11-18: another tool's closure dossier checked against the archive
+
+Asked to close the open items with a closure dossier (`References\Gaps Closure\New folder\urea_simulator_v1_1_final_closure_dossier_...html`)
+that marks B-118, B-125, B-126, B-136 and data gaps 1, 3, 4, 5, 9, 10, 12, 14 and 15 closed. Every cited page was
+opened: none of the 13 closures holds. Its Section B laws and stream values are in none of its cited files; gaps 1, 3, 9
+and 10 are false on the image (322F001's p. 4 is a wall-thickness check; 324F002 prints 94 / 650 / 744 kg/h; F 335405
+is 0-1 m3/h; B44 prints 3000 mm, not 3 600). Found on primary sources: PC21's SR latches are reset-dominant with the
+inverted 21.2 flag on R (ABB DZ-0045-016 printed p. 407, AC4 p. 20), as built; Peroni's sheets give 3 barg and 152 RPM
+for both 321P002 pumps. Row 5 narrowed to TRIP_84_8's L2; row 4 logs FF-0002's PT-324202 against AC4's PT-324203.
+Nothing under `ureasim/` changed; no decision. Part CXLIII; renders `Tests and Reports\reports\Session_131_dossier`.
+
+### Session 132 — 2026-11-18: V1.2; the separators' ejectors break on the plant's bracket
+
+V1.2 copied from V1.1 at 5ddc107 (`D:\Work\Urea Simulator V1.2`, branch `v1.2`); V1.1 kept as it was. Asked to fix
+two bugs: HV-329605 barely moved PIC-324202, PT-324201 and PT-323204, and HV-329606 barely moved PIC-324203 and
+PT-324204. Built (decision 251): each separator ejector's P_c scale and break width put on the plant's 5 November
+bracket (64 / 55 %, 40 / 38 %, PT-329207 4.22 bar g); the seed unchanged leaf for leaf. Measured: stage 1 at 0.345
+bar a at 55 % and 0.430 at 45 %, stage 2 at 0.150 at 38 % and 0.265 at 35 %, softer than the plant's 0.6. The New
+folder's other stand-ins have no Helwan source; 100847-100852 are another plant's drawings; none built. An
+essentials zip went to Google Drive in five parts (its 10 MB upload limit). Part CXLIV; runs `Tests and Reports\reports\Session_132_ejector_break`.
+
+### Session 133 — 2026-11-18: LY-324501 on its drawings; three leads checked; the Drive copy
+
+On V1.2. The session 114 B-118 plan was handed to session 134. Read on the images: 324F003's assembly, sectional,
+nozzle and calculation sheets and MB-0180; AC4's 885 mbar puts 100 % at the lower T/L, the leg holding 3.1 kg a
+percent, 232 kg at the plant's 50 %, where V1's 3 797 kg holdup reads 104.2 %. A scratch arm reading the level on
+that profile keeps no bit-identical seed (1.1e-4 on the level by 600 s) and answers a slug 20 times as far; the
+AC4 formula on V1's level keeps the seed to the bit, its LRV floor (20.6 %) above the 5 % L2. Uhde's cooling water
+lowers the vent and so does not explain stage 1's 0.6 bar a; PT-323204's three decimals are two decided edits; the
+Bran + Luebbe pumps move FIC-335405 to 57 %, nothing else at design. The Drive parts were downloaded and joined to the
+README's hash. Built on branch `v1.2-d252`: LY-324501 on AC4's formula over V1's level, the seed byte-identical at
+600 s; a lost feed now drains 324F003 to its heel before the L2 stop can act, kept as built. Part CXLV; decision 252; runs
+`Tests and Reports\reports\Session_133_ly324501`.
+
+### Session 134 — 2026-11-19: B-118, B-125, B-126 and B-136 on session 114's plan, in scratch
+
+A side session of 133, on V1.2's HEAD and session 112's tree, in scratch only. S on design references is the design
+point to the bit at t = 0. S + B on UA as built settles at 92.3 % (TT-322005 181.5 C, every sign the plant's): it
+stands D1 on session 112's tree; on HEAD its rise reads 12.03-12.18 K by window on the floor's 12.05 K. Book2's
+322E002 UA exponent is 0.50 and rings at 92.3 %. No inert or liquid term carries the pressure's 3-6 bar; as a clamp
+on plant data it settles UA as built at every reduced load by D2 (74.4 % by its rounding only), 7.3-9.8 K cold below
+90.5 %; 111 % rings on every law. No hold at or below 90.5 % stands D1 or runs without a PC35 latch, so the 75 %
+HIC-329605 probe stays deferred. B-136 (b) gives TT-322004 the plant's sign, 0.8-1.8 times its size; B-126 (b) needs a
+display-resolution seed criterion; N6B shut leaves 0.866 of 322E001's area. 335P001 stops on LY-324501's L2 on every
+reduced-load HEAD arm (A-61). On the merged tree (79fa8ca) it still stops at 69.3 %, after the seal is lost: the
+rig's ten header valves draw 67.9 t/h on E1's 2.8 bar g floor against a 54 t/h make (CXLVI.19). No Helwan source
+gives the plant's header-valve count per load: data gap 16 (CXLVI.20). Nothing built, no decision. Part CXLVI;
+runs `Tests and Reports\reports\Session_134_b118`.
+
+### Session 135 — 2026-11-19: the gap-closure session; the operator's header-valve rule on the B-118 rig
+
+The Operating Manual's header-valve rule, read in bar g on E1's two ends, put on the rig in scratch: with a 300 s
+dwell and no shedding while LY-324501 rises, 335P001 runs every 69.3 % and 92.3 % hold to its end, no PC35 latch, the
+100 % seed to the bit; at 92.3 % S + B on UA as built then stands D1 on all five windows (margin 0.04 K) on tree252,
+where without the rule 35.4 latches. Both 69.3 % arms fail the rule's own readings (a sixth valve off; hunting). Data
+gaps 4, 5, 9, 10, 12 and 14 measured and prepared to close as built; [E] estimates on open literature for 1, 3 and 15;
+D1's band is the seed's, the plant's rise measured 13.4-13.9 K. The decision packet, the Körting and Foxboro Eckardt
+letters, the LV-324501A step test and the DCS readback checklist written. Decisions 253 to 257 proposed, none taken;
+nothing under `ureasim/` changed. Part CXLVII; `Tests and Reports\reports\Session_135_gaps`.
+
+### Session 136 — 2026-11-19: the process engineer's rulings recorded; 322R001 refitted to Book2; the Q2 matrix launched
+
+The rulings on session 135's packet recorded as decisions 253 to 267, `handoff.md` rewritten on them, data gap rows 4,
+5, 9, 12 and 14 deleted. score136 (decisions 259 to 262) re-scores waves H and H2: no arm stands D1; R923 reads 12.10 K
+on the thermowells against Book2's 13.88 +/- 1.0 K, the seed itself 13.00 K. Book2's reductions never pass under
+180.6 C. 322R001 refitted with law B meets Book2's flat rise at every anchor; the profile picks f 0.58, V1's own, the
+licensor's 95 % misses by 2.9 K rms. The literature's ejector break gives 1.12 of the plant's 1.82: no build. The
+44 mm bore confirmed as OD less two printed walls, unlabelled as the throat; gap 15's wet reading withdrawn on Book2. The T693b trace puts the 69.3 % feed step on
+323D002 regaining suction (lost at 4 980 s with or without the rule): gap 16 closed, A-62 raised. Wave M's seventeen
+arms left running, unscored. Decisions 268 to 273 proposed; nothing under `ureasim/` changed. Part CXLVIII;
+`Tests and Reports\reports\Session_136_rulings`.
+
+### Session 137 — 2026-11-19: the rulings on the rise and the re-anchor; the seed's law audit; 322R001's boundary
+
+The rulings of 19:30 recorded as decisions 269, 270, 274 and 275; wave M re-scored on the departure: no arm stands.
+The audit finds every wave M arm ran its registry. Wave L (each law removed, each alone, 15 000 s): the u set's 7
+failing console tags match N100A's own wander; S alone and the holdup alone each grow a ringing; proposal 276 holds
+the reference to its first sample. Step 4, 322R001 in the unit model on a frozen boundary: at 92.3 % the column has three fixed
+points and the engine sits on the unstable middle (12.10 K against 13.3 K); at 69.3 % 322E002's gas CO2 split
+costs -9.2 K of the -7.5 K loss. A-62: the manual's feed move on a load change (wave F) keeps 323D002's suction;
+proposal 277 puts it on every B-118 arm. Step 6 skipped. Part CXLIX; `Tests and Reports\scratch\session-137`.
+
+### Session 138 — 2026-11-20: the rulings as decisions; 322R001's fixed points on the engine's own step; 322E002's gas share
+
+Session 137's documents committed and pushed first. The rulings recorded as decisions 277 (the feed rule on every
+B-118 arm), 278 (decision 259 a paired test; proposal 276 rejected) and 279 (A-62 closed: training value; the teaching
+case in `scenarios/teaching_cases.md`, readback rows 29 and 30). Wave L stands on the paired test; only A_lean fails on
+phase alone. Step 1: on `ReactorInventory.step` with the loop's boundary frozen, one stable root at every load and the
+engine on it (92.3 % 12.097 K, closure -0.001 K); session 137's three points were its damped march's period-4 cycle,
+retracted. Corrected 92.3 % decomposition: -1.10 K, the split first (-2.51 K alone). Step 1.3 not run (no upper root).
+Step 2: no Book2 steam is a proxy for 322E002's duty; the split stays the seed's by assumption (data gap 17). B-157
+raised: the as-built seed wanders, not through 322R001. Step 3 skipped. Part CL; `Tests and Reports\scratch\session-138`.
+
+### Session 139 — 2026-11-20: the rulings as decisions 280-282; A-61's closing run; 322R001 as 322E002's meter
+
+Session 138's documents committed (b616557) and pushed; no line-ending churn. The rulings recorded as decisions 280
+(322R001's multiplicity refuted, the plan's hypothesis), 281 (A-61 closes on one run) and 282 (gap 17's route must
+exist). A-61's run, both rules on: 335P001 runs, no latch, but the header count reverses seven times (6 <-> 7); A-61
+open, the feed rule adding the hunting against the control. Gap 17: no make-up meter; LIC-329504 / 503 exist and
+Book2 logs their outputs, with no differential; row 30 rewritten. The reactor inverse fits no share under the boil
+cap; the thermowells read 0.171-0.180 at 94.2 % (not a datum). 322E002 at unit level: the quench outlet sets the
+share; no closure scored. B-157: FT-329407 leaves first (500 s); the placed seed kicks, not cures. Step 5 not run.
+Part CLI; `Tests and Reports\scratch\session-139`.
+
+### Session 140 — 2026-11-20: decisions 283-285; A-61's predictive guard; the boil cap's slope; B-157's first mover
+
+Session 139 committed (7717d94) and pushed. Rulings recorded as decisions 283 (A-61's predictive header guard and new
+criterion 3), 284 (the seed's 322E002 share is not the plant's) and 285 (B-157 traced before accepted or fixed).
+A-61: the arithmetic holds, but the guide figures as printed in bar a lie under E1's floor: the guard blocks every
+shed and LV-324501A latches (A61a); read in bar g it blocks nothing (A61g). B-118: the reactor top does not follow
+the boil cap's 0.53 K/bar (Book2 0.12-0.14): a flatter line or a design margin, not the inerts (the licensor gives
+them the opposite sign), desk only. B-157: the engine is deterministic across processes; the null's keys were a runner hook's;
+unit 329 follows 322E002's raise; 322E003's sump is off its mass and composition balance at t = 0. Step 4 not run.
+Part CLII; `Tests and Reports\scratch\session-140`.
+
+### Session 141 — 2026-11-20: decisions 286-289; A-61 closed; the boil cap's candidates; the seed's first tick
+
+Session 140 committed (c23ddd3) and pushed; gap 10's chat label corrected to K1. Rulings recorded as decisions 286 (the
+inert hypothesis refuted, the plan's sign error), 287 (A-61 closed on A61g, the header rule as built), 288 (the cap's
+candidates discriminated first) and 289 (B-157: the first tick audited). B-118: the engine's Extended UNIQUAC puts the top's
+liquor at 40 bar a, not 141.3, and weighs on neither candidate; Book2 rejects the cap's 0.532 inside every band but one; (a) costs the 100 % pin nothing over 3 600 s, (b) removes the seed's top boil and moves two flows two
+steps; at 92.3 and 69.3 % neither moves the hold through `node_boil` (law B not re-pointed). B-157: the seed's top boils 29.93 kg/h on the first tick (V1's profile and kinetics anchored at two
+flows; the cap the rewrite's), which is session 140's 322E003 sump excess; the LP side's 323C003 and 323E003 pressures
+are separate residuals. Step 4 not run. Part CLIII; `Tests and Reports\scratch\session-141`.
+
+### Session 142 — 2026-11-20: decisions 290-293; A-63 raised; the joint re-solve; the cap-released inverse
+
+Session 141 committed (5dac02d) and pushed. Rulings recorded as decisions 290 (the seed's top boil a rewrite defect,
+A-63), 291 (the cap's docstring corrected to 0.532 K/bar, committed alone), 292 ((b)'s 100 % failure set aside) and
+293 (no choice between (a) and (b) before the literature report). The joint re-solve of 322R001's profile and kinetic
+anchor at the live 227.50 m3/h gives a clean first tick, but over 15 000 s the top boils again from 30 s (maximum
+50.7 kg/h) and the correlates still move: not offered as a divergence. (b) on it passes the paired test over 3 600 s.
+B-157: 323C003's and 323E003's residuals are CP_S208_DES anchored on PFD 208's printed row, sub-display; FT-329407's
+move is 323E010's and 324E001's chests. Cap released, the reactor inverse reads 322E002's share 0.169-0.172 at 94.2 %
+and 0.165-0.174 at 69.3 % [I], but only with law B at its floor at every fit: not a datum, not B-125's target; gap 17
+stays on the readback. Step 5 not run. Part CLIV;
+`Tests and Reports\scratch\session-142`.
+
+### Session 143 — 2026-11-20: decisions 294-295; (b) alone on the as-built seed; law B's floor; B-157's LP side
+
+Session 142 committed (0a10330) and pushed with 392561b. Rulings recorded as decisions 294 (A-63's fix to test is (b),
+the cap with a 3.5 K [E] margin, alone; supersedes 290's re-solve clause) and 295 (the cap-released share stays
+model-conditional; no inverse runs until law B's floor is understood). B143, (b) alone over 15 000 s: no boil, margin
+at least 3.43 K; the pin gate fails on FT-329403, FT-329407, LT-322504 and TT-322011, each as N100A or worse there;
+TT-322005 183.1 from 11 170 s; against the control L143, (b)'s own share is 322E002's duty and x_conv. No proposal.
+Law B's floor binds in no hold (R923b, U693, A61g), only with the top on the cap; under (b) unshifted it binds in the
+margin. A class for zero-margin design limits proposed (322R001's cap, 322E002's and 322E003's saturation laws).
+B-157: m308 and 323F010 are closures on the synthesis wander; CP_S208_DES is V1's, its residual the seed's bottoms;
+the heaters' draw is 323F004's drain. Step 5 not run. Part CLV; `Tests and Reports\scratch\session-143`.
+
+### Session 144 — 2026-11-20: decisions 296-300; 322E002's steam-pressure handle; A-63's gate to 30 000 s; B-157's 323F004 probe
+
+Session 143 committed (415078b) and pushed. Rulings recorded as decisions 296 (A-63's gate as four conditions, B143 and
+N100A to 30 000 s), 297 (the zero-margin class adopted as "find and measure"; `CLAUDE.md` section 5 rule 7), 298 (law B's
+floor closed as a lead), 299 (B-157 time-boxed on 323F004) and 300 (B-118's stop rule after session 146). Uhde's
+manual makes PIC-329207 the handle on 322E002's condensation, no gain printed; the rig moves it by Book2's departure.
+On U693's boundary S answers 0.37 of share per bar (0.169 at 4.54-4.59 bar g), the law as built 0.008 [I]. B144 to
+30 000 s: pin, zero boil and a settled top met; sample-wise dominance over N100A fails on five tags, on the largest
+excursion on 323F010's level alone; (b) not built, the reading the engineer's. 323F004's drain cooling is 323C003's
+drain composition, larger under (b); decision 299's condition not met. Part CLVI; `Tests and Reports\scratch\session-144`.
+
+### Session 145 — 2026-11-21: decisions 301-306; the boil cap's 3.5 K margin built; Book2's steam-pressure gain; law S at two pressures
+
+Session 144 committed and pushed. Rulings as decisions 301 (A-63's envelope reading; (b) built at 3.5 K [E], its test
+three-sided, N100B the paired reference; A-63 closed), 302 (B-157 closed under its time-box) and 303 (the rig's
+PIC-329207 as a departure from Book2). Built: `BOIL_CAP_MARGIN_K` in `data.unit_322r001`, `reactor_boil`'s ceiling on
+it; N100B bit-equal to B144. Book2: PT-329207 moves TT-322010 by +4.4 K/bar at 94.2 %, the gas share by 0.01 to 0.03
+per bar, between law B's 0.008 and law S's 0.37, recorded as B-125's target [I]. At 69.3 % law S at 4.557 bar g rings
+and settles at 184.2 C, Book2's 4.397 bar g no better; neither holds the band. The suite's consequences of the margin
+ruled as decisions 304 (three seed bounds restated), 305 (918 within 0.025 %) and 306 (323F010's shutdown ring as
+decision 163's). Part CLVII; `Tests and Reports\reports\Session_145_b118`.
+
+### Session 146 — 2026-11-21: decisions 307-309; B-118's stop rule measured (T146 at unit level, E146 in the loop)
+
+Suite on the session 145 tree: 8 438 passed. Rulings as decisions 307 (law B's departure form), 308 (decision 303's
+citation) and 309 (the tempered two-channel 322E002 closure, scratch only). T146 (UA (m/m0)^n, tempered split) fails
+the unit gate at both boundaries: the outlet and share slopes lie on one line, so no n <= 1 meets Book2's pair; hard
+stop, no in-loop arm. E146, a trim below 90 % blending the flash target, UA and the outlet from S + B to the NTU-held
+closure, is bit-identical to S + B at and above 90 %; at 69.3 and 74.4 % it sits on the boil cap (rise departure +1.85
+and +2.46 K) with 322E001 starved; its +0.2 bar step answers in the plant's direction, the stepped twin trips at
+20 930 s. The S + B seed fails decision 278 and grows. Nothing built; decision 300's choice is the engineer's.
+Part CLVIII; `Tests and Reports\reports\Session_146_b118_stop_rule`.
+
+### Session 147 — 2026-11-22: decisions 310-313; EU147, the single-touch 322E002 trim, stopped at Gate A on case 3
+
+Session 146's documents committed (4179972, not pushed). Rulings as decisions 310 (option 2, a labelled trim on the
+committed tree), 311 (S + B retired), 312 (E146 rejected) and 313 (decision 180 widened). E146's runaway read from the
+archive: the capped, boiling top starves 322E001 into LV-322501's mushy zone (factor below 1 at 16 110 s). EU147, UA x
+(m_dot / m_dot0)^(w n) behind a 0.95-0.98 envelope on 322E002's throughput, n 0.75 on U144: bit-identical to N100B over
+14 400 s (w > 0 on 0 ticks); inert in the 92.3 % hold (throughput at design); at 69.3 % 322E003 floods, 322F001
+stalls (gap 1), trip 22.1 fires and melt N/C falls to 2.865 in the ramp (case 3), the hold rings 147.7-180.1 C. The
+no-trim controls do the same. Gates B and C not run; not ready to build. Nothing built. Part CLIX;
+`Tests and Reports\reports\Session_147_b118_eu_trim`.
+
+### Session 148 — 2026-11-22: decisions 314-317; decision 315's base and EU148 stopped at Gate A
+
+Session 147 already committed (96b41f7, not pushed). Rulings as decisions 314 (decision 313's bounds), 315 (the base:
+322F001's lift, P4, 322E002's UA on L_fresh, each gated on w(L_fresh)) and 316 (session 146's trace closed). P4 as decided
+changes 9 835 leaves at 100 % (co2_scale 2e-7 under 1); gated on w, Z148 and EU148_100 are bit-identical to N100B. A
+321P002B fault at 100 % stalls 322F001 as committed. Gate A, n 0.77: 92.3 % cold (TT-322005 178.9-181.1 C) with TT-322004
+182 C; 69.3 % passes the ramp without a stall, rides the boil ceiling from 3 720 s (TT-322004 192-197 C, FY-329403 over
+its window, the ratio trim on its floor), crosses melt N/C 3.0 at 6 110 s and trips at 7 180 s, relief at 7 330 s.
+Stopped at Gate A by the engineer (317); both reduced arms stopped at 8 200 and 12 300 s. No-go for building EU148.
+Nothing built. Part CLX; `Tests and Reports\reports\Session_148_b118_lift_base`.
+
+### Session 149 — 2026-11-22: decisions 318-320; the Option 2 stack with B-136 (b) and beta_phi, stopped at Step 3
+
+Session 148 committed (e7aa1c8, not pushed). Rulings as decisions 318 (P4 w-gated; Gate C's shut-down trace), 319 (B-136
+(b) gated on w) and 320 (beta_phi, 322E002's tempered flash departure). Session 148's archive read: at 92.3 % the rise is
+lost to 322R001's off-gas CO2, not 322E002's outlet; at 69.3 % the hot stripper's hydrolysis leads the chain to melt N/C
+3.0. proto149 (lift, P4, UA, lean, beta): Z149 / Z149b bit-identical to N100B. At (n 0.77, beta 1.00) in the loop both
+loads fall cold, 69.3 % to trip 22.1 at 6 740 s. The unit sweep of n x beta, on the arms' snapshots and on Book2's bands,
+returns no pair: ds/dP 0.055-0.16 share/bar, the saturation law's zero margin 66-72 % of it at beta 0.10. Stopped at Step 3
+for the engineer; no Gate A reduced arm run. Nothing built. Part CLXI; `Tests and Reports\reports\Session_149_b118_b136_trim`.
+
+### Session 150 — 2026-11-23 to 25: decisions 321-323; the ejectors on deduced break curves, the pacing x1 to x10
+
+Session 149 committed and pushed (1e56dab). On the committed engine HIC-329605 and HIC-329606 moved PT-324201 and
+PT-324204 by under 0.01 bar above their brackets, and opening HIC-329605 worsened the vacuum (§CLXII.1). Decision 322 (the
+engineer's instruction, Körting's curves unreachable): each ejector holds a compression ratio CR(P_m) through the plant's
+5 and 7 November readings, the 1-D slope above, width 1.04, capacity at the duty's motive; stage 2 split between 324F004
+and 324F005 and read on the plant's 44.3 % design stroke [E], meeting the vendor duties' ratios. Built after a scratch
+prototype: stage 1 0.624 / 0.568 / 0.457 bar a at 48 / 55 / 60 % (plant 0.64, 0.56-0.61); stage 2 0.447 / 0.392 / 0.143
+at 64 / 68 / 73 % (the plant's at the same shares of its stroke); the seed within its own wander. Decisions 230's and
+306's bounds restated, for the engineer. Decision 321: pacing x1 to x10, FREEZE / RUN lit. Decision 323: load105_conversion
+re-saved, HIC-329605 85 %, HIC-329606 95 %. Part CLXII; `Tests and Reports\reports\Session_150_ejectors_pacing`.

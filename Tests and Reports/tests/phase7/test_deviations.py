@@ -33,7 +33,7 @@ def seed_packet():
     from tests.phase7.drivers import flatten
     sched = Scheduler(*build_plant())
     sched.tick()
-    return flatten(build_packet(sched.plant, sched.results, sched.tears_read, sim_mode="SLOW",
+    return flatten(build_packet(sched.plant, sched.results, sched.tears_read, sim_mode="x1",
                                 t_wall=0.0))
 
 

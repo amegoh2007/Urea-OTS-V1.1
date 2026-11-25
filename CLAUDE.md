@@ -7,6 +7,10 @@ any file. They override habit, convenience and any "quicker way" that conflicts 
 
 ## 0. What this workspace is
 
+**V1.2 (2026-11-18, session 132).** This folder, `D:\Work\Urea Simulator V1.2` on git branch `v1.2`, is a copy of V1.1
+at commit 5ddc107; V1.1 is kept unchanged as the version to return to. Every rule below binds here as written;
+where it names `Urea Simulator V1.1`, read this folder.
+
 `Urea Simulator V1.1` is a **ground-up rewrite** of the Urea Plant Operator Training Simulator
 (OTS) that lives in `E:\Simulator\Urea Simulation` (read from its copy `D:\Work\Urea Simulation V1`,
 decision 223; the V1 files the suite reads are copied into `Tests and Reports/tests/equivalence/v1_reference`, decision 210,
@@ -107,7 +111,7 @@ This is the house style. It is not negotiable.
 9. **Dead code is deleted, not commented out.** Git is the history.
 10. **The physics step is fixed at 0.1 s.** The engine advances the plant in whole steps of
     exactly 0.1 s — V1's `DT`, the step of its design pin and of every equivalence test.
-    Pacing (SLOW, FAST, a loaded machine) changes how many steps run per wall-clock second,
+    Pacing (x1 to x10, decision 321; a loaded machine) changes how many steps run per wall-clock second,
     never the size of a step. Every recycle tear carries one step of delay, so a variable
     step would make every transient depend on machine load and no exercise would replay.
     Decided 2026-09-27 (handoff A-14, `project.md` decision 9).
@@ -315,11 +319,13 @@ none of them is optional:
    the handoff item is deleted.
 7. **A decided class applies to every new unit (2026-09-30).** Once the process engineer has
    decided a class of V1 flaw, apply it without re-asking wherever a new unit shows it. The classes,
-   104 of them, one a line with its decision number, are in `docs/decided-classes.md` and are binding
+   108 of them, one a line with its decision number, are in `docs/decided-classes.md` and are binding
    (moved there 2026-11-11, wording unchanged). Before a unit's physics is ported or changed, grep
    that file for the mechanism and for the equipment's kind; never read it whole. A class decided
    later is appended there as one line. A new mechanism still goes to the process engineer, with
-   both sides measured.
+   both sides measured. **A class adopted as "find and measure" (2026-11-20, decision 297)** is the
+   one exception to "apply without re-asking": its instances are found and listed, and each is
+   sourced or measured on its own unit before anything is built; its line says so.
 
 ## 6. Clean-codebase rules
 

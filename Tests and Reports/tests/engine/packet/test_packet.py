@@ -122,7 +122,7 @@ def test_the_packet_is_json_with_its_clocks_and_health(design):
     json.dumps(design.packet, allow_nan=False)
     p = design.packet
     assert p["t"] == 1.0e9 and p["t_sim"] == pytest.approx(1.0, abs=1e-12)
-    assert (p["sim_mode"], p["sim_speed"]) == ("SLOW", 1)
+    assert (p["sim_mode"], p["sim_speed"]) == ("x1", 1)
     assert p["_health"] == {"ok": True}
     assert list(p)[:3] == ["t", "t_sim", "FI_321401"]
     assert list(p)[-1] == "_health"

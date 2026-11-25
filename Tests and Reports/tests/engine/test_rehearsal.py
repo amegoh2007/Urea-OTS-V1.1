@@ -21,7 +21,7 @@ def _text(plant) -> str:
 
 
 def _packet(plant, results, tears_read) -> dict:
-    return build_packet(plant, results, tears_read, sim_mode="SLOW", t_wall=0.0, health=None)
+    return build_packet(plant, results, tears_read, sim_mode="x1", t_wall=0.0, health=None)
 
 
 def _body(packet: dict) -> str:

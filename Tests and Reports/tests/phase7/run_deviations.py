@@ -63,7 +63,7 @@ def run_plant(dev: Deviation | None, duration_s: float, paths: list, extra: dict
         if watch is not None:
             watch(sched.results)
         if k % every == 0:
-            flat = flatten(build_packet(plant, sched.results, sched.tears_read, sim_mode="SLOW",
+            flat = flatten(build_packet(plant, sched.results, sched.tears_read, sim_mode="x1",
                                         t_wall=0.0))
             t = round(k * DT - SETTLE_S, 6)
             rec["t"].append(t)

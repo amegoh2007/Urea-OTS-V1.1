@@ -148,6 +148,14 @@ P_DES_BARA = 144.9
 #: Off-gas line pressure to 322E003 [bar a]. Source: PFD, V1 `main.py` REACT_OFFGAS_P_BARA.
 OFFGAS_P_DES_BARA = 141.3
 
+#: The margin between the design top node (PFD 207's 183 C) and the ceiling `reactor_boil` holds the liquor at,
+#: at the design pressure [K]: the cap stands at 186.5 C at design, on the same 23 kJ/mol slope. A ceiling on the
+#: design top with zero margin clipped V1's own 0.045 K top excess and boiled the seed's top on its first tick
+#: (handoff A-63, decisions 290, 296, 301; the zero-margin class, decision 297, of which this is the first measured
+#: instance). Source: [E], session 140 candidate (b); final value from the bubble-line literature report
+#: (decision 293; `Tests and Reports\reports\Bubble line research\`).
+BOIL_CAP_MARGIN_K = 3.5
+
 #: The reactor's top at design [bar a]: PFD 207's overflow leaves 322R001 at 141.3, as PFD 203's
 #: off-gas does — what the published PT on 322R001 reads at design (handoff B-112, decided
 #: 2026-10-22). 322R001 carries no pressure transmitter of its own: P&ID 102 (UD-VT-322-FB-0003)
